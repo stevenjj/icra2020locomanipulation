@@ -1,0 +1,2 @@
+add_executable(test_load_urdf_model test_load_urdf_model.cpp)
+target_link_libraries(test_load_urdf_model ${catkin_LIBRARIES})

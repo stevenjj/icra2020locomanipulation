@@ -1,0 +1,6 @@
+#ifndef CONFIGURATION_H
+#define CONFIGURATION_H
+
+#define THIS_PACKAGE_PATH "@THIS_PACKAGE_PATH@"
+
+#endif
