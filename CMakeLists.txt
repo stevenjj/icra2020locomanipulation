@@ -43,5 +43,10 @@ include_directories(
  ${EIGEN3_INCLUDE_DIR} 
 )
 
-add_subdirectory(test)
+SET (MODEL_SOURCES
+	${PROJECT_SOURCE_DIR}/src/models/valkyrie_model.cpp)
 
+SET(PROJECT_SOURCES
+	${MODEL_SOURCES})
+
+add_subdirectory(test)
