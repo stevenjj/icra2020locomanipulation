@@ -15,6 +15,6 @@ git clone https://github.com/stevenjj/val_model
 To install this package
 ````
 cd catkin_ws/src
-git clone https://github.com/stevenjj/test_pinocchio_catkin.git
+git clone https://github.com/stevenjj/avatar_locomanipulation
 catkin build
 ````
