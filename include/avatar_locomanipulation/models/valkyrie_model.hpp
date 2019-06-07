@@ -64,6 +64,9 @@ public:
   // updates the kinematic derivatives
   void updateKinematicsDerivatives(const Eigen::VectorXd & q_update, const Eigen::VectorXd & qdot_update, const Eigen::VectorXd & qddot_update);
 
+  // updates the 
+  void updateJointJacobiansDerivatives(const Eigen::VectorXd & q_update, const Eigen::VectorXd & qdot_update);
+
   /* get6DTaskJacobian
   Input: the frame name.   
   Output: the 6D task jacobian (dimension 6 x model.nv) expressed in world frame
@@ -71,6 +74,13 @@ public:
           then the rotational components: [(wx/dq)^T , (wy/dq)^T, (wz/dq)^T]^T
   */
   void get6DTaskJacobian(const std::string & frame_name, Eigen::MatrixXd & J_out);
+
+  /* get6DTaskJacobianDot
+  Input: the frame name.
+  Output: the 6D task jacobian dot (6 x model.nv) expressed in world frame.
+  */
+  void get6DTaskJacobianDot(const std::string & frame_name, Eigen::MatrixXd & Jdot_out);
+
 
   /* getFrameWorldPose
   Input: the frame name.   
@@ -125,7 +135,6 @@ public:
   //  the computation also runs a computeJointJacobians() routine. 
   //  value is stored in J_com;
   void computeCoMJacobian();  
-
   // Computes the Jacobian and the position of the Center of Mass of the robot expressed in world frame
   // the computation also runs a computeJointJacobians() routine. 
   // value is stored in J_com;

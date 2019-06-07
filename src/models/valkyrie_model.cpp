@@ -45,12 +45,22 @@ void ValkyrieModel::updateFullKinematics(const Eigen::VectorXd & q_update){
 }
 
 void ValkyrieModel::updateKinematicsDerivatives(const Eigen::VectorXd & q_update, const Eigen::VectorXd & qdot_update, const Eigen::VectorXd & qddot_update){
+  // Compute the derivatives of the kinematics
   pinocchio::computeForwardKinematicsDerivatives(model, *data, q_update, qdot_update, qddot_update);    
+}
+
+void ValkyrieModel::updateJointJacobiansDerivatives(const Eigen::VectorXd & q_update, const Eigen::VectorXd & qdot_update){
+  // Computes the time variation of jacobians
+  pinocchio::computeJointJacobiansTimeVariation(model, *data, q_update, qdot_update);
 }
 
 void ValkyrieModel::get6DTaskJacobian(const std::string & frame_name, Eigen::MatrixXd & J_out){
   tmp_frame_index = model.getFrameId(frame_name);
   pinocchio::getFrameJacobian(model, *data, tmp_frame_index, pinocchio::WORLD, J_out);
+}
+
+void ValkyrieModel::get6DTaskJacobianDot(const std::string & frame_name, Eigen::MatrixXd & Jdot_out){
+  pinocchio::getFrameJacobianTimeVariation(model, *data, model.getFrameId(frame_name), pinocchio::WORLD, Jdot_out);
 }
 
 void ValkyrieModel::getFrameWorldPose(const std::string & name, Eigen::Vector3d & pos, Eigen::Quaternion<double> & ori){

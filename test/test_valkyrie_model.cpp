@@ -90,7 +90,6 @@ int main(int argc, char ** argv){
   std::cout << "com vel:" << valkyrie.xdot_com.transpose() << std::endl;
   std::cout << "com acc:" << valkyrie.xddot_com.transpose() << std::endl;
 
-
   // Test CoM Jacobian
   valkyrie.computeCoMJacobian();
 
@@ -102,4 +101,14 @@ int main(int argc, char ** argv){
   std::cout << "J_com * qddot = " << (valkyrie.J_com*qddot_start).transpose() << std::endl;
   std::cout << "xddot = Jdot qdot + Jqddot = " << (valkyrie.Jdot_com*qdot_start).transpose() + (valkyrie.J_com*qddot_start).transpose() << std::endl;
   std::cout << "xddot - Jqddot = " << valkyrie.xddot_com.transpose() - (valkyrie.J_com*qddot_start).transpose() << std::endl;
+
+  // Get Jacobian Dot
+  Eigen::MatrixXd Jdot_rpalm(6, valkyrie.getDimQdot()); Jdot_rpalm.fill(0);
+  // Must compute joint jacobian derivatives first.
+  valkyrie.updateJointJacobiansDerivatives(q_start, qdot_start);
+  valkyrie.get6DTaskJacobianDot("rightPalm", Jdot_rpalm);
+
+  // std::cout << "Jdot_rpalm" << std::endl;
+  // std::cout << Jdot_rpalm << std::endl;
+
 }
