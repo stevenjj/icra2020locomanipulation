@@ -40,6 +40,12 @@ public:
     pinocchio::Model model;
     std::unique_ptr<pinocchio::Data> data;
 
+    Eigen::MatrixXd A; // inertia matrix
+    Eigen::MatrixXd Ainv; // inverse of the inertia matrix
+    Eigen::MatrixXd C; // coriolis matrix
+    Eigen::VectorXd g; // gravity vector
+
+
     /* updateFullKinematics
     Input: a vector of configuration with dimension model.nq to update the kinematics.   
     */
@@ -80,6 +86,17 @@ public:
     */
     int getDimQdot();
 
+    // Tangent space forward integration given q_start, qdot*dt 
+    void forwardIntegrate(const Eigen::VectorXd & q_start, const Eigen::VectorXd & qdotDt, Eigen::VectorXd & q_post);
+
+    // Computes the inertia matrix dim(model.nv x model.nv) given configuration and stores the result.
+    void computeInertiaMatrix(const Eigen::VectorXd & q);
+    // Computes the inverse of the inertia matrix dim(model.nv x model.nv) given configuration and stores the result.
+    void computeInertiaMatrixInverse(const Eigen::VectorXd & q);
+    // Computes the coriolis matrix dim(model.nv x model.nv) given configuration and velocity and stores the result.
+    void computeCoriolisMatrix(const Eigen::VectorXd & q, const Eigen::VectorXd & qdot);
+    // Computes the gravity vector dim(model.nv) given configuration and stores the result
+    void computeGravityVector(const Eigen::VectorXd & q);
 
     void printJointNames();
     void printFrameNames();
@@ -88,6 +105,8 @@ private:
     // private temporary index value holders. Prevents memory allocation on runtime
     pinocchio::FrameIndex tmp_frame_index;
     pinocchio::JointIndex tmp_joint_index;
+    void buildPinocchioModel(const std::string & filename);
+    void commonInitialization();
 };
 
 #endif 

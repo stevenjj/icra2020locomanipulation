@@ -2,7 +2,7 @@
 #include <math.h>       
 #include <iostream>
 
-#include<avatar_locomanipulation/models/valkyrie_model.hpp>
+#include <avatar_locomanipulation/models/valkyrie_model.hpp>
 
 int main(int argc, char ** argv){
 	std::cout << "Initialize Valkyrie Model" << std::endl;
@@ -39,7 +39,37 @@ int main(int argc, char ** argv){
     std::cout << "right palm orientation w.r.t world (x,y,z,w):" << rpalm_ori.x() << " " <<
     																rpalm_ori.y() << " " <<
     																rpalm_ori.z() << " " <<
-    															    rpalm_ori.w() << " " << std::endl;
+    																rpalm_ori.w() << " " << std::endl;
+	// Get Dynamics Matrices
+    Eigen::VectorXd qdot_start(valkyrie.getDimQdot());
+    qdot_start = Eigen::VectorXd::Ones(valkyrie.getDimQdot());
+	
+	valkyrie.computeInertiaMatrix(q_start);
+	valkyrie.computeInertiaMatrixInverse(q_start);
+	valkyrie.computeCoriolisMatrix(q_start, qdot_start);
+	valkyrie.computeGravityVector(q_start);
 
+	// std::cout << "Inertia Matrix" << std::endl;
+	// std::cout << valkyrie.A << std::endl;
+
+	// std::cout << "Inertia Matrix Inverse" << std::endl;
+	// std::cout << valkyrie.Ainv << std::endl;
+
+	// std::cout << "Coriolis Matrix:" << std::endl;
+	// std::cout << valkyrie.C << std::endl;
+
+	std::cout << "Gravity Vector:" << valkyrie.g.transpose() << std::endl;
+
+	// Test Forward Integration
+	Eigen::VectorXd q_post(valkyrie.getDimQ()); 
+	q_post.setZero();
+	qdot_start.setZero();
+
+	const double dt = 1.0;
+	qdot_start[0] = 0.5; // move forward with 0.5 m/s
+	qdot_start[5] = M_PI/4.0; // yaw by pi/4 rad/s to the left
+	valkyrie.forwardIntegrate(q_start, qdot_start*dt, q_post);
+
+	std::cout << "Forward Integration:" << q_post.transpose() << std::endl; 
 
 }
