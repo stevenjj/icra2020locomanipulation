@@ -72,4 +72,34 @@ int main(int argc, char ** argv){
 
   std::cout << "Forward Integration:" << q_post.transpose() << std::endl; 
 
+
+  // Test CoM computation
+  Eigen::VectorXd qddot_start(valkyrie.getDimQdot()); qddot_start.fill(0);
+  qddot_start[2] = 1.0; // 1m/s^2 vertical acceleration
+  qddot_start[3] = 0.4; // 0.4 rad/s^2 roll angular acceleration
+
+  valkyrie.computeCoMPos(q_start);
+  std::cout << "com pos:" << valkyrie.x_com.transpose() << std::endl;
+
+  valkyrie.computeCoMPosVel(q_start, qdot_start);
+  std::cout << "com pos:" << valkyrie.x_com.transpose() << std::endl;
+  std::cout << "com vel:" << valkyrie.xdot_com.transpose() << std::endl;
+
+  valkyrie.computeCoMPosVelAcc(q_start, qdot_start, qddot_start);
+  std::cout << "com pos:" << valkyrie.x_com.transpose() << std::endl;
+  std::cout << "com vel:" << valkyrie.xdot_com.transpose() << std::endl;
+  std::cout << "com acc:" << valkyrie.xddot_com.transpose() << std::endl;
+
+
+  // Test CoM Jacobian
+  valkyrie.computeCoMJacobian();
+
+  // compute Jdot_com
+  valkyrie.updateKinematicsDerivatives(q_start, qdot_start, qddot_start);
+  valkyrie.computeCoMJacobianDot(q_start, qdot_start);
+
+  std::cout << "dvcom_dq * qdot = " << (valkyrie.Jdot_com*qdot_start).transpose() << std::endl;
+  std::cout << "J_com * qddot = " << (valkyrie.J_com*qddot_start).transpose() << std::endl;
+  std::cout << "xddot = Jdot qdot + Jqddot = " << (valkyrie.Jdot_com*qdot_start).transpose() + (valkyrie.J_com*qddot_start).transpose() << std::endl;
+  std::cout << "xddot - Jqddot = " << valkyrie.xddot_com.transpose() - (valkyrie.J_com*qddot_start).transpose() << std::endl;
 }

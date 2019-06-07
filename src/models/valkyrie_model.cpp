@@ -24,6 +24,13 @@ void ValkyrieModel::commonInitialization(){
   Ainv = Eigen::MatrixXd::Zero(model.nv, model.nv);
   C = Eigen::MatrixXd::Zero(model.nv, model.nv);
   g = Eigen::VectorXd::Zero(model.nv);	
+  
+  x_com.setZero();
+  xdot_com.setZero();
+  xddot_com.setZero();
+
+  J_com = Eigen::Matrix3Xd::Zero(3, model.nv);
+  Jdot_com = Eigen::Matrix3Xd::Zero(3, model.nv);
 
   std::cout << "Valkyrie Model Constructed" << std::endl;
 }
@@ -35,6 +42,10 @@ void ValkyrieModel::updateFullKinematics(const Eigen::VectorXd & q_update){
   pinocchio::computeJointJacobians(model,*data, q_update);
   // Update Frame Placements
   pinocchio::updateFramePlacements(model, *data);	
+}
+
+void ValkyrieModel::updateKinematicsDerivatives(const Eigen::VectorXd & q_update, const Eigen::VectorXd & qdot_update, const Eigen::VectorXd & qddot_update){
+  pinocchio::computeForwardKinematicsDerivatives(model, *data, q_update, qdot_update, qddot_update);    
 }
 
 void ValkyrieModel::get6DTaskJacobian(const std::string & frame_name, Eigen::MatrixXd & J_out){
@@ -90,6 +101,37 @@ void ValkyrieModel::computeGravityVector(const Eigen::VectorXd & q){
   pinocchio::computeGeneralizedGravity(model, *data, q);
   this->g = data->g;
 }
+
+
+void ValkyrieModel::computeCoMPos(const Eigen::MatrixBase<Eigen::VectorXd> & q){
+  this->x_com = pinocchio::centerOfMass(model, *data, q);  
+}
+
+void ValkyrieModel::computeCoMPosVel(const Eigen::MatrixBase<Eigen::VectorXd> & q, const Eigen::MatrixBase<Eigen::VectorXd> & qdot){
+  this->x_com = pinocchio::centerOfMass(model, *data, q, qdot);
+  this->xdot_com = data->vcom[0]; 
+}
+
+void ValkyrieModel::computeCoMPosVelAcc(const Eigen::MatrixBase<Eigen::VectorXd> & q, const Eigen::MatrixBase<Eigen::VectorXd> & qdot, const Eigen::MatrixBase<Eigen::VectorXd> & qddot){
+  this->x_com = pinocchio::centerOfMass(model, *data, q, qdot, qddot);
+  this->xdot_com = data->vcom[0];   
+  this->xddot_com = data->acom[0];     
+}
+
+void ValkyrieModel::computeCoMJacobian(){
+  J_com = pinocchio::jacobianCenterOfMass(model, *data);
+}
+
+void ValkyrieModel::computeCoMJacobian(const Eigen::MatrixBase<Eigen::VectorXd> & q){
+  J_com = pinocchio::jacobianCenterOfMass(model, *data, q);
+}
+
+void ValkyrieModel::computeCoMJacobianDot(const Eigen::MatrixBase<Eigen::VectorXd> & q, const Eigen::MatrixBase<Eigen::VectorXd> & qdot){
+  // To compute Jdot_com, we need to have called computeForwardKinematicsDerivatives and centerOfMass computation with position and velocity.
+  pinocchio::centerOfMass(model, *data, q, qdot);
+  pinocchio::getCenterOfMassVelocityDerivatives(model, *data, Jdot_com);
+}
+
 
 void ValkyrieModel::printJointNames(){
   // List joint names:

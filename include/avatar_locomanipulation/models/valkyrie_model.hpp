@@ -9,12 +9,15 @@
 #include "pinocchio/multibody/geometry.hpp"
 // Algorithms
 #include "pinocchio/algorithm/kinematics.hpp"
+#include "pinocchio/algorithm/kinematics-derivatives.hpp"
 #include "pinocchio/algorithm/geometry.hpp"
 #include "pinocchio/algorithm/jacobian.hpp"
 #include "pinocchio/algorithm/frames.hpp" // Jacobian Frame Computation 
 #include "pinocchio/algorithm/aba.hpp" // Articulated Body Algorithm
 #include "pinocchio/algorithm/crba.hpp" // Composite Rigid Body Algorithm
 #include "pinocchio/algorithm/rnea.hpp" // Recursive Newton-Euler Algorithm
+#include "pinocchio/algorithm/center-of-mass.hpp" // Center-of-Mass related algorithms
+#include "pinocchio/algorithm/center-of-mass-derivatives.hpp" 
 // Parsers
 #include "pinocchio/parsers/urdf.hpp"
 #include "pinocchio/parsers/srdf.hpp"
@@ -45,11 +48,21 @@ public:
   Eigen::MatrixXd C; // coriolis matrix
   Eigen::VectorXd g; // gravity vector
 
+  Eigen::Vector3d x_com; // com position
+  Eigen::Vector3d xdot_com; // com velocity
+  Eigen::Vector3d xddot_com; // com acceleration
+
+  Eigen::Matrix3Xd J_com; // Center of mass Jacobian
+  Eigen::Matrix3Xd Jdot_com; // Center of mass Jacobian Derivative
+
 
   /* updateFullKinematics
   Input: a vector of configuration with dimension model.nq to update the kinematics.   
   */
   void updateFullKinematics(const Eigen::VectorXd & q_update);
+
+  // updates the kinematic derivatives
+  void updateKinematicsDerivatives(const Eigen::VectorXd & q_update, const Eigen::VectorXd & qdot_update, const Eigen::VectorXd & qddot_update);
 
   /* get6DTaskJacobian
   Input: the frame name.   
@@ -97,6 +110,29 @@ public:
   void computeCoriolisMatrix(const Eigen::VectorXd & q, const Eigen::VectorXd & qdot);
   // Computes the gravity vector dim(model.nv) given configuration and stores the result
   void computeGravityVector(const Eigen::VectorXd & q);
+
+
+  // CoM positions, velocities, and accelerations are expressed in world frame.
+  // Computes the CoM position given q
+  void computeCoMPos(const Eigen::MatrixBase<Eigen::VectorXd> & q);
+  // Computes the CoM position and velocity given q and qdot
+  void computeCoMPosVel(const Eigen::MatrixBase<Eigen::VectorXd> & q, const Eigen::MatrixBase<Eigen::VectorXd> & qdot);
+  // Computes the CoM position, velocity, and acceleration given q, qdot, and qddot
+  void computeCoMPosVelAcc(const Eigen::MatrixBase<Eigen::VectorXd> & q, const Eigen::MatrixBase<Eigen::VectorXd> & qdot, const Eigen::MatrixBase<Eigen::VectorXd> & qddot);
+
+  // Computes the Jacobian and the position of the Center of Mass of the robot expressed in world frame
+  //  Assumes that pinocchio::forwardKinematics() has been called.
+  //  the computation also runs a computeJointJacobians() routine. 
+  //  value is stored in J_com;
+  void computeCoMJacobian();  
+
+  // Computes the Jacobian and the position of the Center of Mass of the robot expressed in world frame
+  // the computation also runs a computeJointJacobians() routine. 
+  // value is stored in J_com;
+  void computeCoMJacobian(const Eigen::MatrixBase<Eigen::VectorXd> & q);  
+
+  // Computes the value of Jdot_com. Assumes that updateKinematicsDerivatives was called.
+  void computeCoMJacobianDot(const Eigen::MatrixBase<Eigen::VectorXd> & q, const Eigen::MatrixBase<Eigen::VectorXd> & qdot);  
 
   void printJointNames();
   void printFrameNames();
