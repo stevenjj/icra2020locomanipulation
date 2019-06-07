@@ -78,8 +78,8 @@ int main(int argc, char ** argv){
 
   // List Joint Names
   for (int k=0 ; k<model.njoints ; ++k) {
-        std::cout << model.names[k] << "\t: "
-                  << data.oMi[k].translation().transpose() << std::endl;
+    std::cout << model.names[k] << "\t: "
+              << data.oMi[k].translation().transpose() << std::endl;
   }
 
   // List Operational Space Frames
@@ -96,5 +96,5 @@ int main(int argc, char ** argv){
 
 
 
-return 0;
-  }
+  return 0;
+}
