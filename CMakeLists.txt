@@ -46,7 +46,16 @@ include_directories(
 SET (MODEL_SOURCES
 	${PROJECT_SOURCE_DIR}/src/models/valkyrie_model.cpp)
 
+SET (DATA_TYPES_SOURCES
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/data_types/footstep.cpp)
+
+SET (WALKING_SOURCES
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/walking/walking_pattern_generator.cpp)
+
+
 SET(PROJECT_SOURCES
-	${MODEL_SOURCES})
+	${MODEL_SOURCES}
+	${DATA_TYPES_SOURCES}
+	${WALKING_SOURCES})
 
 add_subdirectory(test)
