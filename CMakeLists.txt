@@ -52,10 +52,14 @@ SET (DATA_TYPES_SOURCES
 SET (WALKING_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/walking/walking_pattern_generator.cpp)
 
+SET (HELPER_SOURCES
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/hermite_curve.cpp)
+
 
 SET(PROJECT_SOURCES
 	${MODEL_SOURCES}
 	${DATA_TYPES_SOURCES}
-	${WALKING_SOURCES})
+	${WALKING_SOURCES}
+	${HELPER_SOURCES})
 
 add_subdirectory(test)
