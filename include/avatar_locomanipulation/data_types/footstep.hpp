@@ -12,8 +12,13 @@ public:
   Footstep();
   ~Footstep(); 
 
+  // Position and orientation of the sole of the footstep
   Eigen::Vector3d position;
   Eigen::Quaternion<double>  orientation;
+
+  // length and width of the soles
+  double sole_length;
+  double sole_width
 
 };
 
