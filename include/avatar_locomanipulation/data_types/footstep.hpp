@@ -18,7 +18,7 @@ public:
 
   // length and width of the soles
   double sole_length;
-  double sole_width
+  double sole_width;
 
 };
 
