@@ -12,9 +12,10 @@ public:
 						   const Eigen::Quaterniond & quat_end, const Eigen::Vector3d & angular_velocity_end);
 	~HermiteQuaternionCurve();
 
+	// All values are expressed in "world frame"
 	void evaluate(const double & s_in, Eigen::Quaterniond & quat_out);
-	Eigen::Vector3d getAngularVelocity(const double & s_in);
-	Eigen::Vector3d getAngularAcceleration(const double & s_in);
+	void getAngularVelocity(const double & s_in, Eigen::Vector3d & ang_vel_out);
+	void getAngularAcceleration(const double & s_in, Eigen::Vector3d & ang_acc_out);
 
 private:
 	Eigen::Quaterniond qa; // Starting quaternion

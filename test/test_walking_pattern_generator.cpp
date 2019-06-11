@@ -65,8 +65,8 @@ int main(int argc, char ** argv){
   Eigen::AngleAxisd aa_end(M_PI/4.0, Eigen::Vector3d(0.5,1,2));
   Eigen::Quaterniond qend(aa_end); qend.normalize();
   // Eigen::Quaterniond qend(0.707, 0, 0, 0.707); qend.normalize();
-  Eigen::Vector3d omega_start(0.0, 0.0, 0.0);
-  Eigen::Vector3d omega_end(0.0, 0.0, 0.0);
+  Eigen::Vector3d omega_start(0.6, 0.5, 0.7);
+  Eigen::Vector3d omega_end(2.1, 0.1, 0.1);
   HermiteQuaternionCurve hqc(qstart, omega_start, qend, omega_end);
 
   // Test that at t=1.0, the quaternion is equal to qend
@@ -85,6 +85,13 @@ int main(int argc, char ** argv){
   std::cout << "target quaternion:" << std::endl;
   printQuat(qend);
 
+  // Eigen::Vector3d ang_vel_out;
+  // std::cout << "t," << "wx(t)," << "wy(t)," << "wz(t)" << std::endl; 
+  // for(int i = 0; i < (N+1); i++){
+  //   t = i*dt;
+  //   hqc.getAngularVelocity(t, ang_vel_out);
+  //   std::cout << t << "," << ang_vel_out.transpose() << std::endl;
+  // }
 
 
   return 0;
