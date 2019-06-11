@@ -1,0 +1,17 @@
+[WalkingPatternGenerator] Constructed
+[Footstep] Data Object constructed
+omega axis angle = 
+10.5  0.1  0.3
+-0.857324 -0.00816499 -0.024495 0.514129 
+[Hermite Curve] constructed with values
+evaluate h1(t=0.0) = 0
+evaluate dh1(t=0.0) = 0
+evaluate ddh1(t=0.0) = 48
+evaluate h1(t=1.0) = 8
+evaluate dh1(t=1.0) = 0
+evaluate ddh1(t=1.0) = -48
+[Hermite Quaternion Curve] Initialized
+hqc(t=1.0) = 
+0.150221 0.300442 0.600884 0.725332 
+target quaternion:
+0.150221 0.300442 0.600884 0.725332 

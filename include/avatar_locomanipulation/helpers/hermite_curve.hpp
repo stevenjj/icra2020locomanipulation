@@ -1,7 +1,6 @@
-#ifndef ALM_SPLINES_H
-#define ALM_SPLINES_H
+#ifndef ALM_HERMITE_CURVE_H
+#define ALM_HERMITE_CURVE_H
 
-#include <Eigen/Dense>
 #include <iostream>
 #include <math.h>
 #include <algorithm>
@@ -26,6 +25,7 @@ private:
 
 	// by default clamps within 0 and 1.
 	double clamp(const double & s_in, double lo = 0.0, double hi = 1.0);
+
 };
 
 #endif
