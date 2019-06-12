@@ -92,18 +92,15 @@ void HermiteQuaternionCurve::evaluate(const double & s_in, Eigen::Quaterniond & 
   quat_out = qtmp3*qtmp2*qtmp1*q0; // global frame
 }
 
-// For world frame
 void HermiteQuaternionCurve::getAngularVelocity(const double & s_in, Eigen::Vector3d & ang_vel_out){
-  s_ = this->clamp(s_in);  
-  computeBasis(s_);
-  ang_vel_out = omega_1*bdot1 + omega_2*bdot2 + omega_3*bdot3;
+  // world frame: w(t) = qdot(t)*q^-1(t)
+  // local frame: w(t) = q^-1(t)*qdot(t)
 }
 
 // For world frame
 void HermiteQuaternionCurve::getAngularAcceleration(const double & s_in, Eigen::Vector3d & ang_acc_out){
-  s_ = this->clamp(s_in);  
-  computeBasis(s_);
-  ang_acc_out = omega_1*bddot1 + omega_2*bddot2 + omega_3*bddot3;
+  // world frame: a(t) = qddot(t)*q^-1(t) - (qdot(t)*q^-1(t))^2
+  // local frame: a(t) = q^-1(t)*qddot(t) - (q^-1(t)*qdot(t))^2
 }
 
 
