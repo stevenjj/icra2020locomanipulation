@@ -1,3 +1,5 @@
+#ifndef FEASIBILITY_H
+#define FEASIBILITY_H
 // Standard
 #include <math.h>
 #include <iostream>
@@ -24,6 +26,8 @@
 
 class feasibility{
 public:
+  feasibility();
+  ~feasibility();
   //Initialize Valkyrie Model
   ValkyrieModel valkyrie;
 
@@ -43,18 +47,19 @@ public:
   Eigen::MatrixXd J_rfoot;
 
   // Left foot projected to ground, no specification on its orientation
-  double lfoot_des_pos = 0;
-  double lfoot_pos_error;
+  Eigen::Vector3d lfoot_des_pos;
+  Eigen::Quaternion<double> lfoot_des_quat;
+  Eigen::Vector3d lfoot_pos_error;
+  Eigen::Vector3d lfoot_ori_error;
 
   Eigen::Vector3d lfoot_cur_pos;
   Eigen::Quaternion<double> lfoot_cur_ori;
   Eigen::MatrixXd J_lfoot;
 
+
   // CoM in support region and specified height
-  double CoM_des_z = 2;
-
+  Eigen::Vector3d CoM_des;
   Eigen::MatrixXd J_CoM;
-
 
   // This is the fully stacked jacobian
   Eigen::MatrixXd J_task;
@@ -64,10 +69,24 @@ public:
 
   // SVD_SOLVER
   std::unique_ptr< Eigen::SVD_SOLVER<Eigen::MatrixXd> > svd;
+  unsigned int svdOptions = Eigen::ComputeThinU | Eigen::ComputeThinV;
 
-  void feasibility::ComputeTransError(const Eigen::Vector3d & des, const Eigen::Vector3d & current, Eigen::Vector3d & error);
+  void ComputeTransError(const Eigen::Vector3d & des, const Eigen::Vector3d & current, Eigen::Vector3d & error);
 
-  void feasibility::ComputeQuatError(const Eigen::Quaternion<double> & des,
-      							const Eigen::Quaternion<double> & current,
-      							Eigen::Vector3d & error);
-}
+  void ComputeQuatError(const Eigen::Quaternion<double> & des,
+                    const Eigen::Quaternion<double> & current,
+                    Eigen::Vector3d & error);
+
+  void InverseKinematicsTop(const int & maxsteps);
+  //void feasibility::InverseKinematicsBot(int & maxsteps);
+
+  void initialize_configuration_top();
+  void initialize_desired_top();
+
+private:
+  Eigen::AngleAxis<double> axis_angle;
+
+
+};
+
+#endif

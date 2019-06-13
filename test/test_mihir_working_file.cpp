@@ -165,17 +165,10 @@ int main(int argc, char ** argv){
 
    std::cout << i << " error norm = " << ik_error_norm << std::endl;
 
-    if (ik_error_norm <=eps){
-      bool converged = true;
-      break;
-    }
   }
 
-    if (ik_error_norm > eps) {
-      bool converged = false;
-    }
   std::cout << "Final error norm = " << ik_error_norm << std::endl;
-  valkyrie.printFrameNames();
+//  valkyrie.printFrameNames();
   return 0;
 }
 
