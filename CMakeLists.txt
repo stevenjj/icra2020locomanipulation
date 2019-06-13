@@ -44,7 +44,7 @@ include_directories(
 )
 
 SET (MODEL_SOURCES
-	${PROJECT_SOURCE_DIR}/src/models/valkyrie_model.cpp)
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/models/valkyrie_model.cpp)
 
 SET (DATA_TYPES_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/data_types/footstep.cpp)
@@ -57,11 +57,14 @@ SET (HELPER_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/hermite_quaternion_curve.cpp
 	)
 
+SET (ROS_BRIDGE_SOURCES
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/bridge/val_rviz_translator.cpp)
 
 SET(PROJECT_SOURCES
 	${MODEL_SOURCES}
 	${DATA_TYPES_SOURCES}
 	${WALKING_SOURCES}
-	${HELPER_SOURCES})
+	${HELPER_SOURCES}
+	${ROS_BRIDGE_SOURCES})
 
 add_subdirectory(test)

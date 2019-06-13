@@ -13,8 +13,9 @@ public:
 
   std::vector<Footstep> footstep_list;
 
-  double swing_time;
-  double transfer_time;
+  double swing_height = 0.05; 
+  double swing_time = 1.2;
+  double transfer_time = 0.9;
 
   void computeSE3_trajectory(const Footstep & init_stance_location, const Footstep & landing_location);
 
