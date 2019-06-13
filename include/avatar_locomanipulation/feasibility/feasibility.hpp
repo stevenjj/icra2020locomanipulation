@@ -3,6 +3,9 @@
 // Standard
 #include <math.h>
 #include <iostream>
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
 // Include Punocchio Related Libraries
 #include <avatar_locomanipulation/enable_pinocchio_with_hpp_fcl.h>
 
@@ -58,12 +61,15 @@ public:
 
 
   // CoM in support region and specified height
-  Eigen::Vector3d CoM_des;
-  Eigen::MatrixXd J_CoM;
+  Eigen::Vector3d com_des_pos;
+  Eigen::Vector3d com_pos_error;
 
   // This is the fully stacked jacobian
   Eigen::MatrixXd J_task;
   Eigen::VectorXd task_error;
+
+  Eigen::VectorXd upper_lim;
+  Eigen::VectorXd lower_lim;
 
   double ik_error_norm = 1000.0;
 
@@ -82,6 +88,9 @@ public:
 
   void initialize_configuration_top();
   void initialize_desired_top();
+  void initialize_upper_limits();
+  void initialize_lower_limits();
+  double clamp(const double & s_in, double lo, double hi);
 
 private:
   Eigen::AngleAxis<double> axis_angle;

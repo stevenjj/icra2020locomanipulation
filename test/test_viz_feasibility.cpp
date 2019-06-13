@@ -38,7 +38,7 @@ int main(int argc, char **argv){
 
 	// Initialize feasibility object
 	feasibility	fiz;
-	fiz.InverseKinematicsTop(10);
+	fiz.InverseKinematicsTop(40);
 
 	q_start = fiz.q_start;
 	q_end = fiz.q_end;
