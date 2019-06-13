@@ -40,7 +40,7 @@ CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/cmake/config.h.cmake ${PROJECT_SOURCE_DIR}/
 include_directories(
  include
  ${catkin_INCLUDE_DIRS}
- ${EIGEN3_INCLUDE_DIR} 
+ ${EIGEN3_INCLUDE_DIR}
 )
 
 SET (MODEL_SOURCES
@@ -55,16 +55,21 @@ SET (WALKING_SOURCES
 SET (HELPER_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/hermite_curve.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/hermite_quaternion_curve.cpp
-	)
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/rkf45.cpp
+)
 
 SET (ROS_BRIDGE_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/bridge/val_rviz_translator.cpp)
+
+SET (FEASIBILITY_SOURCES
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/feasibility/feasibility.cpp)
 
 SET(PROJECT_SOURCES
 	${MODEL_SOURCES}
 	${DATA_TYPES_SOURCES}
 	${WALKING_SOURCES}
 	${HELPER_SOURCES}
-	${ROS_BRIDGE_SOURCES})
+	${ROS_BRIDGE_SOURCES}
+	${FEASIBILITY_SOURCES})
 
 add_subdirectory(test)
