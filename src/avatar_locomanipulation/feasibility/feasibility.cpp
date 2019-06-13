@@ -128,10 +128,10 @@ feasibility::feasibility(){
 feasibility::~feasibility(){
 }
 
-int main(int argc, char ** argv) {
-  feasibility fs;
-  fs.InverseKinematicsTop(10);
-  return 0;
-  }
+// int main(int argc, char ** argv) {
+//   feasibility fs;
+//   fs.InverseKinematicsTop(10);
+//   return 0;
+//   }
 
 //rosrun avatar_locomanipulation feasibility
