@@ -33,13 +33,13 @@
 #define SVD_SOLVER JacobiSVD
 
 int main(int argc, char ** argv){
-    std::cout <<RAND_MAX << std::endl;
+    // std::cout <<RAND_MAX << std::endl;
 
-    feasibility fs;
-    fs.InverseKinematicsTop(10);
+    // feasibility fs;
+    // fs.InverseKinematicsTop(10);
   // Test to see if this is working
   // std::cout << "Initialize Valkyrie Model" << std::endl;
-  // ValkyrieModel valkyrie;
+  ValkyrieModel valkyrie;
   //
   // // X dimensional state vectors
   // Eigen::VectorXd q_start;
@@ -182,7 +182,7 @@ int main(int argc, char ** argv){
   // }
   //
   // std::cout << "Final error norm = " << ik_error_norm << std::endl;
-//  valkyrie.printFrameNames();
+ valkyrie.printFrameNames();
   return 0;
 }
 

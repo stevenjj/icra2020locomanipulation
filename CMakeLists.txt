@@ -56,6 +56,7 @@ SET (HELPER_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/hermite_curve.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/hermite_quaternion_curve.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/rkf45.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/convex_hull.cpp
 )
 
 SET (ROS_BRIDGE_SOURCES
