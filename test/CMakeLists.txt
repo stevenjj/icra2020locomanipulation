@@ -5,6 +5,8 @@ add_executable(test_mihir_working_file test_mihir_working_file.cpp ${PROJECT_SOU
 add_executable(test_rkf45 test_rkf45.cpp ${PROJECT_SOURCES})
 add_executable(test_rviz_valkyrie test_rviz_valkyrie.cpp ${PROJECT_SOURCES})
 add_executable(test_viz_feasibility test_viz_feasibility.cpp ${PROJECT_SOURCES})
+add_executable(test_prioritized_ik test_prioritized_ik.cpp ${PROJECT_SOURCES})
+
 
 target_link_libraries(test_load_urdf_model ${catkin_LIBRARIES})
 target_link_libraries(test_valkyrie_model  ${catkin_LIBRARIES})
@@ -13,3 +15,4 @@ target_link_libraries(test_mihir_working_file ${catkin_LIBRARIES})
 target_link_libraries(test_rkf45 ${catkin_LIBRARIES})
 target_link_libraries(test_rviz_valkyrie ${catkin_LIBRARIES})
 target_link_libraries(test_viz_feasibility ${catkin_LIBRARIES})
+target_link_libraries(test_prioritized_ik ${catkin_LIBRARIES})
