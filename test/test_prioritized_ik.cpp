@@ -21,7 +21,62 @@
 // PseudoInverse
 #include <avatar_locomanipulation/helpers/pseudo_inverse.hpp>
 
+// Import ROS and Rviz visualization
+#include <ros/ros.h>
+#include <avatar_locomanipulation/bridge/val_rviz_translator.hpp>
+
+void testIK(Eigen::VectorXd & q_init, Eigen::VectorXd & q_final);
+
 int main(int argc, char ** argv){
+  Eigen::VectorXd q_start;
+  Eigen::VectorXd q_end;
+  testIK(q_start, q_end);
+
+
+  // Initialize ROS node for publishing joint messages
+  ros::init(argc, argv, "test_rviz");
+  ros::NodeHandle n;
+  ros::Rate loop_rate(20);
+
+  // Initialize Rviz translator
+  ValRvizTranslator rviz_translator;
+
+  // Transform broadcaster
+  tf::TransformBroadcaster      br_ik;
+  tf::TransformBroadcaster      br_robot;
+  // Joint State Publisher
+  ros::Publisher robot_ik_joint_state_pub = n.advertise<sensor_msgs::JointState>("robot1/joint_states", 10);
+  ros::Publisher robot_joint_state_pub = n.advertise<sensor_msgs::JointState>("robot2/joint_states", 10);
+
+  // Initialize Transforms and Messages
+  tf::Transform tf_world_pelvis_init;
+  tf::Transform tf_world_pelvis_end;
+
+  sensor_msgs::JointState joint_msg_init;
+  sensor_msgs::JointState joint_msg_end;
+
+  // Initialize Robot Model
+  ValkyrieModel valkyrie;
+  // Visualize q_start and q_end in RVIZ
+  rviz_translator.populate_joint_state_msg(valkyrie.model, q_start, tf_world_pelvis_init, joint_msg_init);
+  rviz_translator.populate_joint_state_msg(valkyrie.model, q_end, tf_world_pelvis_end, joint_msg_end);
+
+  while (ros::ok()){
+      br_robot.sendTransform(tf::StampedTransform(tf_world_pelvis_init, ros::Time::now(), "world",  "val_robot/pelvis"));
+      robot_joint_state_pub.publish(joint_msg_init);
+
+      br_ik.sendTransform(tf::StampedTransform(tf_world_pelvis_end, ros::Time::now(), "world", "val_ik_robot/pelvis"));
+      robot_ik_joint_state_pub.publish(joint_msg_end);
+    ros::spinOnce();
+    loop_rate.sleep();
+  }
+  return 0;
+
+}
+
+
+
+void testIK(Eigen::VectorXd & q_init, Eigen::VectorXd & q_final){
   // Test to see if this is working
   std::cout << "Initialize Valkyrie Model" << std::endl;
   ValkyrieModel valkyrie;
@@ -32,12 +87,12 @@ int main(int argc, char ** argv){
   Eigen::VectorXd dq_change;
 
   // Setting configs to 0???
-	q_start = Eigen::VectorXd::Zero(valkyrie.getDimQ());
-	q_end = Eigen::VectorXd::Zero(valkyrie.getDimQ());
-	dq_change = Eigen::VectorXd::Zero(valkyrie.getDimQdot());
+  q_start = Eigen::VectorXd::Zero(valkyrie.getDimQ());
+  q_end = Eigen::VectorXd::Zero(valkyrie.getDimQ());
+  dq_change = Eigen::VectorXd::Zero(valkyrie.getDimQdot());
 
   double theta = M_PI/4.0;
-	Eigen::AngleAxis<double> aa(theta, Eigen::Vector3d(0.0, 0.0, 1.0));
+  Eigen::AngleAxis<double> aa(theta, Eigen::Vector3d(0.0, 0.0, 1.0));
 
   Eigen::Quaternion<double> init_quat(1.0, 0.0, 0.0, 0.0); //Initialized to remember the w component comes first
   init_quat = aa;
@@ -73,8 +128,8 @@ int main(int argc, char ** argv){
   Eigen::Vector3d rfoot_ori_error;
 
   Eigen::Vector3d rfoot_cur_pos;
-	Eigen::Quaternion<double> rfoot_cur_ori;
-	Eigen::MatrixXd J_rfoot;
+  Eigen::Quaternion<double> rfoot_cur_ori;
+  Eigen::MatrixXd J_rfoot;
 
   Eigen::Vector3d lfoot_des_pos;
   Eigen::Quaternion<double> lfoot_des_quat;
@@ -134,9 +189,9 @@ int main(int argc, char ** argv){
 
     // std::cout << "rfoot ori:" << lfoot_cur_pos.transpose() << std::endl;
     // std::cout << "Quat (x,y,z,w): " << lfoot_cur_ori.x() << " " <<
-  	// 								 lfoot_cur_ori.y() << " " <<
-  	// 								 lfoot_cur_ori.z() << " " <<
-  	// 								 lfoot_cur_ori.w() << " " <<
+    //                 lfoot_cur_ori.y() << " " <<
+    //                 lfoot_cur_ori.z() << " " <<
+    //                 lfoot_cur_ori.w() << " " <<
     // std::endl;
 
     rfoot_pos_error = rfoot_des_pos - rfoot_cur_pos;
@@ -168,6 +223,9 @@ int main(int argc, char ** argv){
 
   std::cout << "Final error norm = " << ik_error_norm << std::endl;
 
+ // output intermediate solution:
+  q_init = q_end;
+
 
   // Do another IK. This time with priority
   double singular_values_threshold = 1e-5;
@@ -196,8 +254,13 @@ int main(int argc, char ** argv){
   Eigen::Vector3d rpalm_des_pos;
   Eigen::Quaternion<double> rpalm_des_quat;
   valkyrie.getFrameWorldPose("rightPalm", rpalm_des_pos, rpalm_des_quat);
-  rpalm_des_pos[2] += 0.05; 
-  // rpalm_des_quat.setIdentity();
+  // rpalm_des_pos[0] += 0.1; 
+  rpalm_des_pos[1] += 0.25; 
+  // rpalm_des_pos[2] += 0.1; 
+  // axis_angle.angle() = (M_PI/2.0);
+  // axis_angle.axis() = Eigen::Vector3d(0, 0, 1.0);
+  // rpalm_des_quat = axis_angle;
+
 
   // Prepare jacobians 
   int task_two_dim = J_rpalm.rows();
@@ -269,7 +332,8 @@ int main(int argc, char ** argv){
     std::cout << "errors = norm(dx1), norm(dx2), norm([dx1^T,dx2^T]) =  " << dx1.norm() << ", " << dx2.norm() << ", " << total_error.norm() << std::endl;
   }
 
+ 
+  // Output final solution
+  q_final = q_end;  
 
-  return 0;
 }
-
