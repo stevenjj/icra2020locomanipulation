@@ -37,4 +37,26 @@ namespace math_utils{
     Apinv = svdDecomposition.matrixV().leftCols(singularValuesSize) * singularValues.asDiagonal() * svdDecomposition.matrixU().leftCols(singularValuesSize).adjoint();     
   }   
 
+
+ 
+  void weightedPseudoInverse(const Eigen::MatrixXd & J, const Eigen::MatrixXd & Winv,
+                             Eigen::MatrixXd & Jinv, double tolerance){
+      Eigen::MatrixXd lambda(J* Winv * J.transpose());
+      Eigen::MatrixXd lambda_inv;
+      pseudoInverse(lambda, lambda_inv, tolerance);
+      Jinv = Winv * J.transpose() * lambda_inv;
+  }
+
+
+   void weightedPseudoInverse(const Eigen::MatrixXd & J, const Eigen::MatrixXd & Winv,
+                            Eigen::JacobiSVD<Eigen::MatrixXd> & svdDecomposition,
+                            Eigen::MatrixXd & Jinv, 
+                            double tolerance){
+      Eigen::MatrixXd lambda(J* Winv * J.transpose());
+      Eigen::MatrixXd lambda_inv;
+      pseudoInverse(lambda, svdDecomposition, lambda_inv, tolerance);
+      Jinv = Winv * J.transpose() * lambda_inv;
+  }
+
+
 }

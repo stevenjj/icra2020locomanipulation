@@ -228,7 +228,7 @@ void testIK(Eigen::VectorXd & q_init, Eigen::VectorXd & q_final){
 
 
   // Do another IK. This time with priority
-  double singular_values_threshold = 1e-5;
+  double singular_values_threshold = 1e-4;
 
   int task_one_dim = J_rfoot.rows() + J_lfoot.rows();
   Eigen::MatrixXd J1_task = Eigen::MatrixXd::Zero(task_one_dim, valkyrie.getDimQdot());
@@ -254,12 +254,12 @@ void testIK(Eigen::VectorXd & q_init, Eigen::VectorXd & q_final){
   Eigen::Vector3d rpalm_des_pos;
   Eigen::Quaternion<double> rpalm_des_quat;
   valkyrie.getFrameWorldPose("rightPalm", rpalm_des_pos, rpalm_des_quat);
-  // rpalm_des_pos[0] += 0.1; 
+  rpalm_des_pos[0] += 0.25; 
   rpalm_des_pos[1] += 0.25; 
-  // rpalm_des_pos[2] += 0.1; 
-  // axis_angle.angle() = (M_PI/2.0);
-  // axis_angle.axis() = Eigen::Vector3d(0, 0, 1.0);
-  // rpalm_des_quat = axis_angle;
+  rpalm_des_pos[2] += 0.1; 
+  axis_angle.angle() = (M_PI/2.0);
+  axis_angle.axis() = Eigen::Vector3d(0, 0, 1.0);
+  rpalm_des_quat = axis_angle;
 
 
   // Prepare jacobians 
@@ -274,7 +274,7 @@ void testIK(Eigen::VectorXd & q_init, Eigen::VectorXd & q_final){
   Eigen::VectorXd dq2 = Eigen::VectorXd::Zero(valkyrie.getDimQdot());
   Eigen::VectorXd total_error = Eigen::VectorXd::Zero(task_one_dim + task_two_dim);
 
-  for(int i=0; i<10; i++){
+  for(int i=0; i<100; i++){
     valkyrie.updateFullKinematics(q_end);
     valkyrie.getFrameWorldPose("rightCOP_Frame", rfoot_cur_pos, rfoot_cur_ori);
     valkyrie.getFrameWorldPose("leftCOP_Frame", lfoot_cur_pos, lfoot_cur_ori);
@@ -301,7 +301,11 @@ void testIK(Eigen::VectorXd & q_init, Eigen::VectorXd & q_final){
     J1_task.bottomRows(6) = J_lfoot;
 
     // Compute Task 1:
-    math_utils::pseudoInverse(J1_task, *svd_J1, J1pinv, singular_values_threshold, Eigen::ComputeThinU | Eigen::ComputeThinV);
+    // Compute inertia matrix inverse
+    valkyrie.computeInertiaMatrixInverse(q_end);
+
+    math_utils::weightedPseudoInverse(J1_task, valkyrie.Ainv, *svd_J1, J1pinv, singular_values_threshold);
+   // math_utils::pseudoInverse(J1_task, *svd_J1, J1pinv, singular_values_threshold, Eigen::ComputeThinU | Eigen::ComputeThinV);
     dq1 = J1pinv*dx1;
     // Compute Task 1 Nullspace
     N1 = (I - J1pinv*J1_task);
@@ -318,7 +322,8 @@ void testIK(Eigen::VectorXd & q_init, Eigen::VectorXd & q_final){
 
     // Compute Task 2
     J2N1 = J2_task*N1;
-    math_utils::pseudoInverse(J2N1, *svd_J2, J2N1pinv, singular_values_threshold, Eigen::ComputeThinU | Eigen::ComputeThinV);
+    math_utils::weightedPseudoInverse(J2N1, valkyrie.Ainv, *svd_J2, J2N1pinv, singular_values_threshold);
+    // math_utils::pseudoInverse(J2N1, *svd_J2, J2N1pinv, singular_values_threshold, Eigen::ComputeThinU | Eigen::ComputeThinV);
     dq2 = J2N1pinv*(dx2 - J2_task*dq1);
 
     // Compute total error
@@ -327,7 +332,7 @@ void testIK(Eigen::VectorXd & q_init, Eigen::VectorXd & q_final){
 
     // Forward Integrate
     dq_change = dq1 + dq2;
-    valkyrie.forwardIntegrate(q_end, dq_change, q_end);
+    valkyrie.forwardIntegrate(q_end, 0.1*dq_change, q_end);
 
     std::cout << "errors = norm(dx1), norm(dx2), norm([dx1^T,dx2^T]) =  " << dx1.norm() << ", " << dx2.norm() << ", " << total_error.norm() << std::endl;
   }
