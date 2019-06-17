@@ -1,0 +1,7 @@
+<launch>
+    <node name="test_prioritized_ik" pkg="avatar_locomanipulation" type="test_prioritized_ik" output="screen" /> 
+    
+    <include file="$(find val_viz)/launch/viz_robot_and_ik.launch">
+      <arg name="use_static_transform" value="False"/>
+    </include>      
+</launch>
