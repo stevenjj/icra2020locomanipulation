@@ -47,6 +47,13 @@ public:
   //        initial_rvrp        - an initial virtual repelant point (eg: average of the stance feet's rvrp). 
   // populates this object's footstep_list, rvrp_list, dcm_ini_list, dcm_eos_list
   void initialize_footsteps_rvrp(const std::vector<Footstep> & input_footstep_list, const Footstep & initial_footstance, const Eigen::Vector3d & initial_rvrp);
+
+  // input: input_footstep_list - a list of footsteps to take not including the current stance configuration.
+  //        left_footstance        - a footstep object describing the left stance feet
+  //        right_footstance       - a footstep object describing the right stance feet
+  // populates this object's footstep_list, rvrp_list, dcm_ini_list, dcm_eos_list. 
+  void initialize_footsteps_rvrp(const std::vector<Footstep> & input_footstep_list, const Footstep & left_footstance, const Footstep & right_footstance);
+
  
   // Outputs the average r_vrp location given two footstances
   void get_average_rvrp(const Footstep & footstance_1, const Footstep & footstance_2, Eigen::Vector3d & average_rvrp);

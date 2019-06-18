@@ -110,22 +110,20 @@ int main(int argc, char ** argv){
   step3 = step1; step3.position[0] = step2.position[0] + 0.35;
   step3.robot_side = LEFT_FOOTSTEP;
 
-  Footstep step4; 
-  step4 = step3; step4.position[0] += 0.125; step4.position[1] += 0.125;
-
   right_foot_stance.printInfo();
   left_foot_stance.printInfo();
   step1.printInfo();
   step2.printInfo();
   step3.printInfo();
-  step4.printInfo();
 
-  std::vector<Footstep> footstep_list = {step1, step2, step3, step4};
+  std::vector<Footstep> footstep_list = {step1, step2, step3};
 
-  wpg.initialize_footsteps_rvrp(footstep_list, right_foot_stance);
+  // Initialize rvrp given footstances
+  wpg.initialize_footsteps_rvrp(footstep_list, left_foot_stance, right_foot_stance);    
+
   for(int i = 0; i < wpg.rvrp_list.size(); i++){
     std::cout << "i:" << i << " : " << wpg.rvrp_list[i].transpose() << std::endl;
   }
-  
+
   return 0;
 }
