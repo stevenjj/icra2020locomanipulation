@@ -7,6 +7,7 @@
 // Standard
 #include <iostream>
 #include <math.h>
+#include <cassert>
 
 void printQuat(const Eigen::Quaternion<double> & quat){
   std::cout <<  quat.x() << " " <<
@@ -86,5 +87,45 @@ int main(int argc, char ** argv){
   std::cout << "target quaternion:" << std::endl;
   printQuat(qend);
 
+  std::cout << "-----end of hermite curves test-------" << std::endl;
+  std::cout << "-----start DCM test-------" << std::endl;
+
+
+  // Initialize footstep objects
+  Footstep right_foot_stance; 
+  right_foot_stance.robot_side = RIGHT_FOOTSTEP;
+  
+  Footstep left_foot_stance; 
+  left_foot_stance.robot_side = LEFT_FOOTSTEP; 
+  left_foot_stance.position[1] = 0.25; 
+
+  // Take a left footstep forward
+  Footstep step1; 
+  step1.robot_side = LEFT_FOOTSTEP;
+  step1 = left_foot_stance; step1.position[0] += 0.35;
+  Footstep step2; 
+  step2 = right_foot_stance; step2.position[0] = step1.position[0] + 0.35;
+  step2.robot_side = RIGHT_FOOTSTEP;
+  Footstep step3; 
+  step3 = step1; step3.position[0] = step2.position[0] + 0.35;
+  step3.robot_side = LEFT_FOOTSTEP;
+
+  Footstep step4; 
+  step4 = step3; step4.position[0] += 0.125; step4.position[1] += 0.125;
+
+  right_foot_stance.printInfo();
+  left_foot_stance.printInfo();
+  step1.printInfo();
+  step2.printInfo();
+  step3.printInfo();
+  step4.printInfo();
+
+  std::vector<Footstep> footstep_list = {step1, step2, step3, step4};
+
+  wpg.initialize_footsteps_rvrp(footstep_list, right_foot_stance);
+  for(int i = 0; i < wpg.rvrp_list.size(); i++){
+    std::cout << "i:" << i << " : " << wpg.rvrp_list[i].transpose() << std::endl;
+  }
+  
   return 0;
 }
