@@ -7,13 +7,13 @@
 int main(int argc, char ** argv){
   Eigen::Vector3d pelvis_pos(0,0,1);
   Eigen::Quaterniond pelvis_ori(0.707,0,0,0.707);
-  Eigen::VectorXd q = Eigen::VectorXd::Zero(10); 
+  Eigen::VectorXd q = Eigen::VectorXd::Zero(10);
 
   YAML::Emitter out;
   out << YAML::BeginMap;
     data_saver::emit_position(out, "pelvis_position", pelvis_pos);
     data_saver::emit_orientation(out, "pelvis_orientation", pelvis_ori);
-    data_saver::emit_joint_configuration(out, q);
+    data_saver::emit_joint_configuration(out, "configuration", q);
   out << YAML::EndMap;
 
   std::cout << "Here's the output YAML:\n" << out.c_str() << "\n" << std::endl;

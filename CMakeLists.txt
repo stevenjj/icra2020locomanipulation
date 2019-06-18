@@ -61,6 +61,7 @@ SET (HELPER_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/pseudo_inverse.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/param_handler.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/yaml_data_saver.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/gmm_fit.cpp
 )
 
 SET (ROS_BRIDGE_SOURCES

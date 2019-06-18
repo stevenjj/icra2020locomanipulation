@@ -5,9 +5,9 @@
 #include <Eigen/Dense>
 
 namespace data_saver{
-  void emit_position(YAML::Emitter & out, const std::string & key, const Eigen::Vector3d & pos);  
+  void emit_position(YAML::Emitter & out, const std::string & key, const Eigen::Vector3d & pos);
   void emit_orientation(YAML::Emitter & out, const std::string & key, const Eigen::Quaterniond & quat);
-  void emit_joint_configuration(YAML::Emitter & out, const Eigen::VectorXd & q_in);
+  void emit_joint_configuration(YAML::Emitter & out, const std::string & key, const Eigen::VectorXd & q_in);
 }
 
 #endif
