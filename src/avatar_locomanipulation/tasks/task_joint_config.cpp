@@ -14,9 +14,6 @@ TaskJointConfig::TaskJointConfig(std::shared_ptr<ValkyrieModel> & input_model, c
 		joint_index = 6 + robot_model->getJointIndexNoFloatingJoints(joint_names[i]);
 		J_config(i, joint_index) = 1;
 	}
-
-
-
 	std::cout << "[Task Joint Config] for joints " << task_name << " Constructed" << std::endl;
 }
 
