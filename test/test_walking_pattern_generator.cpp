@@ -125,5 +125,17 @@ int main(int argc, char ** argv){
     std::cout << "i:" << i << " : " << wpg.rvrp_list[i].transpose() << std::endl;
   }
 
+  wpg.computeDCM_states();
+
+  std::cout << "initial DCM states:" << std::endl;
+  for(int i = 0; i < wpg.dcm_ini_list.size(); i++){
+    std::cout << "  i:" << i << " : " << wpg.dcm_ini_list[i].transpose() << std::endl;
+  }
+
+  std::cout << "end of step DCM states:" << std::endl;
+  for(int i = 0; i < wpg.dcm_eos_list.size(); i++){
+    std::cout << "  i:" << i << " : " << wpg.dcm_eos_list[i].transpose() << std::endl;
+  }
+
   return 0;
 }

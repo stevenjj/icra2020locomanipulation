@@ -2,6 +2,7 @@
 #define WALKING_PATTERN_GENERATOR_H
 
 #include <Eigen/Dense>
+#include <cmath>
 #include <string>
 #include <avatar_locomanipulation/data_types/footstep.hpp>
 #include <iostream>
@@ -11,11 +12,17 @@ public:
   WalkingPatternGenerator();
   ~WalkingPatternGenerator(); 
 
+  static int const SWING_VRP_TYPE;
+  static int const DOUBLE_SUPPORT_TRANSFER_VRP_TYPE;
+
   std::vector<Footstep> footstep_list;
 
   std::vector<Eigen::Vector3d> rvrp_list; // List of virtual repelant points.
   std::vector<Eigen::Vector3d> dcm_ini_list; // List of initial DCM states 
   std::vector<Eigen::Vector3d> dcm_eos_list; // List of end-of-step DCM states
+
+  std::vector<int> rvrp_type_list; // List of type of virtual repelant point
+
 
   Eigen::Vector3d start_stance_rvrp;
   Eigen::Vector3d start_stance_dcm_ini;  
@@ -63,16 +70,18 @@ public:
   // Swing trajectory calculation
   void computeSE3_trajectory(const Footstep & init_stance_location, const Footstep & landing_location);
 
+  // computes all the dcm states. Computation properly populates the dcm_ini_list and dcm_eos_list
+  void computeDCM_states();
+
 private:
   // input: r_vrp_d_i - the desired virtual repelant point for the i-th step.
   //        t_step    - the time interval to use for backwards integration
   //        dcm_eos_i - the DCM state at the end of the i-th step. 
   // computes the step i's initial DCM state and the end-of-step i-1's dcm state. 
   // The computation is stored in the dcm_ini_list and dcm_eos_list. 
-  void computeDCM_ini_i(const Eigen::Vector3d & r_vrp_d_i, const double & t_step, const Eigen::Vector3d & dcm_eos_i);
+  Eigen::Vector3d computeDCM_ini_i(const Eigen::Vector3d & r_vrp_d_i, const double & t_step, const Eigen::Vector3d & dcm_eos_i);
 
-  // computes all the dcm states. Computation properly populates the dcm_ini_list and dcm_eos_list
-  void computeDCM_states();
+
 
 };
 
