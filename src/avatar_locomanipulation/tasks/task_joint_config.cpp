@@ -6,7 +6,7 @@ TaskJointConfig::TaskJointConfig(std::shared_ptr<ValkyrieModel> & input_model, c
 	J_config = Eigen::MatrixXd::Zero(task_dim, robot_model->getDimQdot());
 	Jdot_config = Eigen::MatrixXd::Zero(task_dim, robot_model->getDimQdot());
 
-	task_name = "";
+	task_name = "configs ";
 	frame_name = "no_frames";
 	int joint_index = 0;
 	for(int i = 0; i < joint_names.size(); i++){
