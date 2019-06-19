@@ -68,13 +68,18 @@ SET (ROS_BRIDGE_SOURCES
 SET (FEASIBILITY_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/feasibility/feasibility.cpp)
 
+SET (TASK_SOURCES
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_main.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_com.cpp)
+
 SET(PROJECT_SOURCES
 	${MODEL_SOURCES}
 	${DATA_TYPES_SOURCES}
 	${WALKING_SOURCES}
 	${HELPER_SOURCES}
 	${ROS_BRIDGE_SOURCES}
-	${FEASIBILITY_SOURCES})
+	${FEASIBILITY_SOURCES}
+	${TASK_SOURCES})
 
 # Grab all the libraries
 SET(PROJECT_LIBRARIES

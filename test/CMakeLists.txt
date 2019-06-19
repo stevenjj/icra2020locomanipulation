@@ -7,6 +7,8 @@ add_executable(test_rviz_valkyrie test_rviz_valkyrie.cpp ${PROJECT_SOURCES})
 add_executable(test_viz_feasibility test_viz_feasibility.cpp ${PROJECT_SOURCES})
 add_executable(test_prioritized_ik test_prioritized_ik.cpp ${PROJECT_SOURCES})
 add_executable(test_yaml_emitter test_yaml_emitter.cpp ${PROJECT_SOURCES})
+add_executable(test_tasks test_tasks.cpp ${PROJECT_SOURCES})
+
 
 target_link_libraries(test_load_urdf_model ${PROJECT_LIBRARIES})
 target_link_libraries(test_valkyrie_model  ${PROJECT_LIBRARIES})
@@ -17,4 +19,5 @@ target_link_libraries(test_rviz_valkyrie ${PROJECT_LIBRARIES})
 target_link_libraries(test_viz_feasibility ${PROJECT_LIBRARIES})
 target_link_libraries(test_prioritized_ik ${PROJECT_LIBRARIES})
 target_link_libraries(test_yaml_emitter ${PROJECT_LIBRARIES})
+target_link_libraries(test_tasks ${PROJECT_LIBRARIES})
 
