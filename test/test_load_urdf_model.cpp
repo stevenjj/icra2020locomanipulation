@@ -38,6 +38,18 @@ int main(int argc, char ** argv){
   pinocchio::GeometryModel geom;
   pinocchio::urdf::buildGeom(model, filename, pinocchio::COLLISION, geom, packageDirs);
   pinocchio::Data data(model);
+  pinocchio::GeometryData geomData(geom);
+
+  //<---------- Added By Ryan
+  geom.addAllCollisionPairs();
+  
+  std::cout << "------ Model ------ " << std::endl;
+  std::cout << model;
+  std::cout << "------ Geom ------ " << std::endl;
+  std::cout << geom;
+  std::cout << "------ DataGeom ------ " << std::endl;
+  std::cout << geomData;
+  //<---------- End Added By Ryan
 
   // Initialize Configuration -----------------------
   Eigen::VectorXd q = Eigen::VectorXd::Zero(model.nq); // Config 
