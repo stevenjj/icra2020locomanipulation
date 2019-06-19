@@ -73,6 +73,12 @@ public:
   // computes all the dcm states. Computation properly populates the dcm_ini_list and dcm_eos_list
   void computeDCM_states();
 
+
+  void initialize_internal_clocks();
+
+  Eigen::Vector3d get_next_desired_DCM(const double & dt);
+
+
 private:
   // input: r_vrp_d_i - the desired virtual repelant point for the i-th step.
   //        t_step    - the time interval to use for backwards integration
@@ -81,7 +87,13 @@ private:
   // The computation is stored in the dcm_ini_list and dcm_eos_list. 
   Eigen::Vector3d computeDCM_ini_i(const Eigen::Vector3d & r_vrp_d_i, const double & t_step, const Eigen::Vector3d & dcm_eos_i);
 
+  // Get the t_step for step i.
+  double get_t_step(const int & step_i);
 
+  double internal_timer;
+  double internal_t_step;
+  double internal_step_timer;
+  int internal_step_i;
 
 };
 

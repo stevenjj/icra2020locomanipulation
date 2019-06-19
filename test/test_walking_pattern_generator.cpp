@@ -137,5 +137,38 @@ int main(int argc, char ** argv){
     std::cout << "  i:" << i << " : " << wpg.dcm_eos_list[i].transpose() << std::endl;
   }
 
+  // test time evolution of Center-of-mass
+  wpg.initialize_internal_clocks();
+
+  Eigen::Vector3d x_com; x_com.setZero();
+  Eigen::Vector3d zeta_dcm; zeta_dcm.setZero();
+
+  double b = wpg.b;
+  wpg.get_average_rvrp(left_foot_stance, right_foot_stance, x_com);
+
+  std::cout << "starting x_com state" << std::endl;
+  std::cout << x_com.transpose() << std::endl;
+
+  dt = 0.01;
+  double total_sim_time = 15;
+  int N_steps = (int)(total_sim_time/dt);
+
+  std::cout << "N=" << N_steps << std::endl;
+  std::cout << "t, com_x, com_y, com_z, dcm_x_des, dcm_y_des, dcm_z_des" << std::endl;
+  for(int i = 0; i < N_steps; i++){
+    t = i*dt;
+    if (i == 0){
+      zeta_dcm = wpg.get_next_desired_DCM(0.0);
+    }else{
+      zeta_dcm = wpg.get_next_desired_DCM(dt);     
+      x_com = (-1/b)*(x_com = zeta_dcm)*dt + x_com;
+    }
+
+
+    std::cout << t << "," << x_com[0] << "," << x_com[1] << "," << x_com[2] << "," 
+                          << zeta_dcm[0] << "," << zeta_dcm[1] << "," << zeta_dcm[2] << std::endl;
+  }
+
+
   return 0;
 }

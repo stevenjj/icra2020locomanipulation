@@ -138,13 +138,8 @@ void WalkingPatternGenerator::computeDCM_states(){
 
   double t_step = 0.0;
   for (int i = rvrp_list.size()-2; i >= 0; i--){
-    // Use transfer time if it's a double support transfer vrp type
-    if (rvrp_type_list[i+1] == DOUBLE_SUPPORT_TRANSFER_VRP_TYPE){
-      t_step = t_it;
-    // Use the total swing time
-    }else if (rvrp_type_list[i+1] == SWING_VRP_TYPE){
-      t_step = t_ds + t_ss;
-    }
+    // Get the t_step to use for backwards integration
+    t_step = get_t_step(i);
     // Compute dcm_ini for step i
     dcm_ini_list[i] = computeDCM_ini_i(rvrp_list[i], t_step, dcm_eos_list[i]);
 
@@ -154,5 +149,47 @@ void WalkingPatternGenerator::computeDCM_states(){
     }
 
   }
+
+}
+
+void WalkingPatternGenerator::initialize_internal_clocks(){
+  internal_timer = 0.0;
+  internal_step_timer = 0.0;
+  internal_step_i = 0;
+  internal_t_step = get_t_step(internal_step_i);
+}
+
+double WalkingPatternGenerator::get_t_step(const int & step_i){
+  // The type of the next virtual repellant point indicates the t_step.
+  // But, for the final step, we don't take a step. Return something dummy
+  if (step_i >= rvrp_list.size() - 1){
+    return 0.0;
+  }
+
+  // Look at the type of the next virtual repellant point.  
+  // Use transfer time for double support and overall step time for swing types
+  if ((rvrp_type_list[step_i+1]) == DOUBLE_SUPPORT_TRANSFER_VRP_TYPE){
+    return t_it;
+  }else if (rvrp_type_list[step_i+1] == SWING_VRP_TYPE){
+    return t_ds + t_ss;
+  }else{
+    return t_ds + t_ss;
+  }
+}
+
+Eigen::Vector3d WalkingPatternGenerator::get_next_desired_DCM(const double & dt){
+  if (internal_step_i < rvrp_list.size()-1){
+    internal_timer += dt;
+    internal_step_timer += dt;
+
+    // Reset timer if it exceeds the t_step. Use next virtual repellant point
+    if (internal_step_timer > internal_t_step){
+      internal_step_timer = 0.0;
+      internal_step_i += 1;
+      internal_t_step = get_t_step(internal_step_i);
+    }
+  }
+
+  return rvrp_list[internal_step_i] + std::exp( (internal_step_timer-internal_t_step) / b)*(dcm_eos_list[internal_step_i] - rvrp_list[internal_step_i]);
 
 }
