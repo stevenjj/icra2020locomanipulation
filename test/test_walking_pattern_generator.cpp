@@ -7,6 +7,7 @@
 // Standard
 #include <iostream>
 #include <math.h>
+#include <cassert>
 
 void printQuat(const Eigen::Quaternion<double> & quat){
   std::cout <<  quat.x() << " " <<
@@ -85,6 +86,89 @@ int main(int argc, char ** argv){
   // }
   std::cout << "target quaternion:" << std::endl;
   printQuat(qend);
+
+  std::cout << "-----end of hermite curves test-------" << std::endl;
+  std::cout << "-----start DCM test-------" << std::endl;
+
+
+  // Initialize footstep objects
+  Footstep right_foot_stance; 
+  right_foot_stance.robot_side = RIGHT_FOOTSTEP;
+  
+  Footstep left_foot_stance; 
+  left_foot_stance.robot_side = LEFT_FOOTSTEP; 
+  left_foot_stance.position[1] = 0.25; 
+
+  // Take a left footstep forward
+  Footstep step1; 
+  step1.robot_side = LEFT_FOOTSTEP;
+  step1 = left_foot_stance; step1.position[0] += 0.35;
+  Footstep step2; 
+  step2 = right_foot_stance; step2.position[0] = step1.position[0] + 0.35;
+  step2.robot_side = RIGHT_FOOTSTEP;
+  Footstep step3; 
+  step3 = step1; step3.position[0] = step2.position[0] + 0.35;
+  step3.robot_side = LEFT_FOOTSTEP;
+
+  right_foot_stance.printInfo();
+  left_foot_stance.printInfo();
+  step1.printInfo();
+  step2.printInfo();
+  step3.printInfo();
+
+  std::vector<Footstep> footstep_list = {step1, step2, step3};
+
+  // Initialize rvrp given footstances
+  wpg.initialize_footsteps_rvrp(footstep_list, left_foot_stance, right_foot_stance);    
+
+  for(int i = 0; i < wpg.rvrp_list.size(); i++){
+    std::cout << "i:" << i << " : " << wpg.rvrp_list[i].transpose() << std::endl;
+  }
+
+  wpg.computeDCM_states();
+
+  std::cout << "initial DCM states:" << std::endl;
+  for(int i = 0; i < wpg.dcm_ini_list.size(); i++){
+    std::cout << "  i:" << i << " : " << wpg.dcm_ini_list[i].transpose() << std::endl;
+  }
+
+  std::cout << "end of step DCM states:" << std::endl;
+  for(int i = 0; i < wpg.dcm_eos_list.size(); i++){
+    std::cout << "  i:" << i << " : " << wpg.dcm_eos_list[i].transpose() << std::endl;
+  }
+
+  // test time evolution of Center-of-mass
+  wpg.initialize_internal_clocks();
+
+  Eigen::Vector3d x_com; x_com.setZero();
+  Eigen::Vector3d zeta_dcm; zeta_dcm.setZero();
+
+  double b = wpg.b;
+  wpg.get_average_rvrp(left_foot_stance, right_foot_stance, x_com);
+
+  std::cout << "starting x_com state" << std::endl;
+  std::cout << x_com.transpose() << std::endl;
+
+  dt = 0.01;
+  double total_sim_time = 15;
+  int N_steps = (int)(total_sim_time/dt);
+
+  std::cout << "N=" << N_steps << std::endl;
+  std::cout << "t, com_x, com_y, com_z, dcm_x_des, dcm_y_des, dcm_z_des" << std::endl;
+  for(int i = 0; i < N_steps; i++){
+    t = i*dt;
+    if (i == 0){
+      zeta_dcm = wpg.get_next_desired_DCM(0.0);
+    }else{
+      zeta_dcm = wpg.get_next_desired_DCM(dt);     
+      x_com = (-1/b)*(x_com - zeta_dcm)*dt + x_com;
+    }
+
+
+    std::cout << t << "," << x_com[0] << "," << x_com[1] << "," << x_com[2] << "," 
+                          << zeta_dcm[0] << "," << zeta_dcm[1] << "," << zeta_dcm[2] << std::endl;
+  }
+
 
   return 0;
 }
