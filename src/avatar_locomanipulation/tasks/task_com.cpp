@@ -2,6 +2,9 @@
 
 TaskCOM::TaskCOM(std::shared_ptr<ValkyrieModel> & input_model){
 	robot_model = input_model;
+	task_dim = 3;
+	task_name = "CoM Task";
+	frame_name = "CoM Frame";
 	std::cout << "[Task COM] Constructed" << std::endl;
 }
 

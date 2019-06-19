@@ -1,6 +1,8 @@
 #include <avatar_locomanipulation/models/valkyrie_model.hpp>
-#include <avatar_locomanipulation/tasks/task_main.hpp>
+#include <avatar_locomanipulation/tasks/task.hpp>
 #include <avatar_locomanipulation/tasks/task_com.hpp>
+#include <avatar_locomanipulation/tasks/task_6dpose.hpp>
+
 
 #include <iostream>
 
@@ -44,23 +46,29 @@ int main(int argc, char ** argv){
   Eigen::VectorXd qddot_start = Eigen::VectorXd::Zero(valkyrie_model->getDimQdot());
   get_initial_configuration(valkyrie_model, q_start);
 
-	TaskMain task(valkyrie_model);
-	TaskCOM com_task(valkyrie_model);
+	Task task(valkyrie_model);
+  std::shared_ptr<Task> com_task(new TaskCOM(valkyrie_model));
+  std::shared_ptr<Task> lfoot_task(new Task6DPose(valkyrie_model, "leftCOP_Frame"));
 
 	std::cout << "main task dim = " << task.task_dim << std::endl;
-	std::cout << "com task dim = " << com_task.task_dim << std::endl;
+	std::cout << "com task dim = " << com_task->task_dim << std::endl;
+  std::cout << "left foot task dim = " << lfoot_task->task_dim << std::endl;
 
 	// Update Kinematics and Jacobians
 	valkyrie_model->updateFullKinematics(q_start);
 	// Compute CoM Jacobian
 	valkyrie_model->computeCoMJacobian();
 
-	Eigen::MatrixXd J_com = Eigen::MatrixXd::Zero(com_task.task_dim, valkyrie_model->getDimQdot());
+	Eigen::MatrixXd J_com = Eigen::MatrixXd::Zero(com_task->task_dim, valkyrie_model->getDimQdot());
+  Eigen::MatrixXd J_lf = Eigen::MatrixXd::Zero(lfoot_task->task_dim, valkyrie_model->getDimQdot());
 
-  com_task.getTaskJacobian(J_com);
+  com_task->getTaskJacobian(J_com);
   std::cout << "COM Jacobian" << std::endl;
   std::cout << J_com << std::endl;
 
+  lfoot_task->getTaskJacobian(J_lf);
+  std::cout << "Left Foot Jacobian" << std::endl;
+  std::cout << J_lf << std::endl;
 
 
 	// Compute Derivatives

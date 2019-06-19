@@ -1,22 +1,19 @@
-#ifndef ALM_COM_TASK_H
-#define ALM_COM_TASK_H
+#ifndef ALM_6DPOSE_TASK_H
+#define ALM_6DPOSE_TASK_H
 
 #include <avatar_locomanipulation/tasks/task.hpp>
 
-class TaskCOM: public Task{
+class Task6DPose: public Task{
 public:
-	TaskCOM(std::shared_ptr<ValkyrieModel> & input_model);
+	Task6DPose(std::shared_ptr<ValkyrieModel> & input_model, const std::string & input_frame_name);
 
-	virtual ~TaskCOM();
+	virtual ~Task6DPose();
 
 	// Warning: robot_model->updateFullKinematics(q) and 
-	//			robot_model->computeCoMJacobian() must have been called first
 	virtual void getTaskJacobian(Eigen::MatrixXd & J_task);
 
 	// Warning: robot_model->updateFullKinematics(q), 
-	//			robot_model->computeCoMJacobian(),
 	//	        robot_model->updateKinematicsDerivatives(q, qdot, qddot);
-	//  		robot_model->computeCoMJacobianDot(q, qdot);
 	//			must have been called first	
 	virtual void getTaskJacobianDot(Eigen::MatrixXd & Jdot_task);
 

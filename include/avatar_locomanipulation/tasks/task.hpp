@@ -6,11 +6,11 @@
 #include <string>
 #include <iostream>
 
-class TaskMain{
+class Task{
 public:
-	TaskMain();
-	TaskMain(std::shared_ptr<ValkyrieModel> & input_model);
-	virtual ~TaskMain();
+	Task();
+	Task(std::shared_ptr<ValkyrieModel> & input_model);
+	virtual ~Task();
 
 	virtual void getTaskJacobian(Eigen::MatrixXd & J_task);
 	virtual void getTaskJacobianDot(Eigen::MatrixXd & Jdot_task);

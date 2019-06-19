@@ -69,8 +69,10 @@ SET (FEASIBILITY_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/feasibility/feasibility.cpp)
 
 SET (TASK_SOURCES
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_main.cpp
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_com.cpp)
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_com.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_6dpose.cpp)
+
 
 SET(PROJECT_SOURCES
 	${MODEL_SOURCES}
