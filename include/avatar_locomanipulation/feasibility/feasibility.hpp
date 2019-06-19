@@ -98,6 +98,11 @@ public:
   math_utils::Point pt_init_loc;
   math_utils::Point pt_final_loc;
 
+  Eigen::Vector3d rhand_cur_pos;
+  Eigen::Quaternion<double> rhand_cur_ori;
+
+  Eigen::VectorXd rhand_data;
+
   double rand_pt_x;
   double rand_pt_y;
   double ik_error_norm = 1000.0;
@@ -126,6 +131,7 @@ public:
   void PointTrans(Eigen::Vector3d & eig_trans, math_utils::Point & pt_init_loc, math_utils::Point & pt_final_loc);
   void initialize_foot_frames();
   void CreateData();
+  void generateRandomArm();
 
 
 private:
