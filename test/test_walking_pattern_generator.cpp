@@ -161,7 +161,7 @@ int main(int argc, char ** argv){
       zeta_dcm = wpg.get_next_desired_DCM(0.0);
     }else{
       zeta_dcm = wpg.get_next_desired_DCM(dt);     
-      x_com = (-1/b)*(x_com = zeta_dcm)*dt + x_com;
+      x_com = (-1/b)*(x_com - zeta_dcm)*dt + x_com;
     }
 
 
