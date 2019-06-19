@@ -100,6 +100,16 @@ public:
   */
   int getJointIndex(const std::string & name); 
 
+  /* getJointIndexNoFloatingJoints
+  Input std::string name
+  Output: The joint index in configuration space
+      unlike getJointIndex, this one does not include the floating joints
+
+      Thus, for a "leftHipYaw" input, which is the first joint in the kinematic chain,
+      this function should return 0.
+  */
+  int getJointIndexNoFloatingJoints(const std::string & name); 
+
   /* getDimQ();
   Output: The dimension of the configuration space
   */

@@ -3,6 +3,7 @@
 #include <avatar_locomanipulation/tasks/task_com.hpp>
 #include <avatar_locomanipulation/tasks/task_6dpose.hpp>
 #include <avatar_locomanipulation/tasks/task_3dorientation.hpp>
+#include <avatar_locomanipulation/tasks/task_joint_config.hpp>
 
 
 #include <iostream>
@@ -51,13 +52,14 @@ int main(int argc, char ** argv){
   std::shared_ptr<Task> com_task(new TaskCOM(valkyrie_model));
   std::shared_ptr<Task> lfoot_task(new Task6DPose(valkyrie_model, "leftCOP_Frame"));
   std::shared_ptr<Task> pelvis_ori_task(new Task3DOrientation(valkyrie_model, "pelvis"));
+  std::shared_ptr<Task> joint_config_task(new TaskJointConfig(valkyrie_model, {"leftHipYaw", "leftHipRoll"}));
 
 
 	std::cout << "main task dim = " << task.task_dim << std::endl;
 	std::cout << "com task dim = " << com_task->task_dim << std::endl;
   std::cout << "left foot task dim = " << lfoot_task->task_dim << std::endl;
   std::cout << "pelvis ori task dim = " << pelvis_ori_task->task_dim << std::endl;
-
+  std::cout << "joint config task dim = " << joint_config_task->task_dim << std::endl;
 
 	// Update Kinematics and Jacobians
 	valkyrie_model->updateFullKinematics(q_start);
@@ -67,6 +69,7 @@ int main(int argc, char ** argv){
 	Eigen::MatrixXd J_com = Eigen::MatrixXd::Zero(com_task->task_dim, valkyrie_model->getDimQdot());
   Eigen::MatrixXd J_lf = Eigen::MatrixXd::Zero(lfoot_task->task_dim, valkyrie_model->getDimQdot());
   Eigen::MatrixXd J_pelvis_ori = Eigen::MatrixXd::Zero(pelvis_ori_task->task_dim, valkyrie_model->getDimQdot());
+  Eigen::MatrixXd J_joint_config = Eigen::MatrixXd::Zero(joint_config_task->task_dim, valkyrie_model->getDimQdot());
 
 
   com_task->getTaskJacobian(J_com);
@@ -81,6 +84,9 @@ int main(int argc, char ** argv){
   std::cout << "pelvis Ori Jacobian" << std::endl;
   std::cout << J_pelvis_ori << std::endl;
 
+  joint_config_task->getTaskJacobian(J_joint_config);
+  std::cout << "Joint Config Jacobian" << std::endl;
+  std::cout << J_joint_config << std::endl;  
 
 	// Compute Derivatives
 	valkyrie_model->updateKinematicsDerivatives(q_start, qdot_start, qddot_start);

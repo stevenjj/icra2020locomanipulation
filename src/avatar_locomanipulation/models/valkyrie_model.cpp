@@ -84,6 +84,10 @@ int ValkyrieModel::getJointIndex(const std::string & name){
   return VAL_MODEL_NUM_FLOATING_JOINTS + model.getJointId(name) - VAL_MODEL_JOINT_INDX_OFFSET;  
 }
 
+int ValkyrieModel::getJointIndexNoFloatingJoints(const std::string & name){
+  return model.getJointId(name) - VAL_MODEL_JOINT_INDX_OFFSET;    
+}
+
 void ValkyrieModel::forwardIntegrate(const Eigen::VectorXd & q_start, const Eigen::VectorXd & qdotDt, Eigen::VectorXd & q_post){
   q_post = pinocchio::integrate(model, q_start, qdotDt); // This performs a tangent space integration. Automatically resolves the quaternion components
 }

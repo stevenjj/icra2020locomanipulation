@@ -7,11 +7,11 @@ Task3DOrientation::Task3DOrientation(std::shared_ptr<ValkyrieModel> & input_mode
 	frame_name = input_frame_name;
 	J_tmp = Eigen::MatrixXd::Zero(6, robot_model->getDimQdot());
 	Jdot_tmp = Eigen::MatrixXd::Zero(6, robot_model->getDimQdot());
-	std::cout << "[Task 3D Orientation] for frame " << frame_name << "Constructed" << std::endl;
+	std::cout << "[Task 3D Orientation] for frame " << frame_name << " Constructed" << std::endl;
 }
 
 Task3DOrientation::~Task3DOrientation(){
-	std::cout << "[Task 3D Orientation] for frame " << frame_name << "Destroyed" << std::endl;
+	std::cout << "[Task 3D Orientation] for frame " << frame_name << " Destroyed" << std::endl;
 }
 
 void Task3DOrientation::getTaskJacobian(Eigen::MatrixXd & J_task){
