@@ -603,7 +603,7 @@
     <provideFeedback>1</provideFeedback>
     <implicitSpringDamper>1</implicitSpringDamper>
   </gazebo>
-  <joint name="rightWristRoll" type="fixed">
+  <joint name="rightWristRoll" type="revolute">
     <origin rpy="0.0 0.0 0.0" xyz="0.0 -0.2871 0.0"/>
     <axis xyz="1 0 0"/>
     <parent link="rightForearmLink"/>
@@ -616,7 +616,7 @@
     <provideFeedback>1</provideFeedback>
     <implicitSpringDamper>1</implicitSpringDamper>
   </gazebo>
-  <joint name="rightWristPitch" type="fixed">
+  <joint name="rightWristPitch" type="revolute">
     <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
     <axis xyz="0 0 1"/>
     <parent link="rightWristRollLink"/>
@@ -1230,7 +1230,7 @@
     <provideFeedback>1</provideFeedback>
     <implicitSpringDamper>1</implicitSpringDamper>
   </gazebo>
-  <joint name="leftWristRoll" type="fixed">
+  <joint name="leftWristRoll" type="revolute">
     <origin rpy="0.0 0.0 0.0" xyz="0.0 0.2871 0.0"/>
     <axis xyz="1 0 0"/>
     <parent link="leftForearmLink"/>
@@ -1243,7 +1243,7 @@
     <provideFeedback>1</provideFeedback>
     <implicitSpringDamper>1</implicitSpringDamper>
   </gazebo>
-  <joint name="leftWristPitch" type="fixed">
+  <joint name="leftWristPitch" type="revolute">
     <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
     <axis xyz="0 0 1"/>
     <parent link="leftWristRollLink"/>
