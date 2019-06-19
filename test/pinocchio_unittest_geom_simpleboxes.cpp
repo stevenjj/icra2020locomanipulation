@@ -1,17 +1,21 @@
-#include <iostream>
-#include <iomanip>
-
+#include <Configuration.h> // Package Path
+#include <avatar_locomanipulation/enable_pinocchio_with_hpp_fcl.h> // Enable HPP FCL
+// Multibody
 #include "pinocchio/multibody/model.hpp"
 #include "pinocchio/multibody/data.hpp"
-
-#include "pinocchio/spatial/explog.hpp"
 #include "pinocchio/multibody/geometry.hpp"
-#include "pinocchio/algorithm/kinematics.hpp"
+// Algorithms
 #include "pinocchio/algorithm/geometry.hpp"
+// Parsers
 #include "pinocchio/parsers/urdf.hpp"
 
+
+// Standard
+#include <math.h> 
+#include <iostream>
+#include <iomanip>
 #include <vector>
-#include <boost/test/unit_test.hpp>
+#include <boost/shared_ptr.hpp>
 
 using namespace pinocchio;
 
@@ -104,7 +108,7 @@ std::vector<std::string> getBodiesList();
                                                                            model.getBodyId("planar2_body"),joint_parent_2,
                                                                            sample2,SE3::Identity(), "", Eigen::Vector3d::Ones()),
                                                             model);
-  BOOST_CHECK(geomModel.geometryObjects[idx_geom2].parentJoint == model.frames[body_id_2].parent);
+  //BOOST_CHECK(geomModel.geometryObjects[idx_geom2].parentJoint == model.frames[body_id_2].parent);
 
 // self explanatory. Defined in src/multibody/geometry.cpp
   // note that collision pairs b/w objects with same parent joint not added
@@ -115,7 +119,7 @@ std::vector<std::string> getBodiesList();
 
   //CollisionPair created collision pair from two collision object indexes, note index 1 < index 2, otherwise constructor will flip them
 
-  BOOST_CHECK(CollisionPair(0,1) == geomModel.collisionPairs[0]);
+  //BOOST_CHECK(CollisionPair(0,1) == geomModel.collisionPairs[0]);
 
   std::cout << "------ Model ------ " << std::endl;
   std::cout << model;
@@ -129,23 +133,23 @@ std::vector<std::string> getBodiesList();
         0, 0, 1, 0 ;
 
   pinocchio::updateGeometryPlacements(model, data, geomModel, geomData, q);
-  BOOST_CHECK(computeCollision(geomModel,geomData,0) == true);
+  //BOOST_CHECK(computeCollision(geomModel,geomData,0) == true);
 
   q <<  2, 0, 1, 0,
         0, 0, 1, 0 ;
 
   pinocchio::updateGeometryPlacements(model, data, geomModel, geomData, q);
-  BOOST_CHECK(computeCollision(geomModel,geomData,0) == false);
+  //BOOST_CHECK(computeCollision(geomModel,geomData,0) == false);
 
   q <<  0.99, 0, 1, 0,
         0, 0, 1, 0 ;
 
   pinocchio::updateGeometryPlacements(model, data, geomModel, geomData, q);
-  BOOST_CHECK(computeCollision(geomModel,geomData,0) == true);
+  //BOOST_CHECK(computeCollision(geomModel,geomData,0) == true);
 
   q <<  1.01, 0, 1, 0,
         0, 0, 1, 0 ;
 
   pinocchio::updateGeometryPlacements(model, data, geomModel, geomData, q);
-  BOOST_CHECK(computeCollision(geomModel,geomData,0) == false);
+  //BOOST_CHECK(computeCollision(geomModel,geomData,0) == false);
 }
