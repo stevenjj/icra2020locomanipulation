@@ -59,11 +59,8 @@ public:
   // populates this object's footstep_list, rvrp_list, dcm_ini_list, dcm_eos_list. 
   void initialize_footsteps_rvrp(const std::vector<Footstep> & input_footstep_list, const Footstep & left_footstance, const Footstep & right_footstance);
 
- 
-  // Outputs the average r_vrp location given two footstances
+   // Outputs the average r_vrp location given two footstances
   void get_average_rvrp(const Footstep & footstance_1, const Footstep & footstance_2, Eigen::Vector3d & average_rvrp);
-
-
 
   // Swing trajectory calculation
   void computeSE3_trajectory(const Footstep & init_stance_location, const Footstep & landing_location);
@@ -71,11 +68,11 @@ public:
   // computes all the dcm states. Computation properly populates the dcm_ini_list and dcm_eos_list
   void computeDCM_states();
 
-
+  // Initialize trajectory clock
   void initialize_internal_clocks();
 
+  // Given a delta_t compute the next desired DCM
   Eigen::Vector3d get_next_desired_DCM(const double & dt);
-
 
   double get_total_trajectory_time();
   void initialize_trajectory_discretization(const int & N_samples);

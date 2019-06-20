@@ -77,15 +77,7 @@ void WalkingPatternGenerator::initialize_footsteps_rvrp(const std::vector<Footst
     }
     // -----------------------------------------------------------------
     // Specify that this is the eos for the previous rvrp
-
-    // If this is the last step, then this should be a transfer
-    if (i == (input_footstep_list.size() - 1)){
-      rvrp_type_list.push_back(DOUBLE_SUPPORT_TRANSFER_VRP_TYPE);      
-    }else{
-      rvrp_type_list.push_back(SWING_VRP_TYPE);
-    }
-
-
+    rvrp_type_list.push_back(SWING_VRP_TYPE);
     dcm_eos_list.push_back(current_rvrp);   
 
     // Add this rvrp to the list and also populate the DCM states
@@ -177,18 +169,20 @@ double WalkingPatternGenerator::get_t_step(const int & step_i){
 }
 
 Eigen::Vector3d WalkingPatternGenerator::get_next_desired_DCM(const double & dt){
+  // Increment internal step timer so long as it's below the t_step
+  if (internal_step_timer < internal_t_step){
+    internal_timer += dt;
+    internal_step_timer += dt;        
+  }
   // Reset timer if it exceeds the t_step and there are more virtual repellant points to process
   if ((internal_step_timer >= internal_t_step) && (internal_step_i < rvrp_type_list.size()-1)){
     internal_step_timer = 0.0;
     internal_step_i += 1;
     internal_t_step = get_t_step(internal_step_i);
   }
-  else{
-    // increment internal timer so long as it's under the current t_step
-    if (internal_step_timer < internal_t_step){
-      internal_timer += dt;
-      internal_step_timer += dt;        
-    }
+  // Clamp internal step timer if it's bigger
+  if (internal_step_timer > internal_t_step){
+    internal_step_timer = internal_t_step;
   }
 
   return rvrp_list[internal_step_i] + std::exp( (internal_step_timer-internal_t_step) / b)*(dcm_eos_list[internal_step_i] - rvrp_list[internal_step_i]);
