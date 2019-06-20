@@ -385,10 +385,12 @@ void feasibility::CreateData() {
 
 void feasibility::generateRandomArm(){
   double theta = M_PI/4.0;
-  Eigen::AngleAxis<double> aa(theta, Eigen::Vector3d(0.0, 0.0, 1.0));
+  Eigen::AngleAxis<double> aa(theta, Eigen::Vector3d(0.0, 0.0, 0.0));
 
   Eigen::Quaternion<double> init_quat(1.0, 0.0, 0.0, 0.0); //Initialized to remember the w component comes first
   init_quat = aa;
+
+  q_start = Eigen::VectorXd::Zero(valkyrie.getDimQ());
 
   q_start[3] = init_quat.x(); q_start[4] = init_quat.y(); q_start[5] = init_quat.z(); q_start[6] = init_quat.w(); // Set up the quaternion in q
 
@@ -405,13 +407,17 @@ void feasibility::generateRandomArm(){
   q_start[valkyrie.getJointIndex("leftShoulderRoll")] = -1.1;
   q_start[valkyrie.getJointIndex("leftElbowPitch")] = -0.4;
   q_start[valkyrie.getJointIndex("leftForearmYaw")] = 1.5;
+
   Eigen::VectorXd q_rand(pinocchio::randomConfiguration(valkyrie.model, lower_lim, upper_lim ));
   q_start[valkyrie.getJointIndex("rightShoulderPitch")] = q_rand[valkyrie.getJointIndex("rightShoulderPitch")];
   q_start[valkyrie.getJointIndex("rightShoulderRoll")] = q_rand[valkyrie.getJointIndex("rightShoulderRoll")];
   q_start[valkyrie.getJointIndex("rightShoulderYaw")] = q_rand[valkyrie.getJointIndex("rightShoulderYaw")];
   q_start[valkyrie.getJointIndex("rightElbowPitch")] = q_rand[valkyrie.getJointIndex("rightElbowPitch")];
   q_start[valkyrie.getJointIndex("rightForearmYaw")] = q_rand[valkyrie.getJointIndex("rightForearmYaw")];
-
+  q_start[valkyrie.getJointIndex("rightWristRoll")] = q_rand[valkyrie.getJointIndex("rightWristRoll")];
+  q_start[valkyrie.getJointIndex("rightWristPitch")] = q_rand[valkyrie.getJointIndex("rightWristPitch")];
+  valkyrie.updateFullKinematics(q_start);
+  valkyrie.getFrameWorldPose("rightPalm", rhand_cur_pos, rhand_cur_ori);
 
 }
 

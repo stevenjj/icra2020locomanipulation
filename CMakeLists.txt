@@ -62,6 +62,7 @@ SET (HELPER_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/param_handler.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/yaml_data_saver.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/gmm_fit.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/orientation_utils.cpp
 )
 
 SET (ROS_BRIDGE_SOURCES
@@ -74,7 +75,6 @@ SET (TASK_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_com.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_6dpose.cpp)
-
 
 SET(PROJECT_SOURCES
 	${MODEL_SOURCES}

@@ -35,4 +35,14 @@ namespace data_saver{
       out << YAML::EndSeq;
   }
 
+  void emit_orientation_vector(YAML::Emitter & out, const std::string & key, const Eigen::Vector3d & ori){
+    out << YAML::Key << key;
+    out << YAML::Value;
+      out << YAML::BeginMap;
+      out << YAML::Key << "rx" << YAML::Value << ori[0];
+      out << YAML::Key << "ry" << YAML::Value << ori[1];
+      out << YAML::Key << "rz" << YAML::Value << ori[2];
+      out << YAML::EndMap;
+  }
+
 }
