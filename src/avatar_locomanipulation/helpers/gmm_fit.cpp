@@ -8,15 +8,26 @@ GMMFit::~GMMFit(){
 }
 
 GMMFit::GMMFit(const std::vector<Eigen::VectorXd> & data_in, const int & num_clus_in){
- setData(data_in);
- setNumClusters(num_clus_in);
+ // setData(data_in);
+ // setNumClusters(num_clus_in);
+ std::cout << "this feature does not work" << std::endl;
+}
+
+void GMMFit::initializeNormalization() {
+  data_mean = Eigen::VectorXd::Zero(dim);
+  data_mean_sum = Eigen::VectorXd::Zero(dim);
+  data_std_dev = Eigen::VectorXd::Zero(dim);
+  data_std_dev_sum = Eigen::VectorXd::Zero(dim);
+  data_std_dev_sqrd = Eigen::VectorXd::Zero(dim);
+  data_min = Eigen::VectorXd::Constant(dim,1000.0);
+  data_max = Eigen::VectorXd::Constant(dim,-1000.0);
 }
 
 void GMMFit::setData(const std::vector<Eigen::VectorXd> & data_in){
   num_data = data_in.size();
-  std::cout << "num_data: " << num_data << std::endl;
+  // std::cout << "num_data: " << num_data << std::endl;
   dim = data_in[0].size();
-  std::cout << "dim: " << dim << std::endl;
+  // std::cout << "dim: " << dim << std::endl;
 
   gam = Eigen::MatrixXd::Zero(num_data, num_clus);
   n = Eigen::VectorXd::Zero(num_clus);
@@ -43,11 +54,16 @@ void GMMFit::expectStep(){
   double den;
   for(std::size_t i=0; i<num_data; i++) {
     den = 0.0;
+    // std::cout << "2" << std::endl;
     for(std::size_t k=0; k<num_clus; k++){
       den = den+alphs[k]*multivariateGuassian(list_of_datums[i], list_of_mus[k], list_of_Sigmas[k]);
     }
+    // std::cout << "3: " << den << std::endl;
     for(std::size_t k=0; k<num_clus; k++){
+      // std::cout << "p: " << multivariateGuassian(list_of_datums[i], list_of_mus[k], list_of_Sigmas[k]) << std::endl;
+      // std::cout << "alpha: " << alphs[k] << std::endl;
       gam(i,k) = alphs[k]*multivariateGuassian(list_of_datums[i], list_of_mus[k], list_of_Sigmas[k])/den;
+      // std::cout << "4" << std::endl;
     }
   }
 }
@@ -84,7 +100,7 @@ double GMMFit::logLike(){
       lh = lh+alphs[k]*multivariateGuassian(list_of_datums[i], list_of_mus[k], list_of_Sigmas[k]);
     }
     llh = llh + log(lh);
-  }
+  }  Eigen::VectorXd data_mean = Eigen::VectorXd::Zero(dim);
   return llh;
 }
 
@@ -93,15 +109,21 @@ void GMMFit::expectationMax(){
   double tol = 1e-4;
   double llh = 0;
   double llh_prev = 0;
-
+  int iter = 0;
   llh = logLike();
-  while (std::norm(error)>tol){
+  // std::cout << "1" << std::endl;
+  while (std::norm(error)>tol && iter<40){
+    iter++;
     llh_prev = llh;
     expectStep();
+    // std::cout << "5" << std::endl;
     maxStep();
+    // std::cout << "6" << std::endl;
     llh = logLike();
     error = llh-llh_prev;
+    std::cout << iter << " error: " << error << std::endl;
   }
+  std::cout << "final error: " << error << std::endl;
 }
 
 void GMMFit::setDim(const int & dim_in){
@@ -125,9 +147,51 @@ void GMMFit::setAlpha(const Eigen::VectorXd & alphs_in){
 }
 
 void GMMFit::randInitialGuess(){
+  num_data = list_of_datums.size();
+  gam = Eigen::MatrixXd::Zero(num_data, num_clus);
+  n = Eigen::VectorXd::Zero(num_clus);
+  mu_sum = Eigen::VectorXd::Zero(dim);
+  sig_sum = Eigen::MatrixXd::Zero(dim, dim);
   alphs = Eigen::VectorXd::Constant(num_clus, 1.0/num_clus);
   for(std::size_t k=0; k<num_clus; k++){
     list_of_mus.push_back(Eigen::VectorXd::Random(dim));
     list_of_Sigmas.push_back(Eigen::MatrixXd::Identity(dim, dim));
   }
+}
+
+void GMMFit::addData(Eigen::VectorXd & datum){
+  list_of_datums_raw.push_back(datum);
+  data_mean_sum += datum;
+
+  for(int i = 0; i<dim; i++){
+    if (datum[i]<data_min[i]){
+      data_min[i] = datum[i];
+    }
+    if (datum[i]>data_max[i]){
+      data_max[i] = datum[i];
+    }
+  }
+}
+
+void GMMFit::prepData(){
+  num_data = list_of_datums_raw.size();
+  data_mean = data_mean/num_data;
+  for (int i = 0; i<num_data; i++){
+    for (int k = 0; k<dim; k++){
+      data_std_dev_sum[k]+= pow(list_of_datums_raw[i][k]-data_mean[k],2);
+    }
+  }
+  data_std_dev_sqrd = data_std_dev_sum/num_data;
+
+  for (int k = 0; k<dim; k++){
+    data_std_dev[k] = pow(data_std_dev_sqrd[k], .5);
+  }
+  normalizeData();
+}
+
+void GMMFit::normalizeData(){
+  for(int i = 0; i<num_data; i++){
+    list_of_datums.push_back((list_of_datums_raw[i]-data_mean).cwiseQuotient(data_std_dev));
+  }
+  // std::cout << list_of_datums.size() << " " << num_data << std::endl;
 }

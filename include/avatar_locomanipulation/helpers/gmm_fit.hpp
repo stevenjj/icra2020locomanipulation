@@ -14,12 +14,21 @@ public:
   int num_data;
   double pi = 3.14159265358979323846;
 
+  std::vector<Eigen::VectorXd> list_of_datums_raw;
   std::vector<Eigen::VectorXd> list_of_datums;
   std::vector<Eigen::VectorXd> list_of_mus;
   std::vector<Eigen::MatrixXd> list_of_Sigmas;
   Eigen::VectorXd alphs;
   Eigen::MatrixXd gam;
   Eigen::VectorXd n;
+
+  Eigen::VectorXd data_mean;
+  Eigen::VectorXd data_mean_sum;
+  Eigen::VectorXd data_min;
+  Eigen::VectorXd data_max;
+  Eigen::VectorXd data_std_dev;
+  Eigen::VectorXd data_std_dev_sqrd;
+  Eigen::VectorXd data_std_dev_sum;
 
   Eigen::VectorXd mu_sum;
   Eigen::MatrixXd sig_sum;
@@ -43,6 +52,11 @@ public:
   void setSigma(const std::vector<Eigen::MatrixXd> & list_of_Sigmas_in);
   void setAlpha(const Eigen::VectorXd & alphs_in);
   void randInitialGuess();
+  void addData(Eigen::VectorXd & datum);
+  void prepData();
+  void setData();
+  void initializeNormalization();
+  void normalizeData();
 };
 
 #endif
