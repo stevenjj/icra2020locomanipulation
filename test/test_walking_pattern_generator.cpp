@@ -1,5 +1,6 @@
 #include <avatar_locomanipulation/walking/walking_pattern_generator.hpp>
 #include <avatar_locomanipulation/data_types/footstep.hpp>
+#include <avatar_locomanipulation/data_types/trajectory_euclidean.hpp>
 
 #include <avatar_locomanipulation/helpers/hermite_curve.hpp>
 #include <avatar_locomanipulation/helpers/hermite_quaternion_curve.hpp>
@@ -153,8 +154,11 @@ int main(int argc, char ** argv){
   double total_sim_time = 15;
   int N_steps = (int)(total_sim_time/dt);
 
-  std::cout << "N=" << N_steps << std::endl;
-  std::cout << "t, com_x, com_y, com_z, dcm_x_des, dcm_y_des, dcm_z_des" << std::endl;
+  // prepare trajectory vector
+  TrajEuclidean com_traj(x_com.size(), N_steps, dt);
+  TrajEuclidean dcm_traj(zeta_dcm.size(), N_steps, dt);
+
+  // Compute data
   for(int i = 0; i < N_steps; i++){
     t = i*dt;
     if (i == 0){
@@ -164,10 +168,24 @@ int main(int argc, char ** argv){
       x_com = (-1/b)*(x_com - zeta_dcm)*dt + x_com;
     }
 
+    // Store the data
+    com_traj.set_pos(i, x_com);
+    dcm_traj.set_pos(i, zeta_dcm);
 
+  }
+
+
+  // retrieve the data:
+  std::cout << "N=" << N_steps << std::endl;
+  std::cout << "t, com_x, com_y, com_z, dcm_x_des, dcm_y_des, dcm_z_des" << std::endl;
+  for(int i = 0; i < N_steps; i++){
+    t = i*dt;
+    com_traj.get_pos(i, x_com);
+    dcm_traj.get_pos(i, zeta_dcm);
     std::cout << t << "," << x_com[0] << "," << x_com[1] << "," << x_com[2] << "," 
                           << zeta_dcm[0] << "," << zeta_dcm[1] << "," << zeta_dcm[2] << std::endl;
-  }
+  
+  }  
 
 
   return 0;

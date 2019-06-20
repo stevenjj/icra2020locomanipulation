@@ -48,7 +48,8 @@ SET (MODEL_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/models/valkyrie_model.cpp)
 
 SET (DATA_TYPES_SOURCES
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/data_types/footstep.cpp)
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/data_types/footstep.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/data_types/trajectory_euclidean.cpp)
 
 SET (WALKING_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/walking/walking_pattern_generator.cpp)
@@ -75,7 +76,6 @@ SET (TASK_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_3dorientation.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_joint_config.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_stack.cpp)
-
 
 
 SET(PROJECT_SOURCES

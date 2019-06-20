@@ -79,6 +79,12 @@ public:
   Eigen::Vector3d get_next_desired_DCM(const double & dt);
 
 
+  double get_total_trajectory_time();
+  void initialize_trajectory_discretization(const int & N_samples);
+  void construct_trajectories();
+
+
+
 private:
   // input: r_vrp_d_i - the desired virtual repelant point for the i-th step.
   //        t_step    - the time interval to use for backwards integration
