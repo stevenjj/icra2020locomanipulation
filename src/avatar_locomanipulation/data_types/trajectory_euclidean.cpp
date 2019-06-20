@@ -83,6 +83,16 @@ void TrajEuclidean::set_dim_N_dt(const int & dim_in, const int & N_size_in, cons
   dim = dim_in;
   N_size = N_size_in;
   dt = dt_in;
+  index = 0;
+
+  pos.clear(); vel.clear(); acc.clear();
+  // Pre-allocate variables:
+  for(size_t i = 0; i < N_size; i++){
+    pos.push_back(Eigen::VectorXd::Zero(dim));
+    vel.push_back(Eigen::VectorXd::Zero(dim));
+    acc.push_back(Eigen::VectorXd::Zero(dim));    
+  }
+
 }
 void TrajEuclidean::set_pos(const int & index, const Eigen::VectorXd & pos_in){
   pos[index] = pos_in;  
@@ -97,3 +107,48 @@ void TrajEuclidean::set_acc(const int & index, const Eigen::VectorXd & acc_in){
 void TrajEuclidean::reset_index(){
   index = 0;
 }
+
+TrajEuclideanConstant::TrajEuclideanConstant(){}
+TrajEuclideanConstant::TrajEuclideanConstant(const Eigen::VectorXd vec_in){
+  vec_constant = vec_in;
+  vec_zero = Eigen::VectorXd::Zero(vec_in.size());
+}
+
+TrajEuclideanConstant::~TrajEuclideanConstant(){}
+
+void TrajEuclideanConstant::get_pos(const int & index_in, Eigen::Ref<Eigen::VectorXd> pos_out){
+  get_next_pos(pos_out);
+}
+
+void TrajEuclideanConstant::get_vel(const int & index_in, Eigen::Ref<Eigen::VectorXd> vel_out){
+  get_next_vel(vel_out);
+}
+void TrajEuclideanConstant::get_acc(const int & index_in, Eigen::Ref<Eigen::VectorXd> acc_out){
+  get_next_acc(acc_out);  
+}
+
+void TrajEuclideanConstant::get_next_pos(Eigen::Ref<Eigen::VectorXd> pos_out){
+  pos_out = vec_constant;
+}
+void TrajEuclideanConstant::get_next_vel(Eigen::Ref<Eigen::VectorXd> vel_out){
+  vel_out = vec_zero;
+}
+void TrajEuclideanConstant::get_next_acc(Eigen::Ref<Eigen::VectorXd> acc_out){
+  acc_out = vec_zero;
+}
+
+void TrajEuclideanConstant::get_next_data(Eigen::Ref<Eigen::VectorXd> pos_out){
+  pos_out = vec_constant;
+}
+
+void TrajEuclideanConstant::get_next_data(Eigen::Ref<Eigen::VectorXd> pos_out, Eigen::Ref<Eigen::VectorXd> vel_out){
+  pos_out = vec_constant;
+  vel_out = vec_zero;  
+}
+
+void TrajEuclideanConstant::get_next_data(Eigen::Ref<Eigen::VectorXd> pos_out, Eigen::Ref<Eigen::VectorXd> vel_out, Eigen::Ref<Eigen::VectorXd> acc_out){
+  pos_out = vec_constant;
+  vel_out = vec_zero;  
+  acc_out = vec_zero;
+}
+

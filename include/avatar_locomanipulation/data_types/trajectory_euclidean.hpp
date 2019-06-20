@@ -9,25 +9,25 @@ class TrajEuclidean{
 public:
 	TrajEuclidean();
 	TrajEuclidean(const int & dim_in, const int & N_size_in, const double & dt_in);
-	~TrajEuclidean();
+	virtual ~TrajEuclidean();
 
 	// Getter functions
 	double get_dt();
 	int get_dim();
 	int get_trajectory_length();
 
-	void get_pos(const int & index_in, Eigen::Ref<Eigen::VectorXd> pos_out);
-	void get_vel(const int & index_in, Eigen::Ref<Eigen::VectorXd> vel_out);
-	void get_acc(const int & index_in, Eigen::Ref<Eigen::VectorXd> acc_out);
+	virtual void get_pos(const int & index_in, Eigen::Ref<Eigen::VectorXd> pos_out);
+	virtual void get_vel(const int & index_in, Eigen::Ref<Eigen::VectorXd> vel_out);
+	virtual void get_acc(const int & index_in, Eigen::Ref<Eigen::VectorXd> acc_out);
 
 	// All of the get_next functions increment the internal index counter
-	void get_next_pos(Eigen::Ref<Eigen::VectorXd> pos_out);
-	void get_next_vel(Eigen::Ref<Eigen::VectorXd> vel_out);
-	void get_next_acc(Eigen::Ref<Eigen::VectorXd> acc_out);
+	virtual void get_next_pos(Eigen::Ref<Eigen::VectorXd> pos_out);
+	virtual void get_next_vel(Eigen::Ref<Eigen::VectorXd> vel_out);
+	virtual void get_next_acc(Eigen::Ref<Eigen::VectorXd> acc_out);
 
-	void get_next_data(Eigen::Ref<Eigen::VectorXd> pos_out);
-	void get_next_data(Eigen::Ref<Eigen::VectorXd> pos_out, Eigen::Ref<Eigen::VectorXd> vel_out);
-	void get_next_data(Eigen::Ref<Eigen::VectorXd> pos_out, Eigen::Ref<Eigen::VectorXd> vel_out, Eigen::Ref<Eigen::VectorXd> acc_out);
+	virtual void get_next_data(Eigen::Ref<Eigen::VectorXd> pos_out);
+	virtual void get_next_data(Eigen::Ref<Eigen::VectorXd> pos_out, Eigen::Ref<Eigen::VectorXd> vel_out);
+	virtual void get_next_data(Eigen::Ref<Eigen::VectorXd> pos_out, Eigen::Ref<Eigen::VectorXd> vel_out, Eigen::Ref<Eigen::VectorXd> acc_out);
 
 	// Setter functions
 	void set_dim_N_dt(const int & dim_in, const int & N_size_in, const double & dt_in);
@@ -38,7 +38,7 @@ public:
 	// resets the internal index counter
 	void reset_index();
 
-private:
+protected:
 	std::vector<Eigen::VectorXd> pos;
 	std::vector<Eigen::VectorXd> vel;
 	std::vector<Eigen::VectorXd> acc;
@@ -49,6 +49,31 @@ private:
 	int index = 0;
 
 	void increment_index();
+};
+
+
+class TrajEuclideanConstant: public TrajEuclidean{
+public:
+	TrajEuclideanConstant();
+	TrajEuclideanConstant(const Eigen::VectorXd vec_in);
+	~TrajEuclideanConstant();
+
+	virtual void get_pos(const int & index_in, Eigen::Ref<Eigen::VectorXd> pos_out);
+	virtual void get_vel(const int & index_in, Eigen::Ref<Eigen::VectorXd> vel_out);
+	virtual void get_acc(const int & index_in, Eigen::Ref<Eigen::VectorXd> acc_out);
+
+	virtual void get_next_pos(Eigen::Ref<Eigen::VectorXd> pos_out);
+	virtual void get_next_vel(Eigen::Ref<Eigen::VectorXd> vel_out);
+	virtual void get_next_acc(Eigen::Ref<Eigen::VectorXd> acc_out);
+
+	virtual void get_next_data(Eigen::Ref<Eigen::VectorXd> pos_out);
+	virtual void get_next_data(Eigen::Ref<Eigen::VectorXd> pos_out, Eigen::Ref<Eigen::VectorXd> vel_out);
+	virtual void get_next_data(Eigen::Ref<Eigen::VectorXd> pos_out, Eigen::Ref<Eigen::VectorXd> vel_out, Eigen::Ref<Eigen::VectorXd> acc_out);
+
+private:
+	Eigen::VectorXd vec_constant;
+	Eigen::VectorXd vec_zero;	
+
 };
 
 #endif
