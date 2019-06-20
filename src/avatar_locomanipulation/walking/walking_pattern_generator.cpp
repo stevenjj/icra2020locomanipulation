@@ -24,7 +24,7 @@ void WalkingPatternGenerator::initialize_footsteps_rvrp(const std::vector<Footst
     dcm_eos_list.clear();    
   }
 
-  // Add an rvrp to the initial footstance
+  // Create an rvrp for the stance leg
   Eigen::Vector3d current_rvrp(0, 0, z_vrp); // From foot local frame
   Eigen::Vector3d current_stance_rvrp(0, 0, z_vrp); // The stance leg from the foot local frame
   Eigen::Vector3d left_stance_rvrp(0, 0, z_vrp); // a left stance leg from the foot local frame
@@ -34,11 +34,13 @@ void WalkingPatternGenerator::initialize_footsteps_rvrp(const std::vector<Footst
   left_stance_rvrp = current_stance_rvrp;
   right_stance_rvrp = current_stance_rvrp;
 
-  // Add an rvrp to transfer to the stance leg
+  // Specify that this is the eos for the previous rvrp
   rvrp_type_list.push_back(DOUBLE_SUPPORT_TRANSFER_VRP_TYPE);
+  dcm_eos_list.push_back(current_stance_rvrp);
+
+  // Add an rvrp to transfer to the stance leg
   rvrp_list.push_back(current_stance_rvrp);
   dcm_ini_list.push_back(current_stance_rvrp);
-  dcm_eos_list.push_back(current_stance_rvrp);
 
   int previous_step = initial_footstance.robot_side;
 
@@ -58,11 +60,12 @@ void WalkingPatternGenerator::initialize_footsteps_rvrp(const std::vector<Footst
     // ----------- Begin handling same robot side footsteps -------------
     // If taking a footstep on the same side, first go to the stance foot
     if (input_footstep_list[i].robot_side == previous_step){
-      // This is a transfer type of footstep transition
+      // Specify that this is the eos for the previous rvrp
       rvrp_type_list.push_back(DOUBLE_SUPPORT_TRANSFER_VRP_TYPE);
+      dcm_eos_list.push_back(current_stance_rvrp);
+      // Add a new rvrp
       rvrp_list.push_back(current_stance_rvrp);
       dcm_ini_list.push_back(current_stance_rvrp);   
-      dcm_eos_list.push_back(current_stance_rvrp);
     }
     else{
       // otherwise, update the correct stance to the latest rvrp
@@ -73,12 +76,21 @@ void WalkingPatternGenerator::initialize_footsteps_rvrp(const std::vector<Footst
       }
     }
     // -----------------------------------------------------------------
+    // Specify that this is the eos for the previous rvrp
+
+    // If this is the last step, then this should be a transfer
+    if (i == (input_footstep_list.size() - 1)){
+      rvrp_type_list.push_back(DOUBLE_SUPPORT_TRANSFER_VRP_TYPE);      
+    }else{
+      rvrp_type_list.push_back(SWING_VRP_TYPE);
+    }
+
+
+    dcm_eos_list.push_back(current_rvrp);   
 
     // Add this rvrp to the list and also populate the DCM states
-    rvrp_type_list.push_back(SWING_VRP_TYPE);
     rvrp_list.push_back(current_rvrp);
     dcm_ini_list.push_back(current_rvrp);   
-    dcm_eos_list.push_back(current_rvrp);   
 
     // Update previous_step side 
     previous_step = input_footstep_list[i].robot_side;
@@ -94,11 +106,9 @@ void WalkingPatternGenerator::initialize_footsteps_rvrp(const std::vector<Footst
   dcm_ini_list.clear();
   dcm_eos_list.clear();
 
-  // Add the initial virtual repellant point. // This is a transfer type
-  rvrp_type_list.push_back(DOUBLE_SUPPORT_TRANSFER_VRP_TYPE);
+  // Add the initial virtual repellant point. 
   rvrp_list.push_back(initial_rvrp); 
   dcm_ini_list.push_back(initial_rvrp);   
-  dcm_eos_list.push_back(initial_rvrp);
   // Add the remaining virtual repellant points   
   initialize_footsteps_rvrp(input_footstep_list, initial_footstance);
 }
@@ -132,12 +142,8 @@ void WalkingPatternGenerator::computeDCM_states(){
   std::cout << "size of rvrp list = " << rvrp_list.size() << std::endl;
 
   // Use backwards recursion to compute the initial and final dcm states
-  dcm_eos_list[dcm_eos_list.size() - 1] = rvrp_list[rvrp_list.size() - 1];
-  dcm_ini_list[dcm_ini_list.size() - 1] = rvrp_list[rvrp_list.size() - 1];
-  dcm_eos_list[dcm_eos_list.size() - 2] = rvrp_list[rvrp_list.size() - 1];
-
   double t_step = 0.0;
-  for (int i = rvrp_list.size()-2; i >= 0; i--){
+  for (int i = dcm_ini_list.size()-2; i >= 0; i--){
     // Get the t_step to use for backwards integration
     t_step = get_t_step(i);
     // Compute dcm_ini for step i
@@ -160,17 +166,10 @@ void WalkingPatternGenerator::initialize_internal_clocks(){
 }
 
 double WalkingPatternGenerator::get_t_step(const int & step_i){
-  // The type of the next virtual repellant point indicates the t_step.
-  // But, for the final step, we don't take a step. Return something dummy
-  if (step_i >= rvrp_list.size() - 1){
-    return 0.0;
-  }
-
-  // Look at the type of the next virtual repellant point.  
   // Use transfer time for double support and overall step time for swing types
-  if ((rvrp_type_list[step_i+1]) == DOUBLE_SUPPORT_TRANSFER_VRP_TYPE){
+  if ((rvrp_type_list[step_i]) == DOUBLE_SUPPORT_TRANSFER_VRP_TYPE){
     return t_it;
-  }else if (rvrp_type_list[step_i+1] == SWING_VRP_TYPE){
+  }else if (rvrp_type_list[step_i] == SWING_VRP_TYPE){
     return t_ds + t_ss;
   }else{
     return t_ds + t_ss;
@@ -178,18 +177,27 @@ double WalkingPatternGenerator::get_t_step(const int & step_i){
 }
 
 Eigen::Vector3d WalkingPatternGenerator::get_next_desired_DCM(const double & dt){
-  if (internal_step_i < rvrp_list.size()-1){
-    internal_timer += dt;
-    internal_step_timer += dt;
-
-    // Reset timer if it exceeds the t_step. Use next virtual repellant point
-    if (internal_step_timer > internal_t_step){
-      internal_step_timer = 0.0;
-      internal_step_i += 1;
-      internal_t_step = get_t_step(internal_step_i);
+  // Reset timer if it exceeds the t_step and there are more virtual repellant points to process
+  if ((internal_step_timer >= internal_t_step) && (internal_step_i < rvrp_type_list.size()-1)){
+    internal_step_timer = 0.0;
+    internal_step_i += 1;
+    internal_t_step = get_t_step(internal_step_i);
+  }
+  else{
+    // increment internal timer so long as it's under the current t_step
+    if (internal_step_timer < internal_t_step){
+      internal_timer += dt;
+      internal_step_timer += dt;        
     }
   }
 
   return rvrp_list[internal_step_i] + std::exp( (internal_step_timer-internal_t_step) / b)*(dcm_eos_list[internal_step_i] - rvrp_list[internal_step_i]);
+}
 
+double WalkingPatternGenerator::get_total_trajectory_time(){
+  double total_time = 0.0;
+  for(int i = 0; i < rvrp_type_list.size(); i++){
+    total_time += get_t_step(i);
+  }
+  return total_time;
 }

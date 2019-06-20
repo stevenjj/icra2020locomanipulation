@@ -37,8 +37,6 @@ public:
   double t_ds = 0.9; // time in double support
   double t_ss = 1.2; // time in single support
 
-  double t_swing = 1.2; // total swing time
-  double transfer_time = 0.9;
   double alpha = 0.5; // ratio between double initial and final double support time
 
   double swing_height = 0.05; // swing height in meters.

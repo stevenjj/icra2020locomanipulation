@@ -117,7 +117,7 @@ int main(int argc, char ** argv){
   step2.printInfo();
   step3.printInfo();
 
-  std::vector<Footstep> footstep_list = {step1, step2, step3};
+  std::vector<Footstep> footstep_list = {step1, step2, step3, step3};
 
   // Initialize rvrp given footstances
   wpg.initialize_footsteps_rvrp(footstep_list, left_foot_stance, right_foot_stance);    
@@ -151,7 +151,7 @@ int main(int argc, char ** argv){
   std::cout << x_com.transpose() << std::endl;
 
   dt = 0.01;
-  double total_sim_time = 15;
+  double total_sim_time = wpg.get_total_trajectory_time() + 5.0;
   int N_steps = (int)(total_sim_time/dt);
 
   // prepare trajectory vector
@@ -174,7 +174,6 @@ int main(int argc, char ** argv){
 
   }
 
-
   // retrieve the data:
   std::cout << "N=" << N_steps << std::endl;
   std::cout << "t, com_x, com_y, com_z, dcm_x_des, dcm_y_des, dcm_z_des" << std::endl;
@@ -186,7 +185,6 @@ int main(int argc, char ** argv){
                           << zeta_dcm[0] << "," << zeta_dcm[1] << "," << zeta_dcm[2] << std::endl;
   
   }  
-
 
   return 0;
 }
