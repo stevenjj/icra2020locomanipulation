@@ -7,6 +7,8 @@
 
 #define LEFT_FOOTSTEP 0
 #define RIGHT_FOOTSTEP 1
+#define MID_FOOTSTEP 2
+
 // Data container for a footstep object
 
 
@@ -25,6 +27,8 @@ public:
 
   // Left or right side
   int robot_side;
+
+  void computeMidfeet(const Footstep & footstep1, const Footstep & footstep2, Footstep & midfeet);
 
   int getSide();
   void printInfo();

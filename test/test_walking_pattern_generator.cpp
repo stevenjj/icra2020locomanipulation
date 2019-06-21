@@ -186,5 +186,30 @@ int main(int argc, char ** argv){
   
   }  
 
+  Footstep mid_stance;
+  omega_aa.axis() = Eigen::Vector3d(0, 0, 1);
+  omega_aa.angle() = M_PI/4.0;
+  left_foot_stance.orientation = omega_aa;
+  mid_stance.computeMidfeet(left_foot_stance, right_foot_stance, mid_stance);
+
+  // Angle Axis
+  Eigen::AngleAxisd aa_data;
+
+  std::cout << "Test midfeet" << std::endl;
+  std::cout << "Left Footstep:" << std::endl;
+  left_foot_stance.printInfo();
+  aa_data = left_foot_stance.orientation;
+  std::cout << "angle: " << aa_data.angle() << " axis:" << aa_data.axis().transpose() << std::endl;
+
+  std::cout << "Right Footstep:" << std::endl;
+  right_foot_stance.printInfo();
+  aa_data = right_foot_stance.orientation;
+  std::cout << "angle: " << aa_data.angle() << " axis:" << aa_data.axis().transpose() << std::endl;
+
+  std::cout << "Mid Footstep:" << std::endl;
+  mid_stance.printInfo();
+  aa_data = mid_stance.orientation;
+  std::cout << "angle: " << aa_data.angle() << " axis:" << aa_data.axis().transpose() << std::endl;
+
   return 0;
 }

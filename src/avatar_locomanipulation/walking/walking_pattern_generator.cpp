@@ -195,3 +195,21 @@ double WalkingPatternGenerator::get_total_trajectory_time(){
   }
   return total_time;
 }
+
+  // Swing trajectory calculation
+void WalkingPatternGenerator::computeSE3_trajectory(const Footstep & init_stance_location, const Footstep & landing_location){
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

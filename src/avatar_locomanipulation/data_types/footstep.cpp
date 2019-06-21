@@ -29,3 +29,9 @@ void Footstep::printInfo(){
                      << orientation.z() << ", "
                      << orientation.w() << std::endl;
 }
+
+void Footstep::computeMidfeet(const Footstep & footstep1, const Footstep & footstep2, Footstep & midfeet){
+  midfeet.position = 0.5*(footstep1.position + footstep2.position);  
+  midfeet.orientation = footstep1.orientation.slerp(0.5, footstep2.orientation);
+  midfeet.robot_side = MID_FOOTSTEP;
+}

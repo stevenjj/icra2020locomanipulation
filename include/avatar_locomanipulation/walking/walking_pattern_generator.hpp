@@ -5,7 +5,10 @@
 #include <cmath>
 #include <string>
 #include <avatar_locomanipulation/data_types/footstep.hpp>
+#include <avatar_locomanipulation/helpers/hermite_curve.hpp>
+#include <avatar_locomanipulation/helpers/hermite_quaternion_curve.hpp>
 #include <iostream>
+
 
 class WalkingPatternGenerator{
 public:
@@ -95,6 +98,8 @@ private:
   double internal_t_step;
   double internal_step_timer;
   int internal_step_i;
+
+  Footstep mid_foot_;
 
 };
 
