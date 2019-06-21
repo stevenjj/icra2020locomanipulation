@@ -82,8 +82,12 @@ void TrajEuclidean::set_dim_N_dt(const int & dim_in, const int & N_size_in, cons
     vel.push_back(Eigen::VectorXd::Zero(dim));
     acc.push_back(Eigen::VectorXd::Zero(dim));    
   }
-
 }
+
+void TrajEuclidean::set_dt(const double & dt_in){
+  dt = dt_in;
+}
+
 void TrajEuclidean::set_pos(const int & index, const Eigen::VectorXd & pos_in){
   pos[index] = pos_in;  
 }

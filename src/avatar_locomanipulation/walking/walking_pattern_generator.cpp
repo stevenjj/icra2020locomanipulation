@@ -226,11 +226,27 @@ void WalkingPatternGenerator::computeSE3_trajectory(const Footstep & init_locati
 
 void WalkingPatternGenerator::initialize_trajectory_discretization(const int & N_samples){
   N_size = N_samples;
+  double t_trajectory = get_total_trajectory_time() + t_settle;
+  double dt = t_trajectory/N_size;
+
+  traj_SE3_tmp = TrajSE3(N_size, dt);
+  traj_SE3_left_foot = TrajSE3(N_size, dt);
+  traj_SE3_right_foot = TrajSE3(N_size, dt);
+  traj_ori_pelvis = TrajOrientation(N_size, dt);
+  traj_pos_com = TrajEuclidean(3, N_size, dt);
+
 }
 
 void WalkingPatternGenerator::construct_trajectories(){
-  double t_trajectory = get_total_trajectory_time();
-  // double dt = t_trajectory/((double) N_size);
+  double time = 0.0;
+  double t_trajectory = get_total_trajectory_time() + t_settle;
+  double dt = t_trajectory/N_size;
+
+  traj_SE3_tmp.set_dt(dt);
+  traj_SE3_left_foot.set_dt(dt);
+  traj_SE3_right_foot.set_dt(dt);
+  traj_ori_pelvis.set_dt(dt);
+  traj_pos_com.set_dt(dt);  
 
 }
 

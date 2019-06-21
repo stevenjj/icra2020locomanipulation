@@ -79,6 +79,10 @@ void TrajOrientation::set_N_dt(const int & N_size_in, const double & dt_in){
   }
 }
 
+void TrajOrientation::set_dt(const double & dt_in){
+  dt = dt_in;
+}
+
 void TrajOrientation::set_quat(const int & index, const Eigen::Quaterniond & quat_in){
   quat[index] = quat_in;    
 }

@@ -5,6 +5,8 @@
 #include <cmath>
 #include <string>
 #include <avatar_locomanipulation/data_types/footstep.hpp>
+#include <avatar_locomanipulation/data_types/trajectory_SE3.hpp>
+
 #include <avatar_locomanipulation/helpers/hermite_curve_vec.hpp>
 #include <avatar_locomanipulation/helpers/hermite_quaternion_curve.hpp>
 #include <iostream>
@@ -39,6 +41,7 @@ public:
   double t_it = 0.9; // initial transfer time
   double t_ds = 0.9; // time in double support
   double t_ss = 1.2; // time in single support
+  double t_settle = 2.0; // settling time at the end of the full walking trajectory
 
   double alpha = 0.5; // ratio between double initial and final double support time
 
@@ -101,7 +104,14 @@ private:
 
   int N_size;
 
+  // trajectory objects
   Footstep mid_foot_;
+  TrajSE3         traj_SE3_tmp;;
+  TrajSE3         traj_SE3_left_foot;
+  TrajSE3         traj_SE3_right_foot;
+  TrajOrientation traj_ori_pelvis;
+  TrajEuclidean   traj_pos_com;
+
 
 };
 

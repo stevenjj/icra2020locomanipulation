@@ -34,6 +34,7 @@ public:
 
 	// Setter functions
 	void set_N_dt(const int & N_size_in, const double & dt_in);
+	void set_dt(const double & dt_in);
 	void set_pos(const int & index, const Eigen::Vector3d & pos_in, const Eigen::Quaterniond & quat_in);
 	void set_vel(const int & index, const Eigen::Vector3d & vel_in, const Eigen::Vector3d & ang_vel_in);
 	void set_acc(const int & index, const Eigen::Vector3d & acc_in, const Eigen::Vector3d & ang_acc_in);

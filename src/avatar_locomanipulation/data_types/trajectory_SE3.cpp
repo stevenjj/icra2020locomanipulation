@@ -27,6 +27,12 @@ void TrajSE3::set_N_dt(const int & N_size_in, const double & dt_in){
   traj_ori = TrajOrientation(N_size_in, dt_in);
 }
 
+void TrajSE3::set_dt(const double & dt_in){
+  dt = dt_in;
+  traj_pos.set_dt(dt_in); 
+  traj_ori.set_dt(dt_in); 
+}
+
 
 // All of the get_next functions increment the internal index counter
 void TrajSE3::get_pos(const int & index_in, Eigen::Vector3d & pos_out, Eigen::Quaterniond & quat_out){

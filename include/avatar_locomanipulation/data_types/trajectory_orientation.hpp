@@ -30,6 +30,7 @@ public:
 
 	// Setter functions
 	void set_N_dt(const int & N_size_in, const double & dt_in);
+	void set_dt(const double & dt_in);
 	void set_quat(const int & index, const Eigen::Quaterniond & quat_in);
 	void set_ang_vel(const int & index, const Eigen::Vector3d & ang_vel_in);
 	void set_ang_acc(const int & index, const Eigen::Vector3d & ang_acc_in);
