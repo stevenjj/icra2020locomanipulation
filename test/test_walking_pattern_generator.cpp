@@ -186,6 +186,9 @@ int main(int argc, char ** argv){
   
   }  
 
+  wpg.computeSE3_trajectory(left_foot_stance, step1);
+
+
   Footstep mid_stance;
   omega_aa.axis() = Eigen::Vector3d(0, 0, 1);
   omega_aa.angle() = M_PI/4.0;

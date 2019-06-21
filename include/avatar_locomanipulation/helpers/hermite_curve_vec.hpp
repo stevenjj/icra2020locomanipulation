@@ -8,7 +8,7 @@ class HermiteCurveVec{
 public:
 	HermiteCurveVec();
 	HermiteCurveVec(const Eigen::VectorXd & start_pos, const Eigen::VectorXd & start_vel, 
-				   const Eigen::VectorXd & end_pos,   const Eigen::VectorXd & end_vel);
+				   const Eigen::VectorXd & end_pos, const Eigen::VectorXd & end_vel);
 	~HermiteCurveVec();
 	Eigen::VectorXd evaluate(const double & s_in);
 	Eigen::VectorXd evaluateFirstDerivative(const double & s_in);

@@ -66,7 +66,7 @@ public:
   void get_average_rvrp(const Footstep & footstance_1, const Footstep & footstance_2, Eigen::Vector3d & average_rvrp);
 
   // Swing trajectory calculation
-  void computeSE3_trajectory(const Footstep & init_stance_location, const Footstep & landing_location);
+  void computeSE3_trajectory(const Footstep & init_location, const Footstep & landing_location);
 
   // computes all the dcm states. Computation properly populates the dcm_ini_list and dcm_eos_list
   void computeDCM_states();
