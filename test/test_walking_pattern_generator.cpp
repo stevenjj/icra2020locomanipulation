@@ -214,5 +214,9 @@ int main(int argc, char ** argv){
   aa_data = mid_stance.orientation;
   std::cout << "angle: " << aa_data.angle() << " axis:" << aa_data.axis().transpose() << std::endl;
 
+
+
+  wpg.initialize_trajectory_discretization(1000);
+
   return 0;
 }

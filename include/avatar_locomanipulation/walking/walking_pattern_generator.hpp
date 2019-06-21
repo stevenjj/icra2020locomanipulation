@@ -80,6 +80,10 @@ public:
   // Given a delta_t compute the next desired DCM
   Eigen::Vector3d get_next_desired_DCM(const double & dt);
 
+  // Given the current 
+  Eigen::Vector3d get_desired_DCM(const int & step_index, const double & t);
+
+
   double get_total_trajectory_time();
   void initialize_trajectory_discretization(const int & N_samples);
   void construct_trajectories();

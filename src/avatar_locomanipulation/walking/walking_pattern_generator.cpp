@@ -188,6 +188,20 @@ Eigen::Vector3d WalkingPatternGenerator::get_next_desired_DCM(const double & dt)
   return rvrp_list[internal_step_i] + std::exp( (internal_step_timer-internal_t_step) / b)*(dcm_eos_list[internal_step_i] - rvrp_list[internal_step_i]);
 }
 
+Eigen::Vector3d WalkingPatternGenerator::get_desired_DCM(const int & step_index, const double & t){
+  // Get t_step
+  double t_step = get_t_step(step_index);
+  double time = t;
+  // Clamp time value
+  if (t < 0){
+    time = 0;
+  }
+  else if (t > t_step){
+    time = t_step;
+  }
+  return rvrp_list[step_index] + std::exp( (time-t_step) / b)*(dcm_eos_list[step_index] - rvrp_list[step_index]);
+}
+
 double WalkingPatternGenerator::get_total_trajectory_time(){
   double total_time = 0.0;
   for(int i = 0; i < rvrp_type_list.size(); i++){
