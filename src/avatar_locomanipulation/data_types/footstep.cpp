@@ -33,5 +33,6 @@ void Footstep::printInfo(){
 void Footstep::computeMidfeet(const Footstep & footstep1, const Footstep & footstep2, Footstep & midfeet){
   midfeet.position = 0.5*(footstep1.position + footstep2.position);  
   midfeet.orientation = footstep1.orientation.slerp(0.5, footstep2.orientation);
+  midfeet.R_ori = midfeet.orientation.toRotationMatrix(); 
   midfeet.robot_side = MID_FOOTSTEP;
 }

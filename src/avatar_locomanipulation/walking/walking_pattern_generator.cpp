@@ -198,6 +198,22 @@ double WalkingPatternGenerator::get_total_trajectory_time(){
 
   // Swing trajectory calculation
 void WalkingPatternGenerator::computeSE3_trajectory(const Footstep & init_stance_location, const Footstep & landing_location){
+  // Compute where the foot will be in the middle of the trajectory
+  mid_foot_.computeMidfeet(init_stance_location, landing_location, mid_foot_);
+
+  // Compute midfeet boundary conditions
+  // Linear velocity at the middle of the swing is the total swing travel over swing time 
+  Eigen::Vector3d mid_swing_local_foot_pos(0, 0, swing_height);
+  Eigen::Vector3d mid_swing_position = mid_foot_.position + mid_foot_.R_ori*mid_swing_local_foot_pos;
+  Eigen::Vector3d mid_swing_velocity = (landing_location.position - init_stance_location.position)/t_ss;
+
+  // Construct Quaternion trajectory
+  Eigen::Vector3d ang_vel_start; ang_vel_start.setZero();
+  Eigen::Vector3d ang_vel_end; ang_vel_end.setZero();
+  HermiteQuaternionCurve foot_ori_trajectory(init_stance_location.orientation, ang_vel_start,
+                                             landing_location.orientation, ang_vel_end);
+
+
 }
 
 

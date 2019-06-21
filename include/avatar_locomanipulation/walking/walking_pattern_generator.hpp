@@ -5,7 +5,7 @@
 #include <cmath>
 #include <string>
 #include <avatar_locomanipulation/data_types/footstep.hpp>
-#include <avatar_locomanipulation/helpers/hermite_curve.hpp>
+#include <avatar_locomanipulation/helpers/hermite_curve_vec.hpp>
 #include <avatar_locomanipulation/helpers/hermite_quaternion_curve.hpp>
 #include <iostream>
 
