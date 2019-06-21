@@ -224,6 +224,16 @@ void WalkingPatternGenerator::computeSE3_trajectory(const Footstep & init_locati
 
 }
 
+void WalkingPatternGenerator::initialize_trajectory_discretization(const int & N_samples){
+  N_size = N_samples;
+}
+
+void WalkingPatternGenerator::construct_trajectories(){
+  double t_trajectory = get_total_trajectory_time();
+  // double dt = t_trajectory/((double) N_size);
+
+}
+
 
 
 

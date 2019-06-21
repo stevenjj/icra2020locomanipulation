@@ -99,6 +99,8 @@ private:
   double internal_step_timer;
   int internal_step_i;
 
+  int N_size;
+
   Footstep mid_foot_;
 
 };
