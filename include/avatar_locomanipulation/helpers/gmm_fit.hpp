@@ -57,6 +57,8 @@ public:
   void setData();
   void initializeNormalization();
   void normalizeData();
+  void useRawData();
+  double mixtureModelProb(Eigen::VectorXd & x_in);
 };
 
 #endif

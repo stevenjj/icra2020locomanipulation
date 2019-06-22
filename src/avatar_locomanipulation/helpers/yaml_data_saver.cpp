@@ -45,4 +45,18 @@ namespace data_saver{
       out << YAML::EndMap;
   }
 
+  void emit_gmm_sigma(YAML::Emitter & out, const std::string & key, const Eigen::MatrixXd & sigma){
+    out << YAML::Key << key;
+    out << YAML::Value;
+      out << YAML::Flow;
+      out << YAML::BeginSeq;
+      for (size_t k = 0; k < sigma.rows(); k++){
+      for (size_t i = 0; i < sigma.cols(); i++){
+        out << sigma(i,k);
+      }
+    }
+      out << YAML::EndSeq;
+
+  }
+
 }

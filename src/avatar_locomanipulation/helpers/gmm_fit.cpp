@@ -112,7 +112,7 @@ void GMMFit::expectationMax(){
   int iter = 0;
   llh = logLike();
   // std::cout << "1" << std::endl;
-  while (std::norm(error)>tol && iter<40){
+  while (std::norm(error)>tol && iter<100){
     iter++;
     llh_prev = llh;
     expectStep();
@@ -171,6 +171,9 @@ void GMMFit::addData(Eigen::VectorXd & datum){
       data_max[i] = datum[i];
     }
   }
+
+  // std::cout << data_min.transpose() << std::endl;
+  // std::cout << data_max.transpose() << std::endl;
 }
 
 void GMMFit::prepData(){
@@ -186,12 +189,24 @@ void GMMFit::prepData(){
   for (int k = 0; k<dim; k++){
     data_std_dev[k] = pow(data_std_dev_sqrd[k], .5);
   }
-  normalizeData();
 }
 
 void GMMFit::normalizeData(){
+  list_of_datums.clear();
   for(int i = 0; i<num_data; i++){
     list_of_datums.push_back((list_of_datums_raw[i]-data_mean).cwiseQuotient(data_std_dev));
   }
   // std::cout << list_of_datums.size() << " " << num_data << std::endl;
+}
+
+void GMMFit::useRawData(){
+  list_of_datums = list_of_datums_raw;
+}
+
+double GMMFit::mixtureModelProb(Eigen::VectorXd & x_in){
+  double p = 0;
+  for(int i=0; i<num_clus; i++){
+    p += alphs[i]*multivariateGuassian(x_in, list_of_mus[i], list_of_Sigmas[i]);
+  }
+  return p;
 }
