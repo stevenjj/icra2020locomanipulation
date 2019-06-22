@@ -121,6 +121,21 @@ void WalkingPatternGenerator::initialize_footsteps_rvrp(const std::vector<Footst
 
 }
 
+void WalkingPatternGenerator::initialize_footsteps_rvrp(const std::vector<Footstep> & input_footstep_list, const Footstep & left_footstance, const Footstep & right_footstance, const Eigen::Vector3d & initial_com){
+  if (input_footstep_list.size() == 0){ 
+    return;
+  }
+
+  // Set the stance leg
+  if (input_footstep_list[0].robot_side == LEFT_FOOTSTEP){
+    initialize_footsteps_rvrp(input_footstep_list, right_footstance, initial_com);
+  }else{
+    initialize_footsteps_rvrp(input_footstep_list, left_footstance, initial_com);
+  }
+
+}
+
+
 void WalkingPatternGenerator::get_average_rvrp(const Footstep & footstance_1, const Footstep & footstance_2, Eigen::Vector3d & average_rvrp){
   Eigen::Vector3d desired_rvrp(0, 0, z_vrp); // From foot local frame
   average_rvrp = 0.5*((footstance_1.R_ori*desired_rvrp + footstance_1.position) + (footstance_2.R_ori*desired_rvrp + footstance_2.position));
@@ -202,6 +217,11 @@ Eigen::Vector3d WalkingPatternGenerator::get_desired_DCM(const int & step_index,
   return rvrp_list[step_index] + std::exp( (time-t_step) / b)*(dcm_eos_list[step_index] - rvrp_list[step_index]);
 }
 
+Eigen::Vector3d WalkingPatternGenerator::get_com_vel(const Eigen::Vector3d & current_com, const int & step_index, const double & t){
+  return (-1.0/b)*(current_com - get_desired_DCM(step_index, t));
+}
+
+
 double WalkingPatternGenerator::get_total_trajectory_time(){
   double total_time = 0.0;
   for(int i = 0; i < rvrp_type_list.size(); i++){
@@ -248,11 +268,9 @@ void WalkingPatternGenerator::initialize_trajectory_discretization(const int & N
   traj_SE3_right_foot = TrajSE3(N_size, dt);
   traj_ori_pelvis = TrajOrientation(N_size, dt);
   traj_pos_com = TrajEuclidean(3, N_size, dt);
-
 }
 
 void WalkingPatternGenerator::construct_trajectories(){
-  double time = 0.0;
   double t_trajectory = get_total_trajectory_time() + t_settle;
   double dt = t_trajectory/N_size;
 
@@ -262,7 +280,54 @@ void WalkingPatternGenerator::construct_trajectories(){
   traj_ori_pelvis.set_dt(dt);
   traj_pos_com.set_dt(dt);  
 
+  double absolute_time = 0.0;
+  int step_index = 0;
+  double state_duration = get_t_step(step_index);
+  double state_time = 0.0;
+
+  for(int i = 0; i < N_size; i++){
+
+  }
+
 }
+
+void WalkingPatternGenerator::construct_trajectories(const std::vector<Footstep> & input_footstep_list, 
+                                                     const Footstep & initial_left_footstance,
+                                                     const Footstep & initial_right_footstance, 
+                                                     const Eigen::Vector3d & initial_com,
+                                                     const Eigen::Quaterniond initial_pelvis_ori){
+  
+  initialize_footsteps_rvrp(input_footstep_list, initial_left_footstance, initial_right_footstance, initial_com);
+
+  double t_trajectory = get_total_trajectory_time() + t_settle;
+  double dt = t_trajectory/N_size;
+
+  traj_SE3_tmp.set_dt(dt);
+  traj_SE3_left_foot.set_dt(dt);
+  traj_SE3_right_foot.set_dt(dt);
+  traj_ori_pelvis.set_dt(dt);
+  traj_pos_com.set_dt(dt);  
+
+  double absolute_time = 0.0;
+  int step_index = 0;
+  double state_duration = get_t_step(step_index);
+  double state_time = 0.0;
+
+  for(int i = 0; i < N_size; i++){
+    // Check if we are still executing a walking trajectory
+    if (step_index < rvrp_type_list.size()){
+      // Check if we are in a transfer state
+      if (rvrp_type_list[step_index] == DOUBLE_SUPPORT_TRANSFER_VRP_TYPE){
+      } 
+      // Check if we are in the middle of a swing
+      else if (rvrp_type_list[step_index == SWING_VRP_TYPE]){
+      }
+    }
+  }
+
+
+}
+
 
 
 

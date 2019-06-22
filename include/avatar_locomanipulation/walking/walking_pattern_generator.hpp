@@ -65,10 +65,19 @@ public:
   // populates this object's footstep_list, rvrp_list, dcm_ini_list, dcm_eos_list. 
   void initialize_footsteps_rvrp(const std::vector<Footstep> & input_footstep_list, const Footstep & left_footstance, const Footstep & right_footstance);
 
+  // input: input_footstep_list - a list of footsteps to take not including the current stance configuration.
+  //        left_footstance        - a footstep object describing the left stance feet
+  //        right_footstance       - a footstep object describing the right stance feet
+  //        initial_com            - the initial location of the com 
+  // populates this object's footstep_list, rvrp_list, dcm_ini_list, dcm_eos_list. 
+  void initialize_footsteps_rvrp(const std::vector<Footstep> & input_footstep_list, const Footstep & left_footstance, const Footstep & right_footstance, const Eigen::Vector3d & initial_com);
+
+
    // Outputs the average r_vrp location given two footstances
   void get_average_rvrp(const Footstep & footstance_1, const Footstep & footstance_2, Eigen::Vector3d & average_rvrp);
 
   // Swing trajectory calculation
+  void compute_pelvis_orientation(const Eigen::Quaterniond & init_pelvis_ori);
   void computeSE3_trajectory(const Footstep & init_location, const Footstep & landing_location);
 
   // computes all the dcm states. Computation properly populates the dcm_ini_list and dcm_eos_list
@@ -82,12 +91,18 @@ public:
 
   // Given the current 
   Eigen::Vector3d get_desired_DCM(const int & step_index, const double & t);
+  Eigen::Vector3d get_com_vel(const Eigen::Vector3d & current_com, const int & step_index, const double & t);
 
 
   double get_total_trajectory_time();
   void initialize_trajectory_discretization(const int & N_samples);
   void construct_trajectories();
 
+  void construct_trajectories(const std::vector<Footstep> & input_footstep_list, 
+                              const Footstep & initial_left_footstance,
+                              const Footstep & initial_right_footstance, 
+                              const Eigen::Vector3d & initial_com,
+                              const Eigen::Quaterniond initial_pelvis_ori);
 
 
 private:
