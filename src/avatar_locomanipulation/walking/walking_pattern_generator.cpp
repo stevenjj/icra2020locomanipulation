@@ -245,11 +245,12 @@ void WalkingPatternGenerator::initialize_trajectory_discretization(const int & N
   traj_SE3_right_foot = TrajSE3(N_size, dt);
   traj_ori_pelvis = TrajOrientation(N_size, dt);
   traj_pos_com = TrajEuclidean(3, N_size, dt);
+  traj_dcm_pos = TrajEuclidean(3, N_size, dt);
 
 }
 
-void WalkingPatternGenerator::construct_trajectories(){
-}
+
+
 
 void WalkingPatternGenerator::construct_trajectories(const std::vector<Footstep> & input_footstep_list, 
                                                      const Footstep & initial_left_footstance,
@@ -270,6 +271,7 @@ void WalkingPatternGenerator::construct_trajectories(const std::vector<Footstep>
   traj_SE3_right_foot.set_dt(dt);
   traj_ori_pelvis.set_dt(dt);
   traj_pos_com.set_dt(dt);  
+  traj_dcm_pos.set_dt(dt);
 
   // Construct State and Bin Size Lists
   compute_trajectory_lists();
@@ -281,6 +283,7 @@ void WalkingPatternGenerator::construct_trajectories(const std::vector<Footstep>
   // }
 
   // Begin constructing trajectories
+  compute_com_dcm_trajectory(initial_com);
   compute_pelvis_orientation_trajectory(initial_pelvis_ori, initial_left_footstance, initial_right_footstance);
   compute_foot_trajectories(initial_left_footstance, initial_right_footstance);
 }
@@ -333,6 +336,38 @@ void WalkingPatternGenerator::setOrientationTrajectory(const int & starting_inde
     curve.evaluate(s, quat);
     traj_ori.set_quat(starting_index + i, quat);
   }
+
+}
+
+void WalkingPatternGenerator::compute_com_dcm_trajectory(const Eigen::Vector3d & initial_com){
+  Eigen::Vector3d com_pos = initial_com;
+  Eigen::Vector3d dcm_pos; dcm_pos.setZero();
+  int step_index = 0;
+  double t = 0.0;
+  double t_step = get_t_step(step_index);
+  double t_prev = 0.0;
+  double dt = internal_dt;
+
+  for(int i = 0; i < N_size; i++){
+    // x_post = dx*dt + x_pre
+    t = dt*i;
+    com_pos = get_com_vel(com_pos, step_index, t-t_prev)*dt + com_pos;
+    dcm_pos = get_desired_DCM(step_index, t-t_prev);
+    // Check if t-t_prev exceeded the current t_step and if we can increment the step index
+    if ( ((t-t_prev) >= t_step) && (step_index < rvrp_type_list.size()-1) ){
+      step_index++;
+      t_prev = t;
+      t_step = get_t_step(step_index);        
+    }
+
+    std::cout << com_pos.transpose() << std::endl;
+    // Store the CoM position
+    traj_pos_com.set_pos(i, com_pos);
+    traj_dcm_pos.set_pos(i, dcm_pos);
+
+  }
+
+
 
 }
 

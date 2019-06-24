@@ -44,6 +44,16 @@ void printTrajSE2fromSE3(TrajSE3 & traj){
   }
 }
 
+void printTrajEuclidean(TrajEuclidean & traj){
+  Eigen::Vector3d com_pos;
+  std::cout << "i,x,y,z" << std::endl; 
+  for(size_t i = 0; i < traj.get_trajectory_length(); i++){
+    traj.get_pos(i, com_pos);
+    std::cout << i << "," << com_pos[0] << "," << com_pos[1] << "," << com_pos[2] << std::endl;
+  }
+
+}
+
 
 void test_trajectories(){
 
@@ -93,8 +103,9 @@ void test_trajectories(){
 
   // printTrajOri(wpg.traj_ori_pelvis);
   // printTrajSE2fromSE3(wpg.traj_SE3_left_foot);
-  printTrajSE2fromSE3(wpg.traj_SE3_right_foot);
-
+  // printTrajSE2fromSE3(wpg.traj_SE3_right_foot);
+  printTrajEuclidean(wpg.traj_pos_com);
+  // printTrajEuclidean(wpg.traj_dcm_pos);
 
   // Debug prints
   // std::cout << "VRP points" << std::endl;

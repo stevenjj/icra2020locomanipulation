@@ -96,7 +96,6 @@ public:
 
   double get_total_trajectory_time();
   void initialize_trajectory_discretization(const int & N_samples);
-  void construct_trajectories();
 
   void construct_trajectories(const std::vector<Footstep> & input_footstep_list, 
                               const Footstep & initial_left_footstance,
@@ -112,6 +111,7 @@ public:
   TrajSE3         traj_SE3_right_foot;
   TrajOrientation traj_ori_pelvis;
   TrajEuclidean   traj_pos_com;
+  TrajEuclidean   traj_dcm_pos;
 
   std::vector<int> state_list;
   std::vector<int> bin_size_list;
@@ -126,6 +126,7 @@ public:
 
   void compute_foot_trajectories(const Footstep & initial_left_footstance,
                                  const Footstep & initial_right_footstance);
+  void compute_com_dcm_trajectory(const Eigen::Vector3d & initial_com);
 
   void setOrientationTrajectory(const int & starting_index, const int & N_bins, HermiteQuaternionCurve & curve, TrajOrientation & traj_ori);
   void setSwingFootTrajectory(const Footstep & init_location, const Footstep & landing_location, const int & starting_index, const int & N_bins, TrajSE3 & swing_foot);
