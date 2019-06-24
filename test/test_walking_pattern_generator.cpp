@@ -213,7 +213,6 @@ void dcm_test(){
   
   }  
 
-  wpg.computeSE3_trajectory(left_foot_stance, step1);  
 }
 
 
