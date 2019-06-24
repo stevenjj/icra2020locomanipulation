@@ -277,24 +277,6 @@ void WalkingPatternGenerator::initialize_trajectory_discretization(const int & N
 }
 
 void WalkingPatternGenerator::construct_trajectories(){
-  double t_trajectory = get_total_trajectory_time();
-  double dt = t_trajectory/N_size;
-
-  traj_SE3_tmp.set_dt(dt);
-  traj_SE3_left_foot.set_dt(dt);
-  traj_SE3_right_foot.set_dt(dt);
-  traj_ori_pelvis.set_dt(dt);
-  traj_pos_com.set_dt(dt);  
-
-  double absolute_time = 0.0;
-  int step_index = 0;
-  double state_duration = get_t_step(step_index);
-  double state_time = 0.0;
-
-  for(int i = 0; i < N_size; i++){
-
-  }
-
 }
 
 void WalkingPatternGenerator::construct_trajectories(const std::vector<Footstep> & input_footstep_list, 
@@ -303,54 +285,31 @@ void WalkingPatternGenerator::construct_trajectories(const std::vector<Footstep>
                                                      const Eigen::Vector3d & initial_com,
                                                      const Eigen::Quaterniond initial_pelvis_ori){
   
+  // Initialize r_VRP and r_vrp types
   initialize_footsteps_rvrp(input_footstep_list, initial_left_footstance, initial_right_footstance, initial_com);
+  // Compute DCM boundary conditions
   computeDCM_states();
-  compute_trajectory_lists();
 
-  for(int i = 0; i < state_list.size(); i++){
-    std::cout << "State " << i << ": " << state_list[i] << std::endl;
-    std::cout << "  Bins:" << bin_size_list[i] << std::endl;
-  }
-
-
-  double t_trajectory = get_total_trajectory_time();
-  double dt = t_trajectory/N_size;
-
+  // Set internal dt
+  internal_dt = get_total_trajectory_time()/N_size; 
+  double dt = internal_dt;
   traj_SE3_tmp.set_dt(dt);
   traj_SE3_left_foot.set_dt(dt);
   traj_SE3_right_foot.set_dt(dt);
   traj_ori_pelvis.set_dt(dt);
   traj_pos_com.set_dt(dt);  
 
+  // Construct State and Bin Size Lists
+  compute_trajectory_lists();
+
+  // Debug
+  // for(int i = 0; i < state_list.size(); i++){
+  //   std::cout << "State " << i << ": " << state_list[i] << std::endl;
+  //   std::cout << "  Bins:" << bin_size_list[i] << std::endl;
+  // }
+
+  // Begin constructing trajectories
   compute_pelvis_orientation_trajectory(initial_pelvis_ori, initial_left_footstance, initial_right_footstance);
-
-/*
-  double absolute_time = 0.0;
-  int step_index = 0;
-  double state_duration = get_t_step(step_index);
-  double state_time = 0.0;
-
-  // compute state list
-  // compute bin size list
-  // compute stance location list
-  // compute swing landing location list
-
-
-
-
-  for(int i = 0; i < N_size; i++){
-    // Check if we are still executing a walking trajectory
-    if (step_index < rvrp_type_list.size()){
-      // Check if we are in a transfer state
-      if (rvrp_type_list[step_index] == DOUBLE_SUPPORT_TRANSFER_VRP_TYPE){
-
-      } 
-      // Check if we are in the middle of a swing
-      else if (rvrp_type_list[step_index == SWING_VRP_TYPE]){
-      }
-    }
-  }
-*/
 
 }
 

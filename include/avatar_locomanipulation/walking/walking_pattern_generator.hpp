@@ -108,25 +108,6 @@ public:
                               const Eigen::Quaterniond initial_pelvis_ori);
 
 
-private:
-  // input: r_vrp_d_i - the desired virtual repelant point for the i-th step.
-  //        t_step    - the time interval to use for backwards integration
-  //        dcm_eos_i - the DCM state at the end of the i-th step. 
-  // computes the step i's initial DCM state and the end-of-step i-1's dcm state. 
-  // The computation is stored in the dcm_ini_list and dcm_eos_list. 
-  Eigen::Vector3d computeDCM_ini_i(const Eigen::Vector3d & r_vrp_d_i, const double & t_step, const Eigen::Vector3d & dcm_eos_i);
-
-  // Get the t_step for step i.
-  double get_t_step(const int & step_i);
-
-  double internal_timer;
-  double internal_t_step;
-  double internal_step_timer;
-  int internal_step_i;
-
-  int N_size;
-  double internal_dt;
-
   // trajectory objects
   Footstep mid_foot_;
   TrajSE3         traj_SE3_tmp;;
@@ -146,6 +127,27 @@ private:
                                              const Footstep & initial_left_footstance,
                                              const Footstep & initial_right_footstance);
   void setOrientationTrajectory(const int & starting_index, const int & N_bins, HermiteQuaternionCurve & curve, TrajOrientation & traj_ori);
+
+private:
+  // input: r_vrp_d_i - the desired virtual repelant point for the i-th step.
+  //        t_step    - the time interval to use for backwards integration
+  //        dcm_eos_i - the DCM state at the end of the i-th step. 
+  // computes the step i's initial DCM state and the end-of-step i-1's dcm state. 
+  // The computation is stored in the dcm_ini_list and dcm_eos_list. 
+  Eigen::Vector3d computeDCM_ini_i(const Eigen::Vector3d & r_vrp_d_i, const double & t_step, const Eigen::Vector3d & dcm_eos_i);
+
+  // Get the t_step for step i.
+  double get_t_step(const int & step_i);
+
+  double internal_timer;
+  double internal_t_step;
+  double internal_step_timer;
+  int internal_step_i;
+
+  int N_size;
+  double internal_dt;
+
+
 
 
 };
