@@ -266,14 +266,14 @@ void WalkingPatternGenerator::computeSE3_trajectory(const Footstep & init_locati
 
 void WalkingPatternGenerator::initialize_trajectory_discretization(const int & N_samples){
   N_size = N_samples;
-  // Dummy dt
-  double dt = 0.1;
+  double dt = 0.1;   // set dummy dt
 
   traj_SE3_tmp = TrajSE3(N_size, dt);
   traj_SE3_left_foot = TrajSE3(N_size, dt);
   traj_SE3_right_foot = TrajSE3(N_size, dt);
   traj_ori_pelvis = TrajOrientation(N_size, dt);
   traj_pos_com = TrajEuclidean(3, N_size, dt);
+
 }
 
 void WalkingPatternGenerator::construct_trajectories(){
@@ -310,7 +310,7 @@ void WalkingPatternGenerator::construct_trajectories(const std::vector<Footstep>
 
   // Begin constructing trajectories
   compute_pelvis_orientation_trajectory(initial_pelvis_ori, initial_left_footstance, initial_right_footstance);
-
+  compute_foot_trajectories(initial_left_footstance, initial_right_footstance);
 }
 
 
@@ -320,6 +320,7 @@ void WalkingPatternGenerator::compute_trajectory_lists(){
   double dt = t_trajectory/N_size;
   int running_bin_size = 0;
 
+  // Setting bin sizes for swing and double support trajectories
   int N_swing = int(t_ss/dt);
   int N_DS = int(t_ds/dt);
 
@@ -382,7 +383,6 @@ void WalkingPatternGenerator::compute_pelvis_orientation_trajectory(const Eigen:
 
   // Go through each state and compute pelvis orientation trajectory
   for(int state_index = 0; state_index < state_list.size(); state_index++){
-    std::cout << "state_index = " << state_index << std::endl;
     // Swing transfers should go to the midframe.
     if (state_list[state_index] == STATE_SWING){
       // Compute the orientation waypoint
@@ -422,9 +422,112 @@ void WalkingPatternGenerator::compute_pelvis_orientation_trajectory(const Eigen:
 
 
 
+void WalkingPatternGenerator::compute_foot_trajectories(const Footstep & initial_left_footstance, const Footstep & initial_right_footstance){
+  Footstep current_left_foot = initial_left_footstance;
+  Footstep current_right_foot = initial_right_footstance;
+
+  Footstep stance_step;
+  Footstep target_step;
+  int trajectory_index = 0;
+  int step_counter = 0;
+
+  // Go through each state and compute the foot trajectories
+  for(int state_index = 0; state_index < state_list.size(); state_index++){
+    // Swing foot has a trajectory during transfers, but stance foot is stationary.
+    if (state_list[state_index] == STATE_SWING){
+      // Get the target step.
+      target_step = footstep_list[step_counter];
+      // Compute the feet trajectories
+      if (target_step.robot_side == LEFT_FOOTSTEP){
+        // Compute swing trajectory for the left foot and set right foot to stationary
+        setSwingFootTrajectory(current_left_foot, target_step, trajectory_index, bin_size_list[state_index], traj_SE3_left_foot);
+        setConstantSE3(trajectory_index,  bin_size_list[state_index], traj_SE3_right_foot, current_right_foot.position, current_right_foot.orientation);
+        // Update the current steps
+        current_left_foot = target_step;
+      }else{
+        // Compute swing trajectory for the right foot and set left foot to stationary
+        setSwingFootTrajectory(current_right_foot, target_step, trajectory_index, bin_size_list[state_index], traj_SE3_right_foot);
+        setConstantSE3(trajectory_index,  bin_size_list[state_index], traj_SE3_left_foot, current_left_foot.position, current_left_foot.orientation);
+        // Update the current steps
+        current_right_foot = target_step;
+      }
+      // Update trajectory index
+      trajectory_index += bin_size_list[state_index];
+      // Consider the next footstep
+      step_counter++;
+    }
+    // Feet are stationary during transfers 
+    else{
+      for(int i = 0; i < bin_size_list[state_index]; i++){
+        traj_SE3_left_foot.set_pos(trajectory_index, current_left_foot.position, current_left_foot.orientation);
+        traj_SE3_right_foot.set_pos(trajectory_index, current_right_foot.position, current_right_foot.orientation);
+        trajectory_index++;
+      }
+    }
+
+  }
+
+
+}
 
 
 
+void WalkingPatternGenerator::setSwingFootTrajectory(const Footstep & init_location, 
+                                                     const Footstep & landing_location, 
+                                                     const int & starting_index, 
+                                                     const int & N_bins, 
+                                                     TrajSE3 & swing_foot){
 
+  // Compute where the foot will be in the middle of the trajectory
+  mid_foot_.computeMidfeet(init_location, landing_location, mid_foot_);
 
+  // Compute midfeet boundary conditions
+  // Linear velocity at the middle of the swing is the total swing travel over swing time 
+  Eigen::Vector3d mid_swing_local_foot_pos(0, 0, swing_height);
+  Eigen::Vector3d mid_swing_position = mid_foot_.position + mid_foot_.R_ori*mid_swing_local_foot_pos;
+  Eigen::Vector3d mid_swing_velocity = (landing_location.position - init_location.position)/t_ss;
 
+  // Construct Position trajectory  
+  HermiteCurveVec trajectory_init_to_mid(init_location.position, Eigen::Vector3d::Zero(3), 
+                                         mid_swing_position, mid_swing_velocity);
+
+  HermiteCurveVec trajectory_mid_to_end(mid_swing_position, mid_swing_velocity, 
+                                        landing_location.position, Eigen::Vector3d::Zero(3));
+
+  // Construct Quaternion trajectory
+  Eigen::Vector3d ang_vel_start; ang_vel_start.setZero();
+  Eigen::Vector3d ang_vel_end; ang_vel_end.setZero();
+  HermiteQuaternionCurve foot_ori_trajectory(init_location.orientation, ang_vel_start,
+                                             landing_location.orientation, ang_vel_end);
+
+  // Populate SE3 trajectory object --------------
+  int N_pre_mid = N_bins/2;
+  double s = 0.0;
+  Eigen::Quaterniond quat;
+  Eigen::Vector3d pos;
+  // Set the foot orientation trajectory
+  for(size_t i = 0; i < N_bins; i++){
+    s = (double) i/N_bins;
+    foot_ori_trajectory.evaluate(s, quat);
+    swing_foot.traj_ori.set_quat(starting_index + i, quat);
+  }  
+  // Set the position trajectory before the midpoint
+  for(size_t i = 0; i < N_pre_mid; i++){
+    s = (double) i/N_pre_mid;
+    pos = trajectory_init_to_mid.evaluate(s);
+    swing_foot.traj_pos.set_pos(starting_index + i, pos);
+  }  
+  // Set the position trajectory after the midpoint:
+  for(size_t i = N_pre_mid; i < N_bins; i++){
+    s = (double) (i-N_pre_mid)/(N_bins - N_pre_mid);
+    pos = trajectory_mid_to_end.evaluate(s);
+    swing_foot.traj_pos.set_pos(starting_index + i, pos);
+  }    
+
+}
+
+void WalkingPatternGenerator::setConstantSE3(const int & starting_index, const int & N_bins, TrajSE3 & traj, const Eigen::Vector3d & pos, const Eigen::Quaterniond & quat){
+  for(size_t i = 0; i < N_bins; i++){
+    traj.set_pos(starting_index + i, pos, quat);
+  }
+}

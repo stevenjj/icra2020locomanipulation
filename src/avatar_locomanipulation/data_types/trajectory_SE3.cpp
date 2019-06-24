@@ -23,6 +23,8 @@ void TrajSE3::reset_index(){
 
 // Setter functions
 void TrajSE3::set_N_dt(const int & N_size_in, const double & dt_in){
+  N_size = N_size_in;
+  dt = dt_in;
   traj_pos = TrajEuclidean(3, N_size_in, dt_in);
   traj_ori = TrajOrientation(N_size_in, dt_in);
 }

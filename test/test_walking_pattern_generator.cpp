@@ -17,6 +17,35 @@ void printQuat(const Eigen::Quaternion<double> & quat){
                 quat.w() << " " << std::endl;
 }
 
+void printTrajOri(TrajOrientation & traj_ori){
+  Eigen::AngleAxisd aa;
+  Eigen::Quaterniond quat_out;
+
+  std::cout << "i,x,y,z,angle" << std::endl;
+  for(size_t i = 0; i < traj_ori.get_trajectory_length(); i++){
+    traj_ori.get_quat(i, quat_out);
+    aa = quat_out;
+    std::cout << i << "," << aa.axis()[0] << "," << aa.axis()[1] << "," << aa.axis()[2] << "," << aa.angle() << std::endl;
+  }
+
+}
+
+void printTrajSE2fromSE3(TrajSE3 & traj){
+  Eigen::AngleAxisd aa;
+  Eigen::Vector3d pos_out;
+  Eigen::Quaterniond quat_out;
+
+  std::cout << "SE2 trajectory:" << std::endl;
+  std::cout << "i,x,y,z,yaw" << std::endl;
+  std::cout << "traj.get_trajectory_length() = " << traj.get_trajectory_length() << std::endl;
+  for(size_t i = 0; i < traj.get_trajectory_length(); i++){
+    traj.get_pos(i, pos_out, quat_out);
+    aa = quat_out;
+    std::cout << i << "," << pos_out[0] << "," << pos_out[1] << "," << pos_out[2] << "," << aa.axis()[2]*aa.angle() << std::endl;
+  }
+}
+
+
 void test_trajectories(){
 
   WalkingPatternGenerator wpg;
@@ -63,24 +92,24 @@ void test_trajectories(){
   wpg.initialize_trajectory_discretization(N_total);
   wpg.construct_trajectories(footstep_list, init_left_foot_stance, init_right_foot_stance, initial_com, initial_pelvis_ori);
 
-
-
+  // printTrajOri(wpg.traj_ori_pelvis);
+  printTrajSE2fromSE3(wpg.traj_SE3_left_foot);
 
   // Debug prints
-  std::cout << "VRP points" << std::endl;
-  for(int i = 0; i < wpg.rvrp_list.size(); i++){
-    std::cout << "i:" << i << " : " << wpg.rvrp_list[i].transpose() << std::endl;
-  }
+  // std::cout << "VRP points" << std::endl;
+  // for(int i = 0; i < wpg.rvrp_list.size(); i++){
+  //   std::cout << "i:" << i << " : " << wpg.rvrp_list[i].transpose() << std::endl;
+  // }
 
-  std::cout << "initial DCM states:" << std::endl;
-  for(int i = 0; i < wpg.dcm_ini_list.size(); i++){
-    std::cout << "  i:" << i << " : " << wpg.dcm_ini_list[i].transpose() << std::endl;
-  }
+  // std::cout << "initial DCM states:" << std::endl;
+  // for(int i = 0; i < wpg.dcm_ini_list.size(); i++){
+  //   std::cout << "  i:" << i << " : " << wpg.dcm_ini_list[i].transpose() << std::endl;
+  // }
 
-  std::cout << "end of step DCM states:" << std::endl;
-  for(int i = 0; i < wpg.dcm_eos_list.size(); i++){
-    std::cout << "  i:" << i << " : " << wpg.dcm_eos_list[i].transpose() << std::endl;
-  }
+  // std::cout << "end of step DCM states:" << std::endl;
+  // for(int i = 0; i < wpg.dcm_eos_list.size(); i++){
+  //   std::cout << "  i:" << i << " : " << wpg.dcm_eos_list[i].transpose() << std::endl;
+  // }
 
 
 }

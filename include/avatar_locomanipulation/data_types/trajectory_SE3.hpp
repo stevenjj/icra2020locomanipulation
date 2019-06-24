@@ -42,15 +42,12 @@ public:
 	// resets the internal index counter
 	void reset_index();
 
-protected:
-	int N_size;
-	double dt;
-	int index = 0;
-
 	TrajEuclidean traj_pos;
 	TrajOrientation traj_ori;
 
-	void increment_index();
+protected:
+	int N_size;
+	double dt;
 };
 
 #endif

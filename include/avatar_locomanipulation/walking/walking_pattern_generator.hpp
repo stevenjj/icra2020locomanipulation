@@ -126,7 +126,13 @@ public:
   void compute_pelvis_orientation_trajectory(const Eigen::Quaterniond & init_pelvis_ori,
                                              const Footstep & initial_left_footstance,
                                              const Footstep & initial_right_footstance);
+
+  void compute_foot_trajectories(const Footstep & initial_left_footstance,
+                                 const Footstep & initial_right_footstance);
+
   void setOrientationTrajectory(const int & starting_index, const int & N_bins, HermiteQuaternionCurve & curve, TrajOrientation & traj_ori);
+  void setSwingFootTrajectory(const Footstep & init_location, const Footstep & landing_location, const int & starting_index, const int & N_bins, TrajSE3 & swing_foot);
+  void setConstantSE3(const int & starting_index, const int & N_bins, TrajSE3 & traj, const Eigen::Vector3d & pos, const Eigen::Quaterniond & quat);  
 
 private:
   // input: r_vrp_d_i - the desired virtual repelant point for the i-th step.
