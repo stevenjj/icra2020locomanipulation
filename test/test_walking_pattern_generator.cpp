@@ -37,7 +37,6 @@ void printTrajSE2fromSE3(TrajSE3 & traj){
 
   std::cout << "SE2 trajectory:" << std::endl;
   std::cout << "i,x,y,z,yaw" << std::endl;
-  std::cout << "traj.get_trajectory_length() = " << traj.get_trajectory_length() << std::endl;
   for(size_t i = 0; i < traj.get_trajectory_length(); i++){
     traj.get_pos(i, pos_out, quat_out);
     aa = quat_out;
@@ -93,7 +92,9 @@ void test_trajectories(){
   wpg.construct_trajectories(footstep_list, init_left_foot_stance, init_right_foot_stance, initial_com, initial_pelvis_ori);
 
   // printTrajOri(wpg.traj_ori_pelvis);
-  printTrajSE2fromSE3(wpg.traj_SE3_left_foot);
+  // printTrajSE2fromSE3(wpg.traj_SE3_left_foot);
+  printTrajSE2fromSE3(wpg.traj_SE3_right_foot);
+
 
   // Debug prints
   // std::cout << "VRP points" << std::endl;
