@@ -84,6 +84,7 @@ void TrajOrientation::set_dt(const double & dt_in){
 }
 
 void TrajOrientation::set_quat(const int & index, const Eigen::Quaterniond & quat_in){
+  // std::cout << "set quat[" << index << "] = " << quat_in.x() << ", " << quat_in.y() << ", " << quat_in.z() << ", "<< quat_in.w() << std::endl;
   quat[index] = quat_in;    
 }
 

@@ -17,35 +17,70 @@ void printQuat(const Eigen::Quaternion<double> & quat){
                 quat.w() << " " << std::endl;
 }
 
-void testTrajectories(){
+void test_trajectories(){
+
   WalkingPatternGenerator wpg;
   wpg.initialize_trajectory_discretization(1000);
 
+  double theta = 0.0;
+  Eigen::Vector3d omega(0, 0, 1);
+  Eigen::AngleAxisd omega_aa(omega.norm(), omega/omega.norm()); 
+  Eigen::Quaterniond quat;
+  quat = omega_aa;
+
   // Initialize footstep objects
-  Footstep right_foot_stance; 
-  right_foot_stance.robot_side = RIGHT_FOOTSTEP;
+  Footstep init_right_foot_stance(Eigen::Vector3d(0, -0.125, 0), Eigen::Quaterniond(1,0,0,0), RIGHT_FOOTSTEP); 
+  Footstep init_left_foot_stance(Eigen::Vector3d(0, 0.125, 0), Eigen::Quaterniond(1,0,0,0), LEFT_FOOTSTEP); 
+  Footstep midfeet;
+  midfeet.computeMidfeet(init_left_foot_stance, init_right_foot_stance, midfeet);
   
-  Footstep left_foot_stance; 
-  left_foot_stance.robot_side = LEFT_FOOTSTEP; 
-  left_foot_stance.position[1] = 0.25; 
+  // Left footstep forward with a pi/6 CW rotation
+  omega_aa.angle() = -M_PI/6.0; quat = omega_aa;
+  Footstep step1(Eigen::Vector3d(0.25, 0.0, 0), quat, LEFT_FOOTSTEP);
+  // Right Footstep translation forward
+  Footstep step2(Eigen::Vector3d(0.25, -0.375, 0), Eigen::Quaterniond(1,0,0,0), RIGHT_FOOTSTEP); 
+  // Left Footstep with pi/4 CCW rotation
+  omega_aa.angle() = M_PI/4.0; quat = omega_aa;
+  Footstep step3(Eigen::Vector3d(0.5,-0.125, 0), quat, LEFT_FOOTSTEP);
+  // Right Footstep with pi/4 CCW rotation
+  Footstep step4(Eigen::Vector3d(0.5,-0.375, 0), quat, RIGHT_FOOTSTEP); 
 
-  // Take a left footstep forward
-  Footstep step1; 
-  step1.robot_side = LEFT_FOOTSTEP;
-  step1 = left_foot_stance; step1.position[0] += 0.35;
-  Footstep step2; 
-  step2 = right_foot_stance; step2.position[0] = step1.position[0] + 0.35;
-  step2.robot_side = RIGHT_FOOTSTEP;
-  Footstep step3; 
-  step3 = step1; step3.position[0] = step2.position[0] + 0.35;
-  step3.robot_side = LEFT_FOOTSTEP;
+  // init_right_foot_stance.printInfo();
+  // init_left_foot_stance.printInfo();
+  // midfeet.printInfo();
+  // step1.printInfo();
+  // step2.printInfo();
+  // step3.printInfo();
+  // step4.printInfo();
+  std::vector<Footstep> footstep_list = {step1, step2, step3, step4};
 
-  right_foot_stance.printInfo();
-  left_foot_stance.printInfo();
-  step1.printInfo();
-  step2.printInfo();
-  step3.printInfo();
-  std::vector<Footstep> footstep_list = {step1, step2, step3, step3};
+  // Initialize states:
+  Eigen::Vector3d initial_com(midfeet.position[0], midfeet.position[1], 0.85);
+  Eigen::Quaterniond initial_pelvis_ori(midfeet.orientation);
+
+  // Construct the trajectories:
+  int N_total = 1000; // 1000 steps total
+  wpg.initialize_trajectory_discretization(N_total);
+  wpg.construct_trajectories(footstep_list, init_left_foot_stance, init_right_foot_stance, initial_com, initial_pelvis_ori);
+
+
+
+
+  // Debug prints
+  std::cout << "VRP points" << std::endl;
+  for(int i = 0; i < wpg.rvrp_list.size(); i++){
+    std::cout << "i:" << i << " : " << wpg.rvrp_list[i].transpose() << std::endl;
+  }
+
+  std::cout << "initial DCM states:" << std::endl;
+  for(int i = 0; i < wpg.dcm_ini_list.size(); i++){
+    std::cout << "  i:" << i << " : " << wpg.dcm_ini_list[i].transpose() << std::endl;
+  }
+
+  std::cout << "end of step DCM states:" << std::endl;
+  for(int i = 0; i < wpg.dcm_eos_list.size(); i++){
+    std::cout << "  i:" << i << " : " << wpg.dcm_eos_list[i].transpose() << std::endl;
+  }
 
 
 }
@@ -265,8 +300,9 @@ void hermite_curves_test(){
 }
 
 int main(int argc, char ** argv){
-  hermite_curves_test();
-  dcm_test();  
-  midfeet_test();
+  // hermite_curves_test();
+  // dcm_test();  
+  // midfeet_test();
+  test_trajectories();
   return 0;
 }

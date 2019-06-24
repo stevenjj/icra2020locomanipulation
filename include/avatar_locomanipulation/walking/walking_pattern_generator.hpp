@@ -125,6 +125,7 @@ private:
   int internal_step_i;
 
   int N_size;
+  double internal_dt;
 
   // trajectory objects
   Footstep mid_foot_;
@@ -141,9 +142,9 @@ private:
   std::vector<Footstep> swing_landing_location_list;
 
   void compute_trajectory_lists();
-  void compute_pelvis_orientation(const Eigen::Quaterniond & init_pelvis_ori,
-                                  const Footstep & initial_left_footstance,
-                                  const Footstep & initial_right_footstance);
+  void compute_pelvis_orientation_trajectory(const Eigen::Quaterniond & init_pelvis_ori,
+                                             const Footstep & initial_left_footstance,
+                                             const Footstep & initial_right_footstance);
   void setOrientationTrajectory(const int & starting_index, const int & N_bins, HermiteQuaternionCurve & curve, TrajOrientation & traj_ori);
 
 
