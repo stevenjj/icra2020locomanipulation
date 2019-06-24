@@ -3,6 +3,11 @@
 int const WalkingPatternGenerator::SWING_VRP_TYPE = 0;
 int const WalkingPatternGenerator::DOUBLE_SUPPORT_TRANSFER_VRP_TYPE = 1;
 
+int const WalkingPatternGenerator::STATE_INITIAL_TRANSFER = 0;
+int const WalkingPatternGenerator::STATE_SWING = 1;
+int const WalkingPatternGenerator::STATE_DOUBLE_SUPPORT = 2;
+int const WalkingPatternGenerator::STATE_FINAL_TRANSFER = 3;
+
 WalkingPatternGenerator::WalkingPatternGenerator(){
     std::cout << "[WalkingPatternGenerator] Constructed" << std::endl;
 } 
@@ -175,7 +180,7 @@ void WalkingPatternGenerator::initialize_internal_clocks(){
 double WalkingPatternGenerator::get_t_step(const int & step_i){
   // Use transfer time for double support and overall step time for swing types
   if ((rvrp_type_list[step_i]) == DOUBLE_SUPPORT_TRANSFER_VRP_TYPE){
-    return t_it;
+    return t_ds;
   }else if (rvrp_type_list[step_i] == SWING_VRP_TYPE){
     return t_ds + t_ss;
   }else{
@@ -227,7 +232,7 @@ double WalkingPatternGenerator::get_total_trajectory_time(){
   for(int i = 0; i < rvrp_type_list.size(); i++){
     total_time += get_t_step(i);
   }
-  return total_time;
+  return total_time + t_settle;
 }
 
   // Swing trajectory calculation
@@ -260,7 +265,7 @@ void WalkingPatternGenerator::computeSE3_trajectory(const Footstep & init_locati
 
 void WalkingPatternGenerator::initialize_trajectory_discretization(const int & N_samples){
   N_size = N_samples;
-  double t_trajectory = get_total_trajectory_time() + t_settle;
+  double t_trajectory = get_total_trajectory_time();
   double dt = t_trajectory/N_size;
 
   traj_SE3_tmp = TrajSE3(N_size, dt);
@@ -271,7 +276,7 @@ void WalkingPatternGenerator::initialize_trajectory_discretization(const int & N
 }
 
 void WalkingPatternGenerator::construct_trajectories(){
-  double t_trajectory = get_total_trajectory_time() + t_settle;
+  double t_trajectory = get_total_trajectory_time();
   double dt = t_trajectory/N_size;
 
   traj_SE3_tmp.set_dt(dt);
@@ -299,7 +304,7 @@ void WalkingPatternGenerator::construct_trajectories(const std::vector<Footstep>
   
   initialize_footsteps_rvrp(input_footstep_list, initial_left_footstance, initial_right_footstance, initial_com);
 
-  double t_trajectory = get_total_trajectory_time() + t_settle;
+  double t_trajectory = get_total_trajectory_time();
   double dt = t_trajectory/N_size;
 
   traj_SE3_tmp.set_dt(dt);
@@ -313,11 +318,20 @@ void WalkingPatternGenerator::construct_trajectories(const std::vector<Footstep>
   double state_duration = get_t_step(step_index);
   double state_time = 0.0;
 
+  // compute state list
+  // compute bin size list
+  // compute stance location list
+  // compute swing landing location list
+
+
+
+
   for(int i = 0; i < N_size; i++){
     // Check if we are still executing a walking trajectory
     if (step_index < rvrp_type_list.size()){
       // Check if we are in a transfer state
       if (rvrp_type_list[step_index] == DOUBLE_SUPPORT_TRANSFER_VRP_TYPE){
+
       } 
       // Check if we are in the middle of a swing
       else if (rvrp_type_list[step_index == SWING_VRP_TYPE]){
@@ -329,10 +343,108 @@ void WalkingPatternGenerator::construct_trajectories(const std::vector<Footstep>
 }
 
 
+void WalkingPatternGenerator::compute_trajectory_lists(){
+  // Compute the state and bin size lists
+  double t_trajectory = get_total_trajectory_time();
+  double dt = t_trajectory/N_size;
+  int bin_size = 0;
+  int running_bin_size = 0;
+
+  for(int i = 0; i < rvrp_type_list.size(); i++){
+    // The first rvrp should be a state transfer
+    if (i == 0){
+      // Use double support transfer time
+      bin_size = ((int) t_ds/dt);
+      state_list.push_back(STATE_INITIAL_TRANSFER);
+      bin_size_list.push_back(bin_size);
+      running_bin_size += bin_size;
+      continue;
+    }
+    // Check if it's a swing or double support
+    if (rvrp_type_list[i] == SWING_VRP_TYPE){
+      state_list.push_back(STATE_SWING);
+      // Use single-support swing time
+      bin_size = (int) (t_ss)/dt;
+    }else if (rvrp_type_list[i] == DOUBLE_SUPPORT_TRANSFER_VRP_TYPE){
+      state_list.push_back(STATE_DOUBLE_SUPPORT);
+      // Use double support time
+      bin_size = (int) (t_ds)/dt;
+    }
+    // Store the bin size
+    bin_size_list.push_back(bin_size);
+    running_bin_size += bin_size;
+  }
+  // Always append a final transfer at the end of the rvrp list
+  state_list.push_back(STATE_FINAL_TRANSFER);
+  bin_size_list.push_back(N_size - running_bin_size);
+}
+
+void WalkingPatternGenerator::setOrientationTrajectory(const int & starting_index, const int & N_bins, HermiteQuaternionCurve & curve, TrajOrientation & traj_ori){
+  double s = 0.0;
+  Eigen::Quaterniond quat;
+  for(size_t i = 0; i < N_bins; i++){
+    s = (double) i/N_bins;
+    curve.evaluate(s, quat);
+    traj_ori.set_quat(starting_index + i, quat);
+  }
+
+}
+
+void WalkingPatternGenerator::compute_pelvis_orientation(const Eigen::Quaterniond & init_pelvis_ori,
+                                                         const Footstep & initial_left_footstance,
+                                                         const Footstep & initial_right_footstance){
+  Footstep prev_left_stance = initial_left_footstance;
+  Footstep prev_right_stance = initial_right_footstance;
+
+  Footstep stance_step;
+  Footstep target_step;
+  Footstep midfeet;
+
+  Eigen::Quaterniond current_pelvis_ori = init_pelvis_ori;
+
+  int trajectory_index = 0;
+  int step_counter = 0;
+  // Go through each state and compute pelvis orientation trajectory
+  for(int state_index = 0; state_index < state_list.size(); state_index++){
+    // Swing transfers should go to the midframe.
+    if (state_list[state_index] == STATE_SWING){
+      // Compute the orientation waypoint
+      target_step = footstep_list[step_counter];
+      // Get the stance location and update the stance location 
+      if (target_step.robot_side == LEFT_FOOTSTEP){
+        stance_step = prev_right_stance;
+        prev_left_stance = target_step;
+      }else{
+        stance_step = prev_left_stance;
+        prev_right_stance = target_step;
+      }
+      // Midfeet orientation is the waypoint orientation
+      midfeet.computeMidfeet(stance_step, target_step, midfeet);
+      // index-1 is valid because we never start with the swing state.
+      traj_ori_pelvis.get_quat(trajectory_index-1, current_pelvis_ori);
+      // Set quaternion curve with 0 ang vel and ang acc boundary conditions
+      HermiteQuaternionCurve quat_curve(current_pelvis_ori, Eigen::Vector3d(0,0,0), midfeet.orientation, Eigen::Vector3d(0,0,0));
+      // Set the orientation trajectory     
+      setOrientationTrajectory(trajectory_index, bin_size_list[state_index], quat_curve, traj_ori_pelvis);
+      trajectory_index += bin_size_list[state_index];
+      // Update the new current_pelvis_orientation
+      traj_ori_pelvis.get_quat(trajectory_index-1, current_pelvis_ori);
+    }
+    // Initial transfers, double support, and final transfers should keep orientation constant
+    else{
+      for(int i = 0; i < bin_size_list[state_index]; i++){
+        traj_ori_pelvis.set_quat(trajectory_index, current_pelvis_ori);
+        trajectory_index++;
+      }
+    }
+
+    // Double Support and Final transfers should keep the initial pelvis orientation
 
 
 
+  }
 
+}
 
 
 

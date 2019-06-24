@@ -20,6 +20,11 @@ public:
   static int const SWING_VRP_TYPE;
   static int const DOUBLE_SUPPORT_TRANSFER_VRP_TYPE;
 
+  static int const STATE_INITIAL_TRANSFER;
+  static int const STATE_SWING;
+  static int const STATE_DOUBLE_SUPPORT;
+  static int const STATE_FINAL_TRANSFER;
+
   std::vector<Footstep> footstep_list;
 
   std::vector<Eigen::Vector3d> rvrp_list; // List of virtual repelant points.
@@ -38,10 +43,9 @@ public:
   double z_vrp = 0.95; // desired VRP height / CoM height
   double b = std::sqrt(z_vrp/gravity); // time constant of DCM dynamics  
 
-  double t_it = 0.9; // initial transfer time
   double t_ds = 0.9; // time in double support
   double t_ss = 1.2; // time in single support
-  double t_settle = 2.0; // settling time at the end of the full walking trajectory
+  double t_settle = -b*log(0.001); // settling time at the end of the full walking trajectory 
 
   double alpha = 0.5; // ratio between double initial and final double support time
 
@@ -77,7 +81,6 @@ public:
   void get_average_rvrp(const Footstep & footstance_1, const Footstep & footstance_2, Eigen::Vector3d & average_rvrp);
 
   // Swing trajectory calculation
-  void compute_pelvis_orientation(const Eigen::Quaterniond & init_pelvis_ori);
   void computeSE3_trajectory(const Footstep & init_location, const Footstep & landing_location);
 
   // computes all the dcm states. Computation properly populates the dcm_ini_list and dcm_eos_list
@@ -130,6 +133,18 @@ private:
   TrajSE3         traj_SE3_right_foot;
   TrajOrientation traj_ori_pelvis;
   TrajEuclidean   traj_pos_com;
+
+  std::vector<int> state_list;
+  std::vector<int> bin_size_list;
+  std::vector<int> stance_list;
+  std::vector<Footstep> stance_location_list;
+  std::vector<Footstep> swing_landing_location_list;
+
+  void compute_trajectory_lists();
+  void compute_pelvis_orientation(const Eigen::Quaterniond & init_pelvis_ori,
+                                  const Footstep & initial_left_footstance,
+                                  const Footstep & initial_right_footstance);
+  void setOrientationTrajectory(const int & starting_index, const int & N_bins, HermiteQuaternionCurve & curve, TrajOrientation & traj_ori);
 
 
 };

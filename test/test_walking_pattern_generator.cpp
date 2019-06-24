@@ -151,7 +151,7 @@ int main(int argc, char ** argv){
   std::cout << x_com.transpose() << std::endl;
 
   dt = 0.01;
-  double total_sim_time = wpg.get_total_trajectory_time() + 5.0;
+  double total_sim_time = wpg.get_total_trajectory_time();
   int N_steps = (int)(total_sim_time/dt);
 
   // prepare trajectory vector
