@@ -64,22 +64,9 @@ int main(int argc, char ** argv){
   pinocchio::PairIndex i;
   int j;
 
-  // std::cout << "------------geomData.collisionResults: " << std::endl;
-  // for( i = 0; i < geomData.activeCollisionPairs.size(); i++)
-  // {
-  // 		std::cout << geomData.collisionResults[i] << std::endl;
-  // }
-  // std::cout << "------------END1: " << std::endl;
-
   pinocchio::updateGeometryPlacements(model, data, geomModel, geomData, q);
   pinocchio::Index idx = geomModel.findCollisionPair(pinocchio::CollisionPair(1,10));
 
-  // std::cout << "------------geomData.collisionResults: " << std::endl;
-  // for( i = 0; i < geomData.activeCollisionPairs.size(); i++)
-  // {
-  // 		std::cout << geomData.collisionResults[i] << std::endl;
-  // }
-  // std::cout << "------------END2: " << std::endl;
 
   // this computes a collision between a single collision pair and the result is stored in the collisionResults vector
   //pinocchio::computeCollision(geomModel,geomData,idx);
@@ -87,20 +74,21 @@ int main(int argc, char ** argv){
   // alternatively, there is the function computeCollisions
   	// Compute forward kinematics, updates geom placements, and calls computeCollision for every active pairs in GeometryData
   	// rtype is bool 
-  bool collision;
-  collision = pinocchio::computeCollisions(model,data,geomModel,geomData,q);
-  std::cout << "collision? " << collision << std::endl;
-  std::cout << "------------geomData.collisionResults: " << std::endl;
-  for( i = 0; i < geomData.activeCollisionPairs.size(); i++)
-  {
-  		result = geomData.collisionResults[i];
-  		std::vector<pinocchio::fcl::Contact> contacts;
-  		result.getContacts(contacts);
-  		for(j=0; j<result.contacts.size(); j++)
-  		{
-  		std::cout << result.contacts[j]
-  		}
-  }
-    std::cout << "------------END3: " << std::endl;
+    // computeCollision which checks for each collision pain 
+      //computeCollision calls the function collide which returns if there is a collision
+  pinocchio::computeCollisions(model,data,geomModel,geomData,q);
 
+  std::cout << "------------Collision Results: " << std::endl;
+  for(j=0; j<geomData.collisionResults.size(); j++)
+  {
+    //We iterate through the collisionResults vector so we can determine if each pair is in collision
+      result = geomData.collisionResults[i];    
+      std::vector<pinocchio::fcl::Contact> contacts;
+      result.getContacts(contacts);
+      std::cout << contacts.size() << " contacts found" << std::endl;
+      for(i=0; i<contacts.size(); i++)
+      {
+        std::cout << "position: " << contacts[i].pos << std::endl;
+      }
+  }
 }
