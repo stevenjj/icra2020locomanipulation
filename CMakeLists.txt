@@ -16,7 +16,7 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
 find_package(Eigen3 3.2 REQUIRED)
 #message("eigen version:" ${EIGEN3_VERSION})
 find_package(Boost 1.58 REQUIRED COMPONENTS system)
-find_package(YamlCpp 0.5.2 REQUIRED) # Using a custom FindYamlcpp.cmake 
+find_package(YamlCpp 0.5.2 REQUIRED) # Using a custom FindYamlcpp.cmake
 
 ###################################
 ## catkin specific configuration ##
@@ -62,9 +62,12 @@ SET (HELPER_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/hermite_curve_vec.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/hermite_quaternion_curve.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/rkf45.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/convex_hull.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/pseudo_inverse.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/param_handler.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/yaml_data_saver.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/gmm_fit.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/orientation_utils.cpp
 )
 
 SET (ROS_BRIDGE_SOURCES
@@ -80,7 +83,6 @@ SET (TASK_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_3dorientation.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_joint_config.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_stack.cpp)
-
 
 SET(PROJECT_SOURCES
 	${MODEL_SOURCES}
