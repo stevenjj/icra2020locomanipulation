@@ -8,6 +8,13 @@
 #include "pinocchio/algorithm/geometry.hpp"
 // Parsers
 #include "pinocchio/parsers/urdf.hpp"
+// Spatial
+#include "pinocchio/spatial/fcl-pinocchio-conversions.hpp"
+    // allows us to define a more familiar translation and rotation and convert to SE3 as needed for GeometryObject
+    // i.e:
+    //// give the boxes defined transforms          ROTATION QUATERNION               TRANSLATION VECTOR
+    // pinocchio::fcl::Transform3f tf1 (makeQuat (cos (pi/8), 0, 0, sin (pi/8)), pinocchio::fcl::Vec3f (-2, 1, .5));
+    // SE3 placement = pinocchio::toPinocchioSE3(tf1)
 
 
 // Standard
@@ -19,9 +26,20 @@
 
 using namespace pinocchio;
 
+fcl::Quaternion3f makeQuat(double w, double x, double y, double z){
+  pinocchio::fcl::Quaternion3f q;
+  q.w() = w;
+  q.x() = x;
+  q.y() = y;
+  q.z() = z;
+  return q;
+}
 
 int main(int argc, char ** argv){
 std::vector<std::string> getBodiesList();
+  static double pi = M_PI;
+  fcl::Transform3f tf1 (makeQuat (0, 0, 0, 0), pinocchio::fcl::Vec3f (1.5, 1.5, 1.5));
+  SE3 placement = pinocchio::toPinocchioSE3(tf1);
 
 // This script is a portion of: stack-of-tasks/pinocchio/unittest/geom.cpp
 // this script creates a simple box 
@@ -85,10 +103,17 @@ std::vector<std::string> getBodiesList();
   	//it has two versions which are fed:
   		// 1 - GeometryObject 
   			// GeomModel::GeometryObject, lives in pinocchio/src/multibody/fcl.hpp (INCLUDED WITH IFNDEF IN multibody/geometry.hpp)
+        //GeometryObject(name, parentFrame, parentJoint, shared_ptr<fcl::CollisionGeometry>(collision object), placementSE3, meshPath, meshScale,...)
+        // HERE: 
+          // name = 'ff1_collision_object'
+          // parentFrame = model.getBodyId("planar1_body")
+          // parentJoint = joint_parent_1
+          // shared_ptr<fcl::CollisionGeometry> = sample
+          // placement = SE3::Identity()
   		// Optionally: 2 - corresponding model, which is used to assert the attributes of the object
   Model::JointIndex idx_geom1 = geomModel.addGeometryObject(GeometryObject("ff1_collision_object",
                                                                            model.getBodyId("planar1_body"),joint_parent_1,
-                                                                           sample,SE3::Identity(), "", Eigen::Vector3d::Ones())
+                                                                           sample,placement, "", Eigen::Vector3d::Ones())
                                                             );
   // since the version of addGEometryObject is version 1, we must set a parent joint
   geomModel.geometryObjects[idx_geom1].parentJoint = model.frames[body_id_1].parent;
@@ -110,6 +135,10 @@ std::vector<std::string> getBodiesList();
   //geomData is where collision computations will be done
   pinocchio::GeometryData geomData(geomModel);
 
+  int j, i;
+  pinocchio::PairIndex PairId;
+  pinocchio::fcl::CollisionResult result;
+
   //CollisionPair created collision pair from two collision object indexes, note index 1 < index 2, otherwise constructor will flip them
 
   std::cout << "------ Model ------ " << std::endl;
@@ -125,18 +154,87 @@ std::vector<std::string> getBodiesList();
 
   pinocchio::updateGeometryPlacements(model, data, geomModel, geomData, q);
 
+  pinocchio::computeCollisions(model,data,geomModel,geomData,q);
+
+  std::cout << "------------Collision Results: " << std::endl;
+  for(j=0; j<geomData.collisionResults.size(); j++)
+  {
+    // computeCollisions sets collisionPairIndex to the first colliding pair
+      PairId = geomData.collisionPairIndex;
+      std::cout << "PairIndex PairId: " << PairId << std::endl;
+    //We iterate through the collisionResults vector so we can determine if each pair is in collision
+      result = geomData.collisionResults[j];    
+      std::vector<pinocchio::fcl::Contact> contacts;
+      result.getContacts(contacts);
+      std::cout << contacts.size() << " contacts found" << std::endl;
+      for(i=0; i<contacts.size(); i++)
+      {
+        std::cout << "position: " << contacts[i].pos << std::endl;
+      }
+  }
   q <<  2, 0, 1, 0,
         0, 0, 1, 0 ;
 
   pinocchio::updateGeometryPlacements(model, data, geomModel, geomData, q);
+
+  std::cout << "------------Collision Results2: " << std::endl;
+  for(j=0; j<geomData.collisionResults.size(); j++)
+  {
+    // computeCollisions sets collisionPairIndex to the first colliding pair
+      PairId = geomData.collisionPairIndex;
+      std::cout << "PairIndex PairId: " << PairId << std::endl;
+    //We iterate through the collisionResults vector so we can determine if each pair is in collision
+      result = geomData.collisionResults[j];    
+      std::vector<pinocchio::fcl::Contact> contacts;
+      result.getContacts(contacts);
+      std::cout << contacts.size() << " contacts found" << std::endl;
+      for(i=0; i<contacts.size(); i++)
+      {
+        std::cout << "position: " << contacts[i].pos << std::endl;
+      }
+  }
 
   q <<  0.99, 0, 1, 0,
         0, 0, 1, 0 ;
 
   pinocchio::updateGeometryPlacements(model, data, geomModel, geomData, q);
 
+  std::cout << "------------Collision Results:3 " << std::endl;
+  for(j=0; j<geomData.collisionResults.size(); j++)
+  {
+    // computeCollisions sets collisionPairIndex to the first colliding pair
+      PairId = geomData.collisionPairIndex;
+      std::cout << "PairIndex PairId: " << PairId << std::endl;
+    //We iterate through the collisionResults vector so we can determine if each pair is in collision
+      result = geomData.collisionResults[j];    
+      std::vector<pinocchio::fcl::Contact> contacts;
+      result.getContacts(contacts);
+      std::cout << contacts.size() << " contacts found" << std::endl;
+      for(i=0; i<contacts.size(); i++)
+      {
+        std::cout << "position: " << contacts[i].pos << std::endl;
+      }
+  }
+
   q <<  1.01, 0, 1, 0,
         0, 0, 1, 0 ;
 
   pinocchio::updateGeometryPlacements(model, data, geomModel, geomData, q);
+
+  std::cout << "------------Collision Results4: " << std::endl;
+  for(j=0; j<geomData.collisionResults.size(); j++)
+  {
+    // computeCollisions sets collisionPairIndex to the first colliding pair
+      PairId = geomData.collisionPairIndex;
+      std::cout << "PairIndex PairId: " << PairId << std::endl;
+    //We iterate through the collisionResults vector so we can determine if each pair is in collision
+      result = geomData.collisionResults[j];    
+      std::vector<pinocchio::fcl::Contact> contacts;
+      result.getContacts(contacts);
+      std::cout << contacts.size() << " contacts found" << std::endl;
+      for(i=0; i<contacts.size(); i++)
+      {
+        std::cout << "position: " << contacts[i].pos << std::endl;
+      }
+  }
 }

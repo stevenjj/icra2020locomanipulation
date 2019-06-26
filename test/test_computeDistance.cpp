@@ -17,6 +17,7 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 
+
 int main(int argc, char ** argv){
   std::string filename = (argc<=1) ? THIS_PACKAGE_PATH"models/valkyrie_simplified.urdf" : argv[1];
   //const std::string srdf_filename = PINOCCHIO_SOURCE_DIR"/models/romeo/romeo_description/srdf/romeo.srdf";
@@ -32,17 +33,13 @@ int main(int argc, char ** argv){
   pinocchio::GeometryModel geomModel;
   pinocchio::urdf::buildGeom(model, filename, pinocchio::COLLISION, geomModel, packageDirs );
 
-
   geomModel.addAllCollisionPairs();
-
-  // below line exists in test code, but is uneccessary due to the fact that addAllCollisionPairs does not add pairs with same parent joint
-  //pinocchio::srdf::removeCollisionPairs(model, geomModel, srdf_filename, false)
 
   pinocchio::Data data(model);
   pinocchio::GeometryData geomData(geomModel);
-  pinocchio::fcl::CollisionResult result;
+  pinocchio::fcl::DistanceResult result;
 
-  // Initialize Configuration -----------------------
+    // Initialize Configuration -----------------------
   Eigen::VectorXd q = Eigen::VectorXd::Zero(model.nq); // Config 
   Eigen::VectorXd v = Eigen::VectorXd::Zero(model.nv); // Config Velocity
   Eigen::VectorXd a = Eigen::VectorXd::Zero(model.nv); // Config Acceleration
@@ -62,41 +59,29 @@ int main(int argc, char ** argv){
 
   // std::cout << "Initial " << q.transpose() << std::endl;
   // std::cout << "q = " << q.transpose() << std::endl;
-
-  pinocchio::PairIndex PairId;
-  int i;
   int j;
-  
+  pinocchio::PairIndex PairId;
 
   pinocchio::updateGeometryPlacements(model, data, geomModel, geomData, q);
   pinocchio::Index idx = geomModel.findCollisionPair(pinocchio::CollisionPair(1,10));
 
+  // this calls computeDistance for evey collision pair
+  	// computeDistance Computes the minimal distance between collision objects of a *SINGLE* collison pair
+  //the results are located in geomData.distanceResults
+  	// if result pos: no collision; if result neg: collision
+  	// distanceResult struct: https://github.com/flexible-collision-library/fcl/blob/9dba579158109c0164bfe0e8b4a75c16bfc788f6/include/fcl/narrowphase/distance_result.h
+  pinocchio::computeDistances(model,data,geomModel,geomData,q);
 
-  // this computes a collision between a single collision pair and the result is stored in the collisionResults vector
-  //pinocchio::computeCollision(geomModel,geomData,idx);
-
-  // alternatively, there is the function computeCollisions
-  	// Compute forward kinematics, updates geom placements, and calls computeCollision for every active pairs in GeometryData
-  	// rtype is bool 
-    // computeCollision which checks for each collision pair
-      //computeCollision calls the function collide which returns if there is a collision
-    // collisionResult struct: https://github.com/flexible-collision-library/fcl/blob/9dba579158109c0164bfe0e8b4a75c16bfc788f6/include/fcl/narrowphase/collision_result.h
-  pinocchio::computeCollisions(model,data,geomModel,geomData,q);
-
-  std::cout << "------------Collision Results: " << std::endl;
-  for(j=0; j<geomData.collisionResults.size(); j++)
+  std::cout << "------------Distance Query Results: " << std::endl;
+  for(j=0; j<geomData.distanceResults.size(); j++)
   {
-    // computeCollisions sets collisionPairIndex to the first colliding pair
-      PairId = geomData.collisionPairIndex;
-      std::cout << "PairIndex PairId: " << PairId << std::endl;
-    //We iterate through the collisionResults vector so we can determine if each pair is in collision
-      result = geomData.collisionResults[j];    
-      std::vector<pinocchio::fcl::Contact> contacts;
-      result.getContacts(contacts);
-      std::cout << contacts.size() << " contacts found" << std::endl;
-      for(i=0; i<contacts.size(); i++)
-      {
-        std::cout << "position: " << contacts[i].pos << std::endl;
-      }
+    //We iterate through the distanceResults vector so we can determine each pairs distance
+      result = geomData.distanceResults[j];  
+      // We can print the collision objects, but this is quite useless
+      	// Unsure how to go from collision object, which is an address to the name of the link it represents
+      std::cout << "collision object 1: " << result.o1 << std::endl;
+      std::cout << "collision object 2: " << result.o2 << std::endl;
+      std::cout << "result.min_distance: " << result.min_distance << std::endl;
+      //std::cout << "result.nearest_points[1]" << result.nearest_points[1] << std::endl;
   }
 }
