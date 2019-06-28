@@ -106,12 +106,10 @@ int main(int argc, char ** argv){
   std::vector<pinocchio::fcl::Contact> contacts;
 
   pinocchio::computeCollisions(model,data,geomModel,geomData,p);
-  pinocchio::computeDistances(model,data,geomModel,geomData,p);
 
   for(j=0; j<geomData.collisionResults.size(); j++)
   {
   	result = geomData.collisionResults[j];
-  	dresult = geomData.distanceResults[j];
   	pinocchio::CollisionPair idx = geomModel.collisionPairs[j];
   	std::cout << geomModel.getGeometryName(idx.first) << std::endl;
   	result.getContacts(contacts);
@@ -126,7 +124,8 @@ int main(int argc, char ** argv){
       	}
       	else
       	{
-
+      		pinocchio::computeDistance(geomModel, geomData, geomModel.findCollisionPair(idx));
+      		dresult = geomData.distanceResults[j];
       		std::cout << "Minimum Distance Between: " << geomModel.getGeometryName(idx.first) << " and " << geomModel.getGeometryName(idx.second) << " = " << dresult.min_distance << std::endl;
       	}
   }
