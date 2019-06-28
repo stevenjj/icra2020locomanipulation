@@ -138,6 +138,7 @@ std::vector<std::string> getBodiesList();
   int j, i;
   pinocchio::PairIndex PairId;
   pinocchio::fcl::CollisionResult result;
+  pinocchio::fcl::DistanceResult dresult;
 
   //CollisionPair created collision pair from two collision object indexes, note index 1 < index 2, otherwise constructor will flip them
 
@@ -172,6 +173,23 @@ std::vector<std::string> getBodiesList();
         std::cout << "position: " << contacts[i].pos << std::endl;
       }
   }
+
+  pinocchio::computeDistances(model,data,geomModel,geomData,q);
+
+  std::cout << "------------Distance Query Results: " << std::endl;
+  for(j=0; j<geomData.distanceResults.size(); j++)
+  {
+    //We iterate through the distanceResults vector so we can determine each pairs distance
+      dresult = geomData.distanceResults[j];  
+      // We can print the collision objects, but this is quite useless
+        // Unsure how to go from collision object, which is an address to the name of the link it represents
+      std::cout << "collision object 1: " << dresult.o1 << std::endl;
+      std::cout << "collision object 2: " << dresult.o2 << std::endl;
+      std::cout << "result.min_distance: " << dresult.min_distance << std::endl;
+      //std::cout << "result.nearest_points[1]" << result.nearest_points[1] << std::endl;
+  }
+
+
   q <<  2, 0, 1, 0,
         0, 0, 1, 0 ;
 
@@ -192,6 +210,20 @@ std::vector<std::string> getBodiesList();
       {
         std::cout << "position: " << contacts[i].pos << std::endl;
       }
+  }
+  pinocchio::computeDistances(model,data,geomModel,geomData,q);
+
+  std::cout << "------------Distance Query Results2: " << std::endl;
+  for(j=0; j<geomData.distanceResults.size(); j++)
+  {
+    //We iterate through the distanceResults vector so we can determine each pairs distance
+      dresult = geomData.distanceResults[j];  
+      // We can print the collision objects, but this is quite useless
+        // Unsure how to go from collision object, which is an address to the name of the link it represents
+      std::cout << "collision object 1: " << dresult.o1 << std::endl;
+      std::cout << "collision object 2: " << dresult.o2 << std::endl;
+      std::cout << "result.min_distance: " << dresult.min_distance << std::endl;
+      //std::cout << "result.nearest_points[1]" << result.nearest_points[1] << std::endl;
   }
 
   q <<  0.99, 0, 1, 0,
@@ -215,6 +247,20 @@ std::vector<std::string> getBodiesList();
         std::cout << "position: " << contacts[i].pos << std::endl;
       }
   }
+  pinocchio::computeDistances(model,data,geomModel,geomData,q);
+
+  std::cout << "------------Distance Query Results3: " << std::endl;
+  for(j=0; j<geomData.distanceResults.size(); j++)
+  {
+    //We iterate through the distanceResults vector so we can determine each pairs distance
+      dresult = geomData.distanceResults[j];  
+      // We can print the collision objects, but this is quite useless
+        // Unsure how to go from collision object, which is an address to the name of the link it represents
+      std::cout << "collision object 1: " << dresult.o1 << std::endl;
+      std::cout << "collision object 2: " << dresult.o2 << std::endl;
+      std::cout << "result.min_distance: " << dresult.min_distance << std::endl;
+      //std::cout << "result.nearest_points[1]" << result.nearest_points[1] << std::endl;
+  }
 
   q <<  1.01, 0, 1, 0,
         0, 0, 1, 0 ;
@@ -237,4 +283,19 @@ std::vector<std::string> getBodiesList();
         std::cout << "position: " << contacts[i].pos << std::endl;
       }
   }
+  pinocchio::computeDistances(model,data,geomModel,geomData,q);
+
+  std::cout << "------------Distance Query Results4: " << std::endl;
+  for(j=0; j<geomData.distanceResults.size(); j++)
+  {
+    //We iterate through the distanceResults vector so we can determine each pairs distance
+      dresult = geomData.distanceResults[j];  
+      // We can print the collision objects, but this is quite useless
+        // Unsure how to go from collision object, which is an address to the name of the link it represents
+      std::cout << "collision object 1: " << dresult.o1 << std::endl;
+      std::cout << "collision object 2: " << dresult.o2 << std::endl;
+      std::cout << "result.min_distance: " << dresult.min_distance << std::endl;
+      //std::cout << "result.nearest_points[1]" << result.nearest_points[1] << std::endl;
+  }
+
 }
