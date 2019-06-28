@@ -79,11 +79,11 @@ int main(int argc, char ** argv){
   pinocchio::Model::FrameIndex box_id = model.getBodyId("planar1_body");
   pinocchio::Model::JointIndex box_parent = model.frames[box_id].parent;
 
-  pinocchio::Model::JointIndex box_geom_id = geomModel.addGeometryObject(pinocchio::GeometryObject("ff1_collision_object",
+  pinocchio::GeometryModel::GeomIndex box_geom_id = geomModel.addGeometryObject(pinocchio::GeometryObject("box",
                                                                            model.getBodyId("planar1_body"),box_parent,
                                                                            sample,placement, "", Eigen::Vector3d::Ones())
                                                             );
-  geomModel.geometryObjects[box_geom_index].parentJoint = model.frames[box_id].parent;
+  geomModel.geometryObjects[box_geom_id].parentJoint = model.frames[box_id].parent;
 
   Eigen::VectorXd p(model.nq);
   p <<  q,
@@ -94,55 +94,257 @@ int main(int argc, char ** argv){
 
 
 //----------------------------- End Add Box to GeometryModel and give initial configuration
-  geomModel.addAllCollisionPairs();
 
+  geomModel.addAllCollisionPairs();
   pinocchio::Data data(model);
   pinocchio::GeometryData geomData(geomModel);
   pinocchio::updateGeometryPlacements(model, data, geomModel, geomData, p);
 
-  int j, i;
+  int j, i, k;
   pinocchio::fcl::CollisionResult result;
   pinocchio::fcl::DistanceResult dresult;
-  pinocchio::PairIndex PairId;
-
+  std::vector<pinocchio::fcl::Contact> contacts;
 
   pinocchio::computeCollisions(model,data,geomModel,geomData,p);
+  pinocchio::computeDistances(model,data,geomModel,geomData,p);
 
-  std::cout << "------------Collision Results: " << std::endl;
   for(j=0; j<geomData.collisionResults.size(); j++)
   {
-    // computeCollisions sets collisionPairIndex to the first colliding pair
-      PairId = geomData.collisionPairIndex;
-    //We iterate through the collisionResults vector so we can determine if each pair is in collision
-      result = geomData.collisionResults[j];    
-      std::vector<pinocchio::fcl::Contact> contacts;
-      result.getContacts(contacts);
-      //std::cout << contacts.size() << " contacts found" << std::endl;
-      if(contacts.size() != 0)
-      {
-      	for(i=0; i<contacts.size(); i++)
+  	result = geomData.collisionResults[j];
+  	dresult = geomData.distanceResults[j];
+  	pinocchio::CollisionPair idx = geomModel.collisionPairs[j];
+  	std::cout << geomModel.getGeometryName(idx.first) << std::endl;
+  	result.getContacts(contacts);
+      	if(contacts.size() != 0)
       	{
-      		std::cout << "PairIndex PairId: " << PairId << std::endl;
-        	std::cout << "position: " << contacts[i].pos << std::endl;
-        	std::cout << "-------------------" << std::endl;
+      		for(k=0; k<contacts.size(); k++)
+      		{
+      			std::cout << "Contact Found Between: " << geomModel.getGeometryName(idx.first) << " and " << geomModel.getGeometryName(idx.second) << std::endl;
+        		std::cout << "position: " << contacts[k].pos << std::endl;
+        		std::cout << "-------------------" << std::endl;
+      		}
       	}
-      }
-      
+      	else
+      	{
+
+      		std::cout << "Minimum Distance Between: " << geomModel.getGeometryName(idx.first) << " and " << geomModel.getGeometryName(idx.second) << " = " << dresult.min_distance << std::endl;
+      	}
   }
 
-//   pinocchio::computeDistances(model,data,geomModel,geomData,p);
-
-//   std::cout << "------------Distance Query Results: " << std::endl;
-//   for(j=0; j<geomData.distanceResults.size(); j++)
+//   for(i=0; i<geomModel.ngeoms-1; i++)
 //   {
-//     //We iterate through the distanceResults vector so we can determine each pairs distance
-//       dresult = geomData.distanceResults[j];  
-//       // We can print the collision objects, but this is quite useless
-//         // Unsure how to go from collision object, which is an address to the name of the link it represents
-//       std::cout << "collision object 1: " << dresult.o1 << std::endl;
-//       std::cout << "collision object 2: " << dresult.o2 << std::endl;
-//       std::cout << "result.min_distance: " << dresult.min_distance << std::endl;
-//       //std::cout << "result.nearest_points[1]" << result.nearest_points[1] << std::endl;
+//   	for(j=i+1; j<geomModel.ngeoms; j++)
+//   	{
+//   		geomModel.addCollisionPair(pinocchio::CollisionPair(i,j));
+//   		pinocchio::Index idx = geomModel.findCollisionPair(pinocchio::CollisionPair(i,j));
+// // --------- Collision Detection
+//   		pinocchio::computeCollision(geomModel, geomData, idx);
+//   		result = geomData.collisionResults[idx];
+//       	result.getContacts(contacts);
+//       	if(contacts.size() != 0)
+//       	{
+//       		for(k=0; k<contacts.size(); k++)
+//       		{
+//       			std::cout << "Contact Found Between: " << geomModel.getGeometryName(i) << " and " << geomModel.getGeometryName(j) << std::endl;
+//         		std::cout << "position: " << contacts[k].pos << std::endl;
+//         		std::cout << "-------------------" << std::endl;
+//       		}
+//       	}
+// // --------- End Collision Detection
+// // If no collision, compute distance
+//       	else
+//       	{
+//       		pinocchio::computeDistance(geomModel, geomData, idx);
+//       		dresult = geomData.distanceResults[idx];
+//       		std::cout << "Minimum Distance Between: " << geomModel.getGeometryName(i) << " and " << geomModel.getGeometryName(j) << " = " << dresult.min_distance << std::endl;
+//       	}
+//   	}
 //   }
 
+  // std::cout << "box_geom_id: " << box_geom_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex pelvis_id = geomModel.getGeometryId("pelvis_0");
+  // std::cout << "pelvis_id: " << pelvis_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftHipYawLink_id = geomModel.getGeometryId("leftHipYawLink_0");
+  // std::cout << "leftHipYawLink_id: " << leftHipYawLink_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftHipRollLink_id = geomModel.getGeometryId("leftHipRollLink_0");
+  // std::cout << "leftHipRollLink_id: " << leftHipRollLink_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftHipPitchLink_id = geomModel.getGeometryId("leftHipPitchLink_0");
+  // std::cout << "leftHipPitchLink_id: " << leftHipPitchLink_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftKneePitchLink_id = geomModel.getGeometryId("leftKneePitchLink_0");
+  // std::cout << "leftKneePitchLink_id: " << leftKneePitchLink_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftAnklePitchLink_id = geomModel.getGeometryId("leftAnklePitchLink_0");
+  // std::cout << "leftAnklePitchLink_id: " << leftAnklePitchLink_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftFoot_id = geomModel.getGeometryId("leftFoot_0");
+  // std::cout << "leftFoot_id: " << leftFoot_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex rightHipYawLink_id = geomModel.getGeometryId("rightHipYawLink_0");
+  // std::cout << "rightHipYawLink_id: " << rightHipYawLink_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex rightHipRollLink_id = geomModel.getGeometryId("rightHipRollLink_0");
+  // std::cout << "rightHipRollLink_id: " << rightHipRollLink_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex rightHipPitchLink_id = geomModel.getGeometryId("rightHipPitchLink_0");
+  // std::cout << "rightHipPitchLink_id: " << rightHipPitchLink_id << std::endl;
+  
+  // pinocchio::GeometryModel::GeomIndex rightKneePitchLink_id = geomModel.getGeometryId("rightKneePitchLink_0");
+  // std::cout << "rightKneePitchLink_id: " << rightKneePitchLink_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex rightAnklePitchLink_id = geomModel.getGeometryId("rightAnklePitchLink_0");
+  // std::cout << "rightAnklePitchLink_id: " << rightAnklePitchLink_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex rightFoot_id = geomModel.getGeometryId("rightFoot_0");
+  // std::cout << "rightFoot_id: " << rightFoot_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex torsoYawLink_id = geomModel.getGeometryId("torsoYawLink_0");
+  // std::cout << "torsoYawLink_id: " << torsoYawLink_id << std::endl;
+  
+  // pinocchio::GeometryModel::GeomIndex torsoPitchLink_id = geomModel.getGeometryId("torsoPitchLink_0");
+  // std::cout << "torsoPitchLink_id: " << torsoPitchLink_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex torso_id = geomModel.getGeometryId("torso_0");
+  // std::cout << "torso_id: " << torso_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftShoulderPitchLink_id = geomModel.getGeometryId("leftShoulderPitchLink_0");
+  // std::cout << "leftShoulderPitchLink_id: " << leftShoulderPitchLink_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftShoulderRollLink_id = geomModel.getGeometryId("leftShoulderRollLink_0");
+  // std::cout << "leftShoulderRollLink_id: " << leftShoulderRollLink_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftElbowPitchLink_id = geomModel.getGeometryId("leftElbowPitchLink_0");
+  // std::cout << "leftElbowPitchLink_id: " << leftElbowPitchLink_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftForearmLink_id = geomModel.getGeometryId("leftForearmLink_0");
+  // std::cout << "leftForearmLink_id: " << leftForearmLink_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftWristRollLink_id = geomModel.getGeometryId("leftWristRollLink_0");
+  // std::cout << "leftWristRollLink_id: " << leftWristRollLink_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftPalm_id = geomModel.getGeometryId("leftPalm_0");
+  // std::cout << "leftPalm_id: " << leftPalm_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftIndexFingerPitch1Link_id = geomModel.getGeometryId("leftIndexFingerPitch1Link_0");
+  // std::cout << "leftIndexFingerPitch1Link_id: " << leftIndexFingerPitch1Link_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftIndexFingerPitch2Link_id = geomModel.getGeometryId("leftIndexFingerPitch2Link_0");
+  // std::cout << "leftIndexFingerPitch2Link_id: " << leftIndexFingerPitch2Link_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftIndexFingerPitch3Link_id = geomModel.getGeometryId("leftIndexFingerPitch3Link_0");
+  // std::cout << "leftIndexFingerPitch3Link_id: " << leftIndexFingerPitch3Link_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftMiddleFingerPitch1Link_id = geomModel.getGeometryId("leftMiddleFingerPitch1Link_0");
+  // std::cout << "leftMiddleFingerPitch1Link_id: " << leftMiddleFingerPitch1Link_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftMiddleFingerPitch2Link_id = geomModel.getGeometryId("leftMiddleFingerPitch2Link_0");
+  // std::cout << "leftMiddleFingerPitch2Link_id: " << leftMiddleFingerPitch2Link_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftMiddleFingerPitch3Link_id = geomModel.getGeometryId("leftMiddleFingerPitch3Link_0");
+  // std::cout << "leftMiddleFingerPitch3Link_id: " << leftMiddleFingerPitch3Link_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftPinkyPitch1Link_id = geomModel.getGeometryId("leftPinkyPitch1Link_0");
+  // std::cout << "leftPinkyPitch1Link_id: " << leftPinkyPitch1Link_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftPinkyPitch2Link_id = geomModel.getGeometryId("leftPinkyPitch2Link_0");
+  // std::cout << "leftPinkyPitch2Link_id: " << leftPinkyPitch2Link_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftPinkyPitch3Link_id = geomModel.getGeometryId("leftPinkyPitch3Link_0");
+  // std::cout << "leftPinkyPitch3Link_id: " << leftPinkyPitch3Link_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftThumbRollLink_id = geomModel.getGeometryId("leftThumbRollLink_0");
+  // std::cout << "leftThumbRollLink_id: " << leftThumbRollLink_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftThumbPitch1Link_id = geomModel.getGeometryId("leftThumbPitch1Link_0");
+  // std::cout << "leftThumbPitch1Link_id: " << leftThumbPitch1Link_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftThumbPitch2Link_id = geomModel.getGeometryId("leftThumbPitch2Link_0");
+  // std::cout << "leftThumbPitch2Link_id: " << leftThumbPitch2Link_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftThumbPitch3Link_id = geomModel.getGeometryId("leftThumbPitch3Link_0");
+  // std::cout << "leftThumbPitch3Link_id: " << leftThumbPitch3Link_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex lowerNeckPitchLink_id = geomModel.getGeometryId("lowerNeckPitchLink_0");
+  // std::cout << "lowerNeckPitchLink_id: " << lowerNeckPitchLink_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex neckYawLink_id = geomModel.getGeometryId("neckYawLink_0");
+  // std::cout << "neckYawLink_id: " << neckYawLink_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex upperNeckPitchLink_id = geomModel.getGeometryId("upperNeckPitchLink_0");
+  // std::cout << "upperNeckPitchLink_id: " << upperNeckPitchLink_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex head_id = geomModel.getGeometryId("head_0");
+  // std::cout << "head_id: " << head_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex head_1_id = geomModel.getGeometryId("head_1");
+  // std::cout << "head_1_id: " << head_1_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex hokuyo_link_id = geomModel.getGeometryId("hokuyo_link_0");
+  // std::cout << "hokuyo_link_id: " << hokuyo_link_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex hokuyo_link_1_id = geomModel.getGeometryId("hokuyo_link_1");
+  // std::cout << "hokuyo_link_1_id: " << hokuyo_link_1_id << std::endl;
+  
+  // pinocchio::GeometryModel::GeomIndex rightShoulderPitchLink_id = geomModel.getGeometryId("rightShoulderPitchLink_0");
+  // std::cout << "rightShoulderPitchLink_id: " << rightShoulderPitchLink_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex rightShoulderRollLink_id = geomModel.getGeometryId("rightShoulderRollLink_0");
+  // std::cout << "rightShoulderRollLink_0: " << rightShoulderRollLink_0 << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex rightElbowPitchLink_id = geomModel.getGeometryId("rightElbowPitchLink_0");
+  // std::cout << "rightElbowPitchLink_id: " << rightElbowPitchLink_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex rightForearmLink_id = geomModel.getGeometryId("rightForearmLink_0");
+  // std::cout << "rightForearmLink_id: " << rightForearmLink_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex rightWristRollLink_id = geomModel.getGeometryId("rightWristRollLink_0");
+  // std::cout << "rightWristRollLink_id: " << rightWristRollLink_id << std::endl;
+
+  // //-/////////////////////////////////////////////////////////////////
+
+  // pinocchio::GeometryModel::GeomIndex leftPalm_id = geomModel.getGeometryId("leftPalm_0");
+  // std::cout << "leftPalm_id: " << leftPalm_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftIndexFingerPitch1Link_id = geomModel.getGeometryId("leftIndexFingerPitch1Link_0");
+  // std::cout << "leftIndexFingerPitch1Link_id: " << leftIndexFingerPitch1Link_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftIndexFingerPitch2Link_id = geomModel.getGeometryId("leftIndexFingerPitch2Link_0");
+  // std::cout << "leftIndexFingerPitch2Link_id: " << leftIndexFingerPitch2Link_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftIndexFingerPitch3Link_id = geomModel.getGeometryId("leftIndexFingerPitch3Link_0");
+  // std::cout << "leftIndexFingerPitch3Link_id: " << leftIndexFingerPitch3Link_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftMiddleFingerPitch1Link_id = geomModel.getGeometryId("leftMiddleFingerPitch1Link_0");
+  // std::cout << "leftMiddleFingerPitch1Link_id: " << leftMiddleFingerPitch1Link_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftMiddleFingerPitch2Link_id = geomModel.getGeometryId("leftMiddleFingerPitch2Link_0");
+  // std::cout << "leftMiddleFingerPitch2Link_id: " << leftMiddleFingerPitch2Link_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftMiddleFingerPitch3Link_id = geomModel.getGeometryId("leftMiddleFingerPitch3Link_0");
+  // std::cout << "leftMiddleFingerPitch3Link_id: " << leftMiddleFingerPitch3Link_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftPinkyPitch1Link_id = geomModel.getGeometryId("leftPinkyPitch1Link_0");
+  // std::cout << "leftPinkyPitch1Link_id: " << leftPinkyPitch1Link_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftPinkyPitch2Link_id = geomModel.getGeometryId("leftPinkyPitch2Link_0");
+  // std::cout << "leftPinkyPitch2Link_id: " << leftPinkyPitch2Link_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftPinkyPitch3Link_id = geomModel.getGeometryId("leftPinkyPitch3Link_0");
+  // std::cout << "leftPinkyPitch3Link_id: " << leftPinkyPitch3Link_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftThumbRollLink_id = geomModel.getGeometryId("leftThumbRollLink_0");
+  // std::cout << "leftThumbRollLink_id: " << leftThumbRollLink_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftThumbPitch1Link_id = geomModel.getGeometryId("leftThumbPitch1Link_0");
+  // std::cout << "leftThumbPitch1Link_id: " << leftThumbPitch1Link_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftThumbPitch2Link_id = geomModel.getGeometryId("leftThumbPitch2Link_0");
+  // std::cout << "leftThumbPitch2Link_id: " << leftThumbPitch2Link_id << std::endl;
+
+  // pinocchio::GeometryModel::GeomIndex leftThumbPitch3Link_id = geomModel.getGeometryId("leftThumbPitch3Link_0");
+  // std::cout << "leftThumbPitch3Link_id: " << leftThumbPitch3Link_id << std::endl;
 }
