@@ -123,11 +123,10 @@ int main(int argc, char ** argv){
 
   Eigen::VectorXd r(valkyriemodel.nq);
   r << q;
+
   pinocchio::Data valkyrieboxdata(valkyriemodel);
-
   pinocchio::GeometryData geomDataValkyrieBox(geomValkyrie);
-
-  pinocchio::updateGeometryPlacements(valkyriemodel, valkyrieboxdata, geomValkyrie, geomDataValkyrieBox, r);
+  pinocchio::updateGeometryPlacements(valkyriemodel, valkyrieboxdata, geomValkyrie, geomDataValkyrieBox, q);
 
   int j, i, k;
   pinocchio::fcl::CollisionResult result;
@@ -158,4 +157,6 @@ int main(int argc, char ** argv){
       		std::cout << "Minimum Distance Between: " << geomValkyrie.getGeometryName(idx.first) << " and " << geomValkyrie.getGeometryName(idx.second) << " = " << dresult.min_distance << std::endl;
       	}
   }
+
+
 }
