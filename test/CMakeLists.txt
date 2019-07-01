@@ -6,6 +6,7 @@ add_executable(test_computeCollision test_computeCollision.cpp ${PROJECT_SOURCES
 add_executable(test_computeDistance test_computeDistance.cpp ${PROJECT_SOURCES})
 add_executable(test_boxbox_computeDistance test_boxbox_computeDistance.cpp ${PROJECT_SOURCES})
 add_executable(test_boxrobot test_boxrobot.cpp ${PROJECT_SOURCES})
+add_executable(test_appendGeometry test_appendGeometry.cpp ${PROJECT_SOURCES})
 
 target_link_libraries(test_load_urdf_model ${catkin_LIBRARIES})
 target_link_libraries(test_valkyrie_model  ${catkin_LIBRARIES})
@@ -15,3 +16,4 @@ target_link_libraries(test_computeCollision ${catkin_LIBRARIES})
 target_link_libraries(test_computeDistance ${catkin_LIBRARIES})
 target_link_libraries(test_boxbox_computeDistance ${catkin_LIBRARIES})
 target_link_libraries(test_boxrobot ${catkin_LIBRARIES})
+target_link_libraries(test_appendGeometry ${catkin_LIBRARIES})
