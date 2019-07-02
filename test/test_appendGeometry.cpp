@@ -10,6 +10,7 @@
 // Algorithms
 #include "pinocchio/algorithm/geometry.hpp"
 #include "pinocchio/algorithm/kinematics.hpp"
+#include "pinocchio/algorithm/model.hpp"
 // Spatial
 #include "pinocchio/spatial/fcl-pinocchio-conversions.hpp"
 // Standard
@@ -27,17 +28,12 @@ pinocchio::fcl::Quaternion3f makeQuat(double w, double x, double y, double z){
   q.z() = z;
   return q;
 }
-//NOTES:
-//	it looks like to update the configuration vector, we have to start from the top
-//		recreate geomValkyrie and geomBox and redefine p,q and then go thru the whole song and dance
-//			i.e re appendGeometryModel
-//	it seems like we still feed an unchanged q vector to computeCollisions and computeDistance,
-//		but still it also checks collisions with the box
+
 
 int main(int argc, char ** argv){
 
   pinocchio::Model valkyriemodel, boxmodel, valkyrieboxmodel;
-  pinocchio::GeometryModel geomValkyrie, geomBox;
+  pinocchio::GeometryModel geomValkyrie, geomBox, geomValkyrieBox;
 
   //----------------- Robot Model
   std::string filename = (argc<=1) ? THIS_PACKAGE_PATH"models/valkyrie_simplified.urdf" : argv[1];
@@ -111,21 +107,26 @@ int main(int argc, char ** argv){
   std::cout << "q.transpose: " << q.transpose() << std::endl;
   std::cout << "p.transpose: " << p.transpose() << std::endl;
 
-  // Appends the second argument to the first (geomBox appended to geomValkyrie)
-  // Note: the geomDataValkyrie corresponding to geomValkyrie will not be valid anymore, 
-  	//and should be updated (or more simply, re-created from the new setting of geomValkyrie).
-  pinocchio::appendGeometryModel(geomValkyrie, geomBox);
+  // Append model: appends boxmodel to valkyrie model, and geomBox to geomValkyrie
+  	// appends at some frame index fid with the relative config SE3::Identity()
+  		// and it outputs to the final model and geomModel
+  	// setting fid = valkyriemodel.frames.size() means that it is added to the last frame
+  pinocchio::appendModel(valkyriemodel, boxmodel, geomValkyrie, geomBox, valkyriemodel.frames.size()-1, pinocchio::SE3::Identity(), valkyrieboxmodel, geomValkyrieBox);
 
-  std::cout << "geomBox.ngeoms: " << geomBox.ngeoms << std::endl;
-  std::cout << "geomValkyrie.ngeoms: " << geomValkyrie.ngeoms << std::endl;
-
-  std::cout << "q.transpose: " << q.transpose() << std::endl;
-  std::cout << "p.transpose: " << p.transpose() << std::endl;
+  std::cout << "geomValkyrieBox.ngeoms: " << geomValkyrieBox.ngeoms << std::endl;
+  std::cout << "boxmodel.nq: " << boxmodel.nq << std::endl;
+  std::cout << "valkyriemodel.nq: " << valkyriemodel.nq << std::endl;
+  std::cout << "valkyrieboxmodel.nq: " << valkyrieboxmodel.nq << std::endl;
 //---------------- End Append
 
-  // Create new geomData
-  pinocchio::GeometryData geomDataValkyrieBox(geomValkyrie);
-  pinocchio::updateGeometryPlacements(valkyriemodel, valkyriedata, geomValkyrie, geomDataValkyrieBox, q);
+  // Create config vector for new appended model
+  Eigen::VectorXd r(valkyrieboxmodel.nq);
+  r << q, p;
+
+  geomValkyrieBox.addAllCollisionPairs();
+  pinocchio::Data valkyrieboxdata(valkyrieboxmodel);
+  pinocchio::GeometryData geomDataValkyrieBox(geomValkyrieBox);
+  pinocchio::updateGeometryPlacements(valkyrieboxmodel, valkyrieboxdata, geomValkyrieBox, geomDataValkyrieBox, r);
 
   // Define our counters, collision/distance results, contacts
   int j, i, k;
@@ -133,31 +134,30 @@ int main(int argc, char ** argv){
   pinocchio::fcl::DistanceResult dresult;
   std::vector<pinocchio::fcl::Contact> contacts;
 
-  pinocchio::computeCollisions(valkyriemodel,valkyriedata,geomValkyrie,geomDataValkyrieBox,q);
+  pinocchio::computeCollisions(valkyrieboxmodel, valkyrieboxdata, geomValkyrieBox, geomDataValkyrieBox, r);
 
   // Print relevant collision/distance data
   std::cout << "COLLISION RESULTS 1" << std::endl;
   for(j=0; j<geomDataValkyrieBox.collisionResults.size(); j++)
   {
   	result = geomDataValkyrieBox.collisionResults[j];
-  	pinocchio::CollisionPair idx = geomValkyrie.collisionPairs[j];
-  	// std::cout << geomValkyrie.getGeometryName(idx.first) << std::endl;
+  	pinocchio::CollisionPair idx = geomValkyrieBox.collisionPairs[j];
   	result.getContacts(contacts);
       	if(contacts.size() != 0)
       	{
       		for(k=0; k<contacts.size(); k++)
       		{
-      			std::cout << "Contact Found Between: " << geomValkyrie.getGeometryName(idx.first) << " and " << geomValkyrie.getGeometryName(idx.second) << std::endl;
+      			std::cout << "Contact Found Between: " << geomValkyrieBox.getGeometryName(idx.first) << " and " << geomValkyrieBox.getGeometryName(idx.second) << std::endl;
         		std::cout << "position: " << contacts[k].pos << std::endl;
         		std::cout << "-------------------" << std::endl;
       		}
       	}
-      	else
-      	{
-      		pinocchio::computeDistance(geomValkyrie, geomDataValkyrieBox, geomValkyrie.findCollisionPair(idx));
-      		dresult = geomDataValkyrieBox.distanceResults[j];
-      		std::cout << "Minimum Distance Between: " << geomValkyrie.getGeometryName(idx.first) << " and " << geomValkyrie.getGeometryName(idx.second) << " = " << dresult.min_distance << std::endl;
-      	}
+      	// else
+      	// {
+      	// 	pinocchio::computeDistance(geomValkyrieBox, geomDataValkyrieBox, geomValkyrieBox.findCollisionPair(idx));
+      	// 	dresult = geomDataValkyrieBox.distanceResults[j];
+      	// 	std::cout << "Minimum Distance Between: " << geomValkyrieBox.getGeometryName(idx.first) << " and " << geomValkyrieBox.getGeometryName(idx.second) << " = " << dresult.min_distance << std::endl;
+      	// }
   }
 
   std::cout << "---------------------------------------------------------" << std::endl;
@@ -166,43 +166,56 @@ int main(int argc, char ** argv){
   std::cout << "---------------------------------------------------------" << std::endl;
 
   //------------------ Update the robot configuration 
-  q[0] = 1;
-  std::cout << "q.transpose: " << q.transpose() << std::endl;
-  // Update the geometry placements for the q vector
-  pinocchio::updateGeometryPlacements(valkyriemodel, valkyriedata, geomValkyrie, geomDataValkyrieBox, q);
+  Eigen::VectorXd q1 = Eigen::VectorXd::Zero(valkyriemodel.nq); // Config 
+
+  // floating base joints: x, y, z
+  q1[0] = 0.0;  q1[1] = 0.0;  q1[2] = 0.0;
+
+  // floating base quaternion: qx, qy, qz, qw
+  double theta1 = M_PI/4.0;
+  Eigen::AngleAxis<double> bb(theta1, Eigen::Vector3d(0.0, 0.0, 1.0)); // yaw pi/4 to the left
+  Eigen::Quaternion<double> quat_init_1; quat_init_1 =  bb;
+
+  q1[3] = quat_init_1.x();// 0.0;
+  q1[4] = quat_init_1.y(); //0.0;
+  q1[5] = quat_init_1.z(); //sin(theta/2.0);
+  q1[6] = quat_init_1.w(); //cos(theta/2.0);
   //------------------ End Update the robot configuration 
 
+
   //------------------ Update the box configuration 
-  p[0] = 5;
-  std::cout << "p.transpose: " << p.transpose() << std::endl;
-  // Attempt to update geometry placements for p vector
-  	// THIS CURRENTLY DOES NOTE CHANGE THE RESULTS
-  pinocchio::updateGeometryPlacements(boxmodel, boxdata, geomValkyrie, geomDataValkyrieBox, p);
+  Eigen::VectorXd p1(boxmodel.nq);
+  p1 << 5, 0, 1, 0;
   //------------------ End Update the box configuration
 
-  pinocchio::computeCollisions(valkyriemodel,valkyriedata,geomValkyrie,geomDataValkyrieBox,q);
+  // Create config vector for new appended model
+  Eigen::VectorXd r1(valkyrieboxmodel.nq);
+  r1 << q1, p1;
 
+  pinocchio::computeCollisions(valkyrieboxmodel, valkyrieboxdata, geomValkyrieBox, geomDataValkyrieBox, r1);
+
+  // Print relevant collision/distance data
   std::cout << "COLLISION RESULTS 2" << std::endl;
   for(j=0; j<geomDataValkyrieBox.collisionResults.size(); j++)
   {
   	result = geomDataValkyrieBox.collisionResults[j];
-  	pinocchio::CollisionPair idx = geomValkyrie.collisionPairs[j];
-  	// std::cout << geomValkyrie.getGeometryName(idx.first) << std::endl;
+  	pinocchio::CollisionPair idx = geomValkyrieBox.collisionPairs[j];
   	result.getContacts(contacts);
       	if(contacts.size() != 0)
       	{
       		for(k=0; k<contacts.size(); k++)
       		{
-      			std::cout << "Contact Found Between: " << geomValkyrie.getGeometryName(idx.first) << " and " << geomValkyrie.getGeometryName(idx.second) << std::endl;
+      			std::cout << "Contact Found Between: " << geomValkyrieBox.getGeometryName(idx.first) << " and " << geomValkyrieBox.getGeometryName(idx.second) << std::endl;
         		std::cout << "position: " << contacts[k].pos << std::endl;
         		std::cout << "-------------------" << std::endl;
       		}
       	}
-      	else
-      	{
-      		pinocchio::computeDistance(geomValkyrie, geomDataValkyrieBox, geomValkyrie.findCollisionPair(idx));
-      		dresult = geomDataValkyrieBox.distanceResults[j];
-      		std::cout << "Minimum Distance Between: " << geomValkyrie.getGeometryName(idx.first) << " and " << geomValkyrie.getGeometryName(idx.second) << " = " << dresult.min_distance << std::endl;
-      	}
+      	// else
+      	// {
+      	// 	pinocchio::computeDistance(geomValkyrieBox, geomDataValkyrieBox, geomValkyrieBox.findCollisionPair(idx));
+      	// 	dresult = geomDataValkyrieBox.distanceResults[j];
+      	// 	std::cout << "Minimum Distance Between: " << geomValkyrieBox.getGeometryName(idx.first) << " and " << geomValkyrieBox.getGeometryName(idx.second) << " = " << dresult.min_distance << std::endl;
+      	// }
   }
+
 }
