@@ -35,9 +35,6 @@ int main(int argc, char ** argv){
 
   geomModel.addAllCollisionPairs();
 
-  // below line exists in test code, but is uneccessary due to the fact that addAllCollisionPairs does not add pairs with same parent joint
-  //pinocchio::srdf::removeCollisionPairs(model, geomModel, srdf_filename, false)
-
   pinocchio::Data data(model);
   pinocchio::GeometryData geomData(geomModel);
   pinocchio::fcl::CollisionResult result;
