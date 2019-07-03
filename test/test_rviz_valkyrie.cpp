@@ -74,15 +74,15 @@ int main(int argc, char **argv){
 
 	
 	// Fill the box marker msg
-	box_msg.pose.position.x = 0.;
+	box_msg.pose.position.x = 1.0;
 	box_msg.pose.position.y = 0.;
-	box_msg.pose.position.z = 1.13177;
+	box_msg.pose.position.z = 1.125;
 	box_msg.pose.orientation.y = 0.;
 	box_msg.pose.orientation.z = 0.;
 	box_msg.pose.orientation.w = 1.;
-	box_msg.scale.x = 1.;
-	box_msg.scale.y = 1.;
-	box_msg.scale.z = 1.;
+	box_msg.scale.x = 0.05;
+	box_msg.scale.y = 1.0;
+	box_msg.scale.z = 2.25;
 	box_msg.header.frame_id = "world";
 	box_msg.text = "box";
 	box_msg.header.stamp = ros::Time::now();
