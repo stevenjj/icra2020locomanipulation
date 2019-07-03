@@ -45,6 +45,9 @@ int main(int argc, char ** argv){
   pinocchio::GeometryData geomData(geomModel);
   pinocchio::fcl::CollisionResult result;
   int i, j, k;
+  std::vector<pinocchio::fcl::Contact> contacts;
+
+  Eigen::VectorXd q = Eigen::VectorXd::Zero(model.nq); // Config 
 
   // floating base joints: x, y, z
   q[0] = 0.0;  q[1] = 0.0;  q[2] = 0.0;
