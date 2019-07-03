@@ -39,14 +39,14 @@ void HermiteQuaternionCurve::initialize_data_structures(){
   q3 = qb;
 
 
-  std::cout << "q0" << std::endl;
-  printQuat(q0);
-  std::cout << "q1" << std::endl;
-  printQuat(q1);
-  std::cout << "q2" << std::endl;
-  printQuat(q2);  
-  std::cout << "q3" << std::endl;
-  printQuat(q3);
+  // std::cout << "q0" << std::endl;
+  // printQuat(q0);
+  // std::cout << "q1" << std::endl;
+  // printQuat(q1);
+  // std::cout << "q2" << std::endl;
+  // printQuat(q2);  
+  // std::cout << "q3" << std::endl;
+  // printQuat(q3);
 
   // for world frame angular velocities, do: q_1*q_0.inverse(). for local frame do: q_0.inverse()*q_1
 
