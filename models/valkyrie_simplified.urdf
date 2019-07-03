@@ -210,7 +210,7 @@
       <geometry>
         <mesh filename="package://val_desc/model/meshes/pelvis/pelvis.dae"/>
       </geometry>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/> 
     </collision>
   </link>
   <link name="torsoYawLink">
@@ -263,12 +263,15 @@
       </geometry>
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
     </visual>
-    <collision>
+    <collision name="torso_test">
       <geometry>
-        <mesh filename="package://val_desc/model/meshes/torso/torso.dae"/>
+        <cylinder radius="0.2475" length="0.01"/>
       </geometry>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="-0.0755 0 0.155"/>
     </collision>
+    <collision_checking>
+      <capsule name="torso_test"/>
+    </collision_checking>
   </link>
   <joint name="torsoYaw" type="revolute">
     <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
@@ -436,12 +439,16 @@
       </geometry>
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
     </visual>
-    <collision>
+    <collision name="rightShoulderRollLink_test">
       <geometry>
-        <mesh filename="package://val_desc/model/meshes/arms/aj2_right.dae"/>
+        <!-- <mesh filename="package://val_desc/model/meshes/arms/aj2_right.dae"/> -->
+        <cylinder radius="0.08" length="0.176"/>
       </geometry>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="1.57 0 0" xyz="0 -0.125 0"/>
     </collision>
+    <collision_checking>
+      <capsule name="rightShoulderRollLink_test"/>
+    </collision_checking>
   </link>
   <link name="rightShoulderYawLink">
     <inertial>
@@ -1065,10 +1072,14 @@
     </visual>
     <collision>
       <geometry>
-        <mesh filename="package://val_desc/model/meshes/arms/aj2_left.dae"/>
+        <!-- <mesh filename="package://val_desc/model/meshes/arms/aj2_left.dae"/> -->
+        <cylinder radius="0.08" length="0.176"/>
       </geometry>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="1.57 0 0" xyz="0 0.125 0"/>
     </collision>
+    <collision_checking>
+      <capsule name="rightShoulderRollLink_test"/>
+    </collision_checking>
   </link>
   <link name="leftShoulderYawLink">
     <inertial>
@@ -1674,6 +1685,7 @@
     <collision>
       <geometry>
         <mesh filename="package://val_desc/model/meshes/legs/lj1_right.dae"/>
+        <!-- <cylinder radius="0.05" length="0.2"/> -->
       </geometry>
       <origin rpy="0 0 0" xyz="0 0 0"/>
     </collision>
@@ -1693,6 +1705,7 @@
     <collision>
       <geometry>
         <mesh filename="package://val_desc/model/meshes/legs/lj2_right.dae"/>
+        <!-- <cylinder radius="0.09" length="0.4"/> -->
       </geometry>
       <origin rpy="0 0 0" xyz="0 0 0"/>
     </collision>
@@ -1709,12 +1722,16 @@
       </geometry>
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
     </visual>
-    <collision>
+    <collision name="rightHipPitchLink_test">
       <geometry>
-        <mesh filename="package://val_desc/model/meshes/legs/lj3_right.dae"/>
+        <!-- <mesh filename="package://val_desc/model/meshes/legs/lj3_right.dae"/> -->
+        <cylinder radius="0.115" length="0.35"/>
       </geometry>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="0.0225 -0.085 -0.2"/>
     </collision>
+    <collision_checking>
+      <capsule name="rightHipPitchLink_test"/>
+    </collision_checking>
   </link>
   <link name="rightKneePitchLink">
     <inertial>
@@ -1901,12 +1918,16 @@
       </geometry>
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
     </visual>
-    <collision>
+    <collision name="leftHipPitchLink_test">
       <geometry>
-        <mesh filename="package://val_desc/model/meshes/legs/lj3_left.dae"/>
+        <!-- <mesh filename="package://val_desc/model/meshes/legs/lj3_left.dae"/> -->
+        <cylinder radius="0.115" length="0.35"/>
       </geometry>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="0.0225 0.085 -0.2"/>
     </collision>
+    <collision_checking>
+      <capsule name="leftHipPitchLink_test"/>
+    </collision_checking>
   </link>
   <link name="leftKneePitchLink">
     <inertial>
