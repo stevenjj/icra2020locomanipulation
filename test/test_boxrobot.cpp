@@ -122,12 +122,12 @@ int main(int argc, char ** argv){
         		std::cout << "-------------------" << std::endl;
       		}
       	}
-      	else
-      	{
-      		pinocchio::computeDistance(geomModel, geomData, geomModel.findCollisionPair(idx));
-      		dresult = geomData.distanceResults[j];
-      		std::cout << "Minimum Distance Between: " << geomModel.getGeometryName(idx.first) << " and " << geomModel.getGeometryName(idx.second) << " = " << dresult.min_distance << std::endl;
-      	}
+      	// else
+      	// {
+      	// 	pinocchio::computeDistance(geomModel, geomData, geomModel.findCollisionPair(idx));
+      	// 	dresult = geomData.distanceResults[j];
+      	// 	std::cout << "Minimum Distance Between: " << geomModel.getGeometryName(idx.first) << " and " << geomModel.getGeometryName(idx.second) << " = " << dresult.min_distance << std::endl;
+      	// }
   }
 
 //   for(i=0; i<geomModel.ngeoms-1; i++)
