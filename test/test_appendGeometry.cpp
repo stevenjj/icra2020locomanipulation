@@ -66,7 +66,7 @@ int main(int argc, char ** argv){
 
   //------------- Box Model
   static double pi = M_PI;
-  pinocchio::fcl::Transform3f tf1 (makeQuat (0, 0, 1, 0), pinocchio::fcl::Vec3f (0, 0, 0));
+  pinocchio::fcl::Transform3f tf1 (makeQuat (0, 0, 1, 0), pinocchio::fcl::Vec3f (1.0, 0, 1.125));
   pinocchio::SE3 placement = pinocchio::toPinocchioSE3(tf1);
 
   pinocchio::Model::JointIndex idx;
@@ -75,7 +75,7 @@ int main(int argc, char ** argv){
   boxmodel.appendBodyToJoint(idx,pinocchio::Inertia::Random(),pinocchio::SE3::Identity());
   boxmodel.addBodyFrame("planar1_body", idx, pinocchio::SE3::Identity());
 
-  boost::shared_ptr<pinocchio::fcl::Box> sample(new pinocchio::fcl::Box(1, 1, 1));
+  boost::shared_ptr<pinocchio::fcl::Box> sample(new pinocchio::fcl::Box(0.05, 1.0, 2.25));
   pinocchio::Model::FrameIndex box_id = boxmodel.getBodyId("planar1_body");
   pinocchio::Model::JointIndex box_parent = boxmodel.frames[box_id].parent;
 
