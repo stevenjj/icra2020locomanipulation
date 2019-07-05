@@ -6,6 +6,7 @@
 	<disable_collisions link1="head" link2="hokuyo_link" reason="Adjacent"/>
 	<disable_collisions link1="hokuyo_link" link2="torsoYawLink" reason="Never"/>
 	<disable_collisions link1="pelvis" link2="torsoYawLink" reason="Adjacent"/>
+	<disable_collisions link1="pelvis" link2="torso" reason="Adjacent"/>
 	<disable_collisions link1="torso" link2="torsoYawLink" reason="Adjacent"/>
 	<disable_collisions link1="torsoPitchLink" link2="torsoYawLink" reason="Adjacent"/>
 	<disable_collisions link1="torsoPitchLink" link2="torso" reason="Adjacent"/>
@@ -13,6 +14,7 @@
 	<disable_collisions link1="lowerNeckPitchLink" link2="torso" reason="Adjacent"/>
 	<disable_collisions link1="neckYawLink" link2="lowerNeckPitchLink" reason="Adjacent"/>
 	<disable_collisions link1="neckYawLink" link2="torso" reason="Never"/>
+	<disable_collisions link1="neckYawLink" link2="head" reason="Never"/>
 	<disable_collisions link1="upperNeckPitchLink" link2="neckYawLink" reason="Adjacent"/>
 	<disable_collisions link1="upperNeckPitchLink" link2="torso" reason="Never"/>
 	<disable_collisions link1="upperNeckPitchLink" link2="lowerNeckPitchLink" reason="Adjacent"/>
