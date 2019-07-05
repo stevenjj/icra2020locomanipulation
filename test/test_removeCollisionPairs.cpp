@@ -73,7 +73,6 @@ int main(int argc, char ** argv){
   {
   	result = geomData.collisionResults[j];
   	pinocchio::CollisionPair idx = geomModel.collisionPairs[j];
-  	std::cout << geomModel.getGeometryName(idx.first) << std::endl;
   	result.getContacts(contacts);
       	if(contacts.size() != 0)
       	{
