@@ -38,6 +38,7 @@ int main(int argc, char ** argv){
   //----------------- Robot Model
   std::string filename = (argc<=1) ? THIS_PACKAGE_PATH"models/valkyrie_simplified.urdf" : argv[1];
   //const std::string srdf_filename = PINOCCHIO_SOURCE_DIR"/models/romeo/romeo_description/srdf/romeo.srdf";
+  std::string srdf_filename = (argc<=1) ? THIS_PACKAGE_PATH"models/valkyrie_disable_collisions.srdf" : argv[1];
   std::vector < std::string > packageDirs;
   std::string meshDir  = THIS_PACKAGE_PATH"../val_model/";
   packageDirs.push_back(meshDir);
@@ -96,6 +97,9 @@ int main(int argc, char ** argv){
   pinocchio::updateGeometryPlacements(boxmodel, boxdata, geomBox, geomDataBox, p);
 // Valkyrie:
   geomValkyrie.addAllCollisionPairs();
+  std::cout << "geomValkyrie.collisionPairs.size(): " << geomValkyrie.collisionPairs.size() << std::endl;
+  //pinocchio::srdf::removeCollisionPairs(valkyriemodel, geomValkyrie, srdf_filename, false);
+  std::cout << "geomValkyrie.collisionPairs.size(): " << geomValkyrie.collisionPairs.size() << std::endl;
   pinocchio::Data valkyriedata(valkyriemodel);
   pinocchio::GeometryData geomDataValkyrie(geomValkyrie);
   pinocchio::updateGeometryPlacements(valkyriemodel, valkyriedata, geomValkyrie, geomDataValkyrie, q);
@@ -112,7 +116,6 @@ int main(int argc, char ** argv){
   		// and it outputs to the final model and geomModel
   	// setting fid = valkyriemodel.frames.size() means that it is added to the last frame
   pinocchio::appendModel(valkyriemodel, boxmodel, geomValkyrie, geomBox, valkyriemodel.frames.size()-1, pinocchio::SE3::Identity(), valkyrieboxmodel, geomValkyrieBox);
-
   std::cout << "geomValkyrieBox.ngeoms: " << geomValkyrieBox.ngeoms << std::endl;
   std::cout << "boxmodel.nq: " << boxmodel.nq << std::endl;
   std::cout << "valkyriemodel.nq: " << valkyriemodel.nq << std::endl;
@@ -152,12 +155,12 @@ int main(int argc, char ** argv){
         		std::cout << "-------------------" << std::endl;
       		}
       	}
-      	// else
-      	// {
-      	// 	pinocchio::computeDistance(geomValkyrieBox, geomDataValkyrieBox, geomValkyrieBox.findCollisionPair(idx));
-      	// 	dresult = geomDataValkyrieBox.distanceResults[j];
-      	// 	std::cout << "Minimum Distance Between: " << geomValkyrieBox.getGeometryName(idx.first) << " and " << geomValkyrieBox.getGeometryName(idx.second) << " = " << dresult.min_distance << std::endl;
-      	// }
+      	else
+      	{
+      		pinocchio::computeDistance(geomValkyrieBox, geomDataValkyrieBox, geomValkyrieBox.findCollisionPair(idx));
+      		dresult = geomDataValkyrieBox.distanceResults[j];
+      		std::cout << "Minimum Distance Between: " << geomValkyrieBox.getGeometryName(idx.first) << " and " << geomValkyrieBox.getGeometryName(idx.second) << " = " << dresult.min_distance << std::endl;
+      	}
   }
 
   std::cout << "---------------------------------------------------------" << std::endl;
@@ -210,12 +213,12 @@ int main(int argc, char ** argv){
         		std::cout << "-------------------" << std::endl;
       		}
       	}
-      	// else
-      	// {
-      	// 	pinocchio::computeDistance(geomValkyrieBox, geomDataValkyrieBox, geomValkyrieBox.findCollisionPair(idx));
-      	// 	dresult = geomDataValkyrieBox.distanceResults[j];
-      	// 	std::cout << "Minimum Distance Between: " << geomValkyrieBox.getGeometryName(idx.first) << " and " << geomValkyrieBox.getGeometryName(idx.second) << " = " << dresult.min_distance << std::endl;
-      	// }
+      	else
+      	{
+      		pinocchio::computeDistance(geomValkyrieBox, geomDataValkyrieBox, geomValkyrieBox.findCollisionPair(idx));
+      		dresult = geomDataValkyrieBox.distanceResults[j];
+      		std::cout << "Minimum Distance Between: " << geomValkyrieBox.getGeometryName(idx.first) << " and " << geomValkyrieBox.getGeometryName(idx.second) << " = " << dresult.min_distance << std::endl;
+      	}
   }
 
 }

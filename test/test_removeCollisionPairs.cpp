@@ -66,7 +66,6 @@ int main(int argc, char ** argv){
 
   pinocchio::computeCollisions(model,data,geomModel,geomData,q);
 
-  // Check: Remove the line removeCollisionPairs and see if this changes
   std::cout << "geomData.collisionResults.size(): " << geomData.collisionResults.size() << std::endl;
 
   for(j=0; j<geomData.collisionResults.size(); j++)
