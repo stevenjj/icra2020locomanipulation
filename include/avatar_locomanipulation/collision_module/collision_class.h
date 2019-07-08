@@ -41,6 +41,7 @@ public:
 	~Collision();
 	void build_valkyrie_model_and_geom();
 	void build_box_planar_joint_model_and_geom();
+	void build_cart_model_and_geom();
 	void append_models(std::shared_ptr<Collision> & parent, std::shared_ptr<Collision> & child, std::shared_ptr<Collision> & appended);// Parent, child
 	void set_configuration_vector(Eigen::VectorXd & config_vec);// vector of configurations
 	void compute_distance();

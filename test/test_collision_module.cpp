@@ -6,12 +6,15 @@ int main(int argc, char **argv){
 	std::shared_ptr<Collision> val_object(new Collision() );
 	std::shared_ptr<Collision> box_object(new Collision() );
 	std::shared_ptr<Collision> appended_object(new Collision() );
+	std::shared_ptr<Collision> cart_object(new Collision() );
 
 	val_object->build_valkyrie_model_and_geom();
 	box_object->build_box_planar_joint_model_and_geom();
+	cart_object->build_cart_model_and_geom();
 
 	Eigen::VectorXd val_config(val_object->get_nq());
 	Eigen::VectorXd box_config(box_object->get_nq());
+	Eigen::VectorXd cart_config(cart_object->get_nq());
 
 	// floating base joints: x, y, z
 	val_config[0] = 0.0;  val_config[1] = 0.0;  val_config[2] = 0.0;

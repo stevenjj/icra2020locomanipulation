@@ -48,6 +48,20 @@ void Collision::build_box_planar_joint_model_and_geom()
                                                             );
 }
 
+void Collision::build_cart_model_and_geom()
+{
+	filename = THIS_PACKAGE_PATH"models/test_cart.urdf";
+
+	std::vector < std::string > packageDirs;
+	std::string meshDir  = THIS_PACKAGE_PATH"models/cart/";
+
+	packageDirs.push_back(meshDir);
+	// Build URDF model
+	pinocchio::urdf::buildModel(filename, pinocchio::JointModelFreeFlyer(),model);
+	// Build Geometry model
+	pinocchio::urdf::buildGeom(model, filename, pinocchio::COLLISION, geomModel, packageDirs );
+}
+
 void Collision::append_models(std::shared_ptr<Collision> & parent, std::shared_ptr<Collision> & child, std::shared_ptr<Collision> & appended)
 {
 	parent->geomModel.addAllCollisionPairs();
