@@ -45,7 +45,7 @@ public:
 	void append_models(std::shared_ptr<Collision> & parent, std::shared_ptr<Collision> & child, std::shared_ptr<Collision> & appended);// Parent, child
 	void set_configuration_vector(Eigen::VectorXd & config_vec);// vector of configurations
 	void compute_distance();
-	bool compute_collision(); // returns true if collision occurs
+	void compute_collision(); // returns true if collision occurs
 	pinocchio::fcl::Quaternion3f makeQuat(double w, double x, double y, double z);
 	int get_nq();
 };

@@ -87,9 +87,9 @@ void Collision::set_configuration_vector(Eigen::VectorXd & config_vec)
 }
 
 
-bool Collision::compute_collision()
+void Collision::compute_collision()
 {
-	int j;
+	int j, k;
 
 	pinocchio::Data data(model);
 	pinocchio::GeometryData geomData(geomModel);
@@ -105,10 +105,15 @@ bool Collision::compute_collision()
 		result.getContacts(contacts);
 			if(contacts.size() != 0)
 			{
-				return true;
+				for(k=0; k<contacts.size(); k++)
+      			{
+      				std::cout << "Contact Found Between: " << geomModel.getGeometryName(id2.first) << " and " << geomModel.getGeometryName(id2.second) << std::endl;
+        			std::cout << "position: " << contacts[k].pos << std::endl;
+        			std::cout << "-------------------" << std::endl;
+      			}
 			}
 	}
-	return false;	
+		
 }
 
 
