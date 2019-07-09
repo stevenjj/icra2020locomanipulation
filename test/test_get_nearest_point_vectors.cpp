@@ -113,23 +113,39 @@ int main(int argc, char ** argv){
   appended_config << q_start, cart_config;
   appended_object->set_configuration_vector(appended_config);
 
-  Eigen::Vector3d near_point, difference;
+  Eigen::Vector3d near_handle_point, near_cart_point, difference1, difference2;
   std::map<std::string, Eigen::Vector3d>::iterator posit;
 
   // We create vectors from handle to val joints
-  appended_object->compute_near_point("pelvis", "handle_link", near_point, appended_config);
+  appended_object->compute_near_point("pelvis", "handle_link", near_handle_point, appended_config);
 
-  std::cout << "near_point = " << near_point << std::endl;
+  std::cout << "near_handle_point = " << near_handle_point << std::endl;
 
-  // Create and print magnitude and direction of vectors
+  // // Create and print magnitude and direction of vectors
   // for(posit = positions.begin(); posit != positions.end(); ++posit)
   // {
   // 	//posit->first
   // 	std::cout << "Between handle_link and " << posit->first <<" :" <<  std::endl;
-  // 	difference = posit->second - near_point;
-  // 	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
+  // 	difference1 = posit->second - near_handle_point;
+  // 	std::cout << "Magnitude of distance = " << difference1.norm() << std::endl;
   // 	std::cout << "Normalized Direction: " << std::endl; 
-  // 	std::cout << difference.normalized() << std::endl; 
+  // 	std::cout << difference1.normalized() << std::endl; 
+  // }
+
+  // We create vectors from cart to val joints
+  appended_object->compute_near_point("pelvis", "base_link", near_cart_point, appended_config);
+
+  std::cout << "near_cart_point = " << near_cart_point << std::endl;
+
+  // // Create and print magnitude and direction of vectors
+  // for(posit = positions.begin(); posit != positions.end(); ++posit)
+  // {
+  // 	//posit->first
+  // 	std::cout << "Between handle_link and " << posit->first <<" :" <<  std::endl;
+  // 	difference2 = posit->second - near_cart_point;
+  // 	std::cout << "Magnitude of distance = " << difference2.norm() << std::endl;
+  // 	std::cout << "Normalized Direction: " << std::endl; 
+  // 	std::cout << difference2.normalized() << std::endl; 
   // }
 
 }
