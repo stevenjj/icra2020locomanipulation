@@ -86,11 +86,11 @@ int main(int argc, char ** argv){
   val_object->build_valkyrie_model_and_geom();
   cart_object->build_cart_model_and_geom();
 
-  std::cout << "BEFORE positions.find(pelvis)->second: " << positions.find("pelvis")->second << std::endl;
+  std::cout << "BEFORE positions.find(pelvis)->second: \n" << positions.find("pelvis")->second << std::endl;
 
   val_object->get_position_of_joints(q_start, positions);
 
-  std::cout << "AFTER positions.find(pelvis)->second: " << positions.find("pelvis")->second << std::endl;
+  std::cout << "AFTER positions.find(pelvis)->second: \n\n" << positions.find("pelvis")->second << std::endl;
 
   
 
@@ -119,7 +119,7 @@ int main(int argc, char ** argv){
   // We create vectors from handle to val joints
   appended_object->compute_near_point("pelvis", "handle_link", near_handle_point, appended_config);
 
-  std::cout << "near_handle_point = " << near_handle_point << std::endl;
+  std::cout << "near_handle_point = \n" << near_handle_point << std::endl;
 
   // // Create and print magnitude and direction of vectors
   // for(posit = positions.begin(); posit != positions.end(); ++posit)
@@ -135,7 +135,7 @@ int main(int argc, char ** argv){
   // We create vectors from cart to val joints
   appended_object->compute_near_point("pelvis", "base_link", near_cart_point, appended_config);
 
-  std::cout << "near_cart_point = " << near_cart_point << std::endl;
+  std::cout << "near_cart_point = \n" << near_cart_point << std::endl;
 
   // // Create and print magnitude and direction of vectors
   // for(posit = positions.begin(); posit != positions.end(); ++posit)
