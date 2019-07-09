@@ -34,10 +34,10 @@ int main(int argc, char **argv){
 	double theta = 0;//M_PI/4.0;	
 	Eigen::AngleAxis<double> bb(theta, Eigen::Vector3d(0.0, 0.0, 1.0)); // yaw pi/4 to the left	
 	Eigen::Quaternion<double> quat_init; quat_init =  bb;
-	val_config[3] = quat_init.x();// 0.0;	
-	val_config[4] = quat_init.y(); //0.0;
-	val_config[5] = quat_init.z(); //sin(theta/2.0);
-	val_config[6] = quat_init.w(); //cos(theta/2.0);
+	cart_config[3] = quat_init.x();// 0.0;	
+	cart_config[4] = quat_init.y(); //0.0;
+	cart_config[5] = quat_init.z(); //sin(theta/2.0);
+	cart_config[6] = quat_init.w(); //cos(theta/2.0);
 
 
 	val_object->set_configuration_vector(val_config);

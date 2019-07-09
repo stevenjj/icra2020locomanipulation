@@ -117,7 +117,7 @@ void Collision::compute_collision()
 }
 
 
-void Collision::compute_distance()
+void Collision::compute_distances()
 {
 	int j;
 
