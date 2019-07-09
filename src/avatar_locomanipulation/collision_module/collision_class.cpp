@@ -182,8 +182,24 @@ void Collision::get_position_of_joints(Eigen::VectorXd q_start, std::map<std::st
 
   // Initialize Robot Model
   ValkyrieModel valkyrie;
+  valkyrie.updateFullKinematics(q_start);
 
   // First we define the pos/ori of the frames of interest
+  Eigen::Vector3d rfoot_cur_pos;
+  Eigen::Vector3d lfoot_cur_pos;
+  Eigen::Vector3d rankle_cur_pos;
+  Eigen::Vector3d lankle_cur_pos;
+  Eigen::Vector3d rknee_cur_pos;
+  Eigen::Vector3d lknee_cur_pos;
+  Eigen::Vector3d pelvis_cur_pos;
+  Eigen::Vector3d rshoulder_cur_pos;
+  Eigen::Vector3d lshoulder_cur_pos;
+  Eigen::Vector3d relbow_cur_pos;
+  Eigen::Vector3d lelbow_cur_pos;
+  Eigen::Vector3d rwrist_cur_pos;
+  Eigen::Vector3d lwrist_cur_pos;
+  Eigen::Vector3d rhand_cur_pos;
+  Eigen::Vector3d lhand_cur_pos;  
   Eigen::Quaternion<double> rfoot_cur_ori;
   Eigen::Quaternion<double> lfoot_cur_ori;
   Eigen::Quaternion<double> rankle_cur_ori;
@@ -200,19 +216,35 @@ void Collision::get_position_of_joints(Eigen::VectorXd q_start, std::map<std::st
   Eigen::Quaternion<double> rhand_cur_ori;
   Eigen::Quaternion<double> lhand_cur_ori;
 
-  valkyrie.getFrameWorldPose("pelvis", positions.find("pelvis")->second, pelvis_cur_ori);
-  valkyrie.getFrameWorldPose("rightCOP_Frame", positions.find("rfoot")->second, rfoot_cur_ori);
-  valkyrie.getFrameWorldPose("rightCOP_Frame", positions.find("lfoot")->second, lfoot_cur_ori);
-  valkyrie.getFrameWorldPose("leftAnklePitch", positions.find("rankle")->second, rankle_cur_ori);
-  valkyrie.getFrameWorldPose("rightAnklePitch", positions.find("lankle")->second, lankle_cur_ori);
-  valkyrie.getFrameWorldPose("leftKneePitch", positions.find("rknee")->second, rknee_cur_ori);
-  valkyrie.getFrameWorldPose("rightKneePitch", positions.find("lknee")->second, lknee_cur_ori);
-  valkyrie.getFrameWorldPose("rightShoulderRoll", positions.find("rshoulder")->second, rshoulder_cur_ori);
-  valkyrie.getFrameWorldPose("leftShoulderRoll", positions.find("lshoulder")->second, lshoulder_cur_ori);
-  valkyrie.getFrameWorldPose("rightElbowPitch", positions.find("relbow")->second, relbow_cur_ori);
-  valkyrie.getFrameWorldPose("leftElbowPitch", positions.find("lelbow")->second, lelbow_cur_ori);
-  valkyrie.getFrameWorldPose("rightWristRoll", positions.find("rwrist")->second, rwrist_cur_ori);
-  valkyrie.getFrameWorldPose("leftWristRoll", positions.find("lwrist")->second, lwrist_cur_ori);
-  valkyrie.getFrameWorldPose("rightPalm", positions.find("rhand")->second, rhand_cur_ori);
-  valkyrie.getFrameWorldPose("leftPalm", positions.find("lhand")->second, lhand_cur_ori);
+  valkyrie.getFrameWorldPose("pelvis", pelvis_cur_pos, pelvis_cur_ori);
+  valkyrie.getFrameWorldPose("rightCOP_Frame", rfoot_cur_pos, rfoot_cur_ori);
+  valkyrie.getFrameWorldPose("rightCOP_Frame", lfoot_cur_pos, lfoot_cur_ori);
+  valkyrie.getFrameWorldPose("leftAnklePitch", rankle_cur_pos, rankle_cur_ori);
+  valkyrie.getFrameWorldPose("rightAnklePitch", lankle_cur_pos, lankle_cur_ori);
+  valkyrie.getFrameWorldPose("leftKneePitch", rknee_cur_pos, rknee_cur_ori);
+  valkyrie.getFrameWorldPose("rightKneePitch", lknee_cur_pos, lknee_cur_ori);
+  valkyrie.getFrameWorldPose("rightShoulderRoll", rshoulder_cur_pos, rshoulder_cur_ori);
+  valkyrie.getFrameWorldPose("leftShoulderRoll", lshoulder_cur_pos, lshoulder_cur_ori);
+  valkyrie.getFrameWorldPose("rightElbowPitch", relbow_cur_pos, relbow_cur_ori);
+  valkyrie.getFrameWorldPose("leftElbowPitch", lelbow_cur_pos, lelbow_cur_ori);
+  valkyrie.getFrameWorldPose("rightWristRoll", rwrist_cur_pos, rwrist_cur_ori);
+  valkyrie.getFrameWorldPose("leftWristRoll", lwrist_cur_pos, lwrist_cur_ori);
+  valkyrie.getFrameWorldPose("rightPalm", rhand_cur_pos, rhand_cur_ori);
+  valkyrie.getFrameWorldPose("leftPalm", lhand_cur_pos, lhand_cur_ori);
+
+  positions["rfoot"] = rfoot_cur_pos;
+  positions["lfoot"] = lfoot_cur_pos;
+  positions["rankle"] = rankle_cur_pos;
+  positions["lankle"] = lankle_cur_pos;
+  positions["rknee"] = rknee_cur_pos;
+  positions["lknee"] = lknee_cur_pos;
+  positions["rshoulder"] = rshoulder_cur_pos;
+  positions["lshoulder"] = lshoulder_cur_pos;
+  positions["relbow"] = relbow_cur_pos;
+  positions["lelbow"] = lelbow_cur_pos;
+  positions["rwrist"] = rwrist_cur_pos;
+  positions["lwrist"] = lwrist_cur_pos;
+  positions["rhand"] = rhand_cur_pos;
+  positions["lhand"] = lhand_cur_pos;
+  positions["pelvis"] = pelvis_cur_pos;
 }

@@ -11,22 +11,6 @@
 
 
 int main(int argc, char ** argv){
-  // First we define the pos/ori of the frames of interest
-  Eigen::Vector3d rfoot_cur_pos;
-  Eigen::Vector3d lfoot_cur_pos;
-  Eigen::Vector3d rankle_cur_pos;
-  Eigen::Vector3d lankle_cur_pos;
-  Eigen::Vector3d rknee_cur_pos;
-  Eigen::Vector3d lknee_cur_pos;
-  Eigen::Vector3d pelvis_cur_pos;
-  Eigen::Vector3d rshoulder_cur_pos;
-  Eigen::Vector3d lshoulder_cur_pos;
-  Eigen::Vector3d relbow_cur_pos;
-  Eigen::Vector3d lelbow_cur_pos;
-  Eigen::Vector3d rwrist_cur_pos;
-  Eigen::Vector3d lwrist_cur_pos;
-  Eigen::Vector3d rhand_cur_pos;
-  Eigen::Vector3d lhand_cur_pos;  
 
   // Initialize Robot Model
   ValkyrieModel valkyrie;
@@ -62,21 +46,6 @@ int main(int argc, char ** argv){
   q_start[valkyrie.getJointIndex("leftForearmYaw")] = 1.5;
 
   std::map<std::string, Eigen::Vector3d> positions;
-  positions["rfoot"] = rfoot_cur_pos;
-  positions["lfoot"] = lfoot_cur_pos;
-  positions["rankle"] = rankle_cur_pos;
-  positions["lankle"] = lankle_cur_pos;
-  positions["rknee"] = rknee_cur_pos;
-  positions["lknee"] = lknee_cur_pos;
-  positions["rshoulder"] = rshoulder_cur_pos;
-  positions["lshoulder"] = lshoulder_cur_pos;
-  positions["relbow"] = relbow_cur_pos;
-  positions["lelbow"] = lelbow_cur_pos;
-  positions["rwrist"] = rwrist_cur_pos;
-  positions["lwrist"] = lwrist_cur_pos;
-  positions["rhand"] = rhand_cur_pos;
-  positions["lhand"] = lhand_cur_pos;
-  positions["pelvis"] = pelvis_cur_pos;
 
   // Build Collision Objects
   std::shared_ptr<Collision> val_object(new Collision() );
@@ -86,13 +55,9 @@ int main(int argc, char ** argv){
   val_object->build_valkyrie_model_and_geom();
   cart_object->build_cart_model_and_geom();
 
-  std::cout << "BEFORE positions.find(pelvis)->second: \n" << positions.find("pelvis")->second << std::endl;
-
   val_object->get_position_of_joints(q_start, positions);
 
-  std::cout << "AFTER positions.find(pelvis)->second: \n\n" << positions.find("pelvis")->second << std::endl;
-
-  
+  std::cout << "AFTER positions.find(pelvis)->second: \n" << positions.find("pelvis")->second << std::endl;
 
   Eigen::VectorXd cart_config(cart_object->get_nq());
   cart_config[0] = 1.3;  cart_config[1] = 0.0;  cart_config[2] = 0.0;
