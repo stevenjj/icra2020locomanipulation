@@ -1,0 +1,1 @@
+#include <avatar_locomanipulation/models/robot_model.hpp>
