@@ -45,7 +45,8 @@ include_directories(
 )
 
 SET (MODEL_SOURCES
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/models/valkyrie_model.cpp)
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/models/valkyrie_model.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/models/robot_model.cpp)
 
 SET (DATA_TYPES_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/data_types/footstep.cpp
@@ -87,6 +88,9 @@ SET (TASK_SOURCES
 SET (COLLISION_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/collision_module/collision_class.cpp)
 
+SET (COLLISION_ENVIRONMENT_SOURCES
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/collision_environment/collision_environment.cpp)
+
 SET(PROJECT_SOURCES
 	${MODEL_SOURCES}
 	${DATA_TYPES_SOURCES}
@@ -95,7 +99,8 @@ SET(PROJECT_SOURCES
 	${ROS_BRIDGE_SOURCES}
 	${FEASIBILITY_SOURCES}
 	${TASK_SOURCES}
-	${COLLISION_SOURCES})
+	${COLLISION_SOURCES}
+	${COLLISION_ENVIRONMENT_SOURCES})
 
 # Grab all the libraries
 SET(PROJECT_LIBRARIES
