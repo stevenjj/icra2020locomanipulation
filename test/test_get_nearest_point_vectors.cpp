@@ -6,8 +6,9 @@
 #include <avatar_locomanipulation/models/valkyrie_model.hpp>
 // PseudoInverse
 #include <avatar_locomanipulation/helpers/pseudo_inverse.hpp>
+// Map
+#include <map>
 
-void get_position(Eigen::VectorXd q_start, Eigen::Vector3d & pelvis_cur_pos, Eigen::Vector3d & rfoot_cur_pos, Eigen::Vector3d & lfoot_cur_pos, Eigen::Vector3d & rankle_cur_pos, Eigen::Vector3d & lankle_cur_pos, Eigen::Vector3d & rknee_cur_pos, Eigen::Vector3d & lknee_cur_pos, Eigen::Vector3d & rshoulder_cur_pos, Eigen::Vector3d & lshoulder_cur_pos, Eigen::Vector3d & relbow_cur_pos, Eigen::Vector3d & lelbow_cur_pos, Eigen::Vector3d & rwrist_cur_pos, Eigen::Vector3d & lwrist_cur_pos, Eigen::Vector3d & rhand_cur_pos, Eigen::Vector3d & lhand_cur_pos);
 
 int main(int argc, char ** argv){
   // First we define the pos/ori of the frames of interest
@@ -34,7 +35,7 @@ int main(int argc, char ** argv){
   Eigen::VectorXd q_start;
   q_start = Eigen::VectorXd::Zero(valkyrie.getDimQ());
 
-  double theta = M_PI/4.0;
+  double theta = 0;//M_PI/4.0;
   Eigen::AngleAxis<double> aa(theta, Eigen::Vector3d(0.0, 0.0, 1.0));
   Eigen::Quaternion<double> init_quat(1.0, 0.0, 0.0, 0.0); //Initialized to remember the w component comes first
   init_quat = aa;
@@ -60,7 +61,22 @@ int main(int argc, char ** argv){
   q_start[valkyrie.getJointIndex("leftElbowPitch")] = -0.4;
   q_start[valkyrie.getJointIndex("leftForearmYaw")] = 1.5;
 
-  get_position(q_start, pelvis_cur_pos, rfoot_cur_pos, lfoot_cur_pos, rankle_cur_pos, lankle_cur_pos, rknee_cur_pos, lknee_cur_pos, rshoulder_cur_pos, lshoulder_cur_pos, relbow_cur_pos, lelbow_cur_pos, rwrist_cur_pos, lwrist_cur_pos, rhand_cur_pos, lhand_cur_pos);
+  std::map<std::string, Eigen::Vector3d> positions;
+  positions["rfoot"] = rfoot_cur_pos;
+  positions["lfoot"] = lfoot_cur_pos;
+  positions["rankle"] = rankle_cur_pos;
+  positions["lankle"] = lankle_cur_pos;
+  positions["rknee"] = rknee_cur_pos;
+  positions["lknee"] = lknee_cur_pos;
+  positions["rshoulder"] = rshoulder_cur_pos;
+  positions["lshoulder"] = lshoulder_cur_pos;
+  positions["relbow"] = relbow_cur_pos;
+  positions["lelbow"] = lelbow_cur_pos;
+  positions["rwrist"] = rwrist_cur_pos;
+  positions["lwrist"] = lwrist_cur_pos;
+  positions["rhand"] = rhand_cur_pos;
+  positions["lhand"] = lhand_cur_pos;
+  positions["pelvis"] = pelvis_cur_pos;
 
   // Build Collision Objects
   std::shared_ptr<Collision> val_object(new Collision() );
@@ -69,6 +85,14 @@ int main(int argc, char ** argv){
 
   val_object->build_valkyrie_model_and_geom();
   cart_object->build_cart_model_and_geom();
+
+  std::cout << "BEFORE positions.find(pelvis)->second: " << positions.find("pelvis")->second << std::endl;
+
+  val_object->get_position_of_joints(q_start, positions);
+
+  std::cout << "AFTER positions.find(pelvis)->second: " << positions.find("pelvis")->second << std::endl;
+
+  
 
   Eigen::VectorXd cart_config(cart_object->get_nq());
   cart_config[0] = 1.3;  cart_config[1] = 0.0;  cart_config[2] = 0.0;
@@ -89,45 +113,25 @@ int main(int argc, char ** argv){
   appended_config << q_start, cart_config;
   appended_object->set_configuration_vector(appended_config);
 
+  Eigen::Vector3d near_point, difference;
+  std::map<std::string, Eigen::Vector3d>::iterator posit;
+
+  // We create vectors from handle to val joints
+  appended_object->compute_near_point("pelvis", "handle_link", near_point, appended_config);
+
+  std::cout << "near_point = " << near_point << std::endl;
+
+  // Create and print magnitude and direction of vectors
+  // for(posit = positions.begin(); posit != positions.end(); ++posit)
+  // {
+  // 	//posit->first
+  // 	std::cout << "Between handle_link and " << posit->first <<" :" <<  std::endl;
+  // 	difference = posit->second - near_point;
+  // 	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
+  // 	std::cout << "Normalized Direction: " << std::endl; 
+  // 	std::cout << difference.normalized() << std::endl; 
+  // }
+
 }
 
 
-void get_position(Eigen::VectorXd q_start, Eigen::Vector3d & pelvis_cur_pos, Eigen::Vector3d & rfoot_cur_pos, Eigen::Vector3d & lfoot_cur_pos, Eigen::Vector3d & rankle_cur_pos, Eigen::Vector3d & lankle_cur_pos, Eigen::Vector3d & rknee_cur_pos, Eigen::Vector3d & lknee_cur_pos, Eigen::Vector3d & rshoulder_cur_pos, Eigen::Vector3d & lshoulder_cur_pos, Eigen::Vector3d & relbow_cur_pos, Eigen::Vector3d & lelbow_cur_pos, Eigen::Vector3d & rwrist_cur_pos, Eigen::Vector3d & lwrist_cur_pos, Eigen::Vector3d & rhand_cur_pos, Eigen::Vector3d & lhand_cur_pos)
-{
-
-  // Initialize Robot Model
-  ValkyrieModel valkyrie;
-
-  // First we define the pos/ori of the frames of interest
-  Eigen::Quaternion<double> rfoot_cur_ori;
-  Eigen::Quaternion<double> lfoot_cur_ori;
-  Eigen::Quaternion<double> rankle_cur_ori;
-  Eigen::Quaternion<double> lankle_cur_ori;
-  Eigen::Quaternion<double> rknee_cur_ori;
-  Eigen::Quaternion<double> lknee_cur_ori;
-  Eigen::Quaternion<double> pelvis_cur_ori;
-  Eigen::Quaternion<double> rshoulder_cur_ori;
-  Eigen::Quaternion<double> lshoulder_cur_ori;
-  Eigen::Quaternion<double> relbow_cur_ori;
-  Eigen::Quaternion<double> lelbow_cur_ori;
-  Eigen::Quaternion<double> rwrist_cur_ori;
-  Eigen::Quaternion<double> lwrist_cur_ori;
-  Eigen::Quaternion<double> rhand_cur_ori;
-  Eigen::Quaternion<double> lhand_cur_ori;
-
-  valkyrie.getFrameWorldPose("pelvis", pelvis_cur_pos, pelvis_cur_ori);
-  valkyrie.getFrameWorldPose("rightCOP_Frame", rfoot_cur_pos, rfoot_cur_ori);
-  valkyrie.getFrameWorldPose("rightCOP_Frame", lfoot_cur_pos, lfoot_cur_ori);
-  valkyrie.getFrameWorldPose("leftAnklePitch", rankle_cur_pos, rankle_cur_ori);
-  valkyrie.getFrameWorldPose("rightAnklePitch", lankle_cur_pos, lankle_cur_ori);
-  valkyrie.getFrameWorldPose("leftKneePitch", rknee_cur_pos, rknee_cur_ori);
-  valkyrie.getFrameWorldPose("rightKneePitch", lknee_cur_pos, lknee_cur_ori);
-  valkyrie.getFrameWorldPose("rightShoulderRoll", rshoulder_cur_pos, rshoulder_cur_ori);
-  valkyrie.getFrameWorldPose("leftShoulderRoll", lshoulder_cur_pos, lshoulder_cur_ori);
-  valkyrie.getFrameWorldPose("rightElbowPitch", relbow_cur_pos, relbow_cur_ori);
-  valkyrie.getFrameWorldPose("leftElbowPitch", lelbow_cur_pos, lelbow_cur_ori);
-  valkyrie.getFrameWorldPose("rightWristRoll", rwrist_cur_pos, rwrist_cur_ori);
-  valkyrie.getFrameWorldPose("leftWristRoll", lwrist_cur_pos, lwrist_cur_ori);
-  valkyrie.getFrameWorldPose("rightPalm", rhand_cur_pos, rhand_cur_ori);
-  valkyrie.getFrameWorldPose("leftPalm", lhand_cur_pos, lhand_cur_ori);
-}

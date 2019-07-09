@@ -149,3 +149,70 @@ int Collision::get_nq()
 
 	return i;
 }
+
+
+// Instead of this we can create a map of the joint name : world position
+// going thru that map we need to create vectors from half to other half
+// additionally, we need to create vectors from object to joints
+
+
+void Collision::compute_near_point(std::string name1, std::string name2, Eigen::Vector3d & near_point, Eigen::VectorXd q_start)
+{
+	pinocchio::Data data(model);
+	pinocchio::GeometryData geomData(geomModel);
+	pinocchio::updateGeometryPlacements(model, data, geomModel, geomData, q_start);
+	int j;
+
+	for(j=0; j<geomModel.collisionPairs.size(); j++)
+	{
+		pinocchio::CollisionPair id2 = geomModel.collisionPairs[j];
+		if (geomModel.getGeometryName(id2.first) == name1 && geomModel.getGeometryName(id2.second) == name2)
+		{
+			pinocchio::computeDistance(geomModel, geomData, geomModel.findCollisionPair(id2));
+			dresult = geomData.distanceResults[j];
+			near_point = dresult.nearest_points[1];
+		}
+		
+	}
+}
+
+
+void Collision::get_position_of_joints(Eigen::VectorXd q_start, std::map<std::string, Eigen::Vector3d> & positions)
+{
+
+  // Initialize Robot Model
+  ValkyrieModel valkyrie;
+
+  // First we define the pos/ori of the frames of interest
+  Eigen::Quaternion<double> rfoot_cur_ori;
+  Eigen::Quaternion<double> lfoot_cur_ori;
+  Eigen::Quaternion<double> rankle_cur_ori;
+  Eigen::Quaternion<double> lankle_cur_ori;
+  Eigen::Quaternion<double> rknee_cur_ori;
+  Eigen::Quaternion<double> lknee_cur_ori;
+  Eigen::Quaternion<double> pelvis_cur_ori;
+  Eigen::Quaternion<double> rshoulder_cur_ori;
+  Eigen::Quaternion<double> lshoulder_cur_ori;
+  Eigen::Quaternion<double> relbow_cur_ori;
+  Eigen::Quaternion<double> lelbow_cur_ori;
+  Eigen::Quaternion<double> rwrist_cur_ori;
+  Eigen::Quaternion<double> lwrist_cur_ori;
+  Eigen::Quaternion<double> rhand_cur_ori;
+  Eigen::Quaternion<double> lhand_cur_ori;
+
+  valkyrie.getFrameWorldPose("pelvis", positions.find("pelvis")->second, pelvis_cur_ori);
+  valkyrie.getFrameWorldPose("rightCOP_Frame", positions.find("rfoot")->second, rfoot_cur_ori);
+  valkyrie.getFrameWorldPose("rightCOP_Frame", positions.find("lfoot")->second, lfoot_cur_ori);
+  valkyrie.getFrameWorldPose("leftAnklePitch", positions.find("rankle")->second, rankle_cur_ori);
+  valkyrie.getFrameWorldPose("rightAnklePitch", positions.find("lankle")->second, lankle_cur_ori);
+  valkyrie.getFrameWorldPose("leftKneePitch", positions.find("rknee")->second, rknee_cur_ori);
+  valkyrie.getFrameWorldPose("rightKneePitch", positions.find("lknee")->second, lknee_cur_ori);
+  valkyrie.getFrameWorldPose("rightShoulderRoll", positions.find("rshoulder")->second, rshoulder_cur_ori);
+  valkyrie.getFrameWorldPose("leftShoulderRoll", positions.find("lshoulder")->second, lshoulder_cur_ori);
+  valkyrie.getFrameWorldPose("rightElbowPitch", positions.find("relbow")->second, relbow_cur_ori);
+  valkyrie.getFrameWorldPose("leftElbowPitch", positions.find("lelbow")->second, lelbow_cur_ori);
+  valkyrie.getFrameWorldPose("rightWristRoll", positions.find("rwrist")->second, rwrist_cur_ori);
+  valkyrie.getFrameWorldPose("leftWristRoll", positions.find("lwrist")->second, lwrist_cur_ori);
+  valkyrie.getFrameWorldPose("rightPalm", positions.find("rhand")->second, rhand_cur_ori);
+  valkyrie.getFrameWorldPose("leftPalm", positions.find("lhand")->second, lhand_cur_ori);
+}
