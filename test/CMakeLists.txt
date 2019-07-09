@@ -20,6 +20,8 @@ add_executable(test_gmm_fit test_gmm_fit.cpp ${PROJECT_SOURCES})
 add_executable(test_tasks test_tasks.cpp ${PROJECT_SOURCES})
 add_executable(test_gmm_config_fit test_gmm_config_fit.cpp ${PROJECT_SOURCES})
 add_executable(test_collision_module test_collision_module.cpp ${PROJECT_SOURCES})
+add_executable(test_ik_module test_ik_module.cpp ${PROJECT_SOURCES})
+
 
 target_link_libraries(test_load_urdf_model ${PROJECT_LIBRARIES})
 target_link_libraries(test_valkyrie_model  ${PROJECT_LIBRARIES})
@@ -43,3 +45,4 @@ target_link_libraries(test_gmm_fit ${PROJECT_LIBRARIES})
 target_link_libraries(test_tasks ${PROJECT_LIBRARIES})
 target_link_libraries(test_gmm_config_fit ${PROJECT_LIBRARIES})
 target_link_libraries(test_collision_module ${PROJECT_LIBRARIES})
+target_link_libraries(test_ik_module ${PROJECT_LIBRARIES})
