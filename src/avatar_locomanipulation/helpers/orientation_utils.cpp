@@ -20,4 +20,19 @@ namespace math_utils{
     convert(aa_tmp, to);
   }
 
+  void compute_quat_error(const Eigen::Quaterniond & des, const Eigen::Quaterniond & current, Eigen::Vector3d & error){
+    Eigen::AngleAxisd axis_angle;
+    axis_angle = des*current.inverse();
+    error = axis_angle.axis() * axis_angle.angle();
+  }
+
+
+  void printQuat(const Eigen::Quaterniond & quat){
+    std::cout <<  quat.x() << " " <<
+                  quat.y() << " " <<
+                  quat.z() << " " <<
+                  quat.w() << " " << std::endl;
+  }
+
+
 }

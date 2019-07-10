@@ -1,5 +1,5 @@
-#ifndef IK_MODULE_H
-#define IK_MODULE_H
+#ifndef ALP_IK_MODULE_H
+#define ALP_IK_MODULE_H
 
 #include <avatar_locomanipulation/models/valkyrie_model.hpp>
 #include <avatar_locomanipulation/tasks/task.hpp>

@@ -19,26 +19,26 @@ void Task::getTaskJacobianDot(Eigen::MatrixXd & Jdot_task){
 }
 
 // Set Task References
-void Task::setReference(const Eigen::VectorXd & vec_ref){
-	std::cout << "Warning! Task " << task_name << " has no setReference(vec_ref)" << " implementation" << std::endl; 
+void Task::setReference(const Eigen::VectorXd & vec_ref_in){
+	std::cout << "Warning! Task " << task_name << " has no setReference(vec_ref_in)" << " implementation" << std::endl; 
 }
 
-void Task::setReference(const Eigen::Quaterniond & quat_ref){
-	std::cout << "Warning! Task " << task_name << " has no setReference(quat_ref)" << " implementation" << std::endl;
+void Task::setReference(const Eigen::Quaterniond & quat_ref_in){
+	std::cout << "Warning! Task " << task_name << " has no setReference(quat_ref_in)" << " implementation" << std::endl;
 }
 
-void Task::setReference(const Eigen::VectorXd & vec_ref, const Eigen::Quaterniond & quat_ref){
-	std::cout << "Warning! Task " << task_name << " has no setReference(vec_ref, quat_ref)" << " implementation" << std::endl;
+void Task::setReference(const Eigen::VectorXd & vec_ref_in, const Eigen::Quaterniond & quat_ref_in){
+	std::cout << "Warning! Task " << task_name << " has no setReference(vec_ref_in, quat_ref_in)" << " implementation" << std::endl;
 }
 
 
 // Get Task References
 void Task::getRef(Eigen::VectorXd & vec_ref_out){
-	std::cout << "Warning! Task " << task_name << " has no getRef(vec_ref)" << " implementation" << std::endl;
+	std::cout << "Warning! Task " << task_name << " has no getRef(vec_ref_out)" << " implementation" << std::endl;
 }
 
 void Task::getRef(Eigen::VectorXd & vec_ref_out, Eigen::Quaterniond & quat_ref_out){
-	std::cout << "Warning! Task " << task_name << " has no getRef(vec_ref, quat_ref_out)" << " implementation" << std::endl;
+	std::cout << "Warning! Task " << task_name << " has no getRef(vec_ref_out, quat_ref_out)" << " implementation" << std::endl;
 }
 
 void Task::getRef(Eigen::Quaterniond & quat_ref_out){
@@ -48,11 +48,16 @@ void Task::getRef(Eigen::Quaterniond & quat_ref_out){
 
 
 // Computes the error for a given reference
-void Task::getError(Eigen::VectorXd & error_out){
-	std::cout << "Warning! Task " << task_name << " has no getError(error_out)" << " implementation" << std::endl;
+void Task::computeError(){
+	std::cout << "Warning! Task " << task_name << " has no computeError()" << " implementation" << std::endl;
+}
+
+// gets error
+void Task::getError(Eigen::VectorXd & error_out, bool compute){
+	std::cout << "Warning! Task " << task_name << " has no getError(error_out,  bool compute)" << " implementation" << std::endl;
 }
 
 // Sets the task error manually
-void Task::setError(const Eigen::VectorXd & error){
+void Task::setError(const Eigen::VectorXd & error_in){
 	std::cout << "Warning! Task " << task_name << " has no setError(error)" << " implementation" << std::endl;
 }

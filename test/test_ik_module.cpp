@@ -64,9 +64,16 @@ void testIK_module(){
   std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task}));
   std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {rpalm_task}));
 
-  Eigen::VectorXd lf_pos_ref = Eigen::VectorXd::Zero(3);
-  lfoot_task->setReference(lf_pos_ref);
 
+  // Quick Test set Reference and get Error  
+  ik_module.robot_model->updateFullKinematics(q_init);
+
+  Eigen::VectorXd rp_pos_ref = Eigen::VectorXd::Zero(3);
+  Eigen::Quaterniond rp_quat_ref; rp_quat_ref.setIdentity();
+  Eigen::VectorXd rp_task_error; 
+  rpalm_task->setReference(rp_pos_ref, rp_quat_ref);
+  rpalm_task->getError(rp_task_error);
+  std::cout << "Right Palm Task Error" << rp_task_error.transpose() << std::endl;
 
 
 
