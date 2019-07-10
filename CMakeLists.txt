@@ -88,8 +88,13 @@ SET (TASK_SOURCES
 SET (COLLISION_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/collision_module/collision_class.cpp)
 
+
 SET (COLLISION_ENVIRONMENT_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/collision_environment/collision_environment.cpp)
+
+SET (IK_MODULE_SOURCES
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/ik_module/ik_module.cpp)
+
 
 SET(PROJECT_SOURCES
 	${MODEL_SOURCES}
@@ -101,6 +106,7 @@ SET(PROJECT_SOURCES
 	${TASK_SOURCES}
 	${COLLISION_SOURCES}
 	${COLLISION_ENVIRONMENT_SOURCES})
+	${IK_MODULE_SOURCES})
 
 # Grab all the libraries
 SET(PROJECT_LIBRARIES

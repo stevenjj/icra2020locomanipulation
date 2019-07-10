@@ -5,7 +5,7 @@ TaskStack::TaskStack(std::shared_ptr<ValkyrieModel> & input_model, const std::ve
 	task_list = task_list_input;
 
 	task_dim = 0;
-	task_name = "";
+	task_name = "Task Stack: ";
 	for(int i = 0; i < task_list.size(); i++){
 		task_dim += task_list[i]->task_dim;
 		task_name = task_name + task_list[i]->task_name + ", ";

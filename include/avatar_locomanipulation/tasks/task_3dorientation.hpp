@@ -17,11 +17,22 @@ public:
 	//			must have been called first	
 	virtual void getTaskJacobianDot(Eigen::MatrixXd & Jdot_task);
 
+	// Set the reference
+	virtual void setReference(const Eigen::Quaterniond & quat_ref_in);	
+	
+	// Get the reference value
+	virtual void getReference(Eigen::Quaterniond & quat_ref_out);
+	virtual void computeError();
+	virtual void getError(Eigen::VectorXd & error_out, bool compute=true);
+
+
 private:
 	Eigen::MatrixXd J_tmp;
 	Eigen::MatrixXd Jdot_tmp;
 
-
+	Eigen::Vector3d cur_pos_;
+	Eigen::Quaterniond quat_current_;
+	Eigen::Vector3d quat_error_;
 };
 
 #endif
