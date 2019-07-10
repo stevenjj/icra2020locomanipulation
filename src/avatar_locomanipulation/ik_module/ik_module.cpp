@@ -84,20 +84,12 @@ void IKModule::computePseudoInverses(){
     }else{
       JN_[i] = J_[i]*Ntmp_;      
     }
-    // std::cout << "\n i = " << i << std::endl;
-    // std::cout << "JN_[i] = " << std::endl;    
-    // std::cout << JN_[i] << std::endl;
-
     // Compute pseudo inverse of JN_[i] 
     math_utils::weightedPseudoInverse(JN_[i], robot_model->Ainv, svd_list_[i], JNpinv_[i], singular_values_threshold);
     // Compute Null Space for this task N_k = I - pinv(J_k N_{k-1})(J_k N_{k-1}).
     if ( i < (task_hierarchy.size()-1) ){
       N_[i] = (I_ - JNpinv_[i]*JN_[i]);      
-      // std::cout << "N_[i] = " << std::endl;    
-      // std::cout << N_[i] << std::endl;
     }
-    // std::cout << "JNpinv_[i] = " << std::endl;    
-    // std::cout << JNpinv_[i] << std::endl;
   }
 
 }
