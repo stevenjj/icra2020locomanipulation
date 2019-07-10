@@ -85,9 +85,6 @@ SET (TASK_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_joint_config.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_stack.cpp)
 
-SET (COLLISION_SOURCES
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/collision_module/collision_class.cpp)
-
 
 SET (COLLISION_ENVIRONMENT_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/collision_environment/collision_environment.cpp)
@@ -104,8 +101,7 @@ SET(PROJECT_SOURCES
 	${ROS_BRIDGE_SOURCES}
 	${FEASIBILITY_SOURCES}
 	${TASK_SOURCES}
-	${COLLISION_SOURCES}
-	${COLLISION_ENVIRONMENT_SOURCES})
+	${COLLISION_ENVIRONMENT_SOURCES}
 	${IK_MODULE_SOURCES})
 
 # Grab all the libraries
