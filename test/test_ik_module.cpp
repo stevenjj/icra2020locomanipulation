@@ -118,6 +118,11 @@ void testIK_module(){
   task_stack_priority_1->getError(task_error);
   std::cout << "L/R Foot Task Stack Error = " << task_error.transpose() << std::endl;
 
+  ik_module.addTasktoHierarchy(task_stack_priority_1);
+  ik_module.addTasktoHierarchy(task_stack_priority_2);
+
+  ik_module.prepareIKDataStrcutures();
+  ik_module.computePseudoInverses();
 
 }
 
