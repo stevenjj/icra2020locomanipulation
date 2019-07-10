@@ -30,7 +30,9 @@ private:
 	Eigen::MatrixXd J_tmp;
 	Eigen::MatrixXd Jdot_tmp;
 
-
+	Eigen::Vector3d cur_pos_;
+	Eigen::Quaterniond quat_current_;
+	Eigen::Vector3d quat_error_;
 };
 
 #endif

@@ -8,6 +8,9 @@ Task3DOrientation::Task3DOrientation(std::shared_ptr<ValkyrieModel> & input_mode
 	J_tmp = Eigen::MatrixXd::Zero(6, robot_model->getDimQdot());
 	Jdot_tmp = Eigen::MatrixXd::Zero(6, robot_model->getDimQdot());
 	std::cout << "[Task 3D Orientation] for frame " << frame_name << " Constructed" << std::endl;
+
+	error_ = Eigen::VectorXd::Zero(3);
+	quat_ref_.setIdentity();
 }
 
 Task3DOrientation::~Task3DOrientation(){
@@ -25,12 +28,24 @@ void Task3DOrientation::getTaskJacobianDot(Eigen::MatrixXd & Jdot_task){
 
 
 void Task3DOrientation::setReference(const Eigen::Quaterniond & quat_ref_in){
+	quat_ref_ = quat_ref_in;
 }
 
 void Task3DOrientation::getReference(Eigen::Quaterniond & quat_ref_out){
+	quat_ref_out = quat_ref_;
 }
+
 void Task3DOrientation::computeError(){
+	robot_model->getFrameWorldPose(frame_name, cur_pos_, quat_current_);
+	// Compute Quaternion Error
+	math_utils::compute_quat_error(quat_ref_, quat_current_, quat_error_);
+	error_ = quat_error_;
 }
+
 void Task3DOrientation::getError(Eigen::VectorXd & error_out, bool compute){
+	if (compute){
+		this->computeError();
+	}
+	error_out = error_;
 }
 

@@ -3,6 +3,8 @@
 
 #include <avatar_locomanipulation/tasks/task.hpp>
 #include <avatar_locomanipulation/tasks/task_6dpose.hpp>
+#include <avatar_locomanipulation/tasks/task_3dorientation.hpp>
+
 #include <avatar_locomanipulation/tasks/task_stack.hpp>
 #include <avatar_locomanipulation/tasks/task_com.hpp>
 
@@ -57,6 +59,8 @@ void testIK_module(){
 
   // Create Tasks
   std::shared_ptr<Task> lfoot_task(new Task6DPose(ik_module.robot_model, "leftCOP_Frame"));
+  std::shared_ptr<Task> lfoot_ori_task(new Task3DOrientation(ik_module.robot_model, "leftCOP_Frame"));
+
   std::shared_ptr<Task> rfoot_task(new Task6DPose(ik_module.robot_model, "rightCOP_Frame"));
   std::shared_ptr<Task> rpalm_task(new Task6DPose(ik_module.robot_model, "rightPalm"));
 
@@ -74,6 +78,16 @@ void testIK_module(){
   rpalm_task->setReference(rp_pos_ref, rp_quat_ref);
   rpalm_task->getError(rp_task_error);
   std::cout << "Right Palm Task Error" << rp_task_error.transpose() << std::endl;
+
+  double theta = M_PI/12.0;
+  Eigen::AngleAxis<double> aa(theta, Eigen::Vector3d(0.0, 0.0, 1.0));
+  Eigen::Quaterniond lf_quat_ref(aa);
+  Eigen::VectorXd lf_quat_error;
+
+  lfoot_ori_task->setReference(lf_quat_ref);
+  lfoot_ori_task->getError(lf_quat_error);
+  std::cout << "Left Foot Ori Error" << lf_quat_error.transpose() << std::endl;
+
 
 }
 
