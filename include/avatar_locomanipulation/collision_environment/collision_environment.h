@@ -17,14 +17,14 @@ public:
   CollisionEnvironment(std::shared_ptr<RobotModel> & val, std::shared_ptr<RobotModel> & obj);
   ~CollisionEnvironment();
 
-  // builds vectors from object to joints of interest
-  void build_directed_vectors(Eigen::VectorXd q, Eigen::VectorXd obj_config);
+  // builds vectors from object to joints of interest using maps defined by find_world_positions and find_near_points
+  void build_directed_vectors(Eigen::VectorXd & q, Eigen::VectorXd & obj_config);
 
   // fills the map from joint name to world position
   std::map<std::string, Eigen::Vector3d> find_world_positions();
 
   // fills map from object link name to nearest point on that body to pelvis
-  std::map<std::string, Eigen::Vector3d> find_near_points(Eigen::VectorXd q, Eigen::VectorXd obj_config);
+  std::map<std::string, Eigen::Vector3d> find_near_points(Eigen::VectorXd & q, Eigen::VectorXd & obj_config);
 	
 };
 

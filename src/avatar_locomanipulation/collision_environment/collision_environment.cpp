@@ -12,7 +12,7 @@ CollisionEnvironment::~CollisionEnvironment(){
 }
 
 
-void CollisionEnvironment::build_directed_vectors(Eigen::VectorXd q, Eigen::VectorXd obj_config){
+void CollisionEnvironment::build_directed_vectors(Eigen::VectorXd & q, Eigen::VectorXd & obj_config){
   // Update the kinematics
   valkyrie->updateFullKinematics(q);
   object->updateFullKinematics(obj_config);
@@ -21,10 +21,101 @@ void CollisionEnvironment::build_directed_vectors(Eigen::VectorXd q, Eigen::Vect
   std::map<std::string, Eigen::Vector3d> world_positions = find_world_positions();
   // Define a map for near_points
   std::map<std::string, Eigen::Vector3d> near_points = find_near_points(q, obj_config);
+  // Define the difference vector
+  Eigen::Vector3d difference;
 
-  
+  for(std::map<std::string, Eigen::Vector3d>::iterator it=near_points.begin(); it != near_points.end(); ++it){
+  	std::cout << it->first << " and rfoot: " <<  std::endl;
+  	difference = world_positions.find("rfoot")->second - it->second;
+  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
+  	std::cout << "Normalized Direction: " << std::endl;
+  	std::cout << difference.normalized() << std::endl;
 
-  // near_points = find_near_points(geomData);
+  	std::cout << it->first << " and lfoot: " <<  std::endl;
+  	difference = world_positions.find("lfoot")->second - it->second;
+  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
+  	std::cout << "Normalized Direction: " << std::endl;
+  	std::cout << difference.normalized() << std::endl;
+
+  	std::cout << it->first << " and rankle: " <<  std::endl;
+  	difference = world_positions.find("rankle")->second - it->second;
+  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
+  	std::cout << "Normalized Direction: " << std::endl;
+  	std::cout << difference.normalized() << std::endl;
+
+  	std::cout << it->first << " and lankle: " <<  std::endl;
+  	difference = world_positions.find("lankle")->second - it->second;
+  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
+  	std::cout << "Normalized Direction: " << std::endl;
+  	std::cout << difference.normalized() << std::endl;
+
+  	std::cout << it->first << " and rknee: " <<  std::endl;
+  	difference = world_positions.find("rknee")->second - it->second;
+  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
+  	std::cout << "Normalized Direction: " << std::endl;
+  	std::cout << difference.normalized() << std::endl;
+
+  	std::cout << it->first << " and lknee: " <<  std::endl;
+  	difference = world_positions.find("lknee")->second - it->second;
+  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
+  	std::cout << "Normalized Direction: " << std::endl;
+  	std::cout << difference.normalized() << std::endl;
+
+  	std::cout << it->first << " and rshoulder: " <<  std::endl;
+  	difference = world_positions.find("rshoulder")->second - it->second;
+  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
+  	std::cout << "Normalized Direction: " << std::endl;
+  	std::cout << difference.normalized() << std::endl;
+
+  	std::cout << it->first << " and lshoulder: " <<  std::endl;
+  	difference = world_positions.find("lshoulder")->second - it->second;
+  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
+  	std::cout << "Normalized Direction: " << std::endl;
+  	std::cout << difference.normalized() << std::endl;
+
+  	std::cout << it->first << " and relbow: " <<  std::endl;
+  	difference = world_positions.find("relbow")->second - it->second;
+  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
+  	std::cout << "Normalized Direction: " << std::endl;
+  	std::cout << difference.normalized() << std::endl;
+
+  	std::cout << it->first << " and lelbow: " <<  std::endl;
+  	difference = world_positions.find("lelbow")->second - it->second;
+  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
+  	std::cout << "Normalized Direction: " << std::endl;
+  	std::cout << difference.normalized() << std::endl;
+
+  	std::cout << it->first << " and rwrist: " <<  std::endl;
+  	difference = world_positions.find("rwrist")->second - it->second;
+  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
+  	std::cout << "Normalized Direction: " << std::endl;
+  	std::cout << difference.normalized() << std::endl;
+
+  	std::cout << it->first << " and lwrist: " <<  std::endl;
+  	difference = world_positions.find("lwrist")->second - it->second;
+  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
+  	std::cout << "Normalized Direction: " << std::endl;
+  	std::cout << difference.normalized() << std::endl;
+
+  	std::cout << it->first << " and rhand: " <<  std::endl;
+  	difference = world_positions.find("rhand")->second - it->second;
+  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
+  	std::cout << "Normalized Direction: " << std::endl;
+  	std::cout << difference.normalized() << std::endl;
+
+  	std::cout << it->first << " and lhand: " <<  std::endl;
+  	difference = world_positions.find("lhand")->second - it->second;
+  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
+  	std::cout << "Normalized Direction: " << std::endl;
+  	std::cout << difference.normalized() << std::endl;
+
+  	std::cout << it->first << " and pelvis: " <<  std::endl;
+  	difference = world_positions.find("pelvis")->second - it->second;
+  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
+  	std::cout << "Normalized Direction: " << std::endl;
+  	std::cout << difference.normalized() << std::endl;
+
+  }
 
 
 }
@@ -73,7 +164,7 @@ std::map<std::string, Eigen::Vector3d> CollisionEnvironment::find_world_position
 }
 
 
-std::map<std::string, Eigen::Vector3d> CollisionEnvironment::find_near_points(Eigen::VectorXd q, Eigen::VectorXd obj_config){
+std::map<std::string, Eigen::Vector3d> CollisionEnvironment::find_near_points(Eigen::VectorXd & q, Eigen::VectorXd & obj_config){
 	// Define a new RobotModel which will be the appended model
 	std::shared_ptr<RobotModel> appended(new RobotModel() );
 
