@@ -11,6 +11,8 @@
 using namespace std;
 
 namespace footstep_planner{
+	class Node;
+	class A_starPlanner;
 
 	class Node {
 	public:
