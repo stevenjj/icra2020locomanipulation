@@ -74,11 +74,11 @@ public:
 
   RobotModel();
   RobotModel(const std::string & filename, const std::string & meshDir);
-  RobotModel(const std::string & filename, const std::string & meshDir, const std::string & srdf_filename);
+  RobotModel(const std::string & filename, const std::string & meshDir, const std::string & srdf);
 
   ~RobotModel();
 
-
+  void common_initialization();
 
 
   /* updateFullKinematics

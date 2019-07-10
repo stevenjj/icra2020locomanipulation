@@ -21,7 +21,7 @@ void CollisionEnvironment::build_directed_vectors(Eigen::VectorXd & q, Eigen::Ve
   std::map<std::string, Eigen::Vector3d> world_positions = find_world_positions();
   // Define a map for near_points
   std::map<std::string, Eigen::Vector3d> near_points = find_near_points(q, obj_config);
-  // Define the difference vector
+  // // Define the difference vector
   Eigen::Vector3d difference;
 
   for(std::map<std::string, Eigen::Vector3d>::iterator it=near_points.begin(); it != near_points.end(); ++it){
@@ -116,8 +116,6 @@ void CollisionEnvironment::build_directed_vectors(Eigen::VectorXd & q, Eigen::Ve
   	std::cout << difference.normalized() << std::endl;
 
   }
-
-
 }
 
 std::map<std::string, Eigen::Vector3d> CollisionEnvironment::find_world_positions(){
@@ -165,6 +163,9 @@ std::map<std::string, Eigen::Vector3d> CollisionEnvironment::find_world_position
 
 
 std::map<std::string, Eigen::Vector3d> CollisionEnvironment::find_near_points(Eigen::VectorXd & q, Eigen::VectorXd & obj_config){
+	// Define map for returning
+	std::map<std::string, Eigen::Vector3d> near;
+
 	// Define a new RobotModel which will be the appended model
 	std::shared_ptr<RobotModel> appended(new RobotModel() );
 
@@ -182,20 +183,19 @@ std::map<std::string, Eigen::Vector3d> CollisionEnvironment::find_near_points(Ei
 	appended_config << q, obj_config;
 
 	// Create new data and geomData as required after appending models
-	//appended->data(appended->model);
+	appended->common_initialization();
 	pinocchio::GeometryData geomData(appended->geomModel);
 
 	// Update the full kinematics 
 	appended->updateFullKinematics(appended_config);
 
 	std::string object_link_name;
-	std::map<std::string, Eigen::Vector3d> near;
 
   for(int i=0; i < object->geomModel.geometryObjects.size(); ++i){
   	object_link_name = object->geomModel.getGeometryName(i);
   	for(int j=0; j<appended->geomModel.collisionPairs.size(); ++j){
 			pinocchio::CollisionPair id2 = appended->geomModel.collisionPairs[j];
-			if(appended->geomModel.getGeometryName(id2.first) == "pelvis" && appended->geomModel.getGeometryName(id2.second) == object_link_name){
+			if((appended->geomModel.getGeometryName(id2.first) == "pelvis_0" && appended->geomModel.getGeometryName(id2.second) == object_link_name) || (appended->geomModel.getGeometryName(id2.second) == "pelvis" && appended->geomModel.getGeometryName(id2.first) == object_link_name)){
 				pinocchio::computeDistance(appended->geomModel, geomData, appended->geomModel.findCollisionPair(id2));
 				appended->dresult = geomData.distanceResults[j];
 				near[object_link_name] = appended->dresult.nearest_points[1];
@@ -207,3 +207,47 @@ std::map<std::string, Eigen::Vector3d> CollisionEnvironment::find_near_points(Ei
 }
 	
 	
+void CollisionEnvironment::compute_collision(Eigen::VectorXd & q, Eigen::VectorXd & obj_config){
+	// Define a new RobotModel which will be the appended model
+	std::shared_ptr<RobotModel> appended(new RobotModel() );
+
+	// Prepare the models for appending
+  valkyrie->geomModel.addAllCollisionPairs();
+	object->geomModel.addAllCollisionPairs();
+	// Removes all collision pairs as specified in the srdf_filename
+	pinocchio::srdf::removeCollisionPairs(valkyrie->model, valkyrie->geomModel, valkyrie->srdf_filename, false);
+
+	// Append the object onto the robot, and fill appended RobotModel
+	pinocchio::appendModel(valkyrie->model, object->model, valkyrie->geomModel, object->geomModel, valkyrie->model.frames.size()-1, pinocchio::SE3::Identity(), appended->model, appended->geomModel);
+
+	// Define the appended configuration vector
+	Eigen::VectorXd appended_config(appended->model.nq);
+	appended_config << q, obj_config;
+
+	// Create new data and geomData as required after appending models
+	appended->common_initialization();
+	pinocchio::GeometryData geomData(appended->geomModel);
+
+	// Update the full kinematics 
+	appended->updateFullKinematics(appended_config);
+
+	int j, k;
+
+	pinocchio::computeCollisions(appended->model, *appended->data, appended->geomModel, geomData, appended_config);
+
+	for(j=0; j<geomData.collisionResults.size(); j++)
+	{
+		appended->result = geomData.collisionResults[j];
+		pinocchio::CollisionPair id2 = appended->geomModel.collisionPairs[j];
+		appended->result.getContacts(appended->contacts);
+			if(appended->contacts.size() != 0)
+			{
+				for(k=0; k<appended->contacts.size(); k++)
+      			{
+      				std::cout << "Contact Found Between: " << appended->geomModel.getGeometryName(id2.first) << " and " << appended->geomModel.getGeometryName(id2.second) << std::endl;
+        			std::cout << "position: " << appended->contacts[k].pos << std::endl;
+        			std::cout << "-------------------" << std::endl;
+      			}
+			}
+	}
+}

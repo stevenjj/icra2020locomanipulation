@@ -9,10 +9,11 @@ RobotModel::RobotModel(const std::string & filename, const std::string & meshDir
   commonInitialization();
 }
 
-RobotModel::RobotModel(const std::string & filename, const std::string & meshDir, const std::string & srdf_filename){
+RobotModel::RobotModel(const std::string & filename, const std::string & meshDir, const std::string & srdf){
   buildPinocchioModel(filename);
   buildPinocchioGeomModel(filename, meshDir);
   commonInitialization();
+  srdf_filename = srdf;
 }
 
 RobotModel::~RobotModel(){
@@ -44,6 +45,10 @@ void RobotModel::commonInitialization(){
   Jdot_com = Eigen::Matrix3Xd::Zero(3, model.nv);
 
   std::cout << "Robot Model Constructed" << std::endl;
+}
+
+void RobotModel::common_initialization(){
+  commonInitialization();
 }
 
 void RobotModel::updateFullKinematics(const Eigen::VectorXd & q_update){
