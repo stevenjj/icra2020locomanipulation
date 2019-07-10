@@ -41,13 +41,7 @@
 
 class RobotModel{
 private:
-  pinocchio::Model model;
-  pinocchio::GeometryModel geomModel;
-  pinocchio::fcl::CollisionResult result;
-  pinocchio::fcl::DistanceResult dresult;
-  std::vector<pinocchio::fcl::Contact> contacts;
-  std::string srdf_filename;
-
+  
   // private temporary index value holders. Prevents memory allocation on runtime
   pinocchio::FrameIndex tmp_frame_index;
   pinocchio::JointIndex tmp_joint_index;
@@ -57,6 +51,12 @@ private:
 
 
 public:
+  std::string srdf_filename;
+  pinocchio::Model model;
+  pinocchio::GeometryModel geomModel;
+  pinocchio::fcl::CollisionResult result;
+  pinocchio::fcl::DistanceResult dresult;
+  std::vector<pinocchio::fcl::Contact> contacts;
 
   std::unique_ptr<pinocchio::Data> data;
 
@@ -72,7 +72,7 @@ public:
   Eigen::Matrix3Xd J_com; // Center of mass Jacobian
   Eigen::Matrix3Xd Jdot_com; // Center of mass Jacobian Derivative
 
-
+  RobotModel();
   RobotModel(const std::string & filename, const std::string & meshDir);
   RobotModel(const std::string & filename, const std::string & meshDir, const std::string & srdf_filename);
 

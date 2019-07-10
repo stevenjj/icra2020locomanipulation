@@ -1,6 +1,7 @@
 #include <avatar_locomanipulation/models/robot_model.hpp>
 
-
+RobotModel::RobotModel(){
+}
 
 RobotModel::RobotModel(const std::string & filename, const std::string & meshDir){
   buildPinocchioModel(filename);
