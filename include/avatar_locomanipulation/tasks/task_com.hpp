@@ -20,6 +20,21 @@ public:
 	//			must have been called first	
 	virtual void getTaskJacobianDot(Eigen::MatrixXd & Jdot_task);
 
+	// Sets a reference for the task
+	virtual void setReference(const Eigen::VectorXd & vec_ref_in);
+
+	// Gets the currently set References
+	virtual void getRef(Eigen::VectorXd & vec_ref_out);
+
+	// Computes the error for a given reference
+	virtual void computeError();
+	// Gets the current error
+	virtual void getError(Eigen::VectorXd & error_out, bool compute=true);
+
+
+protected:
+	Eigen::Vector3d cur_pos_;
+
 };
 
 #endif

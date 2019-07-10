@@ -4,7 +4,7 @@
 #include <avatar_locomanipulation/tasks/task.hpp>
 #include <avatar_locomanipulation/tasks/task_6dpose.hpp>
 #include <avatar_locomanipulation/tasks/task_stack.hpp>
-
+#include <avatar_locomanipulation/tasks/task_com.hpp>
 
 void initialize_config(Eigen::VectorXd & q_init){
   std::cout << "Initialize Valkyrie Model" << std::endl;
@@ -74,9 +74,6 @@ void testIK_module(){
   rpalm_task->setReference(rp_pos_ref, rp_quat_ref);
   rpalm_task->getError(rp_task_error);
   std::cout << "Right Palm Task Error" << rp_task_error.transpose() << std::endl;
-
-
-
 
 }
 
