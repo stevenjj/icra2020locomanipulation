@@ -43,16 +43,16 @@ void Task6DPose::setReference(const Eigen::VectorXd & vec_ref_in, const Eigen::Q
 
 
 // Get Task References
-void Task6DPose::getRef(Eigen::VectorXd & vec_ref_out){
+void Task6DPose::getReference(Eigen::VectorXd & vec_ref_out){
 	vec_ref_out = vec_ref_;
 }
 
-void Task6DPose::getRef(Eigen::VectorXd & vec_ref_out, Eigen::Quaterniond & quat_ref_out){
+void Task6DPose::getReference(Eigen::VectorXd & vec_ref_out, Eigen::Quaterniond & quat_ref_out){
 	vec_ref_out = vec_ref_;
 	quat_ref_out = quat_ref_;
 }
 
-void Task6DPose::getRef(Eigen::Quaterniond & quat_ref_out){
+void Task6DPose::getReference(Eigen::Quaterniond & quat_ref_out){
 	quat_ref_out = quat_ref_;
 }
 

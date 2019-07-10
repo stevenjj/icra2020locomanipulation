@@ -22,3 +22,15 @@ void Task3DOrientation::getTaskJacobianDot(Eigen::MatrixXd & Jdot_task){
 	robot_model->get6DTaskJacobianDot(frame_name, Jdot_tmp);
 	Jdot_task = Jdot_tmp.bottomRows(3);
 }
+
+
+void Task3DOrientation::setReference(const Eigen::Quaterniond & quat_ref_in){
+}
+
+void Task3DOrientation::getReference(Eigen::Quaterniond & quat_ref_out){
+}
+void Task3DOrientation::computeError(){
+}
+void Task3DOrientation::getError(Eigen::VectorXd & error_out, bool compute){
+}
+

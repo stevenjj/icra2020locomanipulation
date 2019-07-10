@@ -25,9 +25,9 @@ public:
 	virtual void setReference(const Eigen::VectorXd & vec_ref_in, const Eigen::Quaterniond & quat_ref_in);
 
 	// Gets the currently set References
-	virtual void getRef(Eigen::VectorXd & vec_ref_out);
-	virtual void getRef(Eigen::VectorXd & vec_ref_out, Eigen::Quaterniond & quat_ref_out);
-	virtual void getRef(Eigen::Quaterniond & quat_ref_out);
+	virtual void getReference(Eigen::VectorXd & vec_ref_out);
+	virtual void getReference(Eigen::VectorXd & vec_ref_out, Eigen::Quaterniond & quat_ref_out);
+	virtual void getReference(Eigen::Quaterniond & quat_ref_out);
 
 	// Computes the error for a given reference
 	virtual void computeError();

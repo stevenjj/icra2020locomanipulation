@@ -33,16 +33,16 @@ void Task::setReference(const Eigen::VectorXd & vec_ref_in, const Eigen::Quatern
 
 
 // Get Task References
-void Task::getRef(Eigen::VectorXd & vec_ref_out){
-	std::cout << "Warning! Task " << task_name << " has no getRef(vec_ref_out)" << " implementation" << std::endl;
+void Task::getReference(Eigen::VectorXd & vec_ref_out){
+	std::cout << "Warning! Task " << task_name << " has no getReference(vec_ref_out)" << " implementation" << std::endl;
 }
 
-void Task::getRef(Eigen::VectorXd & vec_ref_out, Eigen::Quaterniond & quat_ref_out){
-	std::cout << "Warning! Task " << task_name << " has no getRef(vec_ref_out, quat_ref_out)" << " implementation" << std::endl;
+void Task::getReference(Eigen::VectorXd & vec_ref_out, Eigen::Quaterniond & quat_ref_out){
+	std::cout << "Warning! Task " << task_name << " has no getReference(vec_ref_out, quat_ref_out)" << " implementation" << std::endl;
 }
 
-void Task::getRef(Eigen::Quaterniond & quat_ref_out){
-	std::cout << "Warning! Task " << task_name << " has no getRef(quat_ref_out)" << " implementation" << std::endl;
+void Task::getReference(Eigen::Quaterniond & quat_ref_out){
+	std::cout << "Warning! Task " << task_name << " has no getReference(quat_ref_out)" << " implementation" << std::endl;
 }
 
 

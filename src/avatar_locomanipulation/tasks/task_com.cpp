@@ -28,7 +28,7 @@ void TaskCOM::setReference(const Eigen::VectorXd & vec_ref_in){
 }
 
 // Get Task References
-void TaskCOM::getRef(Eigen::VectorXd & vec_ref_out){
+void TaskCOM::getReference(Eigen::VectorXd & vec_ref_out){
 	vec_ref_out = vec_ref_;
 }
 
