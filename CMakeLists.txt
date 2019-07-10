@@ -90,6 +90,9 @@ SET (COLLISION_SOURCES
 SET (IK_MODULE_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/ik_module/ik_module.cpp)
 
+SET (FOOTSTEP_PLANNER_SOURCES
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/walking/footstep_planner.cpp)
+
 SET(PROJECT_SOURCES
 	${MODEL_SOURCES}
 	${DATA_TYPES_SOURCES}
