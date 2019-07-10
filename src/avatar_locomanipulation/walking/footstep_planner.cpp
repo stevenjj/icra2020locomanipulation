@@ -45,8 +45,6 @@ namespace footstep_planner{
 	}
 
 	void A_starPlanner::getPath(std::vector<Node> & path){
-		Node goal_node;
-		path.push_back(goal_node);
 	}
 
 }
