@@ -15,3 +15,11 @@ void IKModule::setInitialConfig(const Eigen::VectorXd & q_init){
 
 bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd & q_sol){
 }
+
+void IKModule::addTasktoHierarchy(std::shared_ptr<Task> & task_input){
+  task_hierarchy.push_back(task_input);
+}
+
+void IKModule::clearTaskHierarchy(){
+  task_hierarchy.clear();  
+}

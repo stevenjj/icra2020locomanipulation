@@ -22,17 +22,17 @@ public:
 
 	bool solveIK(int & solve_result, double & error_norm, Eigen::VectorXd & q_sol);
 
-
- // 
-	// void addTasktoHierarchy;
-	// std::vector<>
+	// This adds a lower priority task to the hierarchy. 
+	void addTasktoHierarchy(std::shared_ptr<Task> & task_input);
+	void clearTaskHierarchy();
 
 private:
 	Eigen::VectorXd q_start;
 	Eigen::VectorXd q_current;
 
 	// Task hierarchy list
-	std::vector<Task> task_hierarchy;
+	// A hierarchy of tasks in order of priority
+	std::vector< std::shared_ptr<Task> > task_hierarchy;
 };
 
 #endif

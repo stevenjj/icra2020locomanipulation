@@ -56,6 +56,8 @@ void testIK_module(){
   // Create IK Module
   IKModule ik_module;
   ik_module.setInitialConfig(q_init);  
+  // Update Robot Kinematics
+  ik_module.robot_model->updateFullKinematics(q_init);
 
   // Create Tasks
   std::shared_ptr<Task> lfoot_task(new Task6DPose(ik_module.robot_model, "leftCOP_Frame"));
@@ -68,25 +70,53 @@ void testIK_module(){
   std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task}));
   std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {rpalm_task}));
 
+   // Set desired Foot configuration
+  Eigen::Vector3d rfoot_des_pos;
+  Eigen::Quaternion<double> rfoot_des_quat;
 
-  // Quick Test set Reference and get Error  
-  ik_module.robot_model->updateFullKinematics(q_init);
+  Eigen::Vector3d lfoot_des_pos;
+  Eigen::Quaternion<double> lfoot_des_quat;
 
-  Eigen::VectorXd rp_pos_ref = Eigen::VectorXd::Zero(3);
-  Eigen::Quaterniond rp_quat_ref; rp_quat_ref.setIdentity();
-  Eigen::VectorXd rp_task_error; 
-  rpalm_task->setReference(rp_pos_ref, rp_quat_ref);
-  rpalm_task->getError(rp_task_error);
-  std::cout << "Right Palm Task Error" << rp_task_error.transpose() << std::endl;
+  // Foot should be flat on the ground and spaced out by 0.25m
+  rfoot_des_pos.setZero();
+  rfoot_des_pos[1] = -0.125;
+  rfoot_des_quat.setIdentity();
 
-  double theta = M_PI/12.0;
-  Eigen::AngleAxis<double> aa(theta, Eigen::Vector3d(0.0, 0.0, 1.0));
-  Eigen::Quaterniond lf_quat_ref(aa);
-  Eigen::VectorXd lf_quat_error;
+  lfoot_des_pos.setZero();
+  lfoot_des_pos[1] = 0.125;
+  lfoot_des_quat.setIdentity();
 
-  lfoot_ori_task->setReference(lf_quat_ref);
-  lfoot_ori_task->getError(lf_quat_error);
-  std::cout << "Left Foot Ori Error" << lf_quat_error.transpose() << std::endl;
+  // Set Desired to current configuration except right palm must have identity orientation
+  Eigen::Vector3d rpalm_des_pos;
+  Eigen::Quaternion<double> rpalm_des_quat;
+  ik_module.robot_model->getFrameWorldPose("rightPalm", rpalm_des_pos, rpalm_des_quat);
+  rpalm_des_pos[0] += 0.25; 
+  rpalm_des_pos[1] += 0.25; 
+  rpalm_des_pos[2] += 0.1; 
+  Eigen::AngleAxis<double> axis_angle;
+  axis_angle.angle() = (M_PI/2.0);
+  axis_angle.axis() = Eigen::Vector3d(0, 0, 1.0);
+  rpalm_des_quat = axis_angle;
+
+
+  // Set references ------------------------------------------------------------------------
+  lfoot_task->setReference(lfoot_des_pos, lfoot_des_quat);
+  rfoot_task->setReference(rfoot_des_pos, rfoot_des_quat);
+  rpalm_task->setReference(rpalm_des_pos, rpalm_des_quat);
+
+  // Get Errors -----------------------------------------------------------------------------
+  Eigen::VectorXd task_error;
+  lfoot_task->getError(task_error);
+  std::cout << "Left Foot Task Error = " << task_error.transpose() << std::endl;
+
+  rfoot_task->getError(task_error);
+  std::cout << "Right Foot Task Error = " << task_error.transpose() << std::endl;
+
+  rpalm_task->getError(task_error);
+  std::cout << "Right Palm Task Error = " << task_error.transpose() << std::endl;
+
+  task_stack_priority_1->getError(task_error);
+  std::cout << "L/R Foot Task Stack Error = " << task_error.transpose() << std::endl;
 
 
 }
