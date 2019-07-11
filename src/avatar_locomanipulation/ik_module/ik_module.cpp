@@ -56,10 +56,43 @@ void IKModule::prepareNewIKDataStrcutures(){
   // Construct Null Spaces:
   for(int i = 1; i < task_hierarchy.size(); i++){
     N_.push_back(Eigen::MatrixXd::Identity(robot_model->getDimQdot(), robot_model->getDimQdot()));
-    std::cout << "N_" << i-1 << std::endl;
+    // std::cout << "N_" << i-1 << std::endl;
   }
 
 }
+
+
+// Sets the threshold for the SVD when performing pseudoinverses. Default: 1e-4
+void IKModule::setSingularValueThreshold(double & svd_thresh_in){
+  singular_values_threshold = svd_thresh_in;
+}
+// Sets the maximum iterations to perform descent. Default: 100
+void IKModule::setMaxIters(int & max_iters_in){
+  max_iters = max_iters_in;
+}
+// Sets the initial descent step. Default: 1.0
+void IKModule::setDescentStep(int & k_step_in){
+  k_step = k_step_in;
+}
+// Sets the backtracking parameter beta with 0.1 <= beta <= 0.8. Default: 0.5 
+void IKModule::setBackTrackBeta(double & beta_in){
+  beta = beta_in;
+}
+// Sets the Task Space Error Norm Tolerance for Optimality Conditions. Default: 1e-4 
+void IKModule::setErrorTol(double & error_tol_in){
+  error_tol = error_tol_in;
+}
+// Sets the Gradient Norm Tolerance for Sub Optimality. Default: 1e-12
+//  ie: if gradient is too small, we are at a local minimum
+void IKModule::setGradTol(double & grad_tol_in){
+  grad_tol = grad_tol_in;
+}
+// Whether or not the inertia matrix is used for a weighted pseudoinverse. Default: false
+void IKModule::setEnableInertiaWeighting(bool inertia_weighted_in){
+  inertia_weighted_ = inertia_weighted_in;
+}
+
+
 
 void IKModule::updateTaskJacobians(){
   // Gets the task jacobians
@@ -68,8 +101,8 @@ void IKModule::updateTaskJacobians(){
   }
 }
 
-void IKModule::computePseudoInverses(bool inertia_weighted){
-  if (inertia_weighted){
+void IKModule::computePseudoInverses(){
+  if (inertia_weighted_){
     robot_model->computeInertiaMatrixInverse(q_start);
   }
   updateTaskJacobians();
@@ -91,7 +124,7 @@ void IKModule::computePseudoInverses(bool inertia_weighted){
     // Compute pseudo inverse of JN_[i] 
 
     // Inertia Weighted
-    if (inertia_weighted){
+    if (inertia_weighted_){
       math_utils::weightedPseudoInverse(JN_[i], robot_model->Ainv, svd_list_[i], JNpinv_[i], singular_values_threshold);
     }else{
     // Unweighted:
@@ -147,7 +180,7 @@ void IKModule::compute_dq(){
 }
 
 
-bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd & q_sol, bool inertia_weighted){
+bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd & q_sol){
   q_current = q_start;
 
   for(int i = 0; i < max_iters; i++){

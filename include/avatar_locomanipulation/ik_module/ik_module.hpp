@@ -21,9 +21,17 @@ public:
 
 	std::shared_ptr<ValkyrieModel> robot_model;
 
+	// Sets the initial configuration of the robot
 	void setInitialConfig(const Eigen::VectorXd & q_init);
 
-	bool solveIK(int & solve_result, double & error_norm, Eigen::VectorXd & q_sol, bool inertia_weighted=false);
+	// Outputs:
+	//  return: true if optimal or suboptimal solutions were found. 
+	//			false if maximum iterations were hit 
+	//  params:
+	//		solve_result \in Optimal, SubOptimal, Max Iters Hit
+	//  	error_norm - the sum of all the task error norms.
+	//		q_sol - the configuration vector
+	bool solveIK(int & solve_result, double & error_norm, Eigen::VectorXd & q_sol);
 
 	// This adds a lower priority task to the hierarchy. 
 	void addTasktoHierarchy(std::shared_ptr<Task> & task_input);
@@ -34,10 +42,25 @@ public:
 	// the task hierarchy has changed
 	void prepareNewIKDataStrcutures();
 
+	// Sets the threshold for the singular values to be set to 0 when performing pseudoinverses with SVD. Default: 1e-4
+	void setSingularValueThreshold(double & svd_thresh_in);
+	// Sets the maximum iterations to perform descent. Default: 100
+	void setMaxIters(int & max_iters_in);
+	// Sets the initial descent step. Default: 1.0
+	void setDescentStep(int & k_step_in);
+	// Sets the backtracking parameter beta with 0.1 <= beta <= 0.8. Default: 0.5 
+	void setBackTrackBeta(double & beta_in); 
+	// Sets the Task Space Error Norm Tolerance for Optimality Conditions. Default: 1e-4 
+	void setErrorTol(double & error_tol_in);
+	// Sets the Gradient Norm Tolerance for Sub Optimality. Default: 1e-12
+	//	ie: if gradient is too small, we are at a local minimum
+	void setGradTol(double & grad_tol_in);
+	// Whether or not the inertia matrix is used for a weighted pseudoinverse. Default: false
+	void setEnableInertiaWeighting(bool inertia_weighted_in);
 
 private:
 	void updateTaskJacobians();
-	void computePseudoInverses(bool inertia_weighted=false);
+	void computePseudoInverses();
 	void computeTaskErrors();
 	void compute_dq();
 
@@ -70,20 +93,16 @@ private:
 	std::vector< Eigen::JacobiSVD<Eigen::MatrixXd> > svd_list_; // List of SVD for pseudoinverses
 
 	// IK parameters
-	double singular_values_threshold = 1e-4;
-
+	double singular_values_threshold = 1e-4; // Cut off value to treat singular values as 0.0
 	double max_iters = 100; // maximum IK iters
 	double k_step = 1.0; // starting step
 	double beta = 0.8; // Backtracking Line Search Parameter
-	double alpha = 0.5; // Backtracking Line Search Parameter
-
 	double error_tol = 1e-4; // Task tolerance for success
 	double grad_tol = 1e-12;//12; // Gradient descent tolerance for suboptimality
+	bool inertia_weighted_ = false;
 
-	double k_min_step = 1e-20; // Minimum step (do we need this?)
-
+	// Errors and Error gradient values:
 	double total_error_norm = 0.0;
-
 	double f_q = 0.0;
 	double f_q_p_dq = 0.0;
 	double grad_f_norm_squared = 0.0;

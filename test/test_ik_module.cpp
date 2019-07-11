@@ -135,12 +135,11 @@ void testIK_module(){
 
 
   int solve_result;
-  bool inertia_weighted = true;
   double error_norm;
   Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(ik_module.robot_model->getDimQdot());
 
   ik_module.prepareNewIKDataStrcutures();
-  ik_module.solveIK(solve_result, error_norm, q_sol, inertia_weighted);
+  ik_module.solveIK(solve_result, error_norm, q_sol);
 
 
 }
