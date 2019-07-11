@@ -62,13 +62,15 @@ void testIK_module(){
   // Create Tasks
   std::shared_ptr<Task> lfoot_task(new Task6DPose(ik_module.robot_model, "leftCOP_Frame"));
   std::shared_ptr<Task> lfoot_ori_task(new Task3DOrientation(ik_module.robot_model, "leftCOP_Frame"));
-
   std::shared_ptr<Task> rfoot_task(new Task6DPose(ik_module.robot_model, "rightCOP_Frame"));
+
+  std::shared_ptr<Task> com_task(new TaskCOM(ik_module.robot_model));
+
   std::shared_ptr<Task> rpalm_task(new Task6DPose(ik_module.robot_model, "rightPalm"));
 
   // Stack Tasks in order of priority
   // std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task, rpalm_task}));
-  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task}));
+  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task, com_task}));
   std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {rpalm_task}));
 
 
@@ -102,11 +104,17 @@ void testIK_module(){
   axis_angle.axis() = Eigen::Vector3d(0, 0, 1.0);
   rpalm_des_quat = axis_angle;
 
+  // Set desired CoM to be 1m above the ground
+  Eigen::Vector3d com_des_pos; com_des_pos.setZero();
+  com_des_pos[2] = 1.0;
+
 
   // Set references ------------------------------------------------------------------------
   lfoot_task->setReference(lfoot_des_pos, lfoot_des_quat);
   rfoot_task->setReference(rfoot_des_pos, rfoot_des_quat);
   rpalm_task->setReference(rpalm_des_pos, rpalm_des_quat);
+  com_task->setReference(com_des_pos);
+
 
   // Get Errors -----------------------------------------------------------------------------
   Eigen::VectorXd task_error;

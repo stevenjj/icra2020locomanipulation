@@ -71,13 +71,19 @@ private:
 
 	double max_iters = 100; // maximum IK iters
 	double k_step = 1.0; // starting step
-	double beta = 0.5; // Backtracking Line Search Parameter
+	double beta = 0.8; // Backtracking Line Search Parameter
+	double alpha = 0.5; // Backtracking Line Search Parameter
+
 	double error_tol = 1e-4; // Task tolerance for success
 	double grad_tol = 1e-6; // Gradient descent tolerance for suboptimality
 
 	double k_min_step = 1e-20; // Minimum step (do we need this?)
 
 	double total_error_norm = 0.0;
+
+	double f_q = 0.0;
+	double f_q_m_dq = 0.0;
+
 
 
 

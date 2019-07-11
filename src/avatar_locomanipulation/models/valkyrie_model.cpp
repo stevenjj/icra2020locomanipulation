@@ -42,6 +42,9 @@ void ValkyrieModel::updateFullKinematics(const Eigen::VectorXd & q_update){
   pinocchio::computeJointJacobians(model,*data, q_update);
   // Update Frame Placements
   pinocchio::updateFramePlacements(model, *data);	
+  // Update CoM position and Jacobian
+  computeCoMPos(q_update);
+  computeCoMJacobian();  
 }
 
 void ValkyrieModel::updateKinematicsDerivatives(const Eigen::VectorXd & q_update, const Eigen::VectorXd & qdot_update, const Eigen::VectorXd & qddot_update){

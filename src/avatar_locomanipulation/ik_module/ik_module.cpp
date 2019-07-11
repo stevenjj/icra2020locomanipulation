@@ -159,7 +159,7 @@ bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd 
     computePseudoInverses();
     compute_dq();
 
-    robot_model->forwardIntegrate(q_current, 1.0*dq_tot, q_step);
+    robot_model->forwardIntegrate(q_current, dq_tot, q_step);
     q_current = q_step;
 
     robot_model->updateFullKinematics(q_current);
