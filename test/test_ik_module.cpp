@@ -8,6 +8,10 @@
 #include <avatar_locomanipulation/tasks/task_stack.hpp>
 #include <avatar_locomanipulation/tasks/task_com.hpp>
 
+// Import ROS and Rviz visualization
+#include <ros/ros.h>
+#include <avatar_locomanipulation/bridge/val_rviz_translator.hpp>
+
 void initialize_config(Eigen::VectorXd & q_init){
   std::cout << "Initialize Valkyrie Model" << std::endl;
   ValkyrieModel valkyrie;
@@ -144,7 +148,50 @@ void testIK_module(){
 
 }
 
+void visualize_robot(Eigen::VectorXd & q_start, Eigen::VectorXd & q_end){
+  // Initialize ROS node for publishing joint messages
+  ros::NodeHandle n;
+  ros::Rate loop_rate(20);
+
+  // Initialize Rviz translator
+  ValRvizTranslator rviz_translator;
+
+  // Transform broadcaster
+  tf::TransformBroadcaster      br_ik;
+  tf::TransformBroadcaster      br_robot;
+  // Joint State Publisher
+  ros::Publisher robot_ik_joint_state_pub = n.advertise<sensor_msgs::JointState>("robot1/joint_states", 10);
+  ros::Publisher robot_joint_state_pub = n.advertise<sensor_msgs::JointState>("robot2/joint_states", 10);
+
+  // Initialize Transforms and Messages
+  tf::Transform tf_world_pelvis_init;
+  tf::Transform tf_world_pelvis_end;
+
+  sensor_msgs::JointState joint_msg_init;
+  sensor_msgs::JointState joint_msg_end;
+
+  // Initialize Robot Model
+  ValkyrieModel valkyrie;
+
+  // Visualize q_start and q_end in RVIZ
+  rviz_translator.populate_joint_state_msg(valkyrie.model, q_start, tf_world_pelvis_init, joint_msg_init);
+  rviz_translator.populate_joint_state_msg(valkyrie.model, q_end, tf_world_pelvis_end, joint_msg_end);
+
+  while (ros::ok()){
+      br_robot.sendTransform(tf::StampedTransform(tf_world_pelvis_init, ros::Time::now(), "world",  "val_robot/pelvis"));
+      robot_joint_state_pub.publish(joint_msg_init);
+
+      br_ik.sendTransform(tf::StampedTransform(tf_world_pelvis_end, ros::Time::now(), "world", "val_ik_robot/pelvis"));
+      robot_ik_joint_state_pub.publish(joint_msg_end);
+    ros::spinOnce();
+    loop_rate.sleep();
+  }
+}
+
+
+
 int main(int argc, char ** argv){
   testIK_module();
+  ros::init(argc, argv, "test_rviz");
   return 0;
 }
