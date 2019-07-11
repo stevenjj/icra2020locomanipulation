@@ -118,18 +118,19 @@ void IKModule::computeTaskErrors(){
 }
 
 void IKModule::printTaskErrorsHeader(){
-  std::cout << "Errors: ";
+  std::cout << "||total_error_norm||, " ;
   for(int i = 0; i < dx_.size(); i++){
       std::cout << "dx[" << i << "], " ;
-  } 
-  std::cout << "||total_error_norm||" << std::endl;
+  }
+  std::cout << std::endl; 
 }
 
 void IKModule::printTaskErrors(){
+  std::cout << " ||total_error_norm|| = " << total_error_norm << ", ";
   for(int i = 0; i < dx_.size(); i++){
       std::cout << dx_norms_[i] << ", ";
-  }   
-  std::cout << total_error_norm << std::endl;
+  }
+  std::cout << std::endl;
 }
 
 
@@ -149,23 +150,57 @@ void IKModule::compute_dq(){
 bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd & q_sol, bool inertia_weighted){
   q_current = q_start;
 
-  // Initial
-  robot_model->updateFullKinematics(q_current);
-  computeTaskErrors();
   for(int i = 0; i < max_iters; i++){
+    // First pass
     if (i == 0){
+      robot_model->updateFullKinematics(q_current);
       printTaskErrorsHeader();
+      computeTaskErrors();
     }
+
+    f_q = total_error_norm;
     computePseudoInverses();
     compute_dq();
 
-    robot_model->forwardIntegrate(q_current, dq_tot, q_step);
-    q_current = q_step;
+    // Start Gradient Descent with backtracking
+    k_step = 1.0;
+    while(true){
+      robot_model->forwardIntegrate(q_current, k_step*dq_tot, q_step);
+      robot_model->updateFullKinematics(q_step);
+      computeTaskErrors();
+      f_q_p_dq = total_error_norm;
+      grad_f_norm_squared = k_step*std::pow(dq_tot.norm(), 2);
 
-    robot_model->updateFullKinematics(q_current);
-    computeTaskErrors();
+      // Check if the gradient is too small. If so, we are at a local minimum
+      if (grad_f_norm_squared < grad_tol){
+        std::cout << "[IK Module] Sub Optimal Solution" << std::endl;
+        solve_result = IK_SUBOPTIMAL_SOL;
+        error_norm = f_q;
+        q_sol = q_current;
+        return true;
+      }
 
+      // Check if the new error is larger than the previous error.
+      if (f_q_p_dq > f_q){
+        // Decreasing the step size
+        k_step = beta*k_step;
+        std::cout << "backtracking with k_step = " << k_step << std::endl;
+        continue; // Backtrack and retry descent
+      }else{
+        // Successfully found a descent direction
+        q_current = q_step;
+        break; // finish back tracking step
+      }
+
+    }
+
+    // q_current = q_step;
+    // robot_model->updateFullKinematics(q_current);
+    // computeTaskErrors();
+
+    // Check if we reached optimality condition
     if (total_error_norm < error_tol){
+      std::cout << "[IK Module] Optimal Solution" << std::endl;
       solve_result = IK_OPTIMAL_SOL;
       error_norm = total_error_norm;
       q_sol = q_current;
@@ -175,7 +210,8 @@ bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd 
 
   }
 
-  // Return Max Iters 
+  // Hit maximum iterations
+  std::cout << "[IK Module] Maximum Iterations Hit" << std::endl;  
   solve_result = IK_MAX_ITERATIONS_HIT; 
   error_norm = total_error_norm;
   q_sol = q_current;
