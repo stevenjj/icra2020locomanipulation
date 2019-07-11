@@ -8,8 +8,11 @@ CollisionEnvironment::CollisionEnvironment(std::shared_ptr<RobotModel> & val, st
 	std::cout << "Collision Environment Created" << std::endl;
 }
 
+
+
 CollisionEnvironment::~CollisionEnvironment(){
 }
+
 
 
 void CollisionEnvironment::build_directed_vectors(Eigen::VectorXd & q, Eigen::VectorXd & obj_config){
@@ -19,21 +22,30 @@ void CollisionEnvironment::build_directed_vectors(Eigen::VectorXd & q, Eigen::Ve
 
   // Define the map for val_world_positions
   std::map<std::string, Eigen::Vector3d> world_positions = find_world_positions();
-  // // Define a map for near_points
+
+  // Define a map for near_points
   std::map<std::string, Eigen::Vector3d> near_points; 
+
+  // Define an iterator for near_points
   std::map<std::string, Eigen::Vector3d>::iterator near_it;
+
   // Define a map for map to body names
   std::map<std::string, std::string> map_to_body_names = make_map_to_body_vector();
+
+  // Define an iterator for map to body names
   std::map<std::string, std::string>::iterator it;
   
+  // Define the new appended model and fill it with the current configuration
   std::shared_ptr<RobotModel> appended = append_models(q, obj_config);
 
-  // Define the difference vector
+  // Define the direction vector as difference
   Eigen::Vector3d difference;
 
+  // Loop through the names of links we are interested in
   for(it=map_to_body_names.begin(); it!=map_to_body_names.end(); ++it){
     near_points = find_near_points(appended, it->second);
     for(near_it=near_points.begin(); near_it!=near_points.end(); ++near_it){
+      // difference is the vector from environmental object link to the joint we are interested in
       difference = world_positions.find(it->first)->second - near_it->second;
       dvector.from = near_it->first; dvector.to = it->first;
       dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
@@ -41,6 +53,8 @@ void CollisionEnvironment::build_directed_vectors(Eigen::VectorXd & q, Eigen::Ve
     }
   }
 }
+
+
 
 void CollisionEnvironment::build_self_directed_vectors(Eigen::VectorXd & q, Eigen::VectorXd & obj_config){
   // Update the kinematics
@@ -57,6 +71,8 @@ void CollisionEnvironment::build_self_directed_vectors(Eigen::VectorXd & q, Eige
   build_directed_vector_to_head(world_positions);
 
 }
+
+
 
 std::shared_ptr<RobotModel> CollisionEnvironment::append_models(Eigen::VectorXd & q, Eigen::VectorXd & obj_config){
   // Define a new RobotModel which will be the appended model
@@ -104,6 +120,8 @@ std::map<std::string, Eigen::Vector3d> CollisionEnvironment::find_world_position
 
   return positions;
 }
+
+
 
 std::map<std::string, Eigen::Vector3d> CollisionEnvironment::find_world_positions_subset(){
   // Define the map to fill
@@ -196,6 +214,8 @@ void CollisionEnvironment::compute_collision(Eigen::VectorXd & q, Eigen::VectorX
 }
 
 
+
+
 void CollisionEnvironment::build_directed_vector_to_rhand(std::map<std::string, Eigen::Vector3d> world_positions){
   Eigen::Vector3d rhand = world_positions.find("rhand")->second;
 
@@ -220,6 +240,8 @@ void CollisionEnvironment::build_directed_vector_to_rhand(std::map<std::string, 
 }
 
 
+
+
 void CollisionEnvironment::build_directed_vector_to_lhand(std::map<std::string, Eigen::Vector3d> world_positions){
   Eigen::Vector3d lhand = world_positions.find("lhand")->second;
 
@@ -242,6 +264,8 @@ void CollisionEnvironment::build_directed_vector_to_lhand(std::map<std::string, 
     directed_vectors.push_back(dvector);
   }
 }
+
+
 
 
 void CollisionEnvironment::build_directed_vector_to_elbows(std::map<std::string, Eigen::Vector3d> world_positions){
@@ -273,6 +297,8 @@ void CollisionEnvironment::build_directed_vector_to_elbows(std::map<std::string,
   }
 }
 
+
+
 void CollisionEnvironment::build_directed_vector_to_knees(std::map<std::string, Eigen::Vector3d> world_positions){
   Eigen::Vector3d lknee = world_positions.find("lknee")->second;
   Eigen::Vector3d rknee = world_positions.find("rknee")->second;
@@ -293,6 +319,7 @@ void CollisionEnvironment::build_directed_vector_to_knees(std::map<std::string, 
 }
 
 
+
 void CollisionEnvironment::build_directed_vector_to_head(std::map<std::string, Eigen::Vector3d> world_positions){
   Eigen::Vector3d head = world_positions.find("head")->second;
   Eigen::Vector3d torso = world_positions.find("torso")->second;
@@ -306,6 +333,7 @@ void CollisionEnvironment::build_directed_vector_to_head(std::map<std::string, E
   dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
   directed_vectors.push_back(dvector);
 }
+
 
 
 std::map<std::string, std::string> CollisionEnvironment::make_map_to_frame_vector(){
@@ -329,6 +357,9 @@ std::map<std::string, std::string> CollisionEnvironment::make_map_to_frame_vecto
   return map_to_frame_names;
 }
 
+
+
+
 std::map<std::string, std::string> CollisionEnvironment::make_map_to_frame_vector_subset(){
   std::map<std::string, std::string> map_to_frame_names_subset;
 
@@ -344,6 +375,8 @@ std::map<std::string, std::string> CollisionEnvironment::make_map_to_frame_vecto
 
   return map_to_frame_names_subset;
 }
+
+
 
 std::map<std::string, std::string> CollisionEnvironment::make_map_to_body_vector(){
   
