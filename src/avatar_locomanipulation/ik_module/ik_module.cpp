@@ -35,15 +35,19 @@ void IKModule::prepareIKDataStrcutures(){
   JNpinv_.clear();
   svd_list_.clear();
 
+  q_current = Eigen::VectorXd::Zero(robot_model->getDimQdot());
+  q_step = Eigen::VectorXd::Zero(robot_model->getDimQdot());
+  dq_tot = Eigen::VectorXd::Zero(robot_model->getDimQdot());
   I_ = Eigen::MatrixXd::Identity(robot_model->getDimQdot(), robot_model->getDimQdot());
   Ntmp_ = I_;
 
-  // Construct the Jacobian, Projected Jacobian, SVD, and Projected Nullspace structures:
+  // Construct the Jacobian, Projected Jacobian, SVD, Projected Nullspace, and task errors structures
   for(int i = 0; i < task_hierarchy.size(); i++){
     J_.push_back(Eigen::MatrixXd::Zero(task_hierarchy[i]->task_dim, robot_model->getDimQdot()));   
     JN_.push_back(Eigen::MatrixXd::Zero(task_hierarchy[i]->task_dim, robot_model->getDimQdot()));  
     svd_list_.push_back(Eigen::JacobiSVD<Eigen::MatrixXd>(task_hierarchy[i]->task_dim, robot_model->getDimQdot(), svdOptions) );
     JNpinv_.push_back(Eigen::MatrixXd::Zero(robot_model->getDimQdot(), task_hierarchy[i]->task_dim)); 
+    dx_.push_back(Eigen::VectorXd::Zero(robot_model->getDimQdot()));
   }
 
   // Construct Null Spaces:
@@ -94,9 +98,43 @@ void IKModule::computePseudoInverses(){
 
 }
 
+void IKModule::computeTaskErrors(){
+  total_error_norm = 0.0;
+  // Compute Task Errors
+  for(int i = 0; i < task_hierarchy.size(); i++){
+    task_hierarchy[i]->getError(dx_[i]);
+    total_error_norm += dx_[i].norm();
+  }
+  std::cout << "total error norm = " << total_error_norm << std::endl;
+}
+
+void IKModule::compute_dq(){
+  computePseudoInverses();
+  computeTaskErrors();
+  // Compute dq_tot
+  for(int i = 0; i < task_hierarchy.size(); i++){
+    if (i == 0){
+      dq_tot = JNpinv_[0]*dx_[0];
+    }else{
+      dq_tot = dq_tot + (JNpinv_[i]*(dx_[i] - J_[i]*dq_tot));
+    }
+  }
+
+}
 
 
 bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd & q_sol){
-  // Compute inverses
+  q_current = q_start;
+  for(int i = 0; i < max_iters; i++){
+    compute_dq();
+    robot_model->forwardIntegrate(q_current, 0.01*dq_tot, q_step);
+    q_current = q_step;
+    robot_model->updateFullKinematics(q_step);
+  }
+
+  // Return Max Iters 
+  solve_result = IK_MAX_ITERATIONS_HIT; 
+  error_norm = total_error_norm;
+  q_sol = q_current;
 }
 

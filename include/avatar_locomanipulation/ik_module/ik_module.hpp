@@ -33,13 +33,20 @@ public:
 
 	void updateTaskJacobians();
 	void computePseudoInverses();
+	void computeTaskErrors();
+	void compute_dq();
 
+
+
+	Eigen::VectorXd dq_tot;
 
 private:
 	unsigned int svdOptions = Eigen::ComputeThinU | Eigen::ComputeThinV;
 
 	Eigen::VectorXd q_start;
 	Eigen::VectorXd q_current;
+	Eigen::VectorXd q_step;
+
 
 	// Task hierarchy list
 	// A hierarchy of tasks in order of priority
@@ -52,6 +59,8 @@ private:
 	std::vector<Eigen::MatrixXd> N_; // Task Nullspace
 	std::vector<Eigen::MatrixXd> JN_; // Projected Task Jacobian
 	std::vector<Eigen::MatrixXd> JNpinv_; // Projected Task Jacobian Pseudo Inverse
+	std::vector<Eigen::VectorXd> dx_; // Task Errors
+
 
 	std::vector< Eigen::JacobiSVD<Eigen::MatrixXd> > svd_list_; // List of SVD for pseudoinverses
 
@@ -66,6 +75,7 @@ private:
 
 	double k_min_step = 1e-20; // Minimum step (do we need this?)
 
+	double total_error_norm = 0.0;
 
 
 

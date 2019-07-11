@@ -92,7 +92,7 @@ void testIK_module(){
   ik_module.robot_model->getFrameWorldPose("rightPalm", rpalm_des_pos, rpalm_des_quat);
   rpalm_des_pos[0] += 0.25; 
   rpalm_des_pos[1] += 0.25; 
-  rpalm_des_pos[2] += 0.1; 
+  rpalm_des_pos[2] += 0.25; 
   Eigen::AngleAxis<double> axis_angle;
   axis_angle.angle() = (M_PI/2.0);
   axis_angle.axis() = Eigen::Vector3d(0, 0, 1.0);
@@ -123,6 +123,15 @@ void testIK_module(){
 
   ik_module.prepareIKDataStrcutures();
   ik_module.computePseudoInverses();
+  ik_module.compute_dq();
+  std::cout << "dq = " << ik_module.dq_tot.transpose() << std::endl;
+
+  int solve_result;
+  double error_norm;
+  Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(ik_module.robot_model->getDimQdot());
+
+  ik_module.solveIK(solve_result, error_norm, q_sol);
+
 
 }
 
