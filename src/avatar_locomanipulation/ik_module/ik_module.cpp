@@ -27,7 +27,7 @@ void IKModule::clearTaskHierarchy(){
 }
 
 
-void IKModule::prepareIKDataStrcutures(){
+void IKModule::prepareNewIKDataStrcutures(){
   // Prepare Data structures for the IK.
   J_.clear();
   N_.clear();
@@ -158,7 +158,10 @@ bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd 
       computeTaskErrors();
     }
 
+    // Store current error for q_current
     f_q = total_error_norm;
+
+    // Compute PseudoInverses and Find Descent Direction
     computePseudoInverses();
     compute_dq();
 
@@ -182,23 +185,19 @@ bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd 
 
       // Check if the new error is larger than the previous error.
       if (f_q_p_dq > f_q){
-        // Decreasing the step size
+        // Decrease the step size
         k_step = beta*k_step;
-        std::cout << "backtracking with k_step = " << k_step << std::endl;
+        // std::cout << "backtracking with k_step = " << k_step << std::endl;
         continue; // Backtrack and retry descent
       }else{
-        // Successfully found a descent direction
+        // Successfully found a descent vector
         q_current = q_step;
         break; // finish back tracking step
       }
 
     }
 
-    // q_current = q_step;
-    // robot_model->updateFullKinematics(q_current);
-    // computeTaskErrors();
-
-    // Check if we reached optimality condition
+    // Check if we reached the optimality condition
     if (total_error_norm < error_tol){
       std::cout << "[IK Module] Optimal Solution" << std::endl;
       solve_result = IK_OPTIMAL_SOL;

@@ -27,10 +27,15 @@ public:
 
 	// This adds a lower priority task to the hierarchy. 
 	void addTasktoHierarchy(std::shared_ptr<Task> & task_input);
+	// Clears the task hierarchy
 	void clearTaskHierarchy();
 
-	void prepareIKDataStrcutures();
+	// Call this if this is the first time the IK will be used OR if 
+	// the task hierarchy has changed
+	void prepareNewIKDataStrcutures();
 
+
+private:
 	void updateTaskJacobians();
 	void computePseudoInverses(bool inertia_weighted=false);
 	void computeTaskErrors();
@@ -39,14 +44,12 @@ public:
 	void printTaskErrorsHeader();
 	void printTaskErrors();
 
-	Eigen::VectorXd dq_tot;
-
-private:
 	unsigned int svdOptions = Eigen::ComputeThinU | Eigen::ComputeThinV;
 
 	Eigen::VectorXd q_start;
 	Eigen::VectorXd q_current;
 	Eigen::VectorXd q_step;
+	Eigen::VectorXd dq_tot;
 
 
 	// Task hierarchy list
