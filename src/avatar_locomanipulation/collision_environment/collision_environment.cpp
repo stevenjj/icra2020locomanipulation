@@ -33,14 +33,31 @@ void CollisionEnvironment::build_directed_vectors(Eigen::VectorXd & q, Eigen::Ve
   for(it=map_to_body_names.begin(); it!=map_to_body_names.end(); ++it){
     near_points = find_near_points(q, obj_config, it->second);
     for(near_it=near_points.begin(); near_it!=near_points.end(); ++near_it){
-    std::cout << near_it->first << " and " << it->first << " :" <<  std::endl;
-    difference = world_positions.find(it->first)->second - near_it->second;
-    std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
-    std::cout << "Normalized Direction: " << std::endl;
-    std::cout << difference.normalized() << std::endl;
+      difference = world_positions.find(it->first)->second - near_it->second;
+      dvector.from = near_it->first; dvector.to = it->first;
+      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+      directed_vectors.push_back(dvector);
     }
   }
 }
+
+void CollisionEnvironment::build_self_directed_vectors(Eigen::VectorXd & q, Eigen::VectorXd & obj_config){
+  // Update the kinematics
+  valkyrie->updateFullKinematics(q);
+  object->updateFullKinematics(obj_config);
+
+  // Define the map for val_world_positions
+  std::map<std::string, Eigen::Vector3d> world_positions = find_world_positions_subset();
+
+  build_directed_vector_to_rhand(world_positions);
+  build_directed_vector_to_lhand(world_positions);
+  build_directed_vector_to_elbows(world_positions); 
+  build_directed_vector_to_knees(world_positions);
+  build_directed_vector_to_head(world_positions);
+
+}
+
+
 
 std::map<std::string, Eigen::Vector3d> CollisionEnvironment::find_world_positions(){
 	// Define the map to fill
@@ -60,6 +77,26 @@ std::map<std::string, Eigen::Vector3d> CollisionEnvironment::find_world_position
 
   return positions;
 }
+
+std::map<std::string, Eigen::Vector3d> CollisionEnvironment::find_world_positions_subset(){
+  // Define the map to fill
+  std::map<std::string, Eigen::Vector3d> positions_subset;
+
+  // First we define the pos/ori of the frames of interest
+  Eigen::Vector3d cur_pos; 
+  Eigen::Quaternion<double> cur_ori;
+
+  std::map<std::string, std::string> map_to_frame_names_subset = make_map_to_frame_vector_subset();
+  std::map<std::string, std::string>::iterator it;
+
+  for(it=map_to_frame_names_subset.begin(); it!=map_to_frame_names_subset.end(); ++it){
+    valkyrie->getFrameWorldPose(it->second, cur_pos, cur_ori);
+    positions_subset[it->first] = cur_pos;
+  }
+
+  return positions_subset;
+}
+
 
 
 std::map<std::string, Eigen::Vector3d> CollisionEnvironment::find_near_points(Eigen::VectorXd & q, Eigen::VectorXd & obj_config, std::string name){
@@ -152,6 +189,119 @@ void CollisionEnvironment::compute_collision(Eigen::VectorXd & q, Eigen::VectorX
 	}
 }
 
+
+void CollisionEnvironment::build_directed_vector_to_rhand(std::map<std::string, Eigen::Vector3d> world_positions){
+  Eigen::Vector3d rhand = world_positions.find("rhand")->second;
+
+  Eigen::Vector3d from, difference, direction;
+  double magnitude;
+  std::vector<std::string> from_names;
+  from_names.push_back("lhand");
+  from_names.push_back("lelbow");
+  from_names.push_back("rknee");
+  from_names.push_back("lknee");
+  from_names.push_back("pelvis");
+  from_names.push_back("torso");
+  from_names.push_back("head");
+
+  for(int i=0; i<from_names.size(); ++i){
+    from = world_positions.find(from_names[i])->second;
+    difference = rhand - from;
+    dvector.from = from_names[i]; dvector.to = "rhand";
+    dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+    directed_vectors.push_back(dvector);
+  }
+}
+
+
+void CollisionEnvironment::build_directed_vector_to_lhand(std::map<std::string, Eigen::Vector3d> world_positions){
+  Eigen::Vector3d lhand = world_positions.find("lhand")->second;
+
+  Eigen::Vector3d from, difference, direction;
+  double magnitude;
+  std::vector<std::string> from_names;
+  from_names.push_back("rhand");
+  from_names.push_back("relbow");
+  from_names.push_back("rknee");
+  from_names.push_back("lknee");
+  from_names.push_back("pelvis");
+  from_names.push_back("torso");
+  from_names.push_back("head");
+
+  for(int i=0; i<from_names.size(); ++i){
+    from = world_positions.find(from_names[i])->second;
+    difference = lhand - from;
+    dvector.from = from_names[i]; dvector.to = "lhand";
+    dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+    directed_vectors.push_back(dvector);
+  }
+}
+
+
+void CollisionEnvironment::build_directed_vector_to_elbows(std::map<std::string, Eigen::Vector3d> world_positions){
+  Eigen::Vector3d lelbow = world_positions.find("lelbow")->second;
+  Eigen::Vector3d relbow = world_positions.find("relbow")->second;
+
+  Eigen::Vector3d from, difference, direction;
+  double magnitude;
+  std::vector<std::string> from_names;
+  from_names.push_back("rknee");
+  from_names.push_back("lknee");
+  from_names.push_back("pelvis");
+  from_names.push_back("torso");
+
+  for(int i=0; i<from_names.size(); ++i){
+    from = world_positions.find(from_names[i])->second;
+    difference = relbow - from;
+    dvector.from = from_names[i]; dvector.to = "relbow";
+    dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+    directed_vectors.push_back(dvector);
+  }
+
+  for(int i=0; i<from_names.size(); ++i){
+    from = world_positions.find(from_names[i])->second;
+    difference = lelbow - from;
+    dvector.from = from_names[i]; dvector.to = "lelbow";
+    dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+    directed_vectors.push_back(dvector);
+  }
+}
+
+void CollisionEnvironment::build_directed_vector_to_knees(std::map<std::string, Eigen::Vector3d> world_positions){
+  Eigen::Vector3d lknee = world_positions.find("lknee")->second;
+  Eigen::Vector3d rknee = world_positions.find("rknee")->second;
+
+  Eigen::Vector3d from, difference, direction;
+  double magnitude;
+  std::vector<std::string> from_names;
+
+  difference = lknee - rknee;
+  dvector.from = "rknee"; dvector.to = "lknee";
+  dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+  directed_vectors.push_back(dvector);
+
+  difference = rknee - lknee;
+  dvector.from = "lknee"; dvector.to = "rknee";
+  dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+  directed_vectors.push_back(dvector);
+}
+
+
+void CollisionEnvironment::build_directed_vector_to_head(std::map<std::string, Eigen::Vector3d> world_positions){
+  Eigen::Vector3d head = world_positions.find("head")->second;
+  Eigen::Vector3d torso = world_positions.find("torso")->second;
+
+  Eigen::Vector3d from, difference, direction;
+  double magnitude;
+  std::vector<std::string> from_names;
+
+  difference = head - torso;
+  dvector.from = "torso"; dvector.to = "head";
+  dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+  directed_vectors.push_back(dvector);
+}
+
+
 std::map<std::string, std::string> CollisionEnvironment::make_map_to_frame_vector(){
   std::map<std::string, std::string> map_to_frame_names;
 
@@ -171,6 +321,22 @@ std::map<std::string, std::string> CollisionEnvironment::make_map_to_frame_vecto
   map_to_frame_names["head"] = "head";
 
   return map_to_frame_names;
+}
+
+std::map<std::string, std::string> CollisionEnvironment::make_map_to_frame_vector_subset(){
+  std::map<std::string, std::string> map_to_frame_names_subset;
+
+  map_to_frame_names_subset["rknee"] = "rightKneePitch";
+  map_to_frame_names_subset["lknee"] = "leftKneePitch";
+  map_to_frame_names_subset["pelvis"] = "pelvis";
+  map_to_frame_names_subset["torso"] = "torso";
+  map_to_frame_names_subset["relbow"] = "rightElbowPitch";
+  map_to_frame_names_subset["lelbow"] = "leftElbowPitch";
+  map_to_frame_names_subset["rhand"] = "rightPalm";
+  map_to_frame_names_subset["lhand"] = "leftPalm";
+  map_to_frame_names_subset["head"] = "head";
+
+  return map_to_frame_names_subset;
 }
 
 std::map<std::string, std::string> CollisionEnvironment::make_map_to_body_vector(){

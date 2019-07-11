@@ -65,4 +65,14 @@ int main(int argc, char ** argv){
 
   collision->build_directed_vectors(q_start, cart_config);
   // collision->compute_collision(q_start, cart_config);
+
+  collision->build_self_directed_vectors(q_start, cart_config);
+
+  for(int o=0; o<collision->directed_vectors.size(); ++o){
+    std::cout << "collision->directed_vectors[o].from: " << collision->directed_vectors[o].from << std::endl;
+    std::cout << "collision->directed_vectors[o].to: " << collision->directed_vectors[o].to << std::endl;
+    std::cout << "collision->directed_vectors[o].magnitude: " << collision->directed_vectors[o].magnitude << std::endl;
+    std::cout << "collision->directed_vectors[o].direction: \n" << collision->directed_vectors[o].direction << std::endl;
+  }
+
 }
