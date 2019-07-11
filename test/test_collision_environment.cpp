@@ -1,7 +1,7 @@
 #include <avatar_locomanipulation/collision_environment/collision_environment.h>
 
 int main(int argc, char ** argv){
-  std::string filename = THIS_PACKAGE_PATH"models/valkyrie_simplified.urdf";
+  std::string filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
   std::string srdf_filename = THIS_PACKAGE_PATH"models/valkyrie_disable_collisions.srdf";
   std::string meshDir  = THIS_PACKAGE_PATH"../val_model/";
 
