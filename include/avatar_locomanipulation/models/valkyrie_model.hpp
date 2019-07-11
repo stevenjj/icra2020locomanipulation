@@ -48,6 +48,9 @@ public:
   Eigen::MatrixXd C; // coriolis matrix
   Eigen::VectorXd g; // gravity vector
 
+  Eigen::VectorXd q_current;
+  std::vector<std::string> joint_names; 
+
   Eigen::Vector3d x_com; // com position
   Eigen::Vector3d xdot_com; // com velocity
   Eigen::Vector3d xddot_com; // com acceleration
