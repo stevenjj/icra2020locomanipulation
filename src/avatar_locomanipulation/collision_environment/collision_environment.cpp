@@ -26,12 +26,13 @@ void CollisionEnvironment::build_directed_vectors(Eigen::VectorXd & q, Eigen::Ve
   std::map<std::string, std::string> map_to_body_names = make_map_to_body_vector();
   std::map<std::string, std::string>::iterator it;
   
+  std::shared_ptr<RobotModel> appended = append_models(q, obj_config);
 
   // Define the difference vector
   Eigen::Vector3d difference;
 
   for(it=map_to_body_names.begin(); it!=map_to_body_names.end(); ++it){
-    near_points = find_near_points(q, obj_config, it->second);
+    near_points = find_near_points(appended, it->second);
     for(near_it=near_points.begin(); near_it!=near_points.end(); ++near_it){
       difference = world_positions.find(it->first)->second - near_it->second;
       dvector.from = near_it->first; dvector.to = it->first;
@@ -55,6 +56,32 @@ void CollisionEnvironment::build_self_directed_vectors(Eigen::VectorXd & q, Eige
   build_directed_vector_to_knees(world_positions);
   build_directed_vector_to_head(world_positions);
 
+}
+
+std::shared_ptr<RobotModel> CollisionEnvironment::append_models(Eigen::VectorXd & q, Eigen::VectorXd & obj_config){
+  // Define a new RobotModel which will be the appended model
+  std::shared_ptr<RobotModel> appended(new RobotModel() );
+
+  // Prepare the models for appending
+  valkyrie->geomModel.addAllCollisionPairs();
+  object->geomModel.addAllCollisionPairs();
+  // Removes all collision pairs as specified in the srdf_filename
+  pinocchio::srdf::removeCollisionPairs(valkyrie->model, valkyrie->geomModel, valkyrie->srdf_filename, false);
+
+  // Append the object onto the robot, and fill appended RobotModel
+  pinocchio::appendModel(valkyrie->model, object->model, valkyrie->geomModel, object->geomModel, valkyrie->model.frames.size()-1, pinocchio::SE3::Identity(), appended->model, appended->geomModel);
+
+  // Define the appended configuration vector
+  Eigen::VectorXd appended_config(appended->model.nq);
+  appended_config << q, obj_config;
+
+  // Create new data and geomData as required after appending models
+  appended->common_initialization();
+
+  // Update the full kinematics 
+  appended->updateFullKinematics(appended_config);
+
+  return appended;
 }
 
 
@@ -99,32 +126,11 @@ std::map<std::string, Eigen::Vector3d> CollisionEnvironment::find_world_position
 
 
 
-std::map<std::string, Eigen::Vector3d> CollisionEnvironment::find_near_points(Eigen::VectorXd & q, Eigen::VectorXd & obj_config, std::string name){
+std::map<std::string, Eigen::Vector3d> CollisionEnvironment::find_near_points(std::shared_ptr<RobotModel> & appended, std::string name){
 	// Define map for returning
 	std::map<std::string, Eigen::Vector3d> near;
 
-	// Define a new RobotModel which will be the appended model
-	std::shared_ptr<RobotModel> appended(new RobotModel() );
-
-	// Prepare the models for appending
-  valkyrie->geomModel.addAllCollisionPairs();
-	object->geomModel.addAllCollisionPairs();
-	// Removes all collision pairs as specified in the srdf_filename
-	pinocchio::srdf::removeCollisionPairs(valkyrie->model, valkyrie->geomModel, valkyrie->srdf_filename, false);
-
-	// Append the object onto the robot, and fill appended RobotModel
-	pinocchio::appendModel(valkyrie->model, object->model, valkyrie->geomModel, object->geomModel, valkyrie->model.frames.size()-1, pinocchio::SE3::Identity(), appended->model, appended->geomModel);
-
-	// Define the appended configuration vector
-	Eigen::VectorXd appended_config(appended->model.nq);
-	appended_config << q, obj_config;
-
-	// Create new data and geomData as required after appending models
-	appended->common_initialization();
 	pinocchio::GeometryData geomData(appended->geomModel);
-
-	// Update the full kinematics 
-	appended->updateFullKinematics(appended_config);
 
 	std::string object_link_name;
 

@@ -45,6 +45,8 @@ public:
   // Input: robot config, object config
   void build_self_directed_vectors(Eigen::VectorXd & q, Eigen::VectorXd & obj_config);
 
+  std::shared_ptr<RobotModel> append_models(Eigen::VectorXd & q, Eigen::VectorXd & obj_config);
+
   // fills the map from joint name to world position
   std::map<std::string, Eigen::Vector3d> find_world_positions();
 
@@ -53,7 +55,7 @@ public:
 
   // fills map from object link name to nearest point on that body to pelvis
   // Input: robot config, object config
-  std::map<std::string, Eigen::Vector3d> find_near_points(Eigen::VectorXd & q, Eigen::VectorXd & obj_config, std::string name);
+  std::map<std::string, Eigen::Vector3d> find_near_points(std::shared_ptr<RobotModel> & appended, std::string name);
 	
   // computes collision and outputs any contacts
   void compute_collision(Eigen::VectorXd & q, Eigen::VectorXd & obj_config);
