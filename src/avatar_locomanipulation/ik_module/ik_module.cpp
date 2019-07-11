@@ -34,6 +34,8 @@ void IKModule::prepareIKDataStrcutures(){
   JN_.clear();
   JNpinv_.clear();
   svd_list_.clear();
+  dx_.clear();
+  dx_norms_.clear();
 
   q_current = Eigen::VectorXd::Zero(robot_model->getDimQdot());
   q_step = Eigen::VectorXd::Zero(robot_model->getDimQdot());
@@ -45,9 +47,10 @@ void IKModule::prepareIKDataStrcutures(){
   for(int i = 0; i < task_hierarchy.size(); i++){
     J_.push_back(Eigen::MatrixXd::Zero(task_hierarchy[i]->task_dim, robot_model->getDimQdot()));   
     JN_.push_back(Eigen::MatrixXd::Zero(task_hierarchy[i]->task_dim, robot_model->getDimQdot()));  
-    svd_list_.push_back(Eigen::JacobiSVD<Eigen::MatrixXd>(task_hierarchy[i]->task_dim, robot_model->getDimQdot(), svdOptions) );
     JNpinv_.push_back(Eigen::MatrixXd::Zero(robot_model->getDimQdot(), task_hierarchy[i]->task_dim)); 
+    svd_list_.push_back(Eigen::JacobiSVD<Eigen::MatrixXd>(task_hierarchy[i]->task_dim, robot_model->getDimQdot(), svdOptions) );
     dx_.push_back(Eigen::VectorXd::Zero(robot_model->getDimQdot()));
+    dx_norms_.push_back(0.0);
   }
 
   // Construct Null Spaces:
@@ -65,14 +68,11 @@ void IKModule::updateTaskJacobians(){
   }
 }
 
-void IKModule::computePseudoInverses(){
-  robot_model->computeInertiaMatrixInverse(q_start);
+void IKModule::computePseudoInverses(bool inertia_weighted){
+  if (inertia_weighted){
+    robot_model->computeInertiaMatrixInverse(q_start);
+  }
   updateTaskJacobians();
-
-  // Pseudo inverse and null space of task 1
-  // JN_[0] = J_[0];
-  // math_utils::weightedPseudoInverse(JN_[0], robot_model->Ainv, svd_list_[0], JNpinv_[0], singular_values_threshold);
-  // N_[0] = (I_ - JNpinv_[0]*JN_[0]);      
 
   // Compute Nullspaces, Projected Task Jacobians, and Pseudoinverse of Projected Jacobians 
   for(int i = 0; i < task_hierarchy.size(); i++){
@@ -89,7 +89,15 @@ void IKModule::computePseudoInverses(){
       JN_[i] = J_[i]*Ntmp_;      
     }
     // Compute pseudo inverse of JN_[i] 
-    math_utils::weightedPseudoInverse(JN_[i], robot_model->Ainv, svd_list_[i], JNpinv_[i], singular_values_threshold);
+
+    // Inertia Weighted
+    if (inertia_weighted){
+      math_utils::weightedPseudoInverse(JN_[i], robot_model->Ainv, svd_list_[i], JNpinv_[i], singular_values_threshold);
+    }else{
+    // Unweighted:
+      math_utils::weightedPseudoInverse(JN_[i], I_, svd_list_[i], JNpinv_[i], singular_values_threshold);
+    }
+
     // Compute Null Space for this task N_k = I - pinv(J_k N_{k-1})(J_k N_{k-1}).
     if ( i < (task_hierarchy.size()-1) ){
       N_[i] = (I_ - JNpinv_[i]*JN_[i]);      
@@ -103,10 +111,27 @@ void IKModule::computeTaskErrors(){
   // Compute Task Errors
   for(int i = 0; i < task_hierarchy.size(); i++){
     task_hierarchy[i]->getError(dx_[i]);
-    total_error_norm += dx_[i].norm();
+    dx_norms_[i] = dx_[i].norm();
+    total_error_norm += dx_norms_[i];
   }
-  std::cout << "total error norm = " << total_error_norm << std::endl;
+  printTaskErrors();
 }
+
+void IKModule::printTaskErrorsHeader(){
+  std::cout << "Errors: ";
+  for(int i = 0; i < dx_.size(); i++){
+      std::cout << "dx[" << i << "], " ;
+  } 
+  std::cout << "||total_error_norm||" << std::endl;
+}
+
+void IKModule::printTaskErrors(){
+  for(int i = 0; i < dx_.size(); i++){
+      std::cout << dx_norms_[i] << ", ";
+  }   
+  std::cout << total_error_norm << std::endl;
+}
+
 
 void IKModule::compute_dq(){
   computePseudoInverses();
@@ -123,11 +148,16 @@ void IKModule::compute_dq(){
 }
 
 
-bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd & q_sol){
+bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd & q_sol, bool inertia_weighted){
   q_current = q_start;
+
   for(int i = 0; i < max_iters; i++){
+    if (i == 0){
+      printTaskErrorsHeader();
+    }
     compute_dq();
-    robot_model->forwardIntegrate(q_current, 0.01*dq_tot, q_step);
+
+    robot_model->forwardIntegrate(q_current, 1.0*dq_tot, q_step);
     q_current = q_step;
     robot_model->updateFullKinematics(q_step);
   }

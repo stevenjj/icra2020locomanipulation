@@ -67,7 +67,7 @@ void testIK_module(){
   std::shared_ptr<Task> rpalm_task(new Task6DPose(ik_module.robot_model, "rightPalm"));
 
   // Stack Tasks in order of priority
-  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task}));
+  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task, rpalm_task}));
   std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {rpalm_task}));
 
    // Set desired Foot configuration
@@ -92,7 +92,7 @@ void testIK_module(){
   ik_module.robot_model->getFrameWorldPose("rightPalm", rpalm_des_pos, rpalm_des_quat);
   rpalm_des_pos[0] += 0.25; 
   rpalm_des_pos[1] += 0.25; 
-  rpalm_des_pos[2] += 0.25; 
+  rpalm_des_pos[2] += 0.1; 
   Eigen::AngleAxis<double> axis_angle;
   axis_angle.angle() = (M_PI/2.0);
   axis_angle.axis() = Eigen::Vector3d(0, 0, 1.0);
@@ -119,7 +119,7 @@ void testIK_module(){
   std::cout << "L/R Foot Task Stack Error = " << task_error.transpose() << std::endl;
 
   ik_module.addTasktoHierarchy(task_stack_priority_1);
-  ik_module.addTasktoHierarchy(task_stack_priority_2);
+  // ik_module.addTasktoHierarchy(task_stack_priority_2);
 
   ik_module.prepareIKDataStrcutures();
   ik_module.computePseudoInverses();

@@ -23,7 +23,7 @@ public:
 
 	void setInitialConfig(const Eigen::VectorXd & q_init);
 
-	bool solveIK(int & solve_result, double & error_norm, Eigen::VectorXd & q_sol);
+	bool solveIK(int & solve_result, double & error_norm, Eigen::VectorXd & q_sol, bool inertia_weighted=false);
 
 	// This adds a lower priority task to the hierarchy. 
 	void addTasktoHierarchy(std::shared_ptr<Task> & task_input);
@@ -32,11 +32,12 @@ public:
 	void prepareIKDataStrcutures();
 
 	void updateTaskJacobians();
-	void computePseudoInverses();
+	void computePseudoInverses(bool inertia_weighted=false);
 	void computeTaskErrors();
 	void compute_dq();
 
-
+	void printTaskErrorsHeader();
+	void printTaskErrors();
 
 	Eigen::VectorXd dq_tot;
 
@@ -60,6 +61,7 @@ private:
 	std::vector<Eigen::MatrixXd> JN_; // Projected Task Jacobian
 	std::vector<Eigen::MatrixXd> JNpinv_; // Projected Task Jacobian Pseudo Inverse
 	std::vector<Eigen::VectorXd> dx_; // Task Errors
+	std::vector<double> dx_norms_; // Task Error Norms
 
 
 	std::vector< Eigen::JacobiSVD<Eigen::MatrixXd> > svd_list_; // List of SVD for pseudoinverses
