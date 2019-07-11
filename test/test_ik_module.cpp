@@ -67,8 +67,12 @@ void testIK_module(){
   std::shared_ptr<Task> rpalm_task(new Task6DPose(ik_module.robot_model, "rightPalm"));
 
   // Stack Tasks in order of priority
-  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task, rpalm_task}));
+  // std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task, rpalm_task}));
+  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task}));
   std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {rpalm_task}));
+
+
+
 
    // Set desired Foot configuration
   Eigen::Vector3d rfoot_des_pos;
@@ -119,18 +123,16 @@ void testIK_module(){
   std::cout << "L/R Foot Task Stack Error = " << task_error.transpose() << std::endl;
 
   ik_module.addTasktoHierarchy(task_stack_priority_1);
-  // ik_module.addTasktoHierarchy(task_stack_priority_2);
+  ik_module.addTasktoHierarchy(task_stack_priority_2);
 
-  ik_module.prepareIKDataStrcutures();
-  ik_module.computePseudoInverses();
-  ik_module.compute_dq();
-  std::cout << "dq = " << ik_module.dq_tot.transpose() << std::endl;
 
   int solve_result;
+  bool inertia_weighted = true;
   double error_norm;
   Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(ik_module.robot_model->getDimQdot());
 
-  ik_module.solveIK(solve_result, error_norm, q_sol);
+  ik_module.prepareIKDataStrcutures();
+  ik_module.solveIK(solve_result, error_norm, q_sol, inertia_weighted);
 
 
 }

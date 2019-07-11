@@ -134,8 +134,6 @@ void IKModule::printTaskErrors(){
 
 
 void IKModule::compute_dq(){
-  computePseudoInverses();
-  computeTaskErrors();
   // Compute dq_tot
   for(int i = 0; i < task_hierarchy.size(); i++){
     if (i == 0){
@@ -151,20 +149,36 @@ void IKModule::compute_dq(){
 bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd & q_sol, bool inertia_weighted){
   q_current = q_start;
 
+  // Initial
+  robot_model->updateFullKinematics(q_current);
+  computeTaskErrors();
   for(int i = 0; i < max_iters; i++){
     if (i == 0){
       printTaskErrorsHeader();
     }
+    computePseudoInverses();
     compute_dq();
 
     robot_model->forwardIntegrate(q_current, 1.0*dq_tot, q_step);
     q_current = q_step;
-    robot_model->updateFullKinematics(q_step);
+
+    robot_model->updateFullKinematics(q_current);
+    computeTaskErrors();
+
+    if (total_error_norm < error_tol){
+      solve_result = IK_OPTIMAL_SOL;
+      error_norm = total_error_norm;
+      q_sol = q_current;
+      return true;
+    }
+
+
   }
 
   // Return Max Iters 
   solve_result = IK_MAX_ITERATIONS_HIT; 
   error_norm = total_error_norm;
   q_sol = q_current;
+  return false;
 }
 
