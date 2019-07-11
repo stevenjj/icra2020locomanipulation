@@ -64,5 +64,5 @@ int main(int argc, char ** argv){
   std::shared_ptr<CollisionEnvironment> collision(new CollisionEnvironment(valkyrie, cart) );
 
   collision->build_directed_vectors(q_start, cart_config);
-  collision->compute_collision(q_start, cart_config);
+  // collision->compute_collision(q_start, cart_config);
 }

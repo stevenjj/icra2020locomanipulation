@@ -19,102 +19,26 @@ void CollisionEnvironment::build_directed_vectors(Eigen::VectorXd & q, Eigen::Ve
 
   // Define the map for val_world_positions
   std::map<std::string, Eigen::Vector3d> world_positions = find_world_positions();
-  // Define a map for near_points
-  std::map<std::string, Eigen::Vector3d> near_points = find_near_points(q, obj_config);
-  // // Define the difference vector
+  // // Define a map for near_points
+  std::map<std::string, Eigen::Vector3d> near_points; 
+  std::map<std::string, Eigen::Vector3d>::iterator near_it;
+  // Define a map for map to body names
+  std::map<std::string, std::string> map_to_body_names = make_map_to_body_vector();
+  std::map<std::string, std::string>::iterator it;
+  
+
+  // Define the difference vector
   Eigen::Vector3d difference;
 
-  for(std::map<std::string, Eigen::Vector3d>::iterator it=near_points.begin(); it != near_points.end(); ++it){
-  	std::cout << it->first << " and rfoot: " <<  std::endl;
-  	difference = world_positions.find("rfoot")->second - it->second;
-  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
-  	std::cout << "Normalized Direction: " << std::endl;
-  	std::cout << difference.normalized() << std::endl;
-
-  	std::cout << it->first << " and lfoot: " <<  std::endl;
-  	difference = world_positions.find("lfoot")->second - it->second;
-  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
-  	std::cout << "Normalized Direction: " << std::endl;
-  	std::cout << difference.normalized() << std::endl;
-
-  	std::cout << it->first << " and rankle: " <<  std::endl;
-  	difference = world_positions.find("rankle")->second - it->second;
-  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
-  	std::cout << "Normalized Direction: " << std::endl;
-  	std::cout << difference.normalized() << std::endl;
-
-  	std::cout << it->first << " and lankle: " <<  std::endl;
-  	difference = world_positions.find("lankle")->second - it->second;
-  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
-  	std::cout << "Normalized Direction: " << std::endl;
-  	std::cout << difference.normalized() << std::endl;
-
-  	std::cout << it->first << " and rknee: " <<  std::endl;
-  	difference = world_positions.find("rknee")->second - it->second;
-  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
-  	std::cout << "Normalized Direction: " << std::endl;
-  	std::cout << difference.normalized() << std::endl;
-
-  	std::cout << it->first << " and lknee: " <<  std::endl;
-  	difference = world_positions.find("lknee")->second - it->second;
-  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
-  	std::cout << "Normalized Direction: " << std::endl;
-  	std::cout << difference.normalized() << std::endl;
-
-  	std::cout << it->first << " and rshoulder: " <<  std::endl;
-  	difference = world_positions.find("rshoulder")->second - it->second;
-  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
-  	std::cout << "Normalized Direction: " << std::endl;
-  	std::cout << difference.normalized() << std::endl;
-
-  	std::cout << it->first << " and lshoulder: " <<  std::endl;
-  	difference = world_positions.find("lshoulder")->second - it->second;
-  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
-  	std::cout << "Normalized Direction: " << std::endl;
-  	std::cout << difference.normalized() << std::endl;
-
-  	std::cout << it->first << " and relbow: " <<  std::endl;
-  	difference = world_positions.find("relbow")->second - it->second;
-  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
-  	std::cout << "Normalized Direction: " << std::endl;
-  	std::cout << difference.normalized() << std::endl;
-
-  	std::cout << it->first << " and lelbow: " <<  std::endl;
-  	difference = world_positions.find("lelbow")->second - it->second;
-  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
-  	std::cout << "Normalized Direction: " << std::endl;
-  	std::cout << difference.normalized() << std::endl;
-
-  	std::cout << it->first << " and rwrist: " <<  std::endl;
-  	difference = world_positions.find("rwrist")->second - it->second;
-  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
-  	std::cout << "Normalized Direction: " << std::endl;
-  	std::cout << difference.normalized() << std::endl;
-
-  	std::cout << it->first << " and lwrist: " <<  std::endl;
-  	difference = world_positions.find("lwrist")->second - it->second;
-  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
-  	std::cout << "Normalized Direction: " << std::endl;
-  	std::cout << difference.normalized() << std::endl;
-
-  	std::cout << it->first << " and rhand: " <<  std::endl;
-  	difference = world_positions.find("rhand")->second - it->second;
-  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
-  	std::cout << "Normalized Direction: " << std::endl;
-  	std::cout << difference.normalized() << std::endl;
-
-  	std::cout << it->first << " and lhand: " <<  std::endl;
-  	difference = world_positions.find("lhand")->second - it->second;
-  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
-  	std::cout << "Normalized Direction: " << std::endl;
-  	std::cout << difference.normalized() << std::endl;
-
-  	std::cout << it->first << " and pelvis: " <<  std::endl;
-  	difference = world_positions.find("pelvis")->second - it->second;
-  	std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
-  	std::cout << "Normalized Direction: " << std::endl;
-  	std::cout << difference.normalized() << std::endl;
-
+  for(it=map_to_body_names.begin(); it!=map_to_body_names.end(); ++it){
+    near_points = find_near_points(q, obj_config, it->second);
+    for(near_it=near_points.begin(); near_it!=near_points.end(); ++near_it){
+    std::cout << near_it->first << " and " << it->first << " :" <<  std::endl;
+    difference = world_positions.find(it->first)->second - near_it->second;
+    std::cout << "Magnitude of distance = " << difference.norm() << std::endl;
+    std::cout << "Normalized Direction: " << std::endl;
+    std::cout << difference.normalized() << std::endl;
+    }
   }
 }
 
@@ -126,43 +50,19 @@ std::map<std::string, Eigen::Vector3d> CollisionEnvironment::find_world_position
   Eigen::Vector3d cur_pos; 
   Eigen::Quaternion<double> cur_ori;
 
-  // Then we get the world pose and fill the map 
-  valkyrie->getFrameWorldPose("pelvis", cur_pos, cur_ori);
-  positions["pelvis"] = cur_pos;
-  valkyrie->getFrameWorldPose("rightCOP_Frame", cur_pos, cur_ori);
-  positions["rfoot"] = cur_pos;
-  valkyrie->getFrameWorldPose("leftCOP_Frame", cur_pos, cur_ori);
-  positions["lfoot"] = cur_pos;
-  valkyrie->getFrameWorldPose("rightAnklePitch", cur_pos, cur_ori);
-  positions["rankle"] = cur_pos;
-  valkyrie->getFrameWorldPose("leftAnklePitch", cur_pos, cur_ori);
-  positions["lankle"] = cur_pos;
-  valkyrie->getFrameWorldPose("rightKneePitch", cur_pos, cur_ori);
-  positions["rknee"] = cur_pos;
-  valkyrie->getFrameWorldPose("leftKneePitch", cur_pos, cur_ori);
-  positions["lknee"] = cur_pos;
-  valkyrie->getFrameWorldPose("rightShoulderRoll", cur_pos, cur_ori);
-  positions["rshoulder"] = cur_pos;
-  valkyrie->getFrameWorldPose("leftShoulderRoll", cur_pos, cur_ori);
-  positions["lshoulder"] = cur_pos;
-  valkyrie->getFrameWorldPose("rightElbowPitch", cur_pos, cur_ori);
-  positions["relbow"] = cur_pos;
-  valkyrie->getFrameWorldPose("leftElbowPitch", cur_pos, cur_ori);
-  positions["lelbow"] = cur_pos;
-  valkyrie->getFrameWorldPose("rightWristRoll", cur_pos, cur_ori);
-  positions["rwrist"] = cur_pos;
-  valkyrie->getFrameWorldPose("leftWristRoll", cur_pos, cur_ori);
-  positions["lwrist"] = cur_pos;
-  valkyrie->getFrameWorldPose("rightPalm", cur_pos, cur_ori);
-  positions["rhand"] = cur_pos;
-  valkyrie->getFrameWorldPose("leftPalm", cur_pos, cur_ori);
-  positions["lhand"] = cur_pos;
+  std::map<std::string, std::string> map_to_frame_names = make_map_to_frame_vector();
+  std::map<std::string, std::string>::iterator it;
+
+  for(it=map_to_frame_names.begin(); it!=map_to_frame_names.end(); ++it){
+    valkyrie->getFrameWorldPose(it->second, cur_pos, cur_ori);
+    positions[it->first] = cur_pos;
+  }
 
   return positions;
 }
 
 
-std::map<std::string, Eigen::Vector3d> CollisionEnvironment::find_near_points(Eigen::VectorXd & q, Eigen::VectorXd & obj_config){
+std::map<std::string, Eigen::Vector3d> CollisionEnvironment::find_near_points(Eigen::VectorXd & q, Eigen::VectorXd & obj_config, std::string name){
 	// Define map for returning
 	std::map<std::string, Eigen::Vector3d> near;
 
@@ -195,7 +95,7 @@ std::map<std::string, Eigen::Vector3d> CollisionEnvironment::find_near_points(Ei
   	object_link_name = object->geomModel.getGeometryName(i);
   	for(int j=0; j<appended->geomModel.collisionPairs.size(); ++j){
 			pinocchio::CollisionPair id2 = appended->geomModel.collisionPairs[j];
-			if((appended->geomModel.getGeometryName(id2.first) == "pelvis_0" && appended->geomModel.getGeometryName(id2.second) == object_link_name) || (appended->geomModel.getGeometryName(id2.second) == "pelvis" && appended->geomModel.getGeometryName(id2.first) == object_link_name)){
+			if((appended->geomModel.getGeometryName(id2.first) == name && appended->geomModel.getGeometryName(id2.second) == object_link_name)){
 				pinocchio::computeDistance(appended->geomModel, geomData, appended->geomModel.findCollisionPair(id2));
 				appended->dresult = geomData.distanceResults[j];
 				near[object_link_name] = appended->dresult.nearest_points[1];
@@ -250,4 +150,47 @@ void CollisionEnvironment::compute_collision(Eigen::VectorXd & q, Eigen::VectorX
       			}
 			}
 	}
+}
+
+std::map<std::string, std::string> CollisionEnvironment::make_map_to_frame_vector(){
+  std::map<std::string, std::string> map_to_frame_names;
+
+  map_to_frame_names["rfoot"] = "rightCOP_Frame";
+  map_to_frame_names["lfoot"] = "leftCOP_Frame";
+  map_to_frame_names["rknee"] = "rightKneePitch";
+  map_to_frame_names["lknee"] = "leftKneePitch";
+  map_to_frame_names["pelvis"] = "pelvis";
+  map_to_frame_names["torso"] = "torso";
+  map_to_frame_names["rshoulder"] = "rightShoulderRoll";
+  map_to_frame_names["lshoulder"] = "leftShoulderRoll";
+  map_to_frame_names["relbow"] = "rightElbowPitch";
+  map_to_frame_names["lelbow"] = "leftElbowPitch";
+  map_to_frame_names["rhand"] = "rightPalm";
+  map_to_frame_names["lhand"] = "leftPalm";
+  map_to_frame_names["neck"] = "neckYaw";
+  map_to_frame_names["head"] = "head";
+
+  return map_to_frame_names;
+}
+
+std::map<std::string, std::string> CollisionEnvironment::make_map_to_body_vector(){
+  
+  std::map<std::string, std::string> map_to_body_names;
+
+  map_to_body_names["rfoot"] = "rightFoot_0";
+  map_to_body_names["lfoot"] = "leftFoot_0";
+  map_to_body_names["rknee"] = "rightKneePitchLink_0";
+  map_to_body_names["lknee"] = "leftKneePitchLink_0";
+  map_to_body_names["pelvis"] = "pelvis_0";
+  map_to_body_names["torso"] = "torso_0";
+  map_to_body_names["rshoulder"] = "rightShoulderRollLink_0";
+  map_to_body_names["lshoulder"] = "leftShoulderRollLink_0";
+  map_to_body_names["relbow"] = "rightForearmLink_0";
+  map_to_body_names["lelbow"] = "leftForearmLink_0";
+  map_to_body_names["rhand"] = "rightPalm_0";
+  map_to_body_names["lhand"] = "leftPalm_0";
+  map_to_body_names["neck"] = "neckYawLink_0";
+  map_to_body_names["head"] = "head_0";
+
+  return map_to_body_names;
 }

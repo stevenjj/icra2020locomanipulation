@@ -12,6 +12,13 @@ class CollisionEnvironment
 {
 private:
   std::shared_ptr<RobotModel> valkyrie, object;
+
+  // builds a map of names for easy use to frame name for getting current world position
+  std::map<std::string, std::string> make_map_to_frame_vector();
+
+  // builds a map of names for easy use to collision body name for getting nearest point
+  std::map<std::string, std::string> make_map_to_body_vector();
+
 public:
 
   CollisionEnvironment(std::shared_ptr<RobotModel> & val, std::shared_ptr<RobotModel> & obj);
@@ -26,10 +33,12 @@ public:
 
   // fills map from object link name to nearest point on that body to pelvis
   // Input: robot config, object config
-  std::map<std::string, Eigen::Vector3d> find_near_points(Eigen::VectorXd & q, Eigen::VectorXd & obj_config);
+  std::map<std::string, Eigen::Vector3d> find_near_points(Eigen::VectorXd & q, Eigen::VectorXd & obj_config, std::string name);
 	
   // computes collision and outputs any contacts
   void compute_collision(Eigen::VectorXd & q, Eigen::VectorXd & obj_config);
+
+  
 };
 
 
