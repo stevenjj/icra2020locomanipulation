@@ -225,7 +225,7 @@ void CollisionEnvironment::build_directed_vector_to_rhand(std::map<std::string, 
     difference = rhand - from;
     dvector.from = from_names[i]; dvector.to = "rhand";
     dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
-    directed_vectors.push_back(dvector);
+    self_directed_vectors.push_back(dvector);
   }
 }
 
@@ -251,7 +251,7 @@ void CollisionEnvironment::build_directed_vector_to_lhand(std::map<std::string, 
     difference = lhand - from;
     dvector.from = from_names[i]; dvector.to = "lhand";
     dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
-    directed_vectors.push_back(dvector);
+    self_directed_vectors.push_back(dvector);
   }
 }
 
@@ -275,7 +275,7 @@ void CollisionEnvironment::build_directed_vector_to_elbows(std::map<std::string,
     difference = relbow - from;
     dvector.from = from_names[i]; dvector.to = "relbow";
     dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
-    directed_vectors.push_back(dvector);
+    self_directed_vectors.push_back(dvector);
   }
 
   for(int i=0; i<from_names.size(); ++i){
@@ -283,7 +283,7 @@ void CollisionEnvironment::build_directed_vector_to_elbows(std::map<std::string,
     difference = lelbow - from;
     dvector.from = from_names[i]; dvector.to = "lelbow";
     dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
-    directed_vectors.push_back(dvector);
+    self_directed_vectors.push_back(dvector);
   }
 }
 
@@ -300,12 +300,12 @@ void CollisionEnvironment::build_directed_vector_to_knees(std::map<std::string, 
   difference = lknee - rknee;
   dvector.from = "rknee"; dvector.to = "lknee";
   dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
-  directed_vectors.push_back(dvector);
+  self_directed_vectors.push_back(dvector);
 
   difference = rknee - lknee;
   dvector.from = "lknee"; dvector.to = "rknee";
   dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
-  directed_vectors.push_back(dvector);
+  self_directed_vectors.push_back(dvector);
 }
 
 
@@ -321,7 +321,7 @@ void CollisionEnvironment::build_directed_vector_to_head(std::map<std::string, E
   difference = head - torso;
   dvector.from = "torso"; dvector.to = "head";
   dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
-  directed_vectors.push_back(dvector);
+  self_directed_vectors.push_back(dvector);
 }
 
 
@@ -388,4 +388,29 @@ std::map<std::string, std::string> CollisionEnvironment::make_map_to_collision_b
   map_to_body_names["head"] = "head_0";
 
   return map_to_body_names;
+}
+
+
+
+void CollisionEnvironment::self_collision_dx(){
+  double Potential;
+  Eigen::MatrixXd J_out(6, valkyrie->getDimQdot()); J_out.fill(0);;
+  std::map<std::string, std::string> map_to_frame_names_subset = make_map_to_frame_names_subset();
+
+  std::cout << "directed_vectors.size(): " << directed_vectors.size() << std::endl;
+
+  for(int k=0; k<self_directed_vectors.size(); ++k){
+    Potential = (1/(self_directed_vectors[k].magnitude)) - (1/(0.05));
+
+    if(Potential <= 0) Potential = 0;
+
+    Eigen::Vector3d dx = std::min(5.0 ,Potential)*(-self_directed_vectors[k].direction);
+
+    valkyrie->get6DTaskJacobian(map_to_frame_names_subset.find(self_directed_vectors[k].to)->second, J_out);
+
+    // Need to get the inverse of these Jacobians and subsequently get dq
+    // Going to have to answer some questions about repeats..
+    //  (i.e rknee->lknee and lknee->rknee) what will this do.
+  }
+
 }

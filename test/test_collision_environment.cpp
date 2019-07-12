@@ -76,4 +76,6 @@ int main(int argc, char ** argv){
 
   collision->compute_collision(q_start, cart_config);
 
+  collision->self_collision_dx();
+
 }

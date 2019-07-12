@@ -52,7 +52,7 @@ private:
 public:
 
   // The vector of directed vectors and related information
-  std::vector<DirectedVectors> directed_vectors;
+  std::vector<DirectedVectors> directed_vectors, self_directed_vectors;
   
 
   // Constructor fills the local data for valkyrie, object RobotModels
@@ -90,6 +90,10 @@ public:
 
   // computes collision and outputs any contacts
   void compute_collision(Eigen::VectorXd & q, Eigen::VectorXd & obj_config);
+
+
+  // gives us a command for dx to move away from self collision
+  void self_collision_dx();
 };
 
 
