@@ -62,6 +62,7 @@ void getPostureTaskReferences(std::shared_ptr<ValkyrieModel> valkyrie, Eigen::Ve
     std::cout << valkyrie->joint_names[i] << std::endl;
     q_des[i] = q_start[valkyrie->getJointIndex(valkyrie->joint_names[i])];
   }
+  q_des[valkyrie->getJointIndexNoFloatingJoints("leftElbowPitch")] = -1.25;
 
   std::cout << "q_start = " << q_start.transpose() << std::endl;
   std::cout << "q_des = " << q_des.transpose() << std::endl;
@@ -80,7 +81,10 @@ void testIK_module(){
   // Update Robot Kinematics
   ik_module.robot_model->updateFullKinematics(q_init);
 
+  ik_module.robot_model->printFrameNames();
+
   // Create Tasks
+  std::shared_ptr<Task> pelvis_task(new Task6DPose(ik_module.robot_model, "pelvis"));
   std::shared_ptr<Task> lfoot_task(new Task6DPose(ik_module.robot_model, "leftCOP_Frame"));
   std::shared_ptr<Task> lfoot_ori_task(new Task3DOrientation(ik_module.robot_model, "leftCOP_Frame"));
   std::shared_ptr<Task> rfoot_task(new Task6DPose(ik_module.robot_model, "rightCOP_Frame"));
@@ -91,12 +95,14 @@ void testIK_module(){
   std::shared_ptr<Task> posture_task(new TaskJointConfig(ik_module.robot_model, ik_module.robot_model->joint_names));
 
   // Stack Tasks in order of priority
-  // std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task, rpalm_task}));
-  // std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task, com_task, rpalm_task}));
-  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task, rpalm_task}));
-  // std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {com_task}));
-  std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {posture_task}));
+  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task, pelvis_task}));
+  std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {rpalm_task}));
+  std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {posture_task, com_task}));
 
+
+  // Set desired Pelvis configuration
+  Eigen::Vector3d pelvis_des_pos;
+  Eigen::Quaternion<double> pelvis_des_quat;  
 
    // Set desired Foot configuration
   Eigen::Vector3d rfoot_des_pos;
@@ -104,6 +110,11 @@ void testIK_module(){
 
   Eigen::Vector3d lfoot_des_pos;
   Eigen::Quaternion<double> lfoot_des_quat;
+
+  // Pelvis should be 1m above the ground and the orientation must be identity
+  pelvis_des_pos.setZero();
+  pelvis_des_pos[2] = 1.05;
+  pelvis_des_quat.setIdentity();
 
   // Foot should be flat on the ground and spaced out by 0.25m
   rfoot_des_pos.setZero();
@@ -118,9 +129,9 @@ void testIK_module(){
   Eigen::Vector3d rpalm_des_pos;
   Eigen::Quaternion<double> rpalm_des_quat;
   ik_module.robot_model->getFrameWorldPose("rightPalm", rpalm_des_pos, rpalm_des_quat);
-  rpalm_des_pos[0] += 0.15; 
-  rpalm_des_pos[1] += 0.15; 
-  rpalm_des_pos[2] += 0.1; 
+  rpalm_des_pos[0] += 0.45;//0.25; //0.35; 
+  rpalm_des_pos[1] += 0.45; 
+  rpalm_des_pos[2] += 0.3; 
   Eigen::AngleAxis<double> axis_angle;
   axis_angle.angle() = (M_PI/2.0);
   axis_angle.axis() = Eigen::Vector3d(0, 0, 1.0);
@@ -135,6 +146,7 @@ void testIK_module(){
   getPostureTaskReferences(ik_module.robot_model, q_init, q_des);
 
   // Set references ------------------------------------------------------------------------
+  pelvis_task->setReference(pelvis_des_pos, pelvis_des_quat);
   lfoot_task->setReference(lfoot_des_pos, lfoot_des_quat);
   rfoot_task->setReference(rfoot_des_pos, rfoot_des_quat);
   rpalm_task->setReference(rpalm_des_pos, rpalm_des_quat);
@@ -161,8 +173,9 @@ void testIK_module(){
 
 
   ik_module.addTasktoHierarchy(task_stack_priority_1);
-  // ik_module.addTasktoHierarchy(task_stack_priority_2);
+  ik_module.addTasktoHierarchy(task_stack_priority_2);
   ik_module.addTasktoHierarchy(task_stack_priority_3);
+
 
   ik_module.setEnableInertiaWeighting(false);
   int solve_result;
