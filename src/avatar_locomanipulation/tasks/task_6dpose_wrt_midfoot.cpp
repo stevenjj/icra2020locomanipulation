@@ -2,6 +2,8 @@
 
 Task6DPosewrtMidFeet::Task6DPosewrtMidFeet(std::shared_ptr<ValkyrieModel> & input_model, const std::string & input_frame_name): 
 	Task6DPose(input_model, input_frame_name){
+	des_pos.setZero();
+	des_quat.setIdentity();
 	left_foot_frame = "leftCOP_Frame";
 	right_foot_frame = "rightCOP_Frame";
 	right_foot.robot_side = RIGHT_FOOTSTEP;
@@ -26,16 +28,23 @@ void Task6DPosewrtMidFeet::computeError(){
 	// Compute Midfeet
 	midfeet.computeMidfeet(left_foot, right_foot, midfeet);
 
-	std::cout << "left_foot.position" << left_foot.position.transpose() << std::endl;
-	std::cout << "right_foot.position" << right_foot.position.transpose() << std::endl;
-	std::cout << "midfeet.position" << midfeet.position.transpose() << std::endl;
-	std::cout << "cur_pos_" << cur_pos_.transpose() << std::endl;
+	// std::cout << "left_foot.position" << left_foot.position.transpose() << std::endl;
+	// std::cout << "right_foot.position" << right_foot.position.transpose() << std::endl;
+	// std::cout << "midfeet.position" << midfeet.position.transpose() << std::endl;
+	// std::cout << "cur_pos_" << cur_pos_.transpose() << std::endl;
+
+	// Compute desired values:
+	des_pos = midfeet.position + midfeet.R_ori*vec_ref_;
+	des_quat = midfeet.orientation*quat_ref_;
+
+	// std::cout << "des_pos = " << des_pos << std::endl;
+	// std::cout << "des_quat = ";
+	// math_utils::printQuat(des_quat);
 
 	// Compute Errors
-	// // Compute Linear Error
-	// error_.head(3) = vec_ref_ - cur_pos_;
-	// // Compute Quaternion Error
-	// math_utils::compute_quat_error(quat_ref_, quat_current_, quat_error_);
-	// error_.tail(3) = quat_error_;	
-
+	// Compute Linear Error
+	error_.head(3) = des_pos - cur_pos_;
+	// Compute Quaternion Error
+	math_utils::compute_quat_error(des_quat, quat_current_, quat_error_);
+	error_.tail(3) = quat_error_;	
 }

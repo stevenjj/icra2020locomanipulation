@@ -19,6 +19,9 @@ private:
 	Footstep left_foot;
 	Footstep right_foot;
 	Footstep midfeet;
+
+	Eigen::Vector3d des_pos;
+	Eigen::Quaterniond des_quat;
 };
 
 #endif

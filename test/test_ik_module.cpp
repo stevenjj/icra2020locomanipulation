@@ -97,8 +97,8 @@ void testIK_module(){
   std::shared_ptr<Task> pelvis_wrt_mf_task(new Task6DPosewrtMidFeet(ik_module.robot_model, "pelvis"));
 
   // Stack Tasks in order of priority
-  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task, pelvis_task}));
-  std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {rpalm_task}));
+  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task}));
+  std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {pelvis_wrt_mf_task, rpalm_task}));
   std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {posture_task, com_task}));
 
 
@@ -128,6 +128,7 @@ void testIK_module(){
 
   // Foot should be flat on the ground and spaced out by 0.25m
   rfoot_des_pos.setZero();
+  rfoot_des_pos[0] = 0.125;
   rfoot_des_pos[1] = -0.125;
   rfoot_des_quat.setIdentity();
 
@@ -139,8 +140,8 @@ void testIK_module(){
   Eigen::Vector3d rpalm_des_pos;
   Eigen::Quaternion<double> rpalm_des_quat;
   ik_module.robot_model->getFrameWorldPose("rightPalm", rpalm_des_pos, rpalm_des_quat);
-  rpalm_des_pos[0] += 0.45;//0.25; //0.35; 
-  rpalm_des_pos[1] += 0.45; 
+  rpalm_des_pos[0] += 0.25;//0.25; //0.35; 
+  rpalm_des_pos[1] += 0.25; 
   rpalm_des_pos[2] += 0.3; 
   Eigen::AngleAxis<double> axis_angle;
   axis_angle.angle() = (M_PI/2.0);
@@ -183,13 +184,15 @@ void testIK_module(){
   std::cout << "Posture Task Error = " << task_error.transpose() << std::endl;
   
   pelvis_wrt_mf_task->getError(task_error);
+  std::cout << "Pelivs wrt Midfeeet Task Error = " << task_error.transpose() << std::endl;
+
 
   ik_module.addTasktoHierarchy(task_stack_priority_1);
   ik_module.addTasktoHierarchy(task_stack_priority_2);
   ik_module.addTasktoHierarchy(task_stack_priority_3);
 
 
-  /*
+  
   int solve_result;
   double error_norm;
   Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(ik_module.robot_model->getDimQdot());
@@ -198,7 +201,7 @@ void testIK_module(){
   ik_module.solveIK(solve_result, error_norm, q_sol);
 
   visualize_robot(q_init, q_sol);
-  */
+  
 }
 
 void visualize_robot(Eigen::VectorXd & q_start, Eigen::VectorXd & q_end){
