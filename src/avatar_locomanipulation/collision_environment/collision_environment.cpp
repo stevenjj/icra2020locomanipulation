@@ -26,13 +26,13 @@ void CollisionEnvironment::build_directed_vectors(Eigen::VectorXd & q, Eigen::Ve
   // Define a map for near_points
   std::map<std::string, Eigen::Vector3d> near_points; 
 
-  // Define an iterator for near_points
+  // Define an iterator for near_points on the environmental object
   std::map<std::string, Eigen::Vector3d>::iterator near_it;
 
-  // Define a map for map to body names
-  std::map<std::string, std::string> map_to_body_names = make_map_to_body_vector();
+  // Define a map for map to collision body names
+  std::map<std::string, std::string> map_to_body_names = make_map_to_collision_body_names();
 
-  // Define an iterator for map to body names
+  // Define an iterator for map to collision body names
   std::map<std::string, std::string>::iterator it;
   
   // Define the new appended model and fill it with the current configuration
@@ -102,6 +102,7 @@ std::shared_ptr<RobotModel> CollisionEnvironment::append_models(Eigen::VectorXd 
 
 
 
+
 std::map<std::string, Eigen::Vector3d> CollisionEnvironment::find_world_positions(){
 	// Define the map to fill
 	std::map<std::string, Eigen::Vector3d> positions;
@@ -110,7 +111,7 @@ std::map<std::string, Eigen::Vector3d> CollisionEnvironment::find_world_position
   Eigen::Vector3d cur_pos; 
   Eigen::Quaternion<double> cur_ori;
 
-  std::map<std::string, std::string> map_to_frame_names = make_map_to_frame_vector();
+  std::map<std::string, std::string> map_to_frame_names = make_map_to_frame_names();
   std::map<std::string, std::string>::iterator it;
 
   for(it=map_to_frame_names.begin(); it!=map_to_frame_names.end(); ++it){
@@ -131,7 +132,7 @@ std::map<std::string, Eigen::Vector3d> CollisionEnvironment::find_world_position
   Eigen::Vector3d cur_pos; 
   Eigen::Quaternion<double> cur_ori;
 
-  std::map<std::string, std::string> map_to_frame_names_subset = make_map_to_frame_vector_subset();
+  std::map<std::string, std::string> map_to_frame_names_subset = make_map_to_frame_names_subset();
   std::map<std::string, std::string>::iterator it;
 
   for(it=map_to_frame_names_subset.begin(); it!=map_to_frame_names_subset.end(); ++it){
@@ -169,33 +170,22 @@ std::map<std::string, Eigen::Vector3d> CollisionEnvironment::find_near_points(st
 	
 	
 void CollisionEnvironment::compute_collision(Eigen::VectorXd & q, Eigen::VectorXd & obj_config){
-	// Define a new RobotModel which will be the appended model
-	std::shared_ptr<RobotModel> appended(new RobotModel() );
+  // Define the new appended model and fill it with the current configuration
+  std::shared_ptr<RobotModel> appended = append_models(q, obj_config);
 
-	// Prepare the models for appending
-  valkyrie->geomModel.addAllCollisionPairs();
-	object->geomModel.addAllCollisionPairs();
-	// Removes all collision pairs as specified in the srdf_filename
-	pinocchio::srdf::removeCollisionPairs(valkyrie->model, valkyrie->geomModel, valkyrie->srdf_filename, false);
+  // Build the appended_config for collision computation
+  Eigen::VectorXd appended_config(appended->model.nq);
+  appended_config << q, obj_config;
 
-	// Append the object onto the robot, and fill appended RobotModel
-	pinocchio::appendModel(valkyrie->model, object->model, valkyrie->geomModel, object->geomModel, valkyrie->model.frames.size()-1, pinocchio::SE3::Identity(), appended->model, appended->geomModel);
-
-	// Define the appended configuration vector
-	Eigen::VectorXd appended_config(appended->model.nq);
-	appended_config << q, obj_config;
-
-	// Create new data and geomData as required after appending models
-	appended->common_initialization();
+  // Define the geomData
 	pinocchio::GeometryData geomData(appended->geomModel);
-
-	// Update the full kinematics 
-	appended->updateFullKinematics(appended_config);
 
 	int j, k;
 
+  // Compute all collisions
 	pinocchio::computeCollisions(appended->model, *appended->data, appended->geomModel, geomData, appended_config);
 
+  // Loop thru results and print them
 	for(j=0; j<geomData.collisionResults.size(); j++)
 	{
 		appended->result = geomData.collisionResults[j];
@@ -336,7 +326,7 @@ void CollisionEnvironment::build_directed_vector_to_head(std::map<std::string, E
 
 
 
-std::map<std::string, std::string> CollisionEnvironment::make_map_to_frame_vector(){
+std::map<std::string, std::string> CollisionEnvironment::make_map_to_frame_names(){
   std::map<std::string, std::string> map_to_frame_names;
 
   map_to_frame_names["rfoot"] = "rightCOP_Frame";
@@ -360,7 +350,7 @@ std::map<std::string, std::string> CollisionEnvironment::make_map_to_frame_vecto
 
 
 
-std::map<std::string, std::string> CollisionEnvironment::make_map_to_frame_vector_subset(){
+std::map<std::string, std::string> CollisionEnvironment::make_map_to_frame_names_subset(){
   std::map<std::string, std::string> map_to_frame_names_subset;
 
   map_to_frame_names_subset["rknee"] = "rightKneePitch";
@@ -378,7 +368,7 @@ std::map<std::string, std::string> CollisionEnvironment::make_map_to_frame_vecto
 
 
 
-std::map<std::string, std::string> CollisionEnvironment::make_map_to_body_vector(){
+std::map<std::string, std::string> CollisionEnvironment::make_map_to_collision_body_names(){
   
   std::map<std::string, std::string> map_to_body_names;
 

@@ -64,7 +64,6 @@ int main(int argc, char ** argv){
   std::shared_ptr<CollisionEnvironment> collision(new CollisionEnvironment(valkyrie, cart) );
 
   collision->build_directed_vectors(q_start, cart_config);
-  // collision->compute_collision(q_start, cart_config);
 
   collision->build_self_directed_vectors(q_start, cart_config);
 
@@ -74,5 +73,7 @@ int main(int argc, char ** argv){
     std::cout << "collision->directed_vectors[o].magnitude: " << collision->directed_vectors[o].magnitude << std::endl;
     std::cout << "collision->directed_vectors[o].direction: \n" << collision->directed_vectors[o].direction << std::endl;
   }
+
+  collision->compute_collision(q_start, cart_config);
 
 }

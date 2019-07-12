@@ -27,16 +27,18 @@ private:
 
 
   // builds a map of names for easy use to frame name for getting current world position
-  std::map<std::string, std::string> make_map_to_frame_vector();
-  std::map<std::string, std::string> make_map_to_frame_vector_subset();
+  std::map<std::string, std::string> make_map_to_frame_names();
+  std::map<std::string, std::string> make_map_to_frame_names_subset();
 
 
   // builds a map of names for easy use to collision body name for getting nearest point
-  std::map<std::string, std::string> make_map_to_body_vector();
+  // i.e. "rfoot" to "rightFoot_0"
+  std::map<std::string, std::string> make_map_to_collision_body_names();
 
 
   // appends the models internally
-  // Input: robot config, object config
+  // Input: robot config, object config 
+  // Used in distance computation, which does not require the appended config
   std::shared_ptr<RobotModel> append_models(Eigen::VectorXd & q, Eigen::VectorXd & obj_config);
 
 
