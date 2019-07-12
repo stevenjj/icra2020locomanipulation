@@ -98,7 +98,7 @@ private:
 	double k_step = 1.0; // starting step
 	double beta = 0.8; // Backtracking Line Search Parameter
 	double error_tol = 1e-4; // Task tolerance for success
-	double grad_tol = 1e-12;//12; // Gradient descent tolerance for suboptimality
+	double grad_tol = 1e-6;//6; // Gradient descent tolerance for suboptimality
 	bool inertia_weighted_ = false;
 
 	// Errors and Error gradient values:

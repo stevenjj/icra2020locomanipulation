@@ -183,6 +183,8 @@ void IKModule::compute_dq(){
 bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd & q_sol){
   q_current = q_start;
 
+  int task_idx_to_minimize = 0;
+
   for(int i = 0; i < max_iters; i++){
     // First pass
     if (i == 0){
@@ -191,8 +193,17 @@ bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd 
       computeTaskErrors();
     }
 
-    // Store current error for q_current
-    f_q = total_error_norm;
+    // Store current error for q_current in order of priority
+    // f_q = total_error_norm; // Previously we want to find a direction that minimizes all the task.
+    for(int j = 0; j < dx_norms_.size(); j++){
+      if (dx_norms_[j] < error_tol){
+        continue; 
+      }else{
+        f_q = dx_norms_[j];
+        task_idx_to_minimize = j;
+        break;
+      }
+    }
 
     // Compute PseudoInverses and Find Descent Direction
     computePseudoInverses();
@@ -204,7 +215,9 @@ bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd 
       robot_model->forwardIntegrate(q_current, k_step*dq_tot, q_step);
       robot_model->updateFullKinematics(q_step);
       computeTaskErrors();
-      f_q_p_dq = total_error_norm;
+
+      // f_q_p_dq = total_error_norm; // Previously we want to find a direction that minimizes all the task.
+      f_q_p_dq = dx_norms_[task_idx_to_minimize];
       grad_f_norm_squared = k_step*std::pow(dq_tot.norm(), 2);
 
       // Check if the gradient is too small. If so, we are at a local minimum
@@ -215,7 +228,7 @@ bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd 
         q_sol = q_current;
         return true;
       }
-
+      
       // Check if the new error is larger than the previous error.
       if (f_q_p_dq > f_q){
         // Decrease the step size
@@ -227,7 +240,6 @@ bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd 
         q_current = q_step;
         break; // finish back tracking step
       }
-
     }
 
     // Check if we reached the optimality condition

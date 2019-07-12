@@ -63,9 +63,18 @@ void getPostureTaskReferences(std::shared_ptr<ValkyrieModel> valkyrie, Eigen::Ve
     q_des[i] = q_start[valkyrie->getJointIndex(valkyrie->joint_names[i])];
   }
   q_des[valkyrie->getJointIndexNoFloatingJoints("leftElbowPitch")] = -1.25;
-
   std::cout << "q_start = " << q_start.transpose() << std::endl;
   std::cout << "q_des = " << q_des.transpose() << std::endl;
+  q_ref = q_des;
+}
+
+void getSelectedPostureTaskReferences(std::shared_ptr<ValkyrieModel> valkyrie, std::vector<std::string> & selected_names, Eigen::VectorXd & q_start, Eigen::VectorXd & q_ref){
+  Eigen::VectorXd q_des;
+  q_des = Eigen::VectorXd::Zero(selected_names.size());
+  for(int i = 0; i < selected_names.size(); i++){
+    std::cout << selected_names[i] << std::endl;
+    q_des[i] = q_start[valkyrie->getJointIndex(selected_names[i])];
+  }
   q_ref = q_des;
 }
 
@@ -85,6 +94,8 @@ void testIK_module(){
 
   // Create Tasks
   std::shared_ptr<Task> pelvis_task(new Task6DPose(ik_module.robot_model, "pelvis"));
+  std::shared_ptr<Task> pelvis_wrt_mf_task(new Task6DPosewrtMidFeet(ik_module.robot_model, "pelvis"));
+
   std::shared_ptr<Task> lfoot_task(new Task6DPose(ik_module.robot_model, "leftCOP_Frame"));
   std::shared_ptr<Task> lfoot_ori_task(new Task3DOrientation(ik_module.robot_model, "leftCOP_Frame"));
   std::shared_ptr<Task> rfoot_task(new Task6DPose(ik_module.robot_model, "rightCOP_Frame"));
@@ -92,14 +103,23 @@ void testIK_module(){
   std::shared_ptr<Task> com_task(new TaskCOM(ik_module.robot_model));
   std::shared_ptr<Task> rpalm_task(new Task6DPose(ik_module.robot_model, "rightPalm"));
 
-  std::shared_ptr<Task> posture_task(new TaskJointConfig(ik_module.robot_model, ik_module.robot_model->joint_names));
 
-  std::shared_ptr<Task> pelvis_wrt_mf_task(new Task6DPosewrtMidFeet(ik_module.robot_model, "pelvis"));
+  // posture tasks
+  std::vector<std::string> selected_names = {"torsoYaw", "torsoPitch", "torsoRoll", 
+                                             "leftShoulderPitch", "leftShoulderRoll", "leftShoulderYaw", "leftElbowPitch", "leftForearmYaw", "leftWristRoll", "leftWristPitch", 
+                                             "lowerNeckPitch", "neckYaw", "upperNeckPitch"};
+
+  std::vector<std::string> right_arm_joint_names = {"rightShoulderPitch", "rightShoulderRoll", "rightShoulderYaw", "rightElbowPitch", "rightForearmYaw", "rightWristRoll", "rightWristPitch"};
+
+  // selected_names = ik_module.robot_model->joint_names;
+  std::shared_ptr<Task> posture_task(new TaskJointConfig(ik_module.robot_model, selected_names));
+  std::shared_ptr<Task> rarm_posture_task(new TaskJointConfig(ik_module.robot_model, right_arm_joint_names));
 
   // Stack Tasks in order of priority
-  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task}));
-  std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {pelvis_wrt_mf_task, rpalm_task}));
-  std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {posture_task, com_task}));
+  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task, pelvis_wrt_mf_task}));
+  std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {rpalm_task}));
+  std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {posture_task}));
+  std::shared_ptr<Task> task_stack_priority_4(new TaskStack(ik_module.robot_model, {rarm_posture_task}));
 
 
   // Set desired Pelvis configuration
@@ -116,6 +136,11 @@ void testIK_module(){
 
   Eigen::Vector3d lfoot_des_pos;
   Eigen::Quaternion<double> lfoot_des_quat;
+
+  // Axis Angle
+  double theta = M_PI/12.0;
+  Eigen::AngleAxis<double> aa(theta, Eigen::Vector3d(0.0, 0.0, 1.0));
+  Eigen::Quaternion<double> des_init_quat(aa);
 
   // Pelvis should be 1m above the ground and the orientation must be identity
   pelvis_des_pos.setZero();
@@ -135,12 +160,13 @@ void testIK_module(){
   lfoot_des_pos.setZero();
   lfoot_des_pos[1] = 0.125;
   lfoot_des_quat.setIdentity();
+  lfoot_des_quat = des_init_quat;
 
   // Set Desired to current configuration except right palm must have identity orientation
   Eigen::Vector3d rpalm_des_pos;
   Eigen::Quaternion<double> rpalm_des_quat;
   ik_module.robot_model->getFrameWorldPose("rightPalm", rpalm_des_pos, rpalm_des_quat);
-  rpalm_des_pos[0] += 0.25;//0.25; //0.35; 
+  rpalm_des_pos[0] += 0.35;//0.25; //0.35; 
   rpalm_des_pos[1] += 0.25; 
   rpalm_des_pos[2] += 0.3; 
   Eigen::AngleAxis<double> axis_angle;
@@ -154,7 +180,7 @@ void testIK_module(){
 
   // Set Desired Posture to be close to initial
   Eigen::VectorXd q_des;
-  getPostureTaskReferences(ik_module.robot_model, q_init, q_des);
+  // getPostureTaskReferences(ik_module.robot_model, q_init, q_des);
 
   // Set references ------------------------------------------------------------------------
   pelvis_task->setReference(pelvis_des_pos, pelvis_des_quat);
@@ -163,8 +189,12 @@ void testIK_module(){
   rfoot_task->setReference(rfoot_des_pos, rfoot_des_quat);
   rpalm_task->setReference(rpalm_des_pos, rpalm_des_quat);
   com_task->setReference(com_des_pos);
+
+  getSelectedPostureTaskReferences(ik_module.robot_model, selected_names, q_init, q_des);
   posture_task->setReference(q_des);
 
+  getSelectedPostureTaskReferences(ik_module.robot_model, right_arm_joint_names, q_init, q_des);
+  rarm_posture_task->setReference(q_des);
 
   // Get Errors -----------------------------------------------------------------------------
   Eigen::VectorXd task_error;
@@ -190,12 +220,15 @@ void testIK_module(){
   ik_module.addTasktoHierarchy(task_stack_priority_1);
   ik_module.addTasktoHierarchy(task_stack_priority_2);
   ik_module.addTasktoHierarchy(task_stack_priority_3);
+  ik_module.addTasktoHierarchy(task_stack_priority_4);
 
 
   
   int solve_result;
   double error_norm;
   Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(ik_module.robot_model->getDimQdot());
+
+  // ik_module.setEnableInertiaWeighting(true);
 
   ik_module.prepareNewIKDataStrcutures();
   ik_module.solveIK(solve_result, error_norm, q_sol);
