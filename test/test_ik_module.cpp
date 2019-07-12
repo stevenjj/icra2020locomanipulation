@@ -3,9 +3,9 @@
 
 #include <avatar_locomanipulation/tasks/task.hpp>
 #include <avatar_locomanipulation/tasks/task_6dpose.hpp>
+#include <avatar_locomanipulation/tasks/task_6dpose_wrt_midfeet.hpp>
 #include <avatar_locomanipulation/tasks/task_3dorientation.hpp>
 #include <avatar_locomanipulation/tasks/task_joint_config.hpp>
-
 #include <avatar_locomanipulation/tasks/task_stack.hpp>
 #include <avatar_locomanipulation/tasks/task_com.hpp>
 
@@ -94,6 +94,8 @@ void testIK_module(){
 
   std::shared_ptr<Task> posture_task(new TaskJointConfig(ik_module.robot_model, ik_module.robot_model->joint_names));
 
+  std::shared_ptr<Task> pelvis_wrt_mf_task(new Task6DPosewrtMidFeet(ik_module.robot_model, "pelvis"));
+
   // Stack Tasks in order of priority
   std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task, pelvis_task}));
   std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {rpalm_task}));
@@ -103,6 +105,10 @@ void testIK_module(){
   // Set desired Pelvis configuration
   Eigen::Vector3d pelvis_des_pos;
   Eigen::Quaternion<double> pelvis_des_quat;  
+
+  // Set desired Pelvis configuration wrt midfeet
+  Eigen::Vector3d pelvis_wrt_mf_des_pos;
+  Eigen::Quaternion<double> pelvis_wrt_mf_des_quat;  
 
    // Set desired Foot configuration
   Eigen::Vector3d rfoot_des_pos;
@@ -115,6 +121,10 @@ void testIK_module(){
   pelvis_des_pos.setZero();
   pelvis_des_pos[2] = 1.05;
   pelvis_des_quat.setIdentity();
+
+  pelvis_wrt_mf_des_pos.setZero();
+  pelvis_wrt_mf_des_pos[2] = 1.05;
+  pelvis_wrt_mf_des_quat.setIdentity();
 
   // Foot should be flat on the ground and spaced out by 0.25m
   rfoot_des_pos.setZero();
@@ -147,6 +157,7 @@ void testIK_module(){
 
   // Set references ------------------------------------------------------------------------
   pelvis_task->setReference(pelvis_des_pos, pelvis_des_quat);
+  pelvis_wrt_mf_task->setReference(pelvis_wrt_mf_des_pos, pelvis_wrt_mf_des_quat);
   lfoot_task->setReference(lfoot_des_pos, lfoot_des_quat);
   rfoot_task->setReference(rfoot_des_pos, rfoot_des_quat);
   rpalm_task->setReference(rpalm_des_pos, rpalm_des_quat);
@@ -167,17 +178,18 @@ void testIK_module(){
 
   posture_task->getError(task_error);
   std::cout << "Posture Task Error = " << task_error.transpose() << std::endl;
-  
-  task_stack_priority_1->getError(task_error);
-  std::cout << "L/R Foot Task Stack Error = " << task_error.transpose() << std::endl;
 
+  posture_task->getError(task_error);
+  std::cout << "Posture Task Error = " << task_error.transpose() << std::endl;
+  
+  pelvis_wrt_mf_task->getError(task_error);
 
   ik_module.addTasktoHierarchy(task_stack_priority_1);
   ik_module.addTasktoHierarchy(task_stack_priority_2);
   ik_module.addTasktoHierarchy(task_stack_priority_3);
 
 
-  ik_module.setEnableInertiaWeighting(false);
+  /*
   int solve_result;
   double error_norm;
   Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(ik_module.robot_model->getDimQdot());
@@ -186,6 +198,7 @@ void testIK_module(){
   ik_module.solveIK(solve_result, error_norm, q_sol);
 
   visualize_robot(q_init, q_sol);
+  */
 }
 
 void visualize_robot(Eigen::VectorXd & q_start, Eigen::VectorXd & q_end){
