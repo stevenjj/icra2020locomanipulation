@@ -168,6 +168,7 @@ void IKModule::printTaskErrors(){
 
 
 void IKModule::compute_dq(){
+  // add a condition to break depending on which task we are currently optimizing.
   // Compute dq_tot
   for(int i = 0; i < task_hierarchy.size(); i++){
     if (i == 0){

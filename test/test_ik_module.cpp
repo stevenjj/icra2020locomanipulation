@@ -126,8 +126,8 @@ void testIK_module(){
 
   // Stack Tasks in order of priority
   std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task, pelvis_wrt_mf_task, rpalm_task}));
-  // std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {rpalm_task}));
-  std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {posture_task}));
+  std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {posture_task}));
+  // std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {posture_task}));
   // std::shared_ptr<Task> task_stack_priority_4(new TaskStack(ik_module.robot_model, {rarm_posture_task}));
 
 
@@ -227,8 +227,8 @@ void testIK_module(){
 
 
   ik_module.addTasktoHierarchy(task_stack_priority_1);
-  // ik_module.addTasktoHierarchy(task_stack_priority_2);
-  ik_module.addTasktoHierarchy(task_stack_priority_3);
+  ik_module.addTasktoHierarchy(task_stack_priority_2);
+  // ik_module.addTasktoHierarchy(task_stack_priority_3);
   // ik_module.addTasktoHierarchy(task_stack_priority_4);
   
   int solve_result;
