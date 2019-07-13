@@ -26,6 +26,9 @@ void ValkyrieModel::commonInitialization(){
   g = Eigen::VectorXd::Zero(model.nv);	
   q_current = Eigen::VectorXd(model.nq);
 
+  q_lower_pos_limit = Eigen::VectorXd(model.nq);
+  q_upper_pos_limit = Eigen::VectorXd(model.nq);
+
   x_com.setZero();
   xdot_com.setZero();
   xddot_com.setZero();
@@ -37,6 +40,11 @@ void ValkyrieModel::commonInitialization(){
   for (int k=VAL_MODEL_JOINT_INDX_OFFSET ; k<model.njoints ; ++k){
     joint_names.push_back(model.names[k]);
   } 
+
+  for(int i = 0; i < model.lowerPositionLimit.size(); i++){
+    q_lower_pos_limit[i] = model.lowerPositionLimit[i];
+    q_upper_pos_limit[i] = model.upperPositionLimit[i];
+  }
 
   std::cout << "Valkyrie Model Constructed" << std::endl;
 }

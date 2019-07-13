@@ -213,6 +213,7 @@ bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd 
     k_step = 1.0;
     while(true){
       robot_model->forwardIntegrate(q_current, k_step*dq_tot, q_step);
+      clampConfig(robot_model->q_lower_pos_limit, robot_model->q_upper_pos_limit, q_step);
       robot_model->updateFullKinematics(q_step);
       computeTaskErrors();
 
@@ -262,3 +263,21 @@ bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd 
   return false;
 }
 
+void IKModule::clampConfig(const Eigen::VectorXd & q_lower, const Eigen::VectorXd & q_upper, Eigen::VectorXd & q_config){
+  for(int i = 0; i < q_config.size(); i++){
+    q_config[i] = clampValue(q_lower[i], q_upper[i], q_config[i]);
+  }
+}
+
+
+double IKModule::clampValue(const double & low, double high, const double & value){
+    if (value < low){
+        return low;
+    }
+    else if(value > high){
+        return high;
+    }else{
+        return value;
+    }
+
+}

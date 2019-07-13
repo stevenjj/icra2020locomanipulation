@@ -67,6 +67,10 @@ private:
 	void printTaskErrorsHeader();
 	void printTaskErrors();
 
+	double clampValue(const double & low, double high, const double & value);
+	// clamps values to the joint limits
+	void clampConfig(const Eigen::VectorXd & q_lower, const Eigen::VectorXd & q_upper, Eigen::VectorXd & q_config);
+
 	unsigned int svdOptions = Eigen::ComputeThinU | Eigen::ComputeThinV;
 
 	Eigen::VectorXd q_start;

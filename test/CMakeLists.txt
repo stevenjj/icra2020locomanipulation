@@ -1,5 +1,5 @@
 # add_executable(test_load_urdf_model test_load_urdf_model.cpp)
-# add_executable(test_valkyrie_model test_valkyrie_model.cpp ${PROJECT_SOURCES})
+add_executable(test_valkyrie_model test_valkyrie_model.cpp ${PROJECT_SOURCES})
 # add_executable(test_walking_pattern_generator test_walking_pattern_generator.cpp ${PROJECT_SOURCES})
 # add_executable(test_simpleboxes test_simpleboxes.cpp ${PROJECT_SOURCES})
 # add_executable(test_computeCollision test_computeCollision.cpp ${PROJECT_SOURCES})
@@ -24,7 +24,7 @@ add_executable(test_ik_module test_ik_module.cpp ${PROJECT_SOURCES})
 
 
 # target_link_libraries(test_load_urdf_model ${PROJECT_LIBRARIES})
-# target_link_libraries(test_valkyrie_model  ${PROJECT_LIBRARIES})
+target_link_libraries(test_valkyrie_model  ${PROJECT_LIBRARIES})
 # target_link_libraries(test_walking_pattern_generator ${PROJECT_LIBRARIES})
 # target_link_libraries(test_simpleboxes ${PROJECT_LIBRARIES})
 # target_link_libraries(test_computeCollision ${PROJECT_LIBRARIES})

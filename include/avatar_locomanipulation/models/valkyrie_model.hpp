@@ -49,6 +49,8 @@ public:
   Eigen::VectorXd g; // gravity vector
 
   Eigen::VectorXd q_current;
+  Eigen::VectorXd q_lower_pos_limit;
+  Eigen::VectorXd q_upper_pos_limit;
   std::vector<std::string> joint_names; 
 
   Eigen::Vector3d x_com; // com position
