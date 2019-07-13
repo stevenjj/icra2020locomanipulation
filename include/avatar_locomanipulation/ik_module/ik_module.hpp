@@ -58,6 +58,9 @@ public:
 	// Whether or not the inertia matrix is used for a weighted pseudoinverse. Default: false
 	void setEnableInertiaWeighting(bool inertia_weighted_in);
 
+	// clamps values to the joint limits
+	void clampConfig(Eigen::VectorXd & q_config);
+
 private:
 	void updateTaskJacobians();
 	void computePseudoInverses();
@@ -68,8 +71,6 @@ private:
 	void printTaskErrors();
 
 	double clampValue(const double & low, double high, const double & value);
-	// clamps values to the joint limits
-	void clampConfig(const Eigen::VectorXd & q_lower, const Eigen::VectorXd & q_upper, Eigen::VectorXd & q_config);
 
 	unsigned int svdOptions = Eigen::ComputeThinU | Eigen::ComputeThinV;
 
@@ -102,7 +103,7 @@ private:
 	double k_step = 1.0; // starting step
 	double beta = 0.8; // Backtracking Line Search Parameter
 	double error_tol = 1e-4; // Task tolerance for success
-	double grad_tol = 1e-6;//6; // Gradient descent tolerance for suboptimality
+	double grad_tol = 1e-12;//6; // Gradient descent tolerance for suboptimality
 	bool inertia_weighted_ = false;
 
 	// Errors and Error gradient values:

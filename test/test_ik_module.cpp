@@ -13,7 +13,16 @@
 #include <ros/ros.h>
 #include <avatar_locomanipulation/bridge/val_rviz_translator.hpp>
 
+
 void visualize_robot(Eigen::VectorXd & q_start, Eigen::VectorXd & q_end);
+
+void printVec(const std::string & vec_name, const::Eigen::VectorXd vec){
+  std::cout << vec_name << ": ";
+  for(int i = 0; i < vec.size(); i++){
+    std::cout << vec[i] << ", ";
+  } 
+  std::cout << std::endl;
+}
 
 void initialize_config(Eigen::VectorXd & q_init){
   std::cout << "Initialize Valkyrie Model" << std::endl;
@@ -116,10 +125,10 @@ void testIK_module(){
   std::shared_ptr<Task> rarm_posture_task(new TaskJointConfig(ik_module.robot_model, right_arm_joint_names));
 
   // Stack Tasks in order of priority
-  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task, pelvis_wrt_mf_task}));
-  std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {rpalm_task}));
+  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task, pelvis_wrt_mf_task, rpalm_task}));
+  // std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {rpalm_task}));
   std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {posture_task}));
-  std::shared_ptr<Task> task_stack_priority_4(new TaskStack(ik_module.robot_model, {rarm_posture_task}));
+  // std::shared_ptr<Task> task_stack_priority_4(new TaskStack(ik_module.robot_model, {rarm_posture_task}));
 
 
   // Set desired Pelvis configuration
@@ -166,7 +175,7 @@ void testIK_module(){
   Eigen::Vector3d rpalm_des_pos;
   Eigen::Quaternion<double> rpalm_des_quat;
   ik_module.robot_model->getFrameWorldPose("rightPalm", rpalm_des_pos, rpalm_des_quat);
-  rpalm_des_pos[0] += 0.35;//0.25;
+  rpalm_des_pos[0] += 0.25;//0.25;
   rpalm_des_pos[1] += 0.25; 
   rpalm_des_pos[2] += 0.3; 
   Eigen::AngleAxis<double> axis_angle;
@@ -218,20 +227,20 @@ void testIK_module(){
 
 
   ik_module.addTasktoHierarchy(task_stack_priority_1);
-  ik_module.addTasktoHierarchy(task_stack_priority_2);
+  // ik_module.addTasktoHierarchy(task_stack_priority_2);
   ik_module.addTasktoHierarchy(task_stack_priority_3);
-  ik_module.addTasktoHierarchy(task_stack_priority_4);
-
-
+  // ik_module.addTasktoHierarchy(task_stack_priority_4);
   
   int solve_result;
   double error_norm;
   Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(ik_module.robot_model->getDimQdot());
 
   // ik_module.setEnableInertiaWeighting(true);
-
   ik_module.prepareNewIKDataStrcutures();
   ik_module.solveIK(solve_result, error_norm, q_sol);
+
+  Eigen::VectorXd q_config = Eigen::VectorXd::Zero(q_init.size());
+  printVec("q_sol", q_sol);
 
   visualize_robot(q_init, q_sol);
   
