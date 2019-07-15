@@ -91,7 +91,7 @@ void testIK(Eigen::VectorXd & q_init, Eigen::VectorXd & q_final){
   q_end = Eigen::VectorXd::Zero(valkyrie.getDimQ());
   dq_change = Eigen::VectorXd::Zero(valkyrie.getDimQdot());
 
-  double theta = M_PI/4.0;
+  double theta = 0.0;//M_PI/4.0;
   Eigen::AngleAxis<double> aa(theta, Eigen::Vector3d(0.0, 0.0, 1.0));
 
   Eigen::Quaternion<double> init_quat(1.0, 0.0, 0.0, 0.0); //Initialized to remember the w component comes first

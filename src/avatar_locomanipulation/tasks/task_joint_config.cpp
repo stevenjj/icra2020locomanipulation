@@ -5,6 +5,8 @@ TaskJointConfig::TaskJointConfig(std::shared_ptr<ValkyrieModel> & input_model, c
 	task_dim = joint_names.size();
 	J_config = Eigen::MatrixXd::Zero(task_dim, robot_model->getDimQdot());
 	Jdot_config = Eigen::MatrixXd::Zero(task_dim, robot_model->getDimQdot());
+	cur_joint_pos = Eigen::VectorXd::Zero(task_dim);
+	joint_names_ = joint_names;
 
 	task_name = "configs ";
 	frame_name = "no_frames";
@@ -26,4 +28,25 @@ void TaskJointConfig::getTaskJacobian(Eigen::MatrixXd & J_task){
 }
 void TaskJointConfig::getTaskJacobianDot(Eigen::MatrixXd & Jdot_task){
 	Jdot_task = Jdot_config;
+}
+
+
+
+void TaskJointConfig::setReference(const Eigen::VectorXd & vec_ref_in){
+	vec_ref_ = vec_ref_in;
+}
+void TaskJointConfig::getReference(Eigen::VectorXd & vec_ref_out){
+	vec_ref_out = vec_ref_;
+}
+void TaskJointConfig::computeError(){
+	for(int i = 0; i < joint_names_.size(); i++){
+		cur_joint_pos[i] = robot_model->q_current[robot_model->getJointIndex(joint_names_[i])];
+	}
+	error_ = vec_ref_ - cur_joint_pos;
+}
+void TaskJointConfig::getError(Eigen::VectorXd & error_out, bool compute){
+	if (compute){
+		this->computeError();
+	}
+	error_out = error_;
 }
