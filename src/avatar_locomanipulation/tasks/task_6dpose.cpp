@@ -59,10 +59,10 @@ void Task6DPose::getReference(Eigen::Quaterniond & quat_ref_out){
 void Task6DPose::computeError(){
 	robot_model->getFrameWorldPose(frame_name, cur_pos_, quat_current_);
 	// Compute Linear Error
-	error_.head(3) = vec_ref_ - cur_pos_;
+	error_.head(3) = kp_task_gain_*(vec_ref_ - cur_pos_);
 	// Compute Quaternion Error
 	math_utils::compute_quat_error(quat_ref_, quat_current_, quat_error_);
-	error_.tail(3) = quat_error_;	
+	error_.tail(3) = kp_task_gain_*(quat_error_);	
 }
 
 // Computes the error for a given reference

@@ -43,8 +43,8 @@ void Task6DPosewrtMidFeet::computeError(){
 
 	// Compute Errors
 	// Compute Linear Error
-	error_.head(3) = des_pos - cur_pos_;
+	error_.head(3) = kp_task_gain_*(des_pos - cur_pos_);
 	// Compute Quaternion Error
 	math_utils::compute_quat_error(des_quat, quat_current_, quat_error_);
-	error_.tail(3) = quat_error_;	
+	error_.tail(3) = kp_task_gain_*(quat_error_);	
 }

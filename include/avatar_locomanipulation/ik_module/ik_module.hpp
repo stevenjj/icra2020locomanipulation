@@ -105,11 +105,11 @@ private:
 	// IK parameters
 	double singular_values_threshold = 1e-4; // Cut off value to treat singular values as 0.0
 	int max_iters = 100; // maximum IK iters
-	int max_minor_iters  = 25; // maximum numbder of backtracks
+	int max_minor_iters  = 30; // maximum number of backtracks
 	double k_step = 1.0; // starting step
 	double beta = 0.8; // Backtracking Line Search Parameter
 	double error_tol = 1e-4; // Task tolerance for success
-	double grad_tol = 1e-5;//6; // Gradient descent tolerance for suboptimality
+	double grad_tol = 1e-12;//6; // Gradient descent tolerance for suboptimality
 	bool inertia_weighted_ = false;
 
 	// Errors and Error gradient values:
