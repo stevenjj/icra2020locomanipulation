@@ -70,6 +70,13 @@ void IKModule::setSingularValueThreshold(double & svd_thresh_in){
 void IKModule::setMaxIters(int & max_iters_in){
   max_iters = max_iters_in;
 }
+
+// Sets the maximum minor iterations (backtracking). Default: 30
+void IKModule::setMaxMinorIters(int & max_minor_iters_in){
+  max_minor_iters = max_minor_iters_in;
+}
+
+
 // Sets the initial descent step. Default: 1.0
 void IKModule::setDescentStep(int & k_step_in){
   k_step = k_step_in;
@@ -166,13 +173,11 @@ void IKModule::printTaskErrors(){
   std::cout << std::endl;
 }
 
-void IKModule::compute_dq(int & task_idx_to_minimize){
+void IKModule::compute_dq(const int & task_idx_to_minimize){
   // Compute dq_tot
   for(int i = 0; i < task_hierarchy.size(); i++){
     // Break after we have optimized current task.
-    std::cout << "task idx:" << task_idx_to_minimize << " i:" << i << std::endl;
     if (i > task_idx_to_minimize){
-      std::cout << "breaking" << std::endl;
       break;
     }else{
       if (i == 0){
@@ -198,19 +203,30 @@ void IKModule::compute_dq(){
 
 }
 
-bool IKModule::checkPrevTaskViolation(int & task_idx_to_minimize){
+bool IKModule::checkPrevTaskViolation(const int & task_idx_to_minimize){
   // Check if the new configuration significantly altered previous tasks:
   for(int j = 0; j < (task_idx_to_minimize); j++){
     if (dx_norms_[j] > error_tol){
-      std::cout << "previous task violated" << std::endl;
+      // std::cout << "previous task violated" << std::endl;
       return true;
     }    
   }
   return false;
 }
 
+// Checks if the first task has converged
+bool IKModule::checkFirstTaskConvergence(){
+  if (dx_norms_[0] < error_tol){
+    std::cout << "Task 1 converged within error tolerance." << std::endl;
+    return true;
+  }else{
+    std::cout << "Task 1 did not converge within error tolerance." << std::endl;
+    return false;
+  }
+}
 
-bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd & q_sol){
+
+bool IKModule::solveIK(int & solve_result, double & total_error_norm_out, Eigen::VectorXd & q_sol){
   q_current = q_start;
 
   int task_idx_to_minimize = 0;
@@ -223,8 +239,8 @@ bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd 
       computeTaskErrors();
     }
 
+    // f_q = total_error_norm; // If we are comparing with total error
     // Store current error for q_current in order of priority
-    // f_q = total_error_norm; // Previously we want to find a direction that minimizes all the task.
     f_q = 0;
     for(int j = 0; j < dx_norms_.size(); j++){
       if (dx_norms_[j] < error_tol){
@@ -238,53 +254,50 @@ bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd 
 
     // Compute PseudoInverses and Find Descent Direction
     computePseudoInverses();
+    // Compute dq in order of priority
     compute_dq(task_idx_to_minimize);
-    // compute_dq();
 
     // Start Gradient Descent with backtracking
     k_step = 1.0;
     int minor_iter_count = 0;
     while(true){
-      minor_iter_count++;
-      if (minor_iter_count > max_minor_iters){
-        std::cout << "[IK Module] Max Minor Iters Hit " << std::endl;        
-        solve_result = IK_MAX_MINOR_ITER_HIT;
-        error_norm = f_q;
-        q_sol = q_current;
-        return true;
-      }
-
       robot_model->forwardIntegrate(q_current, k_step*dq_tot, q_step);
+      // Ensure joint limits are not exceeded
       clampConfig(q_step);
+      // Update the robot model
       robot_model->updateFullKinematics(q_step);
+      // Compute errors for this configuration change proposal
       computeTaskErrors();
 
       // f_q_p_dq = total_error_norm; // compare with total norm
       f_q_p_dq = dx_norms_[task_idx_to_minimize]; // compare with current task
 
-      // compare sum to current task.
-      // f_q_p_dq = 0.0;
-      // for(int j = 0; j < (task_idx_to_minimize+1); j++){
-      //   f_q_p_dq += dx_norms_[j];
-      // }
-
-      grad_f_norm_squared = k_step*std::pow(dq_tot.norm(), 2);
+      // Check if we have iterated enough
+      minor_iter_count++;
+      if (minor_iter_count > max_minor_iters){
+        std::cout << "[IK Module] Max Minor Iters Hit " << std::endl;        
+        solve_result = IK_MAX_MINOR_ITER_HIT;
+        total_error_norm_out = total_error_norm;
+        q_sol = q_current;
+        return checkFirstTaskConvergence();
+      }
 
       // Check if the gradient is too small. If so, we are at a local minimum
+      grad_f_norm_squared = k_step*std::pow(dq_tot.norm(), 2);
       if (grad_f_norm_squared < grad_tol){
         std::cout << "[IK Module] Sub Optimal Solution" << std::endl;
         solve_result = IK_SUBOPTIMAL_SOL;
-        error_norm = f_q;
+        total_error_norm_out = total_error_norm;
         q_sol = q_current;
-        return true;
+        return checkFirstTaskConvergence();
       }
       
       // Check if the new configuration significantly altered previous tasks:
       if (checkPrevTaskViolation(task_idx_to_minimize)){
         k_step = beta*k_step;
-        std::cout << "backtracking with k_step = " << k_step << std::endl;
-        std::cout << "num of backtracks = " << minor_iter_count << std::endl;
-        std::cout << "grad_f_norm_squared = " << grad_f_norm_squared << std::endl;
+        // std::cout << "backtracking with k_step = " << k_step << std::endl;
+        // std::cout << "num of backtracks = " << minor_iter_count << std::endl;
+        // std::cout << "grad_f_norm_squared = " << grad_f_norm_squared << std::endl;
         continue; // backtrack and retry descent
       }
 
@@ -305,7 +318,7 @@ bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd 
     if (total_error_norm < error_tol){
       std::cout << "[IK Module] Optimal Solution" << std::endl;
       solve_result = IK_OPTIMAL_SOL;
-      error_norm = total_error_norm;
+      total_error_norm_out = total_error_norm;
       q_sol = q_current;
       return true;
     }
@@ -316,7 +329,7 @@ bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd 
   // Hit maximum iterations
   std::cout << "[IK Module] Maximum Iterations Hit" << std::endl;  
   solve_result = IK_MAX_ITERATIONS_HIT; 
-  error_norm = total_error_norm;
+  total_error_norm_out = total_error_norm;
   q_sol = q_current;
   return false;
 }

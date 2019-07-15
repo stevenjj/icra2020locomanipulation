@@ -29,10 +29,10 @@ public:
 	//  return: true if optimal or suboptimal solutions were found. 
 	//			false if maximum iterations were hit 
 	//  params:
-	//		solve_result \in Optimal, SubOptimal, Max Iters Hit
+	//		solve_result - true if at least the first task converges
 	//  	error_norm - the sum of all the task error norms.
 	//		q_sol - the configuration vector
-	bool solveIK(int & solve_result, double & error_norm, Eigen::VectorXd & q_sol);
+	bool solveIK(int & solve_result, double & total_error_norm_out, Eigen::VectorXd & q_sol);
 
 	// This adds a lower priority task to the hierarchy. 
 	void addTasktoHierarchy(std::shared_ptr<Task> & task_input);
@@ -47,6 +47,9 @@ public:
 	void setSingularValueThreshold(double & svd_thresh_in);
 	// Sets the maximum iterations to perform descent. Default: 100
 	void setMaxIters(int & max_iters_in);
+	// Sets the maximum minor iterations (backtracking). Default: 30
+	void setMaxMinorIters(int & max_minor_iters_in);
+
 	// Sets the initial descent step. Default: 1.0
 	void setDescentStep(int & k_step_in);
 	// Sets the backtracking parameter beta with 0.1 <= beta <= 0.8. Default: 0.5 
@@ -67,10 +70,12 @@ private:
 	void computePseudoInverses();
 	void computeTaskErrors();
 	void compute_dq();
-	void compute_dq(int & task_idx_to_minimize);
+	void compute_dq(const int & task_idx_to_minimize);
 
 
-	bool checkPrevTaskViolation(int & task_idx_to_minimize);
+	bool checkPrevTaskViolation(const int & task_idx_to_minimize);
+	bool checkFirstTaskConvergence();
+
 
 	void printTaskErrorsHeader();
 	void printTaskErrors();
