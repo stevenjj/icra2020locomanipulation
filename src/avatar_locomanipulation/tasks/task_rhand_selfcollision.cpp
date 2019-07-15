@@ -6,6 +6,9 @@ TaskRhandSelfCollision::TaskRhandSelfCollision(std::shared_ptr<RobotModel> & inp
 	task_name = input_frame_name;
 	frame_name = input_frame_name;
 
+	J_tmp = Eigen::MatrixXd::Zero(6, robot_model->getDimQdot());
+	Jdot_tmp = Eigen::MatrixXd::Zero(6, robot_model->getDimQdot());
+
 	error_ = Eigen::VectorXd::Zero(task_dim);
 	vec_ref_ = Eigen::VectorXd::Zero(3);
 	quat_ref_.setIdentity();
@@ -20,13 +23,13 @@ TaskRhandSelfCollision::~TaskRhandSelfCollision(){
 }
 
 void TaskRhandSelfCollision::getTaskJacobian(Eigen::MatrixXd & J_task){
-	robot_model->get6DTaskJacobian(frame_name, J_task);
+	robot_model->get6DTaskJacobian(frame_name, J_tmp);
+	J_task = J_tmp.topRows(3);	
 }
 void TaskRhandSelfCollision::getTaskJacobianDot(Eigen::MatrixXd & Jdot_task){
-	robot_model->get6DTaskJacobianDot(frame_name, Jdot_task);
+	robot_model->get6DTaskJacobianDot(frame_name, Jdot_tmp);
+	Jdot_task = Jdot_tmp.topRows(3);
 }
-
-
 
 // Set Task References
 void TaskRhandSelfCollision::setReference(const Eigen::VectorXd & vec_ref_in){
@@ -60,7 +63,7 @@ void TaskRhandSelfCollision::getReference(Eigen::Quaterniond & quat_ref_out){
 
 void TaskRhandSelfCollision::computeError(){
 
-	collision_env->valkyrie->updateFullKinematics(collision_env->valkyrie->q_current);
+	// collision_env->valkyrie->updateFullKinematics(collision_env->valkyrie->q_current);
 
 	// Define the map for val_world_positions
  	std::map<std::string, Eigen::Vector3d> world_positions = collision_env->find_world_positions_subset();
@@ -68,6 +71,12 @@ void TaskRhandSelfCollision::computeError(){
  	collision_env->self_directed_vectors.clear();
 	collision_env->build_directed_vector_to_rhand(world_positions);
 
+	// for (int j=0; j<collision_env->self_directed_vectors.size(); ++j){
+	// 	std::cout << "collision_env->self_directed_vectors[j].to: " << collision_env->self_directed_vectors[j].to << std::endl;
+	// 	std::cout << "collision_env->self_directed_vectors[j].from: " << collision_env->self_directed_vectors[j].from << std::endl;
+	// 	std::cout << "collision_env->self_directed_vectors[j].magnitude: " << collision_env->self_directed_vectors[j].magnitude << std::endl;
+	// 	std::cout << "collision_env->self_directed_vectors[j].direction: " << collision_env->self_directed_vectors[j].direction << std::endl;
+	// }
 	std::vector<Eigen::Vector3d> dxs = collision_env->self_collision_dx();
 
 	Eigen::Vector3d dx;

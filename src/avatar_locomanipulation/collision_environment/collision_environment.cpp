@@ -415,7 +415,7 @@ std::vector<Eigen::Vector3d> CollisionEnvironment::self_collision_dx(){
   std::map<std::string, std::string> map_to_frame_names_subset = make_map_to_frame_names_subset();
 
   for(int k=0; k<self_directed_vectors.size(); ++k){
-    Potential = (1/(self_directed_vectors[k].magnitude)) - (1/(0.05));
+    Potential = (1/(self_directed_vectors[k].magnitude)) - (1/(0.8));
 
     if(Potential <= 0) Potential = 0;
 

@@ -4,25 +4,34 @@
 #include <avatar_locomanipulation/tasks/task.hpp>
 #include <avatar_locomanipulation/tasks/task_stack.hpp>
 #include <avatar_locomanipulation/tasks/task_rhand_selfcollision.hpp>
-#include <avatar_locomanipulation/tasks/task_lhand_selfcollision.hpp>
-#include <avatar_locomanipulation/tasks/task_rknee_selfcollision.hpp>
-#include <avatar_locomanipulation/tasks/task_lknee_selfcollision.hpp>
-#include <avatar_locomanipulation/tasks/task_head_selfcollision.hpp>
+#include <avatar_locomanipulation/tasks/task_6dpose.hpp>
+#include <avatar_locomanipulation/tasks/task_6dpose_wrt_midfeet.hpp>
+#include <avatar_locomanipulation/tasks/task_3dorientation.hpp>
+#include <avatar_locomanipulation/tasks/task_joint_config.hpp>
+#include <avatar_locomanipulation/tasks/task_stack.hpp>
+#include <avatar_locomanipulation/tasks/task_com.hpp>
+
+
+
+// #include <avatar_locomanipulation/tasks/task_lhand_selfcollision.hpp>
+// #include <avatar_locomanipulation/tasks/task_rknee_selfcollision.hpp>
+// #include <avatar_locomanipulation/tasks/task_lknee_selfcollision.hpp>
+// #include <avatar_locomanipulation/tasks/task_head_selfcollision.hpp>
 
 // Import ROS and Rviz visualization
 #include <ros/ros.h>
 #include <avatar_locomanipulation/bridge/val_rviz_translator.hpp>
 
 
-// void visualize_robot(Eigen::VectorXd & q_start, Eigen::VectorXd & q_end);
+void visualize_robot(Eigen::VectorXd & q_start, Eigen::VectorXd & q_end);
 
-// void printVec(const std::string & vec_name, const::Eigen::VectorXd vec){
-//   std::cout << vec_name << ": ";
-//   for(int i = 0; i < vec.size(); i++){
-//     std::cout << vec[i] << ", ";
-//   } 
-//   std::cout << std::endl;
-// }
+void printVec(const std::string & vec_name, const::Eigen::VectorXd vec){
+  std::cout << vec_name << ": ";
+  for(int i = 0; i < vec.size(); i++){
+    std::cout << vec[i] << ", ";
+  } 
+  std::cout << std::endl;
+}
 
 void initialize_config(Eigen::VectorXd & q_init){
 
@@ -54,9 +63,10 @@ void initialize_config(Eigen::VectorXd & q_init){
   q_start[valkyrie.getJointIndex("leftAnklePitch")] = -0.3;
   q_start[valkyrie.getJointIndex("rightAnklePitch")] = -0.3;
 
-  q_start[valkyrie.getJointIndex("rightShoulderPitch")] = -0.2;
-  q_start[valkyrie.getJointIndex("rightShoulderRoll")] = 1.1;
-  q_start[valkyrie.getJointIndex("rightElbowPitch")] = 0.4;
+  q_start[valkyrie.getJointIndex("rightShoulderPitch")] = -0.11;//-0.2;
+  q_start[valkyrie.getJointIndex("rightShoulderRoll")] = 1.12;//1.1;
+  q_start[valkyrie.getJointIndex("rightShoulderYaw")] = 1.56;//1.1;
+  q_start[valkyrie.getJointIndex("rightElbowPitch")] = 1.66; //0.4;
   q_start[valkyrie.getJointIndex("rightForearmYaw")] = 1.5;
 
   q_start[valkyrie.getJointIndex("leftShoulderPitch")] = -0.2;
@@ -66,30 +76,6 @@ void initialize_config(Eigen::VectorXd & q_init){
 
   q_init = q_start;
 }
-
-// void getPostureTaskReferences(std::shared_ptr<ValkyrieModel> valkyrie, Eigen::VectorXd & q_start, Eigen::VectorXd & q_ref){
-//   Eigen::VectorXd q_des;
-//   q_des = Eigen::VectorXd::Zero(valkyrie->joint_names.size());
-
-//   for(int i = 0; i < valkyrie->joint_names.size(); i++){
-//     std::cout << valkyrie->joint_names[i] << std::endl;
-//     q_des[i] = q_start[valkyrie->getJointIndex(valkyrie->joint_names[i])];
-//   }
-//   q_des[valkyrie->getJointIndexNoFloatingJoints("leftElbowPitch")] = -1.25;
-//   std::cout << "q_start = " << q_start.transpose() << std::endl;
-//   std::cout << "q_des = " << q_des.transpose() << std::endl;
-//   q_ref = q_des;
-// }
-
-// void getSelectedPostureTaskReferences(std::shared_ptr<ValkyrieModel> valkyrie, std::vector<std::string> & selected_names, Eigen::VectorXd & q_start, Eigen::VectorXd & q_ref){
-//   Eigen::VectorXd q_des;
-//   q_des = Eigen::VectorXd::Zero(selected_names.size());
-//   for(int i = 0; i < selected_names.size(); i++){
-//     std::cout << selected_names[i] << std::endl;
-//     q_des[i] = q_start[valkyrie->getJointIndex(selected_names[i])];
-//   }
-//   q_ref = q_des;
-// }
 
 
 void testIK_module(){
@@ -103,218 +89,121 @@ void testIK_module(){
   // Update Robot Kinematics
   ik_module.robot_model->updateFullKinematics(q_init);
 
-  ik_module.robot_model->printFrameNames();
+  // ik_module.robot_model->printFrameNames();
 
   // Create the collision environment
   std::shared_ptr<CollisionEnvironment> collision;
   collision = std::shared_ptr<CollisionEnvironment>(new CollisionEnvironment(ik_module.robot_model) ) ;
   
   // Create Tasks
+  std::shared_ptr<Task> pelvis_task(new Task6DPose(ik_module.robot_model, "pelvis"));
+  std::shared_ptr<Task> lfoot_task(new Task6DPose(ik_module.robot_model, "leftCOP_Frame"));
+  std::shared_ptr<Task> rfoot_task(new Task6DPose(ik_module.robot_model, "rightCOP_Frame"));
   std::shared_ptr<Task> rhand_task(new TaskRhandSelfCollision(ik_module.robot_model, "rightPalm", collision));
-  std::shared_ptr<Task> lhand_task(new TaskLhandSelfCollision(ik_module.robot_model, "leftPalm", collision));
-  std::shared_ptr<Task> head_task(new TaskLhandSelfCollision(ik_module.robot_model, "head", collision));
 
   // Stack Tasks in order of priority
-  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {rhand_task, lhand_task, head_task}));
+  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {pelvis_task, lfoot_task, rfoot_task, rhand_task}));
+
+  // Set desired Pelvis configuration
+  Eigen::Vector3d pelvis_des_pos;
+  Eigen::Quaternion<double> pelvis_des_quat;  
+
+   // Set desired Foot configuration
+  Eigen::Vector3d rfoot_des_pos;
+  Eigen::Quaternion<double> rfoot_des_quat;
+
+  Eigen::Vector3d lfoot_des_pos;
+  Eigen::Quaternion<double> lfoot_des_quat;
+
+  // Pelvis should be 1m above the ground and the orientation must be identity
+  pelvis_des_pos.setZero();
+  pelvis_des_pos[2] = 1.05;
+  pelvis_des_quat.setIdentity();
+
+  // Foot should be flat on the ground and spaced out by 0.25m
+  rfoot_des_pos.setZero();
+  rfoot_des_pos[0] = 0.125;
+  rfoot_des_pos[1] = -0.125;
+  rfoot_des_quat.setIdentity();
+
+  lfoot_des_pos.setZero();
+  lfoot_des_pos[1] = 0.125;
+  lfoot_des_quat.setIdentity();
+
+  // Set Tsak references
+  pelvis_task->setReference(pelvis_des_pos, pelvis_des_quat);
+  lfoot_task->setReference(lfoot_des_pos, lfoot_des_quat);
+  rfoot_task->setReference(rfoot_des_pos, rfoot_des_quat);
 
   // Get Errors -----------------------------------------------------------------------------
   Eigen::VectorXd task_error;
   rhand_task->getError(task_error);
   std::cout << "Right Hand Task Error = " << task_error.transpose() << std::endl;
-  lhand_task->getError(task_error);
-  std::cout << "Left Hand Task Error = " << task_error.transpose() << std::endl;
-  head_task->getError(task_error);
-  std::cout << "Head Task Error = " << task_error.transpose() << std::endl;
 
+  ik_module.addTasktoHierarchy(task_stack_priority_1);
 
+  int solve_result;
+  double error_norm;
+  Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(ik_module.robot_model->getDimQdot());
 
-  // std::shared_ptr<Task> pelvis_wrt_mf_task(new Task6DPosewrtMidFeet(ik_module.robot_model, "pelvis"));
-
-  // std::shared_ptr<Task> lfoot_task(new Task6DPose(ik_module.robot_model, "leftCOP_Frame"));
-  // std::shared_ptr<Task> lfoot_ori_task(new Task3DOrientation(ik_module.robot_model, "leftCOP_Frame"));
-  // std::shared_ptr<Task> rfoot_task(new Task6DPose(ik_module.robot_model, "rightCOP_Frame"));
-
-  // std::shared_ptr<Task> com_task(new TaskCOM(ik_module.robot_model));
-  // std::shared_ptr<Task> rpalm_task(new Task6DPose(ik_module.robot_model, "rightPalm"));
-
-
-  // // posture tasks
-  // std::vector<std::string> selected_names = {"torsoYaw", "torsoPitch", "torsoRoll", 
-  //                                            "leftShoulderPitch", "leftShoulderRoll", "leftShoulderYaw", "leftElbowPitch", "leftForearmYaw", "leftWristRoll", "leftWristPitch", 
-  //                                            "lowerNeckPitch", "neckYaw", "upperNeckPitch"};
-
-  // std::vector<std::string> right_arm_joint_names = {"rightShoulderPitch", "rightShoulderRoll", "rightShoulderYaw", "rightElbowPitch", "rightForearmYaw", "rightWristRoll", "rightWristPitch"};
-
-  // // selected_names = ik_module.robot_model->joint_names;
-  // std::shared_ptr<Task> posture_task(new TaskJointConfig(ik_module.robot_model, selected_names));
-  // std::shared_ptr<Task> rarm_posture_task(new TaskJointConfig(ik_module.robot_model, right_arm_joint_names));
-
-  // // Stack Tasks in order of priority
-  // std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task, pelvis_wrt_mf_task}));
-  // std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {rpalm_task}));
-  // std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {posture_task}));
-  // // std::shared_ptr<Task> task_stack_priority_4(new TaskStack(ik_module.robot_model, {rarm_posture_task}));
-
-
-  // // Set desired Pelvis configuration
-  // Eigen::Vector3d pelvis_des_pos;
-  // Eigen::Quaternion<double> pelvis_des_quat;  
-
-  // // Set desired Pelvis configuration wrt midfeet
-  // Eigen::Vector3d pelvis_wrt_mf_des_pos;
-  // Eigen::Quaternion<double> pelvis_wrt_mf_des_quat;  
-
-  //  // Set desired Foot configuration
-  // Eigen::Vector3d rfoot_des_pos;
-  // Eigen::Quaternion<double> rfoot_des_quat;
-
-  // Eigen::Vector3d lfoot_des_pos;
-  // Eigen::Quaternion<double> lfoot_des_quat;
-
-  // // Axis Angle
-  // double theta = M_PI/12.0;
-  // Eigen::AngleAxis<double> aa(theta, Eigen::Vector3d(0.0, 0.0, 1.0));
-  // Eigen::Quaternion<double> des_init_quat(aa);
-
-  // // Pelvis should be 1m above the ground and the orientation must be identity
-  // pelvis_des_pos.setZero();
-  // pelvis_des_pos[2] = 1.05;
-  // pelvis_des_quat.setIdentity();
-
-  // pelvis_wrt_mf_des_pos.setZero();
-  // pelvis_wrt_mf_des_pos[2] = 1.05;
-  // pelvis_wrt_mf_des_quat.setIdentity();
-
-  // // Foot should be flat on the ground and spaced out by 0.25m
-  // rfoot_des_pos.setZero();
-  // rfoot_des_pos[0] = 0.125;
-  // rfoot_des_pos[1] = -0.125;
-  // rfoot_des_quat.setIdentity();
-
-  // lfoot_des_pos.setZero();
-  // lfoot_des_pos[1] = 0.125;
-  // lfoot_des_quat.setIdentity();
-  // lfoot_des_quat = des_init_quat;
-
-  // // Set Desired to current configuration except right palm must have identity orientation
-  // Eigen::Vector3d rpalm_des_pos;
-  // Eigen::Quaternion<double> rpalm_des_quat;
-  // ik_module.robot_model->getFrameWorldPose("rightPalm", rpalm_des_pos, rpalm_des_quat);
-  // rpalm_des_pos[0] += 0.35;//0.25;//0.25;
-  // rpalm_des_pos[1] += 0.25; 
-  // rpalm_des_pos[2] += 0.3; 
-  // Eigen::AngleAxis<double> axis_angle;
-  // axis_angle.angle() = (M_PI/2.0);
-  // axis_angle.axis() = Eigen::Vector3d(0, 0, 1.0);
-  // rpalm_des_quat = axis_angle;
-
-  // // Set desired CoM to be 1m above the ground
-  // Eigen::Vector3d com_des_pos; com_des_pos.setZero();
-  // com_des_pos[2] = 1.0;
-
-  // // Set Desired Posture to be close to initial
-  // Eigen::VectorXd q_des;
-  // // getPostureTaskReferences(ik_module.robot_model, q_init, q_des);
-
-  // // Set references ------------------------------------------------------------------------
-  // pelvis_task->setReference(pelvis_des_pos, pelvis_des_quat);
-  // pelvis_wrt_mf_task->setReference(pelvis_wrt_mf_des_pos, pelvis_wrt_mf_des_quat);
-  // lfoot_task->setReference(lfoot_des_pos, lfoot_des_quat);
-  // rfoot_task->setReference(rfoot_des_pos, rfoot_des_quat);
-  // rpalm_task->setReference(rpalm_des_pos, rpalm_des_quat);
-  // com_task->setReference(com_des_pos);
-
-  // getSelectedPostureTaskReferences(ik_module.robot_model, selected_names, q_init, q_des);
-  // posture_task->setReference(q_des);
-
-  // getSelectedPostureTaskReferences(ik_module.robot_model, right_arm_joint_names, q_init, q_des);
-  // rarm_posture_task->setReference(q_des);
-
-  // // Get Errors -----------------------------------------------------------------------------
-  // Eigen::VectorXd task_error;
-  // lfoot_task->getError(task_error);
-  // std::cout << "Left Foot Task Error = " << task_error.transpose() << std::endl;
-
-  // rfoot_task->getError(task_error);
-  // std::cout << "Right Foot Task Error = " << task_error.transpose() << std::endl;
-
-  // rpalm_task->getError(task_error);
-  // std::cout << "Right Palm Task Error = " << task_error.transpose() << std::endl;
-
-  // posture_task->getError(task_error);
-  // std::cout << "Posture Task Error = " << task_error.transpose() << std::endl;
-
-  // posture_task->getError(task_error);
-  // std::cout << "Posture Task Error = " << task_error.transpose() << std::endl;
-  
-  // pelvis_wrt_mf_task->getError(task_error);
-  // std::cout << "Pelivs wrt Midfeeet Task Error = " << task_error.transpose() << std::endl;
-
-
-  // ik_module.addTasktoHierarchy(task_stack_priority_1);
-  // ik_module.addTasktoHierarchy(task_stack_priority_2);
-  // ik_module.addTasktoHierarchy(task_stack_priority_3);
-  // // ik_module.addTasktoHierarchy(task_stack_priority_4);
-  
-  // int solve_result;
-  // double error_norm;
-  // Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(ik_module.robot_model->getDimQdot());
-
-  // // ik_module.setEnableInertiaWeighting(true);
-  // ik_module.prepareNewIKDataStrcutures();
-  // ik_module.solveIK(solve_result, error_norm, q_sol);
+  ik_module.prepareNewIKDataStrcutures();
+  ik_module.solveIK(solve_result, error_norm, q_sol);
 
   // Eigen::VectorXd q_config = Eigen::VectorXd::Zero(q_init.size());
   // printVec("q_sol", q_sol);
 
-  // visualize_robot(q_init, q_sol);
+  visualize_robot(q_init, q_sol);
   
 }
 
-// void visualize_robot(Eigen::VectorXd & q_start, Eigen::VectorXd & q_end){
-//   // Initialize ROS node for publishing joint messages
-//   ros::NodeHandle n;
-//   ros::Rate loop_rate(20);
+void visualize_robot(Eigen::VectorXd & q_start, Eigen::VectorXd & q_end){
+  // Initialize ROS node for publishing joint messages
+  ros::NodeHandle n;
+  ros::Rate loop_rate(20);
 
-//   // Initialize Rviz translator
-//   ValRvizTranslator rviz_translator;
+  // Initialize Rviz translator
+  ValRvizTranslator rviz_translator;
 
-//   // Transform broadcaster
-//   tf::TransformBroadcaster      br_ik;
-//   tf::TransformBroadcaster      br_robot;
-//   // Joint State Publisher
-//   ros::Publisher robot_ik_joint_state_pub = n.advertise<sensor_msgs::JointState>("robot1/joint_states", 10);
-//   ros::Publisher robot_joint_state_pub = n.advertise<sensor_msgs::JointState>("robot2/joint_states", 10);
+  // Transform broadcaster
+  tf::TransformBroadcaster      br_ik;
+  tf::TransformBroadcaster      br_robot;
+  // Joint State Publisher
+  ros::Publisher robot_ik_joint_state_pub = n.advertise<sensor_msgs::JointState>("robot1/joint_states", 10);
+  ros::Publisher robot_joint_state_pub = n.advertise<sensor_msgs::JointState>("robot2/joint_states", 10);
 
-//   // Initialize Transforms and Messages
-//   tf::Transform tf_world_pelvis_init;
-//   tf::Transform tf_world_pelvis_end;
+  // Initialize Transforms and Messages
+  tf::Transform tf_world_pelvis_init;
+  tf::Transform tf_world_pelvis_end;
 
-//   sensor_msgs::JointState joint_msg_init;
-//   sensor_msgs::JointState joint_msg_end;
+  sensor_msgs::JointState joint_msg_init;
+  sensor_msgs::JointState joint_msg_end;
 
-//   // Initialize Robot Model
-//   ValkyrieModel valkyrie;
+  // Initialize Robot Model
+  std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
+  std::string srdf_filename = THIS_PACKAGE_PATH"models/valkyrie_disable_collisions.srdf";
+  std::string meshDir_  = THIS_PACKAGE_PATH"../val_model/"; 
+  std::cout << "Initialize Valkyrie Model" << std::endl;
+  RobotModel valkyrie(urdf_filename, meshDir_, srdf_filename);
 
-//   // Visualize q_start and q_end in RVIZ
-//   rviz_translator.populate_joint_state_msg(valkyrie.model, q_start, tf_world_pelvis_init, joint_msg_init);
-//   rviz_translator.populate_joint_state_msg(valkyrie.model, q_end, tf_world_pelvis_end, joint_msg_end);
+  // Visualize q_start and q_end in RVIZ
+  rviz_translator.populate_joint_state_msg(valkyrie.model, q_start, tf_world_pelvis_init, joint_msg_init);
+  rviz_translator.populate_joint_state_msg(valkyrie.model, q_end, tf_world_pelvis_end, joint_msg_end);
 
-//   while (ros::ok()){
-//       br_robot.sendTransform(tf::StampedTransform(tf_world_pelvis_init, ros::Time::now(), "world",  "val_robot/pelvis"));
-//       robot_joint_state_pub.publish(joint_msg_init);
+  while (ros::ok()){
+      br_robot.sendTransform(tf::StampedTransform(tf_world_pelvis_init, ros::Time::now(), "world",  "val_robot/pelvis"));
+      robot_joint_state_pub.publish(joint_msg_init);
 
-//       br_ik.sendTransform(tf::StampedTransform(tf_world_pelvis_end, ros::Time::now(), "world", "val_ik_robot/pelvis"));
-//       robot_ik_joint_state_pub.publish(joint_msg_end);
-//     ros::spinOnce();
-//     loop_rate.sleep();
-//   }
-// }
+      br_ik.sendTransform(tf::StampedTransform(tf_world_pelvis_end, ros::Time::now(), "world", "val_ik_robot/pelvis"));
+      robot_ik_joint_state_pub.publish(joint_msg_end);
+    ros::spinOnce();
+    loop_rate.sleep();
+  }
+}
 
 
 
 int main(int argc, char ** argv){
-  ros::init(argc, argv, "test_ik_module_selfcollision");
+  ros::init(argc, argv, "test_ik_module");
   testIK_module();
   return 0;
 }

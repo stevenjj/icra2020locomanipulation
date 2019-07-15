@@ -279,7 +279,11 @@ void visualize_robot(Eigen::VectorXd & q_start, Eigen::VectorXd & q_end){
   sensor_msgs::JointState joint_msg_end;
 
   // Initialize Robot Model
-  RobotModel valkyrie;
+  std::cout << "Initialize Valkyrie Model" << std::endl;
+  std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
+  std::string srdf_filename = THIS_PACKAGE_PATH"models/valkyrie_disable_collisions.srdf";
+  std::string meshDir_  = THIS_PACKAGE_PATH"../val_model/"; 
+  RobotModel valkyrie(urdf_filename, meshDir_, srdf_filename);
 
   // Visualize q_start and q_end in RVIZ
   rviz_translator.populate_joint_state_msg(valkyrie.model, q_start, tf_world_pelvis_init, joint_msg_init);

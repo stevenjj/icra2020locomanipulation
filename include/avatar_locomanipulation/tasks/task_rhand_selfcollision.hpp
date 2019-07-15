@@ -37,6 +37,9 @@ public:
 	virtual void setError(const Eigen::VectorXd & error_in);
 
 protected:
+	Eigen::MatrixXd J_tmp;
+	Eigen::MatrixXd Jdot_tmp;
+	
 	Eigen::Vector3d cur_pos_;
 	Eigen::Quaterniond quat_current_;
 	Eigen::Vector3d quat_error_;
