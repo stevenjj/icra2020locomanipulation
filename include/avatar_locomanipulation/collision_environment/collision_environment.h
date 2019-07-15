@@ -13,11 +13,6 @@
 class CollisionEnvironment
 {
 private:
-
-  // The two robot models which we are adding to the environment
-  std::shared_ptr<RobotModel> valkyrie, object;
-
-
   // for internally filling the vector of directed vectors  
   // Members: std::string to - name of joint vector points to
   //          std::string from - name of joint vector comes from
@@ -41,15 +36,10 @@ private:
   // Used in distance computation, which does not require the appended config
   std::shared_ptr<RobotModel> append_models(Eigen::VectorXd & q, Eigen::VectorXd & obj_config);
 
-
-  // These functions will be called by build_self_directed_vectors
-  // Input: subset of world positions
-  void build_directed_vector_to_rhand(std::map<std::string, Eigen::Vector3d> world_positions);
-  void build_directed_vector_to_lhand(std::map<std::string, Eigen::Vector3d> world_positions);
-  void build_directed_vector_to_elbows(std::map<std::string, Eigen::Vector3d> world_positions);
-  void build_directed_vector_to_knees(std::map<std::string, Eigen::Vector3d> world_positions);
-  void build_directed_vector_to_head(std::map<std::string, Eigen::Vector3d> world_positions);
 public:
+
+  // The two robot models which we are adding to the environment
+  std::shared_ptr<RobotModel> valkyrie, object;
 
   // The vector of directed vectors and related information
   std::vector<DirectedVectors> directed_vectors, self_directed_vectors;
@@ -59,6 +49,9 @@ public:
   // Inputs: RobotModel valkyrie
   //         RobotModel environmental_object
   CollisionEnvironment(std::shared_ptr<RobotModel> & val, std::shared_ptr<RobotModel> & obj);
+
+  // Constructor for only valkyrie model
+  CollisionEnvironment(std::shared_ptr<RobotModel> & val);
 
 
   ~CollisionEnvironment();
@@ -71,7 +64,7 @@ public:
 
   // builds vectors from joints to joints 
   // Input: robot config, object config
-  void build_self_directed_vectors(Eigen::VectorXd & q, Eigen::VectorXd & obj_config);
+  void build_self_directed_vectors(Eigen::VectorXd & q);
 
 
   // fills the map from joint name to world position
@@ -93,7 +86,17 @@ public:
 
 
   // gives us a command for dx to move away from self collision
-  void self_collision_dx();
+  std::vector<Eigen::Vector3d> self_collision_dx();
+
+  // These functions will be called by build_self_directed_vectors
+  // Or they may be called explicitly by tasks computeError
+  // Input: subset of world positions
+  void build_directed_vector_to_rhand(std::map<std::string, Eigen::Vector3d> world_positions);
+  void build_directed_vector_to_lhand(std::map<std::string, Eigen::Vector3d> world_positions);
+  void build_directed_vector_to_elbows(std::map<std::string, Eigen::Vector3d> world_positions);
+  void build_directed_vector_to_lknee(std::map<std::string, Eigen::Vector3d> world_positions);
+  void build_directed_vector_to_rknee(std::map<std::string, Eigen::Vector3d> world_positions);
+  void build_directed_vector_to_head(std::map<std::string, Eigen::Vector3d> world_positions);
 };
 
 

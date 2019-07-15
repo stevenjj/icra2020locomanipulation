@@ -35,14 +35,28 @@ void RobotModel::commonInitialization(){
   A = Eigen::MatrixXd::Zero(model.nv, model.nv);
   Ainv = Eigen::MatrixXd::Zero(model.nv, model.nv);
   C = Eigen::MatrixXd::Zero(model.nv, model.nv);
-  g = Eigen::VectorXd::Zero(model.nv);	
-  
+  g = Eigen::VectorXd::Zero(model.nv);  
+  q_current = Eigen::VectorXd(model.nq);
+
+  q_lower_pos_limit = Eigen::VectorXd(model.nq);
+  q_upper_pos_limit = Eigen::VectorXd(model.nq);
+
   x_com.setZero();
   xdot_com.setZero();
   xddot_com.setZero();
 
   J_com = Eigen::Matrix3Xd::Zero(3, model.nv);
   Jdot_com = Eigen::Matrix3Xd::Zero(3, model.nv);
+
+  joint_names.clear();
+  for (int k=VAL_MODEL_JOINT_INDX_OFFSET ; k<model.njoints ; ++k){
+    joint_names.push_back(model.names[k]);
+  } 
+
+  for(int i = 0; i < model.lowerPositionLimit.size(); i++){
+    q_lower_pos_limit[i] = model.lowerPositionLimit[i];
+    q_upper_pos_limit[i] = model.upperPositionLimit[i];
+  }
 
   std::cout << "Robot Model Constructed" << std::endl;
 }
@@ -52,12 +66,16 @@ void RobotModel::common_initialization(){
 }
 
 void RobotModel::updateFullKinematics(const Eigen::VectorXd & q_update){
+  q_current = q_update;
   // Perform initial forward kinematics
   pinocchio::forwardKinematics(model, *data, q_update);
   // Compute Joint Jacobians
   pinocchio::computeJointJacobians(model,*data, q_update);
   // Update Frame Placements
-  pinocchio::updateFramePlacements(model, *data);	
+  pinocchio::updateFramePlacements(model, *data); 
+  // Update CoM position and Jacobian
+  computeCoMPos(q_update);
+  computeCoMJacobian(); 
 }
 
 void RobotModel::updateKinematicsDerivatives(const Eigen::VectorXd & q_update, const Eigen::VectorXd & qdot_update, const Eigen::VectorXd & qddot_update){

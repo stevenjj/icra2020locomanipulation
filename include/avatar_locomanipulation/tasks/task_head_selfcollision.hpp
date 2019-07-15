@@ -1,25 +1,25 @@
-#ifndef ALM_TASK_MAIN_H
-#define ALM_TASK_MAIN_H
+#ifndef ALM_HEAD_SELFCOLLISION_TASK_H
+#define ALM_HEAD_SELFCOLLISION_TASK_H
 
-#include <Eigen/Dense>
+#include <avatar_locomanipulation/tasks/task.hpp>
+#include <avatar_locomanipulation/collision_environment/collision_environment.h>
 
-#include <avatar_locomanipulation/models/robot_model.hpp>
-#include <avatar_locomanipulation/helpers/orientation_utils.hpp>
-
-#include <string>
-#include <iostream>
-
-class Task{
+class TaskHeadSelfCollision: public Task{
 public:
-	Task();
-	Task(std::shared_ptr<RobotModel> & input_model);
-	virtual ~Task();
+	TaskHeadSelfCollision(std::shared_ptr<RobotModel> & input_model, const std::string & input_frame_name, std::shared_ptr<CollisionEnvironment> & collision);
 
+	virtual ~TaskHeadSelfCollision();
+
+	// Warning: robot_model->updateFullKinematics(q) and 
 	virtual void getTaskJacobian(Eigen::MatrixXd & J_task);
+
+	// Warning: robot_model->updateFullKinematics(q), 
+	//	        robot_model->updateKinematicsDerivatives(q, qdot, qddot);
+	//			must have been called first	
 	virtual void getTaskJacobianDot(Eigen::MatrixXd & Jdot_task);
 
+
 	// Sets a reference for the task
-	// vec_ref can be a position or a custom
 	virtual void setReference(const Eigen::VectorXd & vec_ref_in);
 	virtual void setReference(const Eigen::Quaterniond & quat_ref_in);	
 	virtual void setReference(const Eigen::VectorXd & vec_ref_in, const Eigen::Quaterniond & quat_ref_in);
@@ -36,16 +36,12 @@ public:
 	// Sets the task error manually
 	virtual void setError(const Eigen::VectorXd & error_in);
 
-
-	int task_dim = 0;
-	std::shared_ptr<RobotModel> robot_model;
-	std::string task_name = "empty task";
-	std::string frame_name = "no frame";
-
 protected:
-	Eigen::VectorXd vec_ref_;
-	Eigen::Quaterniond quat_ref_;
-	Eigen::VectorXd error_;
+	Eigen::Vector3d cur_pos_;
+	Eigen::Quaterniond quat_current_;
+	Eigen::Vector3d quat_error_;
+	std::shared_ptr<CollisionEnvironment> collision_env;
+
 
 };
 

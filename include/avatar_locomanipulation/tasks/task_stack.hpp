@@ -5,7 +5,7 @@
 
 class TaskStack: public Task{
 public:
-	TaskStack(std::shared_ptr<ValkyrieModel> & input_model, const std::vector< std::shared_ptr<Task> > & task_list_input);
+	TaskStack(std::shared_ptr<RobotModel> & input_model, const std::vector< std::shared_ptr<Task> > & task_list_input);
 
 	virtual ~TaskStack();
 

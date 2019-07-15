@@ -5,7 +5,7 @@
 
 class Task3DOrientation: public Task{
 public:
-	Task3DOrientation(std::shared_ptr<ValkyrieModel> & input_model, const std::string & input_frame_name);
+	Task3DOrientation(std::shared_ptr<RobotModel> & input_model, const std::string & input_frame_name);
 
 	virtual ~Task3DOrientation();
 

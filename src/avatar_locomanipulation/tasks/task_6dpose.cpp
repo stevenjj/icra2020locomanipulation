@@ -1,6 +1,6 @@
 #include <avatar_locomanipulation/tasks/task_6dpose.hpp>
 
-Task6DPose::Task6DPose(std::shared_ptr<ValkyrieModel> & input_model, const std::string & input_frame_name){
+Task6DPose::Task6DPose(std::shared_ptr<RobotModel> & input_model, const std::string & input_frame_name){
 	robot_model = input_model;
 	task_dim = 6;
 	task_name = input_frame_name;

@@ -8,6 +8,11 @@ CollisionEnvironment::CollisionEnvironment(std::shared_ptr<RobotModel> & val, st
 	std::cout << "Collision Environment Created" << std::endl;
 }
 
+CollisionEnvironment::CollisionEnvironment(std::shared_ptr<RobotModel> & val){
+  valkyrie = val;
+  std::cout << "Collision Environment Created Only Val" << std::endl;
+}
+
 
 
 CollisionEnvironment::~CollisionEnvironment(){
@@ -56,10 +61,9 @@ void CollisionEnvironment::build_directed_vectors(Eigen::VectorXd & q, Eigen::Ve
 
 
 
-void CollisionEnvironment::build_self_directed_vectors(Eigen::VectorXd & q, Eigen::VectorXd & obj_config){
+void CollisionEnvironment::build_self_directed_vectors(Eigen::VectorXd & q){
   // Update the kinematics
   valkyrie->updateFullKinematics(q);
-  object->updateFullKinematics(obj_config);
 
   // Define the map for val_world_positions
   std::map<std::string, Eigen::Vector3d> world_positions = find_world_positions_subset();
@@ -67,7 +71,8 @@ void CollisionEnvironment::build_self_directed_vectors(Eigen::VectorXd & q, Eige
   build_directed_vector_to_rhand(world_positions);
   build_directed_vector_to_lhand(world_positions);
   build_directed_vector_to_elbows(world_positions); 
-  build_directed_vector_to_knees(world_positions);
+  build_directed_vector_to_rknee(world_positions);
+  build_directed_vector_to_lknee(world_positions);
   build_directed_vector_to_head(world_positions);
 
 }
@@ -227,6 +232,8 @@ void CollisionEnvironment::build_directed_vector_to_rhand(std::map<std::string, 
     dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
     self_directed_vectors.push_back(dvector);
   }
+  
+  std::cout << "self_directed_vectors.size(): " << self_directed_vectors.size() << std::endl;
 }
 
 
@@ -289,7 +296,21 @@ void CollisionEnvironment::build_directed_vector_to_elbows(std::map<std::string,
 
 
 
-void CollisionEnvironment::build_directed_vector_to_knees(std::map<std::string, Eigen::Vector3d> world_positions){
+void CollisionEnvironment::build_directed_vector_to_rknee(std::map<std::string, Eigen::Vector3d> world_positions){
+  Eigen::Vector3d rknee = world_positions.find("rknee")->second;
+  Eigen::Vector3d lknee = world_positions.find("lknee")->second;
+
+  Eigen::Vector3d from, difference, direction;
+  double magnitude;
+  std::vector<std::string> from_names;
+
+  difference = rknee - lknee;
+  dvector.from = "lknee"; dvector.to = "rknee";
+  dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+  self_directed_vectors.push_back(dvector);
+}
+
+void CollisionEnvironment::build_directed_vector_to_lknee(std::map<std::string, Eigen::Vector3d> world_positions){
   Eigen::Vector3d lknee = world_positions.find("lknee")->second;
   Eigen::Vector3d rknee = world_positions.find("rknee")->second;
 
@@ -299,11 +320,6 @@ void CollisionEnvironment::build_directed_vector_to_knees(std::map<std::string, 
 
   difference = lknee - rknee;
   dvector.from = "rknee"; dvector.to = "lknee";
-  dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
-  self_directed_vectors.push_back(dvector);
-
-  difference = rknee - lknee;
-  dvector.from = "lknee"; dvector.to = "rknee";
   dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
   self_directed_vectors.push_back(dvector);
 }
@@ -392,25 +408,22 @@ std::map<std::string, std::string> CollisionEnvironment::make_map_to_collision_b
 
 
 
-void CollisionEnvironment::self_collision_dx(){
+std::vector<Eigen::Vector3d> CollisionEnvironment::self_collision_dx(){
   double Potential;
+  std::vector<Eigen::Vector3d> dxs;
   Eigen::MatrixXd J_out(6, valkyrie->getDimQdot()); J_out.fill(0);;
   std::map<std::string, std::string> map_to_frame_names_subset = make_map_to_frame_names_subset();
-
-  std::cout << "directed_vectors.size(): " << directed_vectors.size() << std::endl;
 
   for(int k=0; k<self_directed_vectors.size(); ++k){
     Potential = (1/(self_directed_vectors[k].magnitude)) - (1/(0.05));
 
     if(Potential <= 0) Potential = 0;
 
-    Eigen::Vector3d dx = std::min(5.0 ,Potential)*(-self_directed_vectors[k].direction);
+    Eigen::Vector3d dx = (std::min(5.0 ,Potential))*(-self_directed_vectors[k].direction);
 
-    valkyrie->get6DTaskJacobian(map_to_frame_names_subset.find(self_directed_vectors[k].to)->second, J_out);
-
-    // Need to get the inverse of these Jacobians and subsequently get dq
-    // Going to have to answer some questions about repeats..
-    //  (i.e rknee->lknee and lknee->rknee) what will this do.
+    dxs.push_back(dx);    
   }
+
+  return dxs;
 
 }

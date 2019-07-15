@@ -19,6 +19,8 @@ int main(int argc, char ** argv){
   std::cout << "------ Cart Model ------ " << std::endl;
   std::cout << cart->model;	
 
+  std::cout << "valkyrie->getDimQ(): " << valkyrie->getDimQ() << std::endl;
+
   // Define the configuration of Val
   Eigen::VectorXd q_start;
   q_start = Eigen::VectorXd::Zero(valkyrie->getDimQ());
@@ -50,7 +52,8 @@ int main(int argc, char ** argv){
   q_start[valkyrie->getJointIndex("leftForearmYaw")] = 1.5;
 
   // Define the configuration of the cart
-  Eigen::VectorXd cart_config(cart->getDimQ());
+  Eigen::VectorXd cart_config;
+  cart_config = Eigen::VectorXd::Zero(cart->getDimQ());
   cart_config[0] = 2.0;  cart_config[1] = 0.0;  cart_config[2] = 0.0;
   double theta1 = 0;//M_PI/4.0;	
   Eigen::AngleAxis<double> bb(theta1, Eigen::Vector3d(0.0, 0.0, 1.0)); // yaw pi/4 to the left	
@@ -60,12 +63,13 @@ int main(int argc, char ** argv){
   cart_config[5] = quat_init.z(); //sin(theta/2.0);
   cart_config[6] = quat_init.w(); //cos(theta/2.0);
 
-
   std::shared_ptr<CollisionEnvironment> collision(new CollisionEnvironment(valkyrie, cart) );
 
   collision->build_directed_vectors(q_start, cart_config);
 
-  collision->build_self_directed_vectors(q_start, cart_config);
+  std::cout << "test_collision s1" << std::endl;
+
+  collision->build_self_directed_vectors(q_start);
 
   for(int o=0; o<collision->directed_vectors.size(); ++o){
     std::cout << "collision->directed_vectors[o].from: " << collision->directed_vectors[o].from << std::endl;

@@ -1,6 +1,6 @@
 #include <avatar_locomanipulation/tasks/task_com.hpp>
 
-TaskCOM::TaskCOM(std::shared_ptr<ValkyrieModel> & input_model){
+TaskCOM::TaskCOM(std::shared_ptr<RobotModel> & input_model){
 	robot_model = input_model;
 	task_dim = 3;
 	task_name = "CoM Task";

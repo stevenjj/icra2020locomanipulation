@@ -5,7 +5,7 @@
 
 class Task6DPose: public Task{
 public:
-	Task6DPose(std::shared_ptr<ValkyrieModel> & input_model, const std::string & input_frame_name);
+	Task6DPose(std::shared_ptr<RobotModel> & input_model, const std::string & input_frame_name);
 
 	virtual ~Task6DPose();
 

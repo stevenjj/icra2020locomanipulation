@@ -2,10 +2,13 @@
 
 // Constructor
 IKModule::IKModule(){
-  robot_model = std::shared_ptr<ValkyrieModel>(new ValkyrieModel());
+  std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
+  std::string srdf_filename = THIS_PACKAGE_PATH"models/valkyrie_disable_collisions.srdf";
+  std::string meshDir_  = THIS_PACKAGE_PATH"../val_model/"; 
+  robot_model = std::shared_ptr<RobotModel>(new RobotModel(urdf_filename, meshDir_, srdf_filename));
 }
 
-IKModule::IKModule(std::shared_ptr<ValkyrieModel> robot_model_in){
+IKModule::IKModule(std::shared_ptr<RobotModel> robot_model_in){
   robot_model = robot_model_in;
 }
 

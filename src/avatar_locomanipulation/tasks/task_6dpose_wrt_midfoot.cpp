@@ -1,6 +1,6 @@
 #include <avatar_locomanipulation/tasks/task_6dpose_wrt_midfeet.hpp>
 
-Task6DPosewrtMidFeet::Task6DPosewrtMidFeet(std::shared_ptr<ValkyrieModel> & input_model, const std::string & input_frame_name): 
+Task6DPosewrtMidFeet::Task6DPosewrtMidFeet(std::shared_ptr<RobotModel> & input_model, const std::string & input_frame_name): 
 	Task6DPose(input_model, input_frame_name){
 	des_pos.setZero();
 	des_quat.setIdentity();
