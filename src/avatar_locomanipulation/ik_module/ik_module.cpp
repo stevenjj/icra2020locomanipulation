@@ -166,6 +166,22 @@ void IKModule::printTaskErrors(){
   std::cout << std::endl;
 }
 
+void IKModule::compute_dq(int & task_idx_to_minimize){
+  // Compute dq_tot
+  for(int i = 0; i < task_hierarchy.size(); i++){
+    // Break after we have optimized current task.
+    if (i > task_idx_to_minimize){
+      break;
+    }else{
+      if (i == 0){
+        dq_tot = JNpinv_[0]*dx_[0];
+      }else{
+        dq_tot = dq_tot + (JNpinv_[i]*(dx_[i] - J_[i]*dq_tot));
+      }      
+    }
+
+  }  
+}
 
 void IKModule::compute_dq(){
   // add a condition to break depending on which task we are currently optimizing.
@@ -208,7 +224,8 @@ bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd 
 
     // Compute PseudoInverses and Find Descent Direction
     computePseudoInverses();
-    compute_dq();
+    compute_dq(task_idx_to_minimize);
+    // compute_dq();
 
     // Start Gradient Descent with backtracking
     k_step = 1.0;

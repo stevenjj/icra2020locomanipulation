@@ -125,9 +125,9 @@ void testIK_module(){
   std::shared_ptr<Task> rarm_posture_task(new TaskJointConfig(ik_module.robot_model, right_arm_joint_names));
 
   // Stack Tasks in order of priority
-  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task, pelvis_wrt_mf_task, rpalm_task}));
-  std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {posture_task}));
-  // std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {posture_task}));
+  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task, pelvis_wrt_mf_task}));
+  std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {rpalm_task}));
+  std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {posture_task}));
   // std::shared_ptr<Task> task_stack_priority_4(new TaskStack(ik_module.robot_model, {rarm_posture_task}));
 
 
@@ -175,7 +175,7 @@ void testIK_module(){
   Eigen::Vector3d rpalm_des_pos;
   Eigen::Quaternion<double> rpalm_des_quat;
   ik_module.robot_model->getFrameWorldPose("rightPalm", rpalm_des_pos, rpalm_des_quat);
-  rpalm_des_pos[0] += 0.25;//0.25;
+  rpalm_des_pos[0] += 0.35;//0.25;//0.25;
   rpalm_des_pos[1] += 0.25; 
   rpalm_des_pos[2] += 0.3; 
   Eigen::AngleAxis<double> axis_angle;
@@ -228,7 +228,7 @@ void testIK_module(){
 
   ik_module.addTasktoHierarchy(task_stack_priority_1);
   ik_module.addTasktoHierarchy(task_stack_priority_2);
-  // ik_module.addTasktoHierarchy(task_stack_priority_3);
+  ik_module.addTasktoHierarchy(task_stack_priority_3);
   // ik_module.addTasktoHierarchy(task_stack_priority_4);
   
   int solve_result;

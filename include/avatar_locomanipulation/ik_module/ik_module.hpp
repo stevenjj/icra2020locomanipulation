@@ -66,6 +66,8 @@ private:
 	void computePseudoInverses();
 	void computeTaskErrors();
 	void compute_dq();
+	void compute_dq(int & task_idx_to_minimize);
+
 
 	void printTaskErrorsHeader();
 	void printTaskErrors();
