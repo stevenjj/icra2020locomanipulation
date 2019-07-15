@@ -31,7 +31,7 @@ public:
 	//  	error_norm - the sum of all the task error norms.
 	//		q_sol - the configuration vector
 	bool solveIK(int & solve_result, double & total_error_norm_out, Eigen::VectorXd & q_sol);
-	bool solveIK(int & solve_result, std::vector<double> task_error_norms, double & total_error_norm_out, Eigen::VectorXd & q_sol);
+	bool solveIK(int & solve_result, std::vector<double> & task_error_norms, double & total_error_norm_out, Eigen::VectorXd & q_sol);
 
 
 	// This adds a lower priority task to the hierarchy. 
@@ -65,33 +65,37 @@ public:
 	// Print the latest solution results
 	void printSolutionResults();
 
-	// clamps values to the joint limits
-	void clampConfig(Eigen::VectorXd & q_config);
 
 private:
+	// Updates all of the task Jacobians
 	void updateTaskJacobians();
+	// Compute all the pseudo inverses
 	void computePseudoInverses();
+	// Compute all the task errors
 	void computeTaskErrors();
+	// Compute all of dq
 	void compute_dq();
+	// Compute dq only up to the task being minimized
 	void compute_dq(const int & task_idx_to_minimize);
 
-
+	// Checks if previous tasks have been violated
 	bool checkPrevTaskViolation(const int & task_idx_to_minimize);
+	// Check if the first task has converged
 	bool checkFirstTaskConvergence();
 
-
+	// Prints task errors
 	void printTaskErrorsHeader();
 	void printTaskErrors();
 
+	// Clamps values to the joint limits
+	void clampConfig(Eigen::VectorXd & q_config);
 	double clampValue(const double & low, double high, const double & value);
 
-	unsigned int svdOptions = Eigen::ComputeThinU | Eigen::ComputeThinV;
-
+	// Containers for configuration and config changes proposal
 	Eigen::VectorXd q_start;
 	Eigen::VectorXd q_current;
 	Eigen::VectorXd q_step;
 	Eigen::VectorXd dq_tot;
-
 
 	// Task hierarchy list
 	// A hierarchy of tasks in order of priority
@@ -107,7 +111,8 @@ private:
 	std::vector<Eigen::VectorXd> dx_; // Task Errors
 	std::vector<double> dx_norms_; // Task Error Norms
 
-
+	// Sets the svd options and a list of SVDs
+	unsigned int svdOptions = Eigen::ComputeThinU | Eigen::ComputeThinV;
 	std::vector< Eigen::JacobiSVD<Eigen::MatrixXd> > svd_list_; // List of SVD for pseudoinverses
 
 	// IK parameters

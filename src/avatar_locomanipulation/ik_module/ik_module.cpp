@@ -227,7 +227,7 @@ bool IKModule::checkFirstTaskConvergence(){
 }
 
 
-bool IKModule::solveIK(int & solve_result, std::vector<double> task_error_norms, double & total_error_norm_out, Eigen::VectorXd & q_sol){
+bool IKModule::solveIK(int & solve_result, std::vector<double> & task_error_norms, double & total_error_norm_out, Eigen::VectorXd & q_sol){
   bool convergence = solveIK(solve_result, total_error_norm_out, q_sol);
   task_error_norms = dx_norms_;
   return convergence;
@@ -285,7 +285,7 @@ bool IKModule::solveIK(int & solve_result, double & total_error_norm_out, Eigen:
       // Check if we hit minor iterations limit
       minor_iter_count++;
       if (minor_iter_count > max_minor_iters){
-        std::cout << "[IK Module] Max Minor Iters Hit " << std::endl;        
+        // std::cout << "[IK Module] Max Minor Iters Hit " << std::endl;        
         solve_result = IK_MAX_MINOR_ITER_HIT;
         solve_result_ = IK_MAX_MINOR_ITER_HIT;
         total_error_norm_out = total_error_norm;
@@ -297,7 +297,7 @@ bool IKModule::solveIK(int & solve_result, double & total_error_norm_out, Eigen:
       // Check if the gradient is too small. If so, we are at a local minimum
       grad_f_norm_squared = k_step*std::pow(dq_tot.norm(), 2);
       if (grad_f_norm_squared < grad_tol){
-        std::cout << "[IK Module] Sub Optimal Solution" << std::endl;
+        // std::cout << "[IK Module] Sub Optimal Solution" << std::endl;
         solve_result = IK_SUBOPTIMAL_SOL;
         solve_result_ = IK_SUBOPTIMAL_SOL;
         total_error_norm_out = total_error_norm;
@@ -324,7 +324,7 @@ bool IKModule::solveIK(int & solve_result, double & total_error_norm_out, Eigen:
 
     // Check if we reached the optimality condition
     if (total_error_norm < error_tol){
-      std::cout << "[IK Module] Optimal Solution" << std::endl;
+      // std::cout << "[IK Module] Optimal Solution" << std::endl;
       solve_result = IK_OPTIMAL_SOL;
       solve_result_ = IK_OPTIMAL_SOL;
       total_error_norm_out = total_error_norm;
@@ -366,6 +366,7 @@ double IKModule::clampValue(const double & low, double high, const double & valu
 }
 
 void IKModule::printSolutionResults(){
+  std::cout << std::endl;
   if (solve_result_ == IK_OPTIMAL_SOL){
     std::cout << "[IK Module] Result: Optimal Solution" << std::endl;
   } else if (solve_result_ == IK_SUBOPTIMAL_SOL){
@@ -396,6 +397,6 @@ void IKModule::printSolutionResults(){
   for(int i = 0; i < q_sol_.size(); i++){
     std::cout << q_sol_[i] << ", ";
   }   
-  std::cout << std::endl;
+  std::cout << std::endl << std::endl;
 
 }

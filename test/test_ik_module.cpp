@@ -180,7 +180,7 @@ void testIK_module(){
   getSelectedPostureTaskReferences(ik_module.robot_model, selected_names, q_init, q_des);
   posture_task->setReference(q_des);
 
-  // Get Errors -----------------------------------------------------------------------------
+  // Check if we can get errors given configuration -----------------------------------------------------------------------------
   Eigen::VectorXd task_error;
   lfoot_task->getError(task_error);
   std::cout << "Left Foot Task Error = " << task_error.transpose() << std::endl;
@@ -197,10 +197,12 @@ void testIK_module(){
   pelvis_wrt_mf_task->getError(task_error);
   std::cout << "Pelivs wrt Midfeeet Task Error = " << task_error.transpose() << std::endl;
 
+  // Add tasks to hierarchy  getSelectedPostureTaskReferences(ik_module.robot_model, selected_names, q_init, q_des);
   ik_module.addTasktoHierarchy(task_stack_priority_1);
   ik_module.addTasktoHierarchy(task_stack_priority_2);
   ik_module.addTasktoHierarchy(task_stack_priority_3);
-  
+
+  // Perform IK  
   int solve_result;
   double total_error_norm;
   std::vector<double> task_error_norms;
@@ -210,8 +212,7 @@ void testIK_module(){
   ik_module.solveIK(solve_result, task_error_norms, total_error_norm, q_sol);
   ik_module.printSolutionResults();
 
-  // printVec("q_sol", q_sol);
-
+  // Visualize Solution:
   visualize_robot(q_init, q_sol);
   
 }
