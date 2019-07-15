@@ -78,7 +78,7 @@ void IKModule::setDescentStep(int & k_step_in){
 void IKModule::setBackTrackBeta(double & beta_in){
   beta = beta_in;
 }
-// Sets the Task Space Error Norm Tolerance for Optimality Conditions. Default: 1e-4 
+// Sets the task Space Error Norm Tolerance for Optimality Conditions. Default: 1e-4 
 void IKModule::setErrorTol(double & error_tol_in){
   error_tol = error_tol_in;
 }
@@ -170,7 +170,9 @@ void IKModule::compute_dq(int & task_idx_to_minimize){
   // Compute dq_tot
   for(int i = 0; i < task_hierarchy.size(); i++){
     // Break after we have optimized current task.
+    std::cout << "task idx:" << task_idx_to_minimize << " i:" << i << std::endl;
     if (i > task_idx_to_minimize){
+      std::cout << "breaking" << std::endl;
       break;
     }else{
       if (i == 0){
@@ -196,6 +198,17 @@ void IKModule::compute_dq(){
 
 }
 
+bool IKModule::checkPrevTaskViolation(int & task_idx_to_minimize){
+  // Check if the new configuration significantly altered previous tasks:
+  for(int j = 0; j < (task_idx_to_minimize); j++){
+    if (dx_norms_[j] > error_tol){
+      std::cout << "previous task violated" << std::endl;
+      return true;
+    }    
+  }
+  return false;
+}
+
 
 bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd & q_sol){
   q_current = q_start;
@@ -212,6 +225,7 @@ bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd 
 
     // Store current error for q_current in order of priority
     // f_q = total_error_norm; // Previously we want to find a direction that minimizes all the task.
+    f_q = 0;
     for(int j = 0; j < dx_norms_.size(); j++){
       if (dx_norms_[j] < error_tol){
         continue; 
@@ -229,14 +243,31 @@ bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd 
 
     // Start Gradient Descent with backtracking
     k_step = 1.0;
+    int minor_iter_count = 0;
     while(true){
+      minor_iter_count++;
+      if (minor_iter_count > max_minor_iters){
+        std::cout << "[IK Module] Max Minor Iters Hit " << std::endl;        
+        solve_result = IK_MAX_MINOR_ITER_HIT;
+        error_norm = f_q;
+        q_sol = q_current;
+        return true;
+      }
+
       robot_model->forwardIntegrate(q_current, k_step*dq_tot, q_step);
       clampConfig(q_step);
       robot_model->updateFullKinematics(q_step);
       computeTaskErrors();
 
-      // f_q_p_dq = total_error_norm; // Previously we want to find a direction that minimizes all the task.
-      f_q_p_dq = dx_norms_[task_idx_to_minimize];
+      // f_q_p_dq = total_error_norm; // compare with total norm
+      f_q_p_dq = dx_norms_[task_idx_to_minimize]; // compare with current task
+
+      // compare sum to current task.
+      // f_q_p_dq = 0.0;
+      // for(int j = 0; j < (task_idx_to_minimize+1); j++){
+      //   f_q_p_dq += dx_norms_[j];
+      // }
+
       grad_f_norm_squared = k_step*std::pow(dq_tot.norm(), 2);
 
       // Check if the gradient is too small. If so, we are at a local minimum
@@ -248,10 +279,19 @@ bool IKModule::solveIK(int & solve_result, double & error_norm, Eigen::VectorXd 
         return true;
       }
       
+      // Check if the new configuration significantly altered previous tasks:
+      if (checkPrevTaskViolation(task_idx_to_minimize)){
+        k_step = beta*k_step;
+        std::cout << "backtracking with k_step = " << k_step << std::endl;
+        std::cout << "num of backtracks = " << minor_iter_count << std::endl;
+        std::cout << "grad_f_norm_squared = " << grad_f_norm_squared << std::endl;
+        continue; // backtrack and retry descent
+      }
+
       // Check if the new error is larger than the previous error.
       if (f_q_p_dq > f_q){
         // Decrease the step size
-        k_step = beta*k_step;
+        k_step = beta*k_step;        
         // std::cout << "backtracking with k_step = " << k_step << std::endl;
         continue; // Backtrack and retry descent
       }else{

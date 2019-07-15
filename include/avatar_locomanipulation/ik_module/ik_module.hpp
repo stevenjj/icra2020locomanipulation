@@ -10,6 +10,7 @@
 #define IK_SUBOPTIMAL_SOL 2 // SUCCESS ||grad(f(x))|| <= grad_tol
 #define IK_MAX_ITERATIONS_HIT 3 // FAILURE iter >= MAX_ITERS 
 #define IK_MIN_STEP_HIT 4   // FAILURE k_step <= k_step_min
+#define IK_MAX_MINOR_ITER_HIT 5  // FAILURE k_step <= k_step_min
 
 
 class IKModule{
@@ -69,6 +70,8 @@ private:
 	void compute_dq(int & task_idx_to_minimize);
 
 
+	bool checkPrevTaskViolation(int & task_idx_to_minimize);
+
 	void printTaskErrorsHeader();
 	void printTaskErrors();
 
@@ -101,11 +104,12 @@ private:
 
 	// IK parameters
 	double singular_values_threshold = 1e-4; // Cut off value to treat singular values as 0.0
-	double max_iters = 100; // maximum IK iters
+	int max_iters = 100; // maximum IK iters
+	int max_minor_iters  = 25; // maximum numbder of backtracks
 	double k_step = 1.0; // starting step
 	double beta = 0.8; // Backtracking Line Search Parameter
 	double error_tol = 1e-4; // Task tolerance for success
-	double grad_tol = 1e-12;//6; // Gradient descent tolerance for suboptimality
+	double grad_tol = 1e-5;//6; // Gradient descent tolerance for suboptimality
 	bool inertia_weighted_ = false;
 
 	// Errors and Error gradient values:
