@@ -9,9 +9,7 @@
 #define IK_OPTIMAL_SOL 1	// SUCCESS ||f(x)|| <= error_tol
 #define IK_SUBOPTIMAL_SOL 2 // SUCCESS ||grad(f(x))|| <= grad_tol
 #define IK_MAX_ITERATIONS_HIT 3 // FAILURE iter >= MAX_ITERS 
-#define IK_MIN_STEP_HIT 4   // FAILURE k_step <= k_step_min
-#define IK_MAX_MINOR_ITER_HIT 5  // FAILURE k_step <= k_step_min
-
+#define IK_MAX_MINOR_ITER_HIT 4  // FAILURE k_step <= k_step_min
 
 class IKModule{
 public:
@@ -33,6 +31,8 @@ public:
 	//  	error_norm - the sum of all the task error norms.
 	//		q_sol - the configuration vector
 	bool solveIK(int & solve_result, double & total_error_norm_out, Eigen::VectorXd & q_sol);
+	bool solveIK(int & solve_result, std::vector<double> task_error_norms, double & total_error_norm_out, Eigen::VectorXd & q_sol);
+
 
 	// This adds a lower priority task to the hierarchy. 
 	void addTasktoHierarchy(std::shared_ptr<Task> & task_input);
@@ -61,6 +61,9 @@ public:
 	void setGradTol(double & grad_tol_in);
 	// Whether or not the inertia matrix is used for a weighted pseudoinverse. Default: false
 	void setEnableInertiaWeighting(bool inertia_weighted_in);
+
+	// Print the latest solution results
+	void printSolutionResults();
 
 	// clamps values to the joint limits
 	void clampConfig(Eigen::VectorXd & q_config);
@@ -123,6 +126,9 @@ private:
 	double f_q_p_dq = 0.0;
 	double grad_f_norm_squared = 0.0;
 
+	// Internal solve result
+	int solve_result_ = 0;
+	Eigen::VectorXd q_sol_;	
 
 
 };

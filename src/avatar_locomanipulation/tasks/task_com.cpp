@@ -11,7 +11,7 @@ TaskCOM::TaskCOM(std::shared_ptr<ValkyrieModel> & input_model){
 }
 
 TaskCOM::~TaskCOM(){
-	std::cout << "[Task COM] Destroyed" << std::endl;
+	// std::cout << "[Task COM] Destroyed" << std::endl;
 }
 
 void TaskCOM::getTaskJacobian(Eigen::MatrixXd & J_task){

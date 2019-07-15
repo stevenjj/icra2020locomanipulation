@@ -14,7 +14,7 @@ Task3DOrientation::Task3DOrientation(std::shared_ptr<ValkyrieModel> & input_mode
 }
 
 Task3DOrientation::~Task3DOrientation(){
-	std::cout << "[Task 3D Orientation] for frame " << frame_name << " Destroyed" << std::endl;
+	// std::cout << "[Task 3D Orientation] for frame " << frame_name << " Destroyed" << std::endl;
 }
 
 void Task3DOrientation::getTaskJacobian(Eigen::MatrixXd & J_task){

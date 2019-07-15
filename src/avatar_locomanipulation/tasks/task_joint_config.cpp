@@ -20,7 +20,7 @@ TaskJointConfig::TaskJointConfig(std::shared_ptr<ValkyrieModel> & input_model, c
 }
 
 TaskJointConfig::~TaskJointConfig(){
-	std::cout << "[Task Joint Config] for joints " << task_name << " Destroyed" << std::endl;
+	// std::cout << "[Task Joint Config] for joints " << task_name << " Destroyed" << std::endl;
 }
 
 void TaskJointConfig::getTaskJacobian(Eigen::MatrixXd & J_task){

@@ -63,20 +63,6 @@ void initialize_config(Eigen::VectorXd & q_init){
   q_init = q_start;
 }
 
-void getPostureTaskReferences(std::shared_ptr<ValkyrieModel> valkyrie, Eigen::VectorXd & q_start, Eigen::VectorXd & q_ref){
-  Eigen::VectorXd q_des;
-  q_des = Eigen::VectorXd::Zero(valkyrie->joint_names.size());
-
-  for(int i = 0; i < valkyrie->joint_names.size(); i++){
-    std::cout << valkyrie->joint_names[i] << std::endl;
-    q_des[i] = q_start[valkyrie->getJointIndex(valkyrie->joint_names[i])];
-  }
-  q_des[valkyrie->getJointIndexNoFloatingJoints("leftElbowPitch")] = -1.25;
-  std::cout << "q_start = " << q_start.transpose() << std::endl;
-  std::cout << "q_des = " << q_des.transpose() << std::endl;
-  q_ref = q_des;
-}
-
 void getSelectedPostureTaskReferences(std::shared_ptr<ValkyrieModel> valkyrie, std::vector<std::string> & selected_names, Eigen::VectorXd & q_start, Eigen::VectorXd & q_ref){
   Eigen::VectorXd q_des;
   q_des = Eigen::VectorXd::Zero(selected_names.size());
@@ -99,38 +85,29 @@ void testIK_module(){
   // Update Robot Kinematics
   ik_module.robot_model->updateFullKinematics(q_init);
 
-  ik_module.robot_model->printFrameNames();
-
   // Create Tasks
   std::shared_ptr<Task> pelvis_task(new Task6DPose(ik_module.robot_model, "pelvis"));
   std::shared_ptr<Task> pelvis_wrt_mf_task(new Task6DPosewrtMidFeet(ik_module.robot_model, "pelvis"));
 
   std::shared_ptr<Task> lfoot_task(new Task6DPose(ik_module.robot_model, "leftCOP_Frame"));
-  std::shared_ptr<Task> lfoot_ori_task(new Task3DOrientation(ik_module.robot_model, "leftCOP_Frame"));
   std::shared_ptr<Task> rfoot_task(new Task6DPose(ik_module.robot_model, "rightCOP_Frame"));
 
   std::shared_ptr<Task> com_task(new TaskCOM(ik_module.robot_model));
   std::shared_ptr<Task> rpalm_task(new Task6DPose(ik_module.robot_model, "rightPalm"));
 
-
   // posture tasks
   std::vector<std::string> selected_names = {"torsoYaw", "torsoPitch", "torsoRoll", 
                                              "leftShoulderPitch", "leftShoulderRoll", "leftShoulderYaw", "leftElbowPitch", "leftForearmYaw", "leftWristRoll", "leftWristPitch", 
                                              "lowerNeckPitch", "neckYaw", "upperNeckPitch"};
-
-  std::vector<std::string> right_arm_joint_names = {"rightShoulderPitch", "rightShoulderRoll", "rightShoulderYaw", "rightElbowPitch", "rightForearmYaw", "rightWristRoll", "rightWristPitch"};
-
   // selected_names = ik_module.robot_model->joint_names;
   std::shared_ptr<Task> posture_task(new TaskJointConfig(ik_module.robot_model, selected_names));
   posture_task->setTaskGain(1e-1);
-
-  std::shared_ptr<Task> rarm_posture_task(new TaskJointConfig(ik_module.robot_model, right_arm_joint_names));
 
   // Stack Tasks in order of priority
   std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task, pelvis_wrt_mf_task}));
   std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {rpalm_task}));
   std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {posture_task}));
-  // std::shared_ptr<Task> task_stack_priority_4(new TaskStack(ik_module.robot_model, {rarm_posture_task}));
+  // std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {posture_task, com_task}));
 
 
   // Set desired Pelvis configuration
@@ -191,7 +168,6 @@ void testIK_module(){
 
   // Set Desired Posture to be close to initial
   Eigen::VectorXd q_des;
-  // getPostureTaskReferences(ik_module.robot_model, q_init, q_des);
 
   // Set references ------------------------------------------------------------------------
   pelvis_task->setReference(pelvis_des_pos, pelvis_des_quat);
@@ -203,9 +179,6 @@ void testIK_module(){
 
   getSelectedPostureTaskReferences(ik_module.robot_model, selected_names, q_init, q_des);
   posture_task->setReference(q_des);
-
-  getSelectedPostureTaskReferences(ik_module.robot_model, right_arm_joint_names, q_init, q_des);
-  rarm_posture_task->setReference(q_des);
 
   // Get Errors -----------------------------------------------------------------------------
   Eigen::VectorXd task_error;
@@ -220,29 +193,24 @@ void testIK_module(){
 
   posture_task->getError(task_error);
   std::cout << "Posture Task Error = " << task_error.transpose() << std::endl;
-
-  posture_task->getError(task_error);
-  std::cout << "Posture Task Error = " << task_error.transpose() << std::endl;
   
   pelvis_wrt_mf_task->getError(task_error);
   std::cout << "Pelivs wrt Midfeeet Task Error = " << task_error.transpose() << std::endl;
 
-
   ik_module.addTasktoHierarchy(task_stack_priority_1);
   ik_module.addTasktoHierarchy(task_stack_priority_2);
   ik_module.addTasktoHierarchy(task_stack_priority_3);
-  // ik_module.addTasktoHierarchy(task_stack_priority_4);
   
   int solve_result;
-  double error_norm;
+  double total_error_norm;
+  std::vector<double> task_error_norms;
   Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(ik_module.robot_model->getDimQdot());
 
-  // ik_module.setEnableInertiaWeighting(true);
   ik_module.prepareNewIKDataStrcutures();
-  ik_module.solveIK(solve_result, error_norm, q_sol);
+  ik_module.solveIK(solve_result, task_error_norms, total_error_norm, q_sol);
+  ik_module.printSolutionResults();
 
-  Eigen::VectorXd q_config = Eigen::VectorXd::Zero(q_init.size());
-  printVec("q_sol", q_sol);
+  // printVec("q_sol", q_sol);
 
   visualize_robot(q_init, q_sol);
   

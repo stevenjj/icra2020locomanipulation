@@ -7,7 +7,7 @@ Task::Task(std::shared_ptr<ValkyrieModel> & input_model){
 }
 
 Task::~Task(){
-	std::cout << "[Task] " << task_name << " Destroyed" << std::endl;
+	// std::cout << "[Task] " << task_name << " Destroyed" << std::endl;
 }
 
 // Get Task Jacobians

@@ -12,7 +12,7 @@ Task6DPosewrtMidFeet::Task6DPosewrtMidFeet(std::shared_ptr<ValkyrieModel> & inpu
 }
 
 Task6DPosewrtMidFeet::~Task6DPosewrtMidFeet(){
-	std::cout << "[Task6DPosewrtMidFeet] for frame " << frame_name << " Destroyed" << std::endl;
+	// std::cout << "[Task6DPosewrtMidFeet] for frame " << frame_name << " Destroyed" << std::endl;
 }
 
 void Task6DPosewrtMidFeet::computeError(){

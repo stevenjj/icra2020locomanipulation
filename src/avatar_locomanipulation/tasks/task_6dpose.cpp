@@ -14,7 +14,7 @@ Task6DPose::Task6DPose(std::shared_ptr<ValkyrieModel> & input_model, const std::
 }
 
 Task6DPose::~Task6DPose(){
-	std::cout << "[Task 6D Pose] for frame " << frame_name << " Destroyed" << std::endl;
+	// std::cout << "[Task 6D Pose] for frame " << frame_name << " Destroyed" << std::endl;
 }
 
 void Task6DPose::getTaskJacobian(Eigen::MatrixXd & J_task){

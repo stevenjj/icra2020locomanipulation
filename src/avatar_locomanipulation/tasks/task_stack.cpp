@@ -23,7 +23,7 @@ TaskStack::TaskStack(std::shared_ptr<ValkyrieModel> & input_model, const std::ve
 }
 
 TaskStack::~TaskStack(){
-	std::cout << "[Task Stack] for tasks " << task_name << " Destroyed" << std::endl;
+	// std::cout << "[Task Stack] for tasks " << task_name << " Destroyed" << std::endl;
 }
 
 void TaskStack::getTaskJacobian(Eigen::MatrixXd & J_task){
