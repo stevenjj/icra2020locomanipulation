@@ -36,6 +36,7 @@ namespace footstep_planner{
 		double y;
 		double g_score;
 		double f_score;
+		shared_ptr<Node> parent;
 		string key;
 
 	private:
@@ -65,8 +66,9 @@ namespace footstep_planner{
 		bool operator() (const Node & lhs, const Node &rhs) const;
 	};
 
-	class NodePtr_Compare_Fcost_Greater{
+	class NodePtr_Compare_Fcost{
 	public:
+		NodePtr_Compare_Fcost();
 		bool operator() (const shared_ptr<Node> & lhs, const shared_ptr<Node> &rhs) const;
 	};
 
@@ -74,15 +76,15 @@ namespace footstep_planner{
 	public:
 		A_starPlanner();
 		~A_starPlanner();
-		double goalDistance(const Node neighbor, const Node goal);
+		double goalDistance(shared_ptr<Node> & neighbor, shared_ptr<Node> & goal);
 
-		void getPath(std::vector<Node> & path);
+		void getPath(std::vector< shared_ptr<Node> > & optimal_path, shared_ptr<Node> current_node, vector< shared_ptr<Node> > ClosedSet, shared_ptr<Node> begin);
 
-		std::vector<Node> getNeighbors(Node & current);
+		std::vector< shared_ptr<Node> > getNeighbors(shared_ptr<Node> & current);
 		
 		void doAstar();
 
-		double gScore(const Node & current, const Node & neighbor);
+		double gScore(const shared_ptr<Node> current, const shared_ptr<Node> neighbor);
 	};
 
 
