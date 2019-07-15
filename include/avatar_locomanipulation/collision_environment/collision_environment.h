@@ -20,6 +20,9 @@ private:
   //          double magnitude - magnitude of the vector for use with potential
   DirectedVectors dvector;
 
+  // The tolerance distance for avoiding self collisions
+  double safety_dist = 0.05;
+
 
   // builds a map of names for easy use to frame name for getting current world position
   std::map<std::string, std::string> make_map_to_frame_names();
@@ -97,6 +100,9 @@ public:
   void build_directed_vector_to_lknee(std::map<std::string, Eigen::Vector3d> world_positions);
   void build_directed_vector_to_rknee(std::map<std::string, Eigen::Vector3d> world_positions);
   void build_directed_vector_to_head(std::map<std::string, Eigen::Vector3d> world_positions);
+
+  // Sets the safety distance between robot links
+  void set_safety_distance(double & safety_dist_in);
 };
 
 

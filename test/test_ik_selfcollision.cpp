@@ -3,20 +3,13 @@
 
 #include <avatar_locomanipulation/tasks/task.hpp>
 #include <avatar_locomanipulation/tasks/task_stack.hpp>
-#include <avatar_locomanipulation/tasks/task_rhand_selfcollision.hpp>
+#include <avatar_locomanipulation/tasks/task_selfcollision.hpp>
 #include <avatar_locomanipulation/tasks/task_6dpose.hpp>
 #include <avatar_locomanipulation/tasks/task_6dpose_wrt_midfeet.hpp>
 #include <avatar_locomanipulation/tasks/task_3dorientation.hpp>
 #include <avatar_locomanipulation/tasks/task_joint_config.hpp>
 #include <avatar_locomanipulation/tasks/task_stack.hpp>
 #include <avatar_locomanipulation/tasks/task_com.hpp>
-
-
-
-// #include <avatar_locomanipulation/tasks/task_lhand_selfcollision.hpp>
-// #include <avatar_locomanipulation/tasks/task_rknee_selfcollision.hpp>
-// #include <avatar_locomanipulation/tasks/task_lknee_selfcollision.hpp>
-// #include <avatar_locomanipulation/tasks/task_head_selfcollision.hpp>
 
 // Import ROS and Rviz visualization
 #include <ros/ros.h>
@@ -99,7 +92,7 @@ void testIK_module(){
   std::shared_ptr<Task> pelvis_task(new Task6DPose(ik_module.robot_model, "pelvis"));
   std::shared_ptr<Task> lfoot_task(new Task6DPose(ik_module.robot_model, "leftCOP_Frame"));
   std::shared_ptr<Task> rfoot_task(new Task6DPose(ik_module.robot_model, "rightCOP_Frame"));
-  std::shared_ptr<Task> rhand_task(new TaskRhandSelfCollision(ik_module.robot_model, "rightPalm", collision));
+  std::shared_ptr<Task> rhand_task(new TaskSelfCollision(ik_module.robot_model, "rightPalm", collision, "rhand"));
 
   // Stack Tasks in order of priority
   std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {pelvis_task, lfoot_task, rfoot_task, rhand_task}));
