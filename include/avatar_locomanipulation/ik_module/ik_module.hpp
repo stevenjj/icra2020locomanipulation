@@ -10,6 +10,7 @@
 #define IK_SUBOPTIMAL_SOL 2 // SUCCESS ||grad(f(x))|| <= grad_tol
 #define IK_MAX_ITERATIONS_HIT 3 // FAILURE iter >= MAX_ITERS 
 #define IK_MIN_STEP_HIT 4   // FAILURE k_step <= k_step_min
+#define IK_MAX_MINOR_ITER_HIT 5  // FAILURE k_step <= k_step_min
 
 
 class IKModule{
@@ -28,10 +29,10 @@ public:
 	//  return: true if optimal or suboptimal solutions were found. 
 	//			false if maximum iterations were hit 
 	//  params:
-	//		solve_result \in Optimal, SubOptimal, Max Iters Hit
+	//		solve_result - true if at least the first task converges
 	//  	error_norm - the sum of all the task error norms.
 	//		q_sol - the configuration vector
-	bool solveIK(int & solve_result, double & error_norm, Eigen::VectorXd & q_sol);
+	bool solveIK(int & solve_result, double & total_error_norm_out, Eigen::VectorXd & q_sol);
 
 	// This adds a lower priority task to the hierarchy. 
 	void addTasktoHierarchy(std::shared_ptr<Task> & task_input);
@@ -46,6 +47,9 @@ public:
 	void setSingularValueThreshold(double & svd_thresh_in);
 	// Sets the maximum iterations to perform descent. Default: 100
 	void setMaxIters(int & max_iters_in);
+	// Sets the maximum minor iterations (backtracking). Default: 30
+	void setMaxMinorIters(int & max_minor_iters_in);
+
 	// Sets the initial descent step. Default: 1.0
 	void setDescentStep(int & k_step_in);
 	// Sets the backtracking parameter beta with 0.1 <= beta <= 0.8. Default: 0.5 
@@ -66,7 +70,11 @@ private:
 	void computePseudoInverses();
 	void computeTaskErrors();
 	void compute_dq();
-	void compute_dq(int & task_idx_to_minimize);
+	void compute_dq(const int & task_idx_to_minimize);
+
+
+	bool checkPrevTaskViolation(const int & task_idx_to_minimize);
+	bool checkFirstTaskConvergence();
 
 
 	void printTaskErrorsHeader();
@@ -101,7 +109,8 @@ private:
 
 	// IK parameters
 	double singular_values_threshold = 1e-4; // Cut off value to treat singular values as 0.0
-	double max_iters = 100; // maximum IK iters
+	int max_iters = 100; // maximum IK iters
+	int max_minor_iters  = 30; // maximum number of backtracks
 	double k_step = 1.0; // starting step
 	double beta = 0.8; // Backtracking Line Search Parameter
 	double error_tol = 1e-4; // Task tolerance for success

@@ -46,7 +46,6 @@ void Task::getReference(Eigen::Quaterniond & quat_ref_out){
 }
 
 
-
 // Computes the error for a given reference
 void Task::computeError(){
 	std::cout << "Warning! Task " << task_name << " has no computeError()" << " implementation" << std::endl;
@@ -60,4 +59,9 @@ void Task::getError(Eigen::VectorXd & error_out, bool compute){
 // Sets the task error manually
 void Task::setError(const Eigen::VectorXd & error_in){
 	std::cout << "Warning! Task " << task_name << " has no setError(error)" << " implementation" << std::endl;
+}
+
+// Set the Task's kp gain value. Default = 1.0;
+void Task::setTaskGain(const double & kp_task_gain_in){
+	kp_task_gain_ = kp_task_gain_in;
 }

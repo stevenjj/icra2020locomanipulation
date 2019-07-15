@@ -42,7 +42,7 @@ void TaskJointConfig::computeError(){
 	for(int i = 0; i < joint_names_.size(); i++){
 		cur_joint_pos[i] = robot_model->q_current[robot_model->getJointIndex(joint_names_[i])];
 	}
-	error_ = vec_ref_ - cur_joint_pos;
+	error_ = kp_task_gain_*(vec_ref_ - cur_joint_pos);
 }
 void TaskJointConfig::getError(Eigen::VectorXd & error_out, bool compute){
 	if (compute){

@@ -122,6 +122,8 @@ void testIK_module(){
 
   // selected_names = ik_module.robot_model->joint_names;
   std::shared_ptr<Task> posture_task(new TaskJointConfig(ik_module.robot_model, selected_names));
+  posture_task->setTaskGain(1e-1);
+
   std::shared_ptr<Task> rarm_posture_task(new TaskJointConfig(ik_module.robot_model, right_arm_joint_names));
 
   // Stack Tasks in order of priority
@@ -175,8 +177,8 @@ void testIK_module(){
   Eigen::Vector3d rpalm_des_pos;
   Eigen::Quaternion<double> rpalm_des_quat;
   ik_module.robot_model->getFrameWorldPose("rightPalm", rpalm_des_pos, rpalm_des_quat);
-  rpalm_des_pos[0] += 0.35;//0.25;//0.25;
-  rpalm_des_pos[1] += 0.25; 
+  rpalm_des_pos[0] += 0.35;//0.4;//0.35;//0.25;
+  rpalm_des_pos[1] += 0.25;//0.3;//0.25; 
   rpalm_des_pos[2] += 0.3; 
   Eigen::AngleAxis<double> axis_angle;
   axis_angle.angle() = (M_PI/2.0);

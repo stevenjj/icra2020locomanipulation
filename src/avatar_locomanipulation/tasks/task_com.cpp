@@ -36,7 +36,7 @@ void TaskCOM::computeError(){
 	// Get COM
 	cur_pos_ = robot_model->x_com;
 	// Compute Linear Error
-	error_.head(3) = vec_ref_ - cur_pos_;
+	error_.head(3) = kp_task_gain_*(vec_ref_ - cur_pos_);
 }
 
 // Computes the error for a given reference

@@ -35,6 +35,8 @@ public:
 	virtual void getError(Eigen::VectorXd & error_out, bool compute=true);
 	// Sets the task error manually
 	virtual void setError(const Eigen::VectorXd & error_in);
+	// Set the Task's kp gain value. Default = 1.0;
+	virtual void setTaskGain(const double & kp_task_gain_in);
 
 
 	int task_dim = 0;
@@ -43,6 +45,7 @@ public:
 	std::string frame_name = "no frame";
 
 protected:
+	double kp_task_gain_ = 1.0;
 	Eigen::VectorXd vec_ref_;
 	Eigen::Quaterniond quat_ref_;
 	Eigen::VectorXd error_;
