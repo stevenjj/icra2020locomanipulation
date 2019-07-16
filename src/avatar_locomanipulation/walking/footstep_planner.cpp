@@ -132,8 +132,8 @@ namespace footstep_planner{
 	}
 
 	shared_ptr<Node> A_starPlanner::GoalNode(){
-		double x_f = 10;
-		double y_f = 20;
+		double x_f = -50;
+		double y_f = 12;
 
 		shared_ptr<Node> goal (new Node(x_f, y_f));
 
