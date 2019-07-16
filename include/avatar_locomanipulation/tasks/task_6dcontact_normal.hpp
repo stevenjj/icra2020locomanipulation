@@ -19,6 +19,15 @@ private:
 	Eigen::Vector3d des_pos;
 	Eigen::Quaterniond des_quat;
 
+    Eigen::Matrix3d R_frame_ori_;
+    Eigen::Vector3d z_hat_;
+
+	Eigen::Vector3d omega_hat_;
+	double theta_angle_;
+	Eigen::AngleAxisd omega_;
+	Eigen::Quaterniond quat_omega_;
+
+
 	double dist_to_plane;
 };
 

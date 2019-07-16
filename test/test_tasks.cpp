@@ -26,7 +26,7 @@ void get_initial_configuration(const std::shared_ptr<ValkyrieModel> & valkyrie, 
   q_start[valkyrie->getJointIndex("leftKneePitch")] = 0.6;
   q_start[valkyrie->getJointIndex("rightKneePitch")] = 0.6;
   q_start[valkyrie->getJointIndex("leftAnklePitch")] = -0.3;
-  q_start[valkyrie->getJointIndex("rightAnklePitch")] = -0.3;
+  q_start[valkyrie->getJointIndex("rightAnklePitch")] = 0.0;//-0.3;
 
   q_start[valkyrie->getJointIndex("rightShoulderPitch")] = -0.2;
   q_start[valkyrie->getJointIndex("rightShoulderRoll")] = 1.1;
