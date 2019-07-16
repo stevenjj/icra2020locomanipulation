@@ -43,9 +43,13 @@ double GMMFit::multivariateGuassian(Eigen::VectorXd & x, Eigen::VectorXd & mu, E
   double detSig;
   Eigen::VectorXd x_mu;
 
+  // std::cout << "sigma inverse: " << Sigma.inverse() << std::endl;
+
   x_mu = x-mu;
   detSig = Sigma.determinant();
+  // std::cout << "detSigma: " << detSig << std::endl;
   den = pow(2.0*pi,dim/2.0)*pow(detSig,0.5);
+  // std::cout << "den: " << den << std::endl;
   p = exp(-0.5*x_mu.transpose() * Sigma.inverse() * x_mu)/den;
   return p;
 }
@@ -207,6 +211,12 @@ double GMMFit::mixtureModelProb(Eigen::VectorXd & x_in){
   double p = 0;
   for(int i=0; i<num_clus; i++){
     p += alphs[i]*multivariateGuassian(x_in, list_of_mus[i], list_of_Sigmas[i]);
+    // std::cout << "x: " << x_in << std::endl;
+    // std::cout << "mu: " << list_of_mus[i] << std::endl;
+    // std::cout << "sigma: " << list_of_Sigmas[i] << std::endl;
+    // std::cout << "alpha: " << alphs[i] << std::endl;
+    // std::cout << "p: " << p << std::endl;
+    // std::cout << "--------------------------" << std::endl;
   }
   return p;
 }

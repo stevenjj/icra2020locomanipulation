@@ -19,9 +19,9 @@ int main(int argc, char ** argv){
 
   int task;
 
-  Eigen::Vector3d rhand_cur_pos;
-  Eigen::Quaternion<double> rhand_cur_ori;
-  Eigen::Vector3d rhand_cur_ori_vec;
+  Eigen::Vector3d lhand_cur_pos;
+  Eigen::Quaternion<double> lhand_cur_ori;
+  Eigen::Vector3d lhand_cur_ori_vec;
 
   Eigen::VectorXd datum;
   datum = Eigen::VectorXd::Zero(6);
@@ -37,12 +37,12 @@ int main(int argc, char ** argv){
 
   int num_clus = 5;
 
-  task = 3;
+  task = 2;
 if (task == 1){
-  for(int i=0; i<100000; i++){
-    fiz.generateRandomArm();
-    rhand_cur_pos=fiz.rhand_cur_pos;
-    rhand_cur_ori=fiz.rhand_cur_ori;
+  for(int i=0; i<1000; i++){
+    fiz.generateRandomRightArm();
+    lhand_cur_pos=fiz.lhand_cur_pos;
+    lhand_cur_ori=fiz.lhand_cur_ori;
 
     // std::cout << "x:" << rhand_cur_ori.x()
     //           << "y:" << rhand_cur_ori.y()
@@ -55,7 +55,7 @@ if (task == 1){
     // std::cout << "  angle " << rhand_cur_ori_aa.angle() << std::endl;
     // std::cout << "  axis " << rhand_cur_ori_aa.axis().transpose() << std::endl;
 
-    math_utils::convert(rhand_cur_ori, rhand_cur_ori_vec);
+    math_utils::convert(lhand_cur_ori, lhand_cur_ori_vec);
 
     // std::cout << "after: " << std::endl;
     // std::cout << "  angle " << rhand_cur_ori_vec.norm() << std::endl;
@@ -65,8 +65,8 @@ if (task == 1){
 
     YAML::Emitter out;
     out<< YAML::BeginMap;
-      data_saver::emit_position(out,"RPalmPos",rhand_cur_pos);
-      data_saver::emit_orientation_vector(out,"RPalmOri",rhand_cur_ori_vec);
+      data_saver::emit_position(out,"LPalmPos",lhand_cur_pos);
+      data_saver::emit_orientation_vector(out,"LPalmOri",lhand_cur_ori_vec);
     out << YAML::EndMap;
     char filename[64];
     // filename = "file.yaml"
@@ -82,16 +82,16 @@ if (task == 1){
   gmmfitter.initializeNormalization();
   for(int i=0; i<1000; i++){
     char filename[64];
-    snprintf(filename, sizeof(char)*32, "/home/mihir/lMD/h%d.yaml", i);
+    snprintf(filename, sizeof(char)*32, "/home/mihir/lMD/l%d.yaml", i);
     param_handler.load_yaml_file(filename);
 
-    param_handler.getNestedValue({"RPalmPos", "x"}, x);
-    param_handler.getNestedValue({"RPalmPos", "y"}, y);
-    param_handler.getNestedValue({"RPalmPos", "z"}, z);
+    param_handler.getNestedValue({"LPalmPos", "x"}, x);
+    param_handler.getNestedValue({"LPalmPos", "y"}, y);
+    param_handler.getNestedValue({"LPalmPos", "z"}, z);
 
-    param_handler.getNestedValue({"RPalmOri", "rx"}, rx);
-    param_handler.getNestedValue({"RPalmOri", "ry"}, ry);
-    param_handler.getNestedValue({"RPalmOri", "rz"}, rz);
+    param_handler.getNestedValue({"LPalmOri", "rx"}, rx);
+    param_handler.getNestedValue({"LPalmOri", "ry"}, ry);
+    param_handler.getNestedValue({"LPalmOri", "rz"}, rz);
 
     datum[0] = x;
     datum[1] = y;
@@ -136,7 +136,7 @@ if (task == 1){
   out << YAML::EndMap;
   char filename[64];
   // filename = "file.yaml"
-  snprintf(filename, sizeof(char)*32, "/home/mihir/lMD/gmm%d.yaml", i);
+  snprintf(filename, sizeof(char)*32, "/home/mihir/lMD/gmmL%d.yaml", i);
   std::ofstream file_output_stream(filename);
   file_output_stream << out.c_str();
 }
@@ -148,10 +148,6 @@ out << YAML::EndMap;
 std::ofstream file_output_stream("/home/mihir/lMD/dataminmax.yaml");
 file_output_stream << out.c_str();
 } else if (task==3){
-
-
-
-
   int bins = 20;
   int samples_per_bin = 1000;
 

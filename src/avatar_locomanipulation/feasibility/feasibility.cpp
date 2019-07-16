@@ -383,7 +383,7 @@ void feasibility::CreateData() {
   q_data[valkyrie.getJointIndex("upperNeckPitch")] = -0.0;
 }
 
-void feasibility::generateRandomArm(){
+void feasibility::generateRandomRightArm(){
   double theta = M_PI/4.0;
   Eigen::AngleAxis<double> aa(theta, Eigen::Vector3d(0.0, 0.0, 0.0));
 
@@ -418,6 +418,44 @@ void feasibility::generateRandomArm(){
   q_start[valkyrie.getJointIndex("rightWristPitch")] = q_rand[valkyrie.getJointIndex("rightWristPitch")];
   valkyrie.updateFullKinematics(q_start);
   valkyrie.getFrameWorldPose("rightPalm", rhand_cur_pos, rhand_cur_ori);
+
+}
+
+void feasibility::generateRandomLeftArm(){
+  double theta = M_PI/4.0;
+  Eigen::AngleAxis<double> aa(theta, Eigen::Vector3d(0.0, 0.0, 0.0));
+
+  Eigen::Quaternion<double> init_quat(1.0, 0.0, 0.0, 0.0); //Initialized to remember the w component comes first
+  init_quat = aa;
+
+  q_start = Eigen::VectorXd::Zero(valkyrie.getDimQ());
+
+  q_start[3] = init_quat.x(); q_start[4] = init_quat.y(); q_start[5] = init_quat.z(); q_start[6] = init_quat.w(); // Set up the quaternion in q
+
+  q_start[2] = 1.0; // set z value to 1.0, this is the pelvis location
+
+  q_start[valkyrie.getJointIndex("leftHipPitch")] = -0.3;
+  q_start[valkyrie.getJointIndex("rightHipPitch")] = -0.3;
+  q_start[valkyrie.getJointIndex("leftKneePitch")] = 0.6;
+  q_start[valkyrie.getJointIndex("rightKneePitch")] = 0.6;
+  q_start[valkyrie.getJointIndex("leftAnklePitch")] = -0.3;
+  q_start[valkyrie.getJointIndex("rightAnklePitch")] = -0.3;
+
+  q_start[valkyrie.getJointIndex("leftShoulderPitch")] = -0.2;
+  q_start[valkyrie.getJointIndex("leftShoulderRoll")] = -1.1;
+  q_start[valkyrie.getJointIndex("leftElbowPitch")] = -0.4;
+  q_start[valkyrie.getJointIndex("leftForearmYaw")] = 1.5;
+
+  Eigen::VectorXd q_rand(pinocchio::randomConfiguration(valkyrie.model, lower_lim, upper_lim ));
+  q_start[valkyrie.getJointIndex("leftShoulderPitch")] = q_rand[valkyrie.getJointIndex("leftShoulderPitch")];
+  q_start[valkyrie.getJointIndex("leftShoulderRoll")] = q_rand[valkyrie.getJointIndex("leftShoulderRoll")];
+  q_start[valkyrie.getJointIndex("leftShoulderYaw")] = q_rand[valkyrie.getJointIndex("leftShoulderYaw")];
+  q_start[valkyrie.getJointIndex("leftElbowPitch")] = q_rand[valkyrie.getJointIndex("leftElbowPitch")];
+  q_start[valkyrie.getJointIndex("leftForearmYaw")] = q_rand[valkyrie.getJointIndex("leftForearmYaw")];
+  q_start[valkyrie.getJointIndex("leftWristRoll")] = q_rand[valkyrie.getJointIndex("leftWristRoll")];
+  q_start[valkyrie.getJointIndex("leftWristPitch")] = q_rand[valkyrie.getJointIndex("leftWristPitch")];
+  valkyrie.updateFullKinematics(q_start);
+  valkyrie.getFrameWorldPose("leftPalm", lhand_cur_pos, lhand_cur_ori);
 
 }
 
