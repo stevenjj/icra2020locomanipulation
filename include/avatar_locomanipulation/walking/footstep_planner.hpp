@@ -76,15 +76,23 @@ namespace footstep_planner{
 	public:
 		A_starPlanner();
 		~A_starPlanner();
-		double goalDistance(const shared_ptr<Node> neighbor,const shared_ptr<Node> goal);
+		shared_ptr<Node> Initialization();
+
+		shared_ptr<Node> GoalNode();
+
+		double heuristicCost(const shared_ptr<Node> neighbor,const shared_ptr<Node> goal);
 
 		void getPath(std::vector< shared_ptr<Node> > & optimal_path, shared_ptr<Node> current_node, shared_ptr<Node> begin);
 
 		std::vector< shared_ptr<Node> > getNeighbors(shared_ptr<Node> & current, int branch, double disc);
 		
-		void doAstar();
+		bool doAstar();
 
 		double gScore(const shared_ptr<Node> current, const shared_ptr<Node> neighbor);
+
+		bool goalReached(shared_ptr<Node> current_node, shared_ptr<Node> goal);
+
+		void WriteData(vector< shared_ptr<Node> > optimal_path);
 	};
 
 
