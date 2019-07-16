@@ -85,6 +85,10 @@ public:
 
   void common_initialization();
 
+  /* updateGeometry
+  Input: a vector of configuration with dimension model.nq to update the kinematics.   
+  */
+  void updateGeometry(const Eigen::VectorXd & q_update, pinocchio::GeometryData & geomData);
 
   /* updateFullKinematics
   Input: a vector of configuration with dimension model.nq to update the kinematics.   

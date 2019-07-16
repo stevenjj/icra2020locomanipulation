@@ -65,49 +65,49 @@ void TaskSelfCollision::getReference(Eigen::Quaterniond & quat_ref_out){
 
 void TaskSelfCollision::computeError(){
 
-	// Define the map for val_world_positions
- 	std::map<std::string, Eigen::Vector3d> world_positions = collision_env->find_world_positions_subset();
+	// // Define the map for val_world_positions
+ // 	std::map<std::string, Eigen::Vector3d> world_positions = collision_env->find_world_positions_subset();
 
- 	collision_env->self_directed_vectors.clear();
+ // 	collision_env->self_directed_vectors.clear();
 
- 	if(frame_name == "rightPalm"){
- 		collision_env->build_directed_vector_to_rhand(world_positions);
- 	}
- 	if(frame_name == "leftPalm"){
- 		collision_env->build_directed_vector_to_rhand(world_positions);
- 	}
- 	if(frame_name == "head"){
- 		collision_env->build_directed_vector_to_head(world_positions);
- 	}
- 	if(frame_name == "rightKneePitch"){
- 		collision_env->build_directed_vector_to_rknee(world_positions);
- 	}
- 	if(frame_name == "leftKneePitch"){
- 		collision_env->build_directed_vector_to_lknee(world_positions);
- 	}
+ // 	if(frame_name == "rightPalm"){
+ // 		collision_env->build_directed_vector_to_rhand();
+ // 	}
+ // 	if(frame_name == "leftPalm"){
+ // 		collision_env->build_directed_vector_to_lhand();
+ // 	}
+ // 	if(frame_name == "head"){
+ // 		collision_env->build_directed_vector_to_head();
+ // 	}
+ // 	if(frame_name == "rightKneePitch"){
+ // 		collision_env->build_directed_vector_to_rknee(world_positions);
+ // 	}
+ // 	if(frame_name == "leftKneePitch"){
+ // 		collision_env->build_directed_vector_to_lknee(world_positions);
+ // 	}
 	
 
-	for (int j=0; j<collision_env->self_directed_vectors.size(); ++j){
-		std::cout << "collision_env->self_directed_vectors[j].to: " << collision_env->self_directed_vectors[j].to << std::endl;
-		std::cout << "collision_env->self_directed_vectors[j].from: " << collision_env->self_directed_vectors[j].from << std::endl;
-		std::cout << "collision_env->self_directed_vectors[j].magnitude: " << collision_env->self_directed_vectors[j].magnitude << std::endl;
-		std::cout << "collision_env->self_directed_vectors[j].direction: " << collision_env->self_directed_vectors[j].direction << std::endl;
-	}
-	std::vector<Eigen::Vector3d> dxs = collision_env->self_collision_dx();
+	// for (int j=0; j<collision_env->self_directed_vectors.size(); ++j){
+	// 	std::cout << "collision_env->self_directed_vectors[j].to: " << collision_env->self_directed_vectors[j].to << std::endl;
+	// 	std::cout << "collision_env->self_directed_vectors[j].from: " << collision_env->self_directed_vectors[j].from << std::endl;
+	// 	std::cout << "collision_env->self_directed_vectors[j].magnitude: " << collision_env->self_directed_vectors[j].magnitude << std::endl;
+	// 	std::cout << "collision_env->self_directed_vectors[j].direction: " << collision_env->self_directed_vectors[j].direction << std::endl;
+	// }
+	// std::vector<Eigen::Vector3d> dxs = collision_env->self_collision_dx();
 
-	Eigen::Vector3d dx;
-	dx = dxs[0];
+	// Eigen::Vector3d dx;
+	// dx = dxs[0];
 
-	if(dxs.size() != 1){
-		for(int i=1; i<dxs.size(); ++i){
-			dx += dxs[i];
-		}
-	}
+	// if(dxs.size() != 1){
+	// 	for(int i=1; i<dxs.size(); ++i){
+	// 		dx += dxs[i];
+	// 	}
+	// }
 	
 
-	error_[0] = dx[0];
-	error_[1] = dx[1];
-	error_[2] = dx[2];
+	// error_[0] = dx[0];
+	// error_[1] = dx[1];
+	// error_[2] = dx[2];
 }
 
 // Computes the error for a given reference

@@ -25,7 +25,6 @@ private:
 
 
   // builds a map of names for easy use to frame name for getting current world position
-  std::map<std::string, std::string> make_map_to_frame_names();
   std::map<std::string, std::string> make_map_to_frame_names_subset();
 
 
@@ -60,29 +59,14 @@ public:
   ~CollisionEnvironment();
 
 
-  // builds vectors from object to joints of interest using maps defined by find_world_positions and find_near_points
-  // Input: robot config, object config
-  void build_directed_vectors(Eigen::VectorXd & q, Eigen::VectorXd & obj_config);
-
-
-  // builds vectors from joints to joints 
-  // Input: robot config, object config
-  void build_self_directed_vectors(Eigen::VectorXd & q);
-
-
-  // fills the map from joint name to world position
-  std::map<std::string, Eigen::Vector3d> find_world_positions();
-
-
   // fills the map from joint name to world position for our subset used in self collision checking
   std::map<std::string, Eigen::Vector3d> find_world_positions_subset();
 
 
-  // fills map from object link name to nearest point on that body to pelvis
-  // Input: appended model,
-  //        object link name on which we are interested in near point
-  std::map<std::string, Eigen::Vector3d> find_near_points(std::shared_ptr<RobotModel> & appended, std::string name);
-	
+  // Inputs: - List of collision object names, with the first being used as the "to" object
+  //         - (Empty) map from names of "from" collision links to the nearest point on those objects
+  //         - (Empty) map from names of "from"collision links to nearest points on the "to" objects
+  void find_self_near_points(std::vector<std::string> & list, std::map<std::string, Eigen::Vector3d> & from_near_points, std::map<std::string, Eigen::Vector3d> & to_near_points, pinocchio::GeometryData & geomData);
 
   // computes collision and outputs any contacts
   void compute_collision(Eigen::VectorXd & q, Eigen::VectorXd & obj_config);
@@ -94,12 +78,12 @@ public:
   // These functions will be called by build_self_directed_vectors
   // Or they may be called explicitly by tasks computeError
   // Input: subset of world positions
-  void build_directed_vector_to_rhand(std::map<std::string, Eigen::Vector3d> world_positions);
-  void build_directed_vector_to_lhand(std::map<std::string, Eigen::Vector3d> world_positions);
+  void build_directed_vector_to_rhand(pinocchio::GeometryData & geomData);
+  void build_directed_vector_to_lhand();
   void build_directed_vector_to_elbows(std::map<std::string, Eigen::Vector3d> world_positions);
   void build_directed_vector_to_lknee(std::map<std::string, Eigen::Vector3d> world_positions);
   void build_directed_vector_to_rknee(std::map<std::string, Eigen::Vector3d> world_positions);
-  void build_directed_vector_to_head(std::map<std::string, Eigen::Vector3d> world_positions);
+  void build_directed_vector_to_head();
 
   // Sets the safety distance between robot links
   void set_safety_distance(double & safety_dist_in);
