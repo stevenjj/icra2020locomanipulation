@@ -12,6 +12,12 @@ public:
 	// Computes the error for a given reference
 	virtual void computeError();
 
+	// Override the following functions:
+	virtual void setReference(const Eigen::VectorXd & vec_ref_in);
+	virtual void setReference(const Eigen::Quaterniond & quat_ref_in);	
+	virtual void setReference(const Eigen::VectorXd & vec_ref_in, const Eigen::Quaterniond & quat_ref_in);
+
+
 private:
 	Eigen::Vector3d normal_vec_hat_;
 	Eigen::Vector3d normal_vec_tail_;

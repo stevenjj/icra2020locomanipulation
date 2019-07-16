@@ -35,10 +35,8 @@ void Task6DContactNormalTask::computeError(){
 	// distance = v \cdot normal_vec_hat
 	dist_to_plane = (cur_pos_ - normal_vec_tail_).dot(normal_vec_hat_);
 
-	// Compute the desired position, which is to move the end effector towards the plane
+	// Compute the desired position, which is the point on the plane closest to the end effector link
 	des_pos = cur_pos_ - normal_vec_hat_*dist_to_plane;
-
-
 
 	// Get z hat vector of the end effector frame
 	R_frame_ori_ = quat_current_.toRotationMatrix();
@@ -50,20 +48,26 @@ void Task6DContactNormalTask::computeError(){
 	omega_hat_.normalize();
 	omega_.angle() = theta_angle_;
 	omega_.axis() = omega_hat_;
-	std::cout << "Axis " << omega_.axis().transpose() << ", Angle  " << omega_.angle() << std::endl;  
+	// std::cout << "Axis " << omega_.axis().transpose() << ", Angle  " << omega_.angle() << std::endl;  
 
-
-	// Convert error to quaternion
+	// Find desired quaternion
 	quat_omega_ = omega_;
 	math_utils::printQuat(quat_omega_);
 	des_quat = quat_omega_*quat_current_;
 
-
 	// Compute Errors
 	// Compute Linear Error
 	error_.head(3) = kp_task_gain_*(des_pos - cur_pos_);
-	std::cout << "linear error = " << error_.head(3).transpose() << std::endl;
 	// Compute Quaternion Error
 	error_.tail(3) = kp_task_gain_*(omega_.angle()*omega_.axis());	
-	std::cout << "orientation error = " << error_.tail(3).transpose() << std::endl;
+}
+
+void Task6DContactNormalTask::setReference(const Eigen::VectorXd & vec_ref_in){
+	std::cout << "[Task6DContactNormalTask] Warning. setReference is not implemented for this task " << std::endl;	
+}
+void Task6DContactNormalTask::setReference(const Eigen::Quaterniond & quat_ref_in){
+	std::cout << "[Task6DContactNormalTask] Warning. setReference is not implemented for this task " << std::endl;	
+}
+void Task6DContactNormalTask::setReference(const Eigen::VectorXd & vec_ref_in, const Eigen::Quaterniond & quat_ref_in){
+	std::cout << "[Task6DContactNormalTask] Warning. setReference is not implemented for this task " << std::endl;	
 }
