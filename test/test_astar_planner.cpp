@@ -110,7 +110,19 @@ int main(int argc, char **argv){
 	// std::cout << "start == end?" << start->key.compare(end->key) << std::endl;
 
 	planner.doAstar();
-	//planner.getNeighbors(test);
+	//planner.getNeighbors(test,3,1);
+	// shared_ptr<Node> test2(new Node(1,0));
+	// std::map< std::shared_ptr<Node>, bool, NodePtr_Compare> ClosedSet;
+	// ClosedSet.insert( std::pair< std::shared_ptr<Node>, bool >(test, true) );
+	// cout << "size of closed set: " << ClosedSet.size() << endl;
+
+	// if (ClosedSet.count(test2) == 0){
+	// 	cout << "test2 not in closed set" << endl;
+
+	// }
+	// else{
+	// 	cout << "test2 in closed set" << endl;
+	// }
 
 	return 0;
 }

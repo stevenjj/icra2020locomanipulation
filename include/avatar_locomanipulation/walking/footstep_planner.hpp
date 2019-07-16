@@ -76,11 +76,11 @@ namespace footstep_planner{
 	public:
 		A_starPlanner();
 		~A_starPlanner();
-		double goalDistance(shared_ptr<Node> & neighbor, shared_ptr<Node> & goal);
+		double goalDistance(const shared_ptr<Node> neighbor,const shared_ptr<Node> goal);
 
-		void getPath(std::vector< shared_ptr<Node> > & optimal_path, shared_ptr<Node> current_node, vector< shared_ptr<Node> > ClosedSet, shared_ptr<Node> begin);
+		void getPath(std::vector< shared_ptr<Node> > & optimal_path, shared_ptr<Node> current_node, shared_ptr<Node> begin);
 
-		std::vector< shared_ptr<Node> > getNeighbors(shared_ptr<Node> & current);
+		std::vector< shared_ptr<Node> > getNeighbors(shared_ptr<Node> & current, int branch, double disc);
 		
 		void doAstar();
 
