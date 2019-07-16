@@ -5,6 +5,7 @@
 #include <avatar_locomanipulation/tasks/task_3dorientation.hpp>
 #include <avatar_locomanipulation/tasks/task_joint_config.hpp>
 #include <avatar_locomanipulation/tasks/task_stack.hpp>
+#include <avatar_locomanipulation/tasks/task_6dcontact_normal.hpp>
 
 #include <iostream>
 
@@ -54,6 +55,11 @@ int main(int argc, char ** argv){
   std::shared_ptr<Task> pelvis_ori_task(new Task3DOrientation(valkyrie_model, "pelvis"));
   std::shared_ptr<Task> joint_config_task(new TaskJointConfig(valkyrie_model, {"leftHipYaw", "leftHipRoll"}));
 
+  Eigen::Vector3d plane_normal(0,0,10);
+  Eigen::Vector3d plane_center(5,0,0);  
+  std::shared_ptr<Task> rfoot_planar_contact_task(new Task6DContactNormalTask(valkyrie_model, "rightCOP_Frame", plane_normal, plane_center));
+
+
   std::shared_ptr<Task> task_stack(new TaskStack(valkyrie_model, {com_task, lfoot_task, pelvis_ori_task, joint_config_task}));
 
 
@@ -75,6 +81,8 @@ int main(int argc, char ** argv){
   Eigen::MatrixXd J_joint_config = Eigen::MatrixXd::Zero(joint_config_task->task_dim, valkyrie_model->getDimQdot());
   Eigen::MatrixXd J_stack = Eigen::MatrixXd::Zero(task_stack->task_dim, valkyrie_model->getDimQdot());
 
+
+  rfoot_planar_contact_task->computeError();
 
   com_task->getTaskJacobian(J_com);
   std::cout << "COM Jacobian" << std::endl;

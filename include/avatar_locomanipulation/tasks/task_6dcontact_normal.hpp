@@ -13,11 +13,13 @@ public:
 	virtual void computeError();
 
 private:
-	Eigen::Vector3d normal_vec_;
+	Eigen::Vector3d normal_vec_hat_;
 	Eigen::Vector3d normal_vec_tail_;
 
 	Eigen::Vector3d des_pos;
 	Eigen::Quaterniond des_quat;
+
+	double dist_to_plane;
 };
 
 #endif
