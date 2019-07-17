@@ -44,7 +44,9 @@ void Task4DContactNormalTask::getTaskJacobian(Eigen::MatrixXd & J_task){
 
 	// Compute the top row to be the Jacobian of the distance between the contact point and the plane
 	computeError();
-	J_task.row(0) = (closest_point_on_plane_ - cur_pos_).transpose()*J_tmp.topRows(3);
+	J_task.row(0) = (1.0/(closest_point_on_plane_-cur_pos_).norm())*(closest_point_on_plane_ - cur_pos_).transpose()*J_tmp.topRows(3);
+
+
 
 }
 void Task4DContactNormalTask::getTaskJacobianDot(Eigen::MatrixXd & Jdot_task){
@@ -53,7 +55,7 @@ void Task4DContactNormalTask::getTaskJacobianDot(Eigen::MatrixXd & Jdot_task){
 
 	// Compute the top row to be the Jacobian dot of the distance between the contact point and the plane
 	computeError();
-	Jdot_task.row(0) = (closest_point_on_plane_ - cur_pos_).transpose()*Jdot_tmp.topRows(3);
+	Jdot_task.row(0) = (1.0/(closest_point_on_plane_-cur_pos_).norm())*(closest_point_on_plane_ - cur_pos_).transpose()*Jdot_tmp.topRows(3);
 }
 
 
@@ -89,10 +91,11 @@ void Task4DContactNormalTask::computeError(){
 
 	// Compute Errors
 	// Compute Linear Error
-	error_[0] = kp_task_gain_*(0.5*pow((des_pos - cur_pos_).norm(),2));
+//	error_[0] = kp_task_gain_*(0.5*pow((des_pos - cur_pos_).norm(),2));
+	error_[0] = kp_task_gain_*(des_pos - cur_pos_).norm();
 
-	// std::cout << "4d contact task: error_[0] = " << error_[0] << std::endl;
-	// std::cout << "4d contact task: dist_to_plane = " << dist_to_plane << std::endl;
+	std::cout << "4d contact task: error_[0] = " << error_[0] << std::endl;
+
 
 	// Compute Quaternion Error
 	error_.tail(3) = kp_task_gain_*(omega_.angle()*omega_.axis());	
