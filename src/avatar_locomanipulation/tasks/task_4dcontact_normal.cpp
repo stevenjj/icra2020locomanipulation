@@ -91,11 +91,7 @@ void Task4DContactNormalTask::computeError(){
 
 	// Compute Errors
 	// Compute Linear Error
-//	error_[0] = kp_task_gain_*(0.5*pow((des_pos - cur_pos_).norm(),2));
 	error_[0] = kp_task_gain_*(des_pos - cur_pos_).norm();
-
-	std::cout << "4d contact task: error_[0] = " << error_[0] << std::endl;
-
 
 	// Compute Quaternion Error
 	error_.tail(3) = kp_task_gain_*(omega_.angle()*omega_.axis());	

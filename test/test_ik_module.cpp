@@ -108,14 +108,16 @@ void testIK_module(){
   std::vector<std::string> selected_names = {"torsoYaw", "torsoPitch", "torsoRoll", 
                                              "leftShoulderPitch", "leftShoulderRoll", "leftShoulderYaw", "leftElbowPitch", "leftForearmYaw", "leftWristRoll", "leftWristPitch", 
                                              "lowerNeckPitch", "neckYaw", "upperNeckPitch"};
+
   // selected_names = ik_module.robot_model->joint_names;
   std::shared_ptr<Task> posture_task(new TaskJointConfig(ik_module.robot_model, selected_names));
   posture_task->setTaskGain(1e-1);
 
   // Stack Tasks in order of priority
-  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {rpalm_task}));
-  std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {lfoot_contact_task, rfoot_contact_task}));
-  std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {pelvis_wrt_mf_task, posture_task}));
+  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {rpalm_task, lfoot_contact_task, rfoot_contact_task}));
+  std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {pelvis_wrt_mf_task})); 
+  // std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {lfoot_contact_task, rfoot_contact_task}));
+  // std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {pelvis_wrt_mf_task, posture_task}));
 
   // std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task, pelvis_wrt_mf_task}));
   // std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {rpalm_task}));
@@ -171,7 +173,7 @@ void testIK_module(){
   rpalm_des_pos[1] += 0.25;//0.3;//0.25; 
   rpalm_des_pos[2] += 0.3; 
   Eigen::AngleAxis<double> axis_angle;
-  axis_angle.angle() = (M_PI/2.0);
+  axis_angle.angle() = (M_PI/2.0) + (M_PI/4.0);
   axis_angle.axis() = Eigen::Vector3d(0, 0, 1.0);
   rpalm_des_quat = axis_angle;
 
@@ -213,7 +215,7 @@ void testIK_module(){
   // Add tasks to hierarchy 
   ik_module.addTasktoHierarchy(task_stack_priority_1);
   ik_module.addTasktoHierarchy(task_stack_priority_2);
-  ik_module.addTasktoHierarchy(task_stack_priority_3);
+  // ik_module.addTasktoHierarchy(task_stack_priority_3);
 
   // Perform IK  
   int solve_result;
