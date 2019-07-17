@@ -11,8 +11,10 @@
 #include <queue>
 #include <algorithm>
 #include <set>
-
+#include <stdlib.h>
 #include <memory>
+#include <cstdlib>
+#include <sstream>
 
 using namespace std;
 
@@ -43,11 +45,6 @@ namespace footstep_planner{
 		void commonInitialization();
 	};
 
-	class Node_Compare{
-	public:
-		bool operator() (const Node & lhs, const Node &rhs) const;
-	};
-
 	class NodePtr_Equality{
 	public:
 		NodePtr_Equality(shared_ptr<Node> current_node_in);
@@ -69,6 +66,12 @@ namespace footstep_planner{
 	class NodePtr_Compare_Fcost{
 	public:
 		NodePtr_Compare_Fcost();
+		bool operator() (const shared_ptr<Node> & lhs, const shared_ptr<Node> &rhs) const;
+	};
+
+	class NodePtr_Compare_key{
+	public:
+		NodePtr_Compare_key();
 		bool operator() (const shared_ptr<Node> & lhs, const shared_ptr<Node> &rhs) const;
 	};
 

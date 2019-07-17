@@ -7,8 +7,22 @@ using namespace footstep_planner;
 int main(int argc, char **argv){
 	A_starPlanner planner;
 
-	shared_ptr<Node> test(new Node(0,0));
-
+	shared_ptr<Node> test(new Node(7,7));
+	shared_ptr<Node> test1(new Node(2,2));
+	shared_ptr<Node> test2(new Node(3,3));
+	shared_ptr<Node> test3(new Node(5,0));
+	shared_ptr<Node> test4(new Node(6,0));
+	shared_ptr<Node> test5(new Node(7,0));
+	shared_ptr<Node> test6(new Node(8,0));
+	shared_ptr<Node> test7(new Node(1,1));
+	// test->key = '7';
+	// test1->key = '1';
+	// test2->key = '2';
+	// test3->key = '3';
+	// test4->key = '4';
+	// test5->key = '5';
+	// test6->key = '10';
+	// test7->key = '12';
 	// Create Notes
 	// std::shared_ptr<Node> begin (new Node(10, 10) );
 	// std::shared_ptr<Node> neighbor (new Node(30, 30) );
@@ -123,6 +137,56 @@ int main(int argc, char **argv){
 	// else{
 	// 	cout << "test2 in closed set" << endl;
 	// }
+	// vector< shared_ptr<Node> > ClosedSet;
+
+	// ClosedSet.push_back(test1);
+	// ClosedSet.push_back(test2);
+	// ClosedSet.push_back(test3);
+	// ClosedSet.push_back(test4);
+	// ClosedSet.push_back(test5);
+	// ClosedSet.push_back(test6);
+	// ClosedSet.push_back(test7);
+
+	// std::cout << "pre sort:" << std::endl;
+	// for (size_t i(0); i < ClosedSet.size();i++){
+	// cout << "Node key: " << ClosedSet[i]->key << endl;
+	// }
+
+	// std::cout << "test1 compare test2 " << test1->key.compare(test2->key) << std::endl;
+	// std::cout << "test2 compare test3 " << test2->key.compare(test3->key) << std::endl;
+	// std::cout << "test1 compare test3 " << test1->key.compare(test3->key) << std::endl;
+
+	// NodePtr_Compare_key node_ptr_compare_key_obj;
+	// std::sort(ClosedSet.begin(),ClosedSet.end(), node_ptr_compare_key_obj);
+
+	// std::cout << "post sort:" << std::endl;
+	// for (size_t i(0); i < ClosedSet.size();i++){
+	// cout << "Node key: " << ClosedSet[i]->key << endl;
+	// }
+
+
+	// int vector_pos;
+	// vector_pos = lower_bound(ClosedSet.begin(),ClosedSet.end(),test,node_ptr_compare_key_obj) - ClosedSet.begin();
+	// cout << "f_scores: " << test7->f_score << endl;
+	// cout << "positon of vector: " << vector_pos << endl;
+
+	// vector< shared_ptr<Node> >::iterator it;
+	// it = ClosedSet.begin() + vector_pos;
+	// ClosedSet.insert(it,test);
+
+	// for (size_t i(0); i < ClosedSet.size();i++){
+	// cout << "Node key: " << ClosedSet[i]->key << endl;
+	// }
+
+
+
+
+	// if ((binary_search(ClosedSet.begin(), ClosedSet.end(), test, node_ptr_compare_key_obj))){ 
+ //       cout << "test exists in vector"; 
+ //    }
+ //   	else{
+ //   		cout << "test not in Closed set" << endl;
+ //   	}
 
 	return 0;
 }

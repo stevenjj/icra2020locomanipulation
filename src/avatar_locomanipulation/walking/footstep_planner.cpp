@@ -49,12 +49,6 @@
 
 namespace footstep_planner{
 
-	bool Node_Compare::operator() (const Node & lhs, const Node &rhs) const{
-		{
-	 		return lhs.key.compare(rhs.key);
-	 	}
-	}
-
 	bool Node_Compare_Fcost_Greater::operator() (const Node & lhs, const Node &rhs) const{
 		{
 			return lhs.f_score < rhs.f_score;
@@ -82,6 +76,14 @@ namespace footstep_planner{
 	bool NodePtr_Compare_Fcost::operator() (const shared_ptr<Node> & lhs, const shared_ptr<Node> &rhs) const{
 		{
 			return lhs->f_score < rhs->f_score;
+		}
+	}
+
+	NodePtr_Compare_key::NodePtr_Compare_key(){		
+	}
+	bool NodePtr_Compare_key::operator() (const shared_ptr<Node> & lhs, const shared_ptr<Node> &rhs) const{
+		{
+		return (lhs->key.compare(rhs->key) < 0);
 		}
 	}
 
@@ -132,8 +134,8 @@ namespace footstep_planner{
 	}
 
 	shared_ptr<Node> A_starPlanner::GoalNode(){
-		double x_f = -50;
-		double y_f = 12;
+		double x_f = -11;
+		double y_f = 10;
 
 		shared_ptr<Node> goal (new Node(x_f, y_f));
 
@@ -250,7 +252,9 @@ namespace footstep_planner{
 		
 		OpenSet.push_back(begin); //append starting node to open set
 
+		NodePtr_Compare_key node_ptr_compare_key_obj;
 		NodePtr_Compare_Fcost node_compare_fcost_obj;
+
 		while (!OpenSet.empty()){
 
 				//sort the open set
@@ -286,8 +290,11 @@ namespace footstep_planner{
 					OpenSet.pop_back();
 
 					//put current node onto closed set
-					ClosedSet.push_back(current_node);
-					//ClosedSet.insert( std::pair< std::shared_ptr<Node>, bool >(current_node, true) );
+					int vector_pos;
+					vector_pos = lower_bound(ClosedSet.begin(),ClosedSet.end(),current_node, node_ptr_compare_key_obj) - ClosedSet.begin();
+					vector< shared_ptr<Node> >::iterator it;
+					it = ClosedSet.begin() + vector_pos;
+					ClosedSet.insert(it,current_node);
 
 					//create new neighbor nodes
 					std::vector< shared_ptr<Node> > neighbors;
@@ -302,20 +309,17 @@ namespace footstep_planner{
 						node_it_closed = std::find_if(ClosedSet.begin(), ClosedSet.end(), NodePtr_Equality(node_to_find));
 						node_it_open = std::find_if(OpenSet.begin(), OpenSet.end(), NodePtr_Equality(node_to_find));
 
-						// If we didn't reach the end of the set, that means we found a node with a matching key.
-						if (node_it_closed == ClosedSet.end()){
-						//if (ClosedSet.count(neighbors[i]) == 0){	
+						//binary search to see if neighbor node in closed set
+						if (!(binary_search(ClosedSet.begin(), ClosedSet.end(), neighbors[i], node_ptr_compare_key_obj))){
 
 							//check to see if neighbor already in open set
-
 							if (node_it_open != OpenSet.end()){
 								double tentative_gscore = current_node->g_score + a_star.gScore(current_node,neighbors[i]);
 								// cout << "tentative g_Score" << tentative_gscore << endl;
 
 								//check to see if g_score of this node path is better than previous
-
 								if (tentative_gscore < (*node_it_open)->g_score){
-									// cout << "update" << endl;
+
 									//update neighbor node
 									(*node_it_open)->parent = current_node;
 									(*node_it_open)->g_score = tentative_gscore;
