@@ -20,18 +20,32 @@ private:
   //          double magnitude - magnitude of the vector for use with potential
   DirectedVectors dvector;
 
+  // a map from collision body names to frame names
+  std::map<std::string, std::string> collision_to_frame;
+
   // The tolerance distance for avoiding self collisions
   double safety_dist = 0.05;
-
-
-  // builds a map of names for easy use to frame name for getting current world position
-  std::map<std::string, std::string> make_map_to_frame_names_subset();
 
 
   // appends the models internally
   // Input: robot config, object config 
   // Used in distance computation, which does not require the appended config
   std::shared_ptr<RobotModel> append_models(Eigen::VectorXd & q, Eigen::VectorXd & obj_config);
+
+
+  // builds a map from our common names like "rhand" to frame names like "rightPalm"
+  std::map<std::string, std::string> make_map_to_frame_names_subset();
+
+
+  // Input: empty map string to string
+  // fills the map with key being the collision body names and value being the corresponding frame name
+  void map_collision_names_to_frame_names();
+
+
+  // Builds a directed vector using world positions for the case when two bodies are in collision
+  // called internally from build_directed_vectors_name
+  // Input: name of two collision bodies
+  void get_dvector_collision_links(const std::string & from_name, const std::string & to_name);
 
 public:
 
@@ -52,10 +66,6 @@ public:
 
 
   ~CollisionEnvironment();
-
-
-  // fills the map from joint name to world position for our subset used in self collision checking
-  std::map<std::string, Eigen::Vector3d> find_world_positions_subset();
 
 
   // Inputs: - List of collision object names, with the first being used as the "to" object

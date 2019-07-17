@@ -56,11 +56,17 @@ void initialize_config(Eigen::VectorXd & q_init){
   q_start[valkyrie.getJointIndex("leftAnklePitch")] = -0.3;
   q_start[valkyrie.getJointIndex("rightAnklePitch")] = -0.3;
 
+    // Puts the rightPalm in collision with the pelvis
   q_start[valkyrie.getJointIndex("rightShoulderPitch")] = -0.11;//-0.2;
   q_start[valkyrie.getJointIndex("rightShoulderRoll")] = 1.12;//1.1;
-  q_start[valkyrie.getJointIndex("rightShoulderYaw")] = 1.27;//1.1;
+  q_start[valkyrie.getJointIndex("rightShoulderYaw")] = 1.5;//1.1;
   q_start[valkyrie.getJointIndex("rightElbowPitch")] = 1.66; //0.4;
-  q_start[valkyrie.getJointIndex("rightForearmYaw")] = 1.5;
+  q_start[valkyrie.getJointIndex("rightForearmYaw")] = 0.0;
+  // q_start[valkyrie.getJointIndex("rightShoulderPitch")] = -0.11;//-0.2;
+  // q_start[valkyrie.getJointIndex("rightShoulderRoll")] = 1.12;//1.1;
+  // q_start[valkyrie.getJointIndex("rightShoulderYaw")] = 1.27;//1.1;
+  // q_start[valkyrie.getJointIndex("rightElbowPitch")] = 1.66; //0.4;
+  // q_start[valkyrie.getJointIndex("rightForearmYaw")] = 1.5;
 
   q_start[valkyrie.getJointIndex("leftShoulderPitch")] = -0.2;
   q_start[valkyrie.getJointIndex("leftShoulderRoll")] = -1.1;
@@ -90,19 +96,15 @@ void testIK_module(){
   // Create the collision environment
   std::shared_ptr<CollisionEnvironment> collision;
   collision = std::shared_ptr<CollisionEnvironment>(new CollisionEnvironment(ik_module.robot_model) ) ;
-  
-  // Update Robot Kinematics
-  collision->valkyrie->updateFullKinematics(q_init);
-  collision->valkyrie->updateGeometry(q_init);
 
   // Create Tasks
   std::shared_ptr<Task> pelvis_task(new Task6DPose(ik_module.robot_model, "pelvis"));
   std::shared_ptr<Task> lfoot_task(new Task6DPose(ik_module.robot_model, "leftCOP_Frame"));
   std::shared_ptr<Task> rfoot_task(new Task6DPose(ik_module.robot_model, "rightCOP_Frame"));
-  std::shared_ptr<Task> rhand_task(new TaskSelfCollision(ik_module.robot_model, "rightPalm", collision, "rhand"));
+  // std::shared_ptr<Task> rhand_task(new TaskSelfCollision(ik_module.robot_model, "rightPalm", collision, "rhand"));
 
   // Stack Tasks in order of priority
-  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {pelvis_task, lfoot_task, rfoot_task, rhand_task}));
+  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {pelvis_task, lfoot_task, rfoot_task}));//, rhand_task
 
   // Set desired Pelvis configuration
   Eigen::Vector3d pelvis_des_pos;
@@ -137,8 +139,8 @@ void testIK_module(){
 
   // Get Errors -----------------------------------------------------------------------------
   Eigen::VectorXd task_error;
-  rhand_task->getError(task_error);
-  std::cout << "Right Hand Task Error = " << task_error.transpose() << std::endl;
+  // rhand_task->getError(task_error);
+  // std::cout << "Right Hand Task Error = " << task_error.transpose() << std::endl;
 
   ik_module.addTasktoHierarchy(task_stack_priority_1);
 
