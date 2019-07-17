@@ -7,7 +7,7 @@
 #include <avatar_locomanipulation/tasks/task_stack.hpp>
 #include <avatar_locomanipulation/tasks/task_6dcontact_normal.hpp>
 #include <avatar_locomanipulation/tasks/task_4dcontact_normal.hpp>
-
+#include <avatar_locomanipulation/tasks/task_contact_normal.hpp>
 
 #include <iostream>
 
@@ -61,6 +61,7 @@ int main(int argc, char ** argv){
   Eigen::Vector3d plane_center(5,0,0);  
   std::shared_ptr<Task> rfoot_planar_contact_task(new Task6DContactNormalTask(valkyrie_model, "rightCOP_Frame", plane_normal, plane_center));
   std::shared_ptr<Task> rfoot_planar_4dcontact_task(new Task4DContactNormalTask(valkyrie_model, "rightCOP_Frame", plane_normal, plane_center));
+  std::shared_ptr<Task> rfoot_planar_contact_normal_task(new TaskContactNormalTask(valkyrie_model, "rightCOP_Frame", plane_normal, plane_center));
 
 
   std::shared_ptr<Task> task_stack(new TaskStack(valkyrie_model, {com_task, lfoot_task, pelvis_ori_task, joint_config_task}));
@@ -84,10 +85,11 @@ int main(int argc, char ** argv){
   Eigen::MatrixXd J_joint_config = Eigen::MatrixXd::Zero(joint_config_task->task_dim, valkyrie_model->getDimQdot());
   Eigen::MatrixXd J_stack = Eigen::MatrixXd::Zero(task_stack->task_dim, valkyrie_model->getDimQdot());
   Eigen::MatrixXd J_4dcontact = Eigen::MatrixXd::Zero(rfoot_planar_4dcontact_task->task_dim, valkyrie_model->getDimQdot());
-
+  Eigen::MatrixXd J_normal_contact = Eigen::MatrixXd::Zero(rfoot_planar_contact_normal_task->task_dim, valkyrie_model->getDimQdot());
 
   rfoot_planar_contact_task->computeError();
   rfoot_planar_4dcontact_task->computeError();
+  rfoot_planar_contact_normal_task->computeError();
 
   com_task->getTaskJacobian(J_com);
   std::cout << "COM Jacobian" << std::endl;
@@ -112,6 +114,10 @@ int main(int argc, char ** argv){
   rfoot_planar_4dcontact_task->getTaskJacobian(J_4dcontact);
   std::cout << "4D contact Jacobian" << std::endl;
   std::cout << J_4dcontact << std::endl;  
+
+  rfoot_planar_contact_normal_task->getTaskJacobian(J_normal_contact);
+  std::cout << "Contact Normal Jacobian" << std::endl;
+  std::cout << J_normal_contact << std::endl;  
 
 
 	// Compute Derivatives
