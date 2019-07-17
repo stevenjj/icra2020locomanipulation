@@ -65,16 +65,15 @@ void RobotModel::common_initialization(){
   commonInitialization();
 }
 
-void RobotModel::updateGeometry(const Eigen::VectorXd & q_update, pinocchio::GeometryData & geomData){
+void RobotModel::updateGeometry(const Eigen::VectorXd & q_update){
   q_current = q_update;
 
   geomModel.addAllCollisionPairs();
   pinocchio::srdf::removeCollisionPairs(model, geomModel, srdf_filename, false);
 
-  pinocchio::GeometryData geomData1(geomModel);
-  geomData = geomData1;
+  geomData = std::unique_ptr<pinocchio::GeometryData>(new pinocchio::GeometryData(geomModel));
 
-  pinocchio::updateGeometryPlacements(model, *data, geomModel, geomData, q_current);
+  pinocchio::updateGeometryPlacements(model, *data, geomModel, *geomData, q_current);
 }
 
 void RobotModel::updateFullKinematics(const Eigen::VectorXd & q_update){

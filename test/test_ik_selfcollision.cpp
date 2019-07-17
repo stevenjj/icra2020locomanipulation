@@ -58,7 +58,7 @@ void initialize_config(Eigen::VectorXd & q_init){
 
   q_start[valkyrie.getJointIndex("rightShoulderPitch")] = -0.11;//-0.2;
   q_start[valkyrie.getJointIndex("rightShoulderRoll")] = 1.12;//1.1;
-  q_start[valkyrie.getJointIndex("rightShoulderYaw")] = 1.56;//1.1;
+  q_start[valkyrie.getJointIndex("rightShoulderYaw")] = 1.27;//1.1;
   q_start[valkyrie.getJointIndex("rightElbowPitch")] = 1.66; //0.4;
   q_start[valkyrie.getJointIndex("rightForearmYaw")] = 1.5;
 
@@ -76,11 +76,14 @@ void testIK_module(){
   Eigen::VectorXd q_init;
   initialize_config(q_init);
 
+
   // Create IK Module
   IKModule ik_module;
   ik_module.setInitialConfig(q_init);  
+
   // Update Robot Kinematics
   ik_module.robot_model->updateFullKinematics(q_init);
+  ik_module.robot_model->updateGeometry(q_init);
 
   // ik_module.robot_model->printFrameNames();
 
@@ -88,6 +91,10 @@ void testIK_module(){
   std::shared_ptr<CollisionEnvironment> collision;
   collision = std::shared_ptr<CollisionEnvironment>(new CollisionEnvironment(ik_module.robot_model) ) ;
   
+  // Update Robot Kinematics
+  collision->valkyrie->updateFullKinematics(q_init);
+  collision->valkyrie->updateGeometry(q_init);
+
   // Create Tasks
   std::shared_ptr<Task> pelvis_task(new Task6DPose(ik_module.robot_model, "pelvis"));
   std::shared_ptr<Task> lfoot_task(new Task6DPose(ik_module.robot_model, "leftCOP_Frame"));
@@ -142,8 +149,8 @@ void testIK_module(){
   ik_module.prepareNewIKDataStrcutures();
   ik_module.solveIK(solve_result, error_norm, q_sol);
 
-  // Eigen::VectorXd q_config = Eigen::VectorXd::Zero(q_init.size());
-  // printVec("q_sol", q_sol);
+  Eigen::VectorXd q_config = Eigen::VectorXd::Zero(q_init.size());
+  printVec("q_sol", q_sol);
 
   visualize_robot(q_init, q_sol);
   

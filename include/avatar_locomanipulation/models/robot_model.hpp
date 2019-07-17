@@ -59,6 +59,7 @@ public:
   std::vector<pinocchio::fcl::Contact> contacts;
 
   std::unique_ptr<pinocchio::Data> data;
+  std::unique_ptr<pinocchio::GeometryData> geomData;
 
   Eigen::MatrixXd A; // inertia matrix
   Eigen::MatrixXd Ainv; // inverse of the inertia matrix
@@ -88,7 +89,7 @@ public:
   /* updateGeometry
   Input: a vector of configuration with dimension model.nq to update the kinematics.   
   */
-  void updateGeometry(const Eigen::VectorXd & q_update, pinocchio::GeometryData & geomData);
+  void updateGeometry(const Eigen::VectorXd & q_update);
 
   /* updateFullKinematics
   Input: a vector of configuration with dimension model.nq to update the kinematics.   
