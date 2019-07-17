@@ -9,6 +9,8 @@
 #include <avatar_locomanipulation/tasks/task_joint_config.hpp>
 #include <avatar_locomanipulation/tasks/task_stack.hpp>
 #include <avatar_locomanipulation/tasks/task_com.hpp>
+#include <avatar_locomanipulation/tasks/task_4dcontact_normal.hpp>
+
 
 // Import ROS and Rviz visualization
 #include <ros/ros.h>
@@ -96,8 +98,8 @@ void testIK_module(){
   std::shared_ptr<Task> lfoot_task(new Task6DPose(ik_module.robot_model, "leftCOP_Frame"));
   std::shared_ptr<Task> rfoot_task(new Task6DPose(ik_module.robot_model, "rightCOP_Frame"));
 
-  std::shared_ptr<Task> lfoot_contact_task(new Task6DContactNormalTask(ik_module.robot_model, "leftCOP_Frame", floor_normal, floor_center));
-  std::shared_ptr<Task> rfoot_contact_task(new Task6DContactNormalTask(ik_module.robot_model, "rightCOP_Frame", floor_normal, floor_center));
+  std::shared_ptr<Task> lfoot_contact_task(new Task4DContactNormalTask(ik_module.robot_model, "leftCOP_Frame", floor_normal, floor_center));
+  std::shared_ptr<Task> rfoot_contact_task(new Task4DContactNormalTask(ik_module.robot_model, "rightCOP_Frame", floor_normal, floor_center));
 
   std::shared_ptr<Task> com_task(new TaskCOM(ik_module.robot_model));
   std::shared_ptr<Task> rpalm_task(new Task6DPose(ik_module.robot_model, "rightPalm"));
@@ -111,13 +113,13 @@ void testIK_module(){
   posture_task->setTaskGain(1e-1);
 
   // Stack Tasks in order of priority
-  // std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {rpalm_task}));
-  // std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {lfoot_contact_task, rfoot_contact_task, pelvis_wrt_mf_task}));
-  // std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {posture_task}));
+  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {rpalm_task}));
+  std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {lfoot_contact_task, rfoot_contact_task}));
+  std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {pelvis_wrt_mf_task, posture_task}));
 
-  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task, pelvis_wrt_mf_task}));
-  std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {rpalm_task}));
-  std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {posture_task}));
+  // std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task, pelvis_wrt_mf_task}));
+  // std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {rpalm_task}));
+  // std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {posture_task}));
   // std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {posture_task, com_task}));
 
 
@@ -165,7 +167,7 @@ void testIK_module(){
   Eigen::Vector3d rpalm_des_pos;
   Eigen::Quaternion<double> rpalm_des_quat;
   ik_module.robot_model->getFrameWorldPose("rightPalm", rpalm_des_pos, rpalm_des_quat);
-  rpalm_des_pos[0] += 0.35;//0.4;//0.35;//0.25;
+  rpalm_des_pos[0] += 1.35;//0.4;//0.35;//0.25;
   rpalm_des_pos[1] += 0.25;//0.3;//0.25; 
   rpalm_des_pos[2] += 0.3; 
   Eigen::AngleAxis<double> axis_angle;
@@ -208,7 +210,7 @@ void testIK_module(){
   pelvis_wrt_mf_task->getError(task_error);
   std::cout << "Pelivs wrt Midfeeet Task Error = " << task_error.transpose() << std::endl;
 
-  // Add tasks to hierarchy  getSelectedPostureTaskReferences(ik_module.robot_model, selected_names, q_init, q_des);
+  // Add tasks to hierarchy 
   ik_module.addTasktoHierarchy(task_stack_priority_1);
   ik_module.addTasktoHierarchy(task_stack_priority_2);
   ik_module.addTasktoHierarchy(task_stack_priority_3);
