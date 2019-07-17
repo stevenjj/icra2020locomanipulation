@@ -57,16 +57,16 @@ void initialize_config(Eigen::VectorXd & q_init){
   q_start[valkyrie.getJointIndex("rightAnklePitch")] = -0.3;
 
     // Puts the rightPalm in collision with the pelvis
-  q_start[valkyrie.getJointIndex("rightShoulderPitch")] = -0.11;//-0.2;
-  q_start[valkyrie.getJointIndex("rightShoulderRoll")] = 1.12;//1.1;
-  q_start[valkyrie.getJointIndex("rightShoulderYaw")] = 1.5;//1.1;
-  q_start[valkyrie.getJointIndex("rightElbowPitch")] = 1.66; //0.4;
-  q_start[valkyrie.getJointIndex("rightForearmYaw")] = 0.0;
   // q_start[valkyrie.getJointIndex("rightShoulderPitch")] = -0.11;//-0.2;
   // q_start[valkyrie.getJointIndex("rightShoulderRoll")] = 1.12;//1.1;
-  // q_start[valkyrie.getJointIndex("rightShoulderYaw")] = 1.27;//1.1;
+  // q_start[valkyrie.getJointIndex("rightShoulderYaw")] = 1.5;//1.1;
   // q_start[valkyrie.getJointIndex("rightElbowPitch")] = 1.66; //0.4;
-  // q_start[valkyrie.getJointIndex("rightForearmYaw")] = 1.5;
+  // q_start[valkyrie.getJointIndex("rightForearmYaw")] = 0.0;
+  q_start[valkyrie.getJointIndex("rightShoulderPitch")] = -0.11;//-0.2;
+  q_start[valkyrie.getJointIndex("rightShoulderRoll")] = 1.12;//1.1;
+  q_start[valkyrie.getJointIndex("rightShoulderYaw")] = 1.27;//1.1;
+  q_start[valkyrie.getJointIndex("rightElbowPitch")] = 1.66; //0.4;
+  q_start[valkyrie.getJointIndex("rightForearmYaw")] = 1.5;
 
   q_start[valkyrie.getJointIndex("leftShoulderPitch")] = -0.2;
   q_start[valkyrie.getJointIndex("leftShoulderRoll")] = -1.1;
@@ -88,8 +88,8 @@ void testIK_module(){
   ik_module.setInitialConfig(q_init);  
 
   // Update Robot Kinematics
+  ik_module.robot_model->enableUpdateGeomOnKinematicsUpdate(true);
   ik_module.robot_model->updateFullKinematics(q_init);
-  ik_module.robot_model->updateGeometry(q_init);
 
   // ik_module.robot_model->printFrameNames();
 

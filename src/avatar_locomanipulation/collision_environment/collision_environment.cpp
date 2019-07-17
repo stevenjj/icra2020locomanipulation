@@ -39,7 +39,6 @@ std::shared_ptr<RobotModel> CollisionEnvironment::append_models(Eigen::VectorXd 
   Eigen::VectorXd appended_config(appended->model.nq);
   appended_config << q, obj_config;
 
-  // Create new data and geomData as required after appending models
   appended->common_initialization();
 
   // Update the full kinematics 
@@ -494,11 +493,14 @@ std::vector<Eigen::Vector3d> CollisionEnvironment::self_collision_dx(){
   std::map<std::string, std::string> map_to_frame_names_subset = make_map_to_frame_names_subset();
 
   for(int k=0; k<self_directed_vectors.size(); ++k){
-    Potential = (1/(self_directed_vectors[k].magnitude)) - (1/(safety_dist));
+    Potential = safety_dist*2 - (self_directed_vectors[k].magnitude);
+    std::cout << "Potential before = " << Potential << std::endl;
 
-    if(Potential <= 0) Potential = 0;
+    if(Potential <= safety_dist) Potential = 0;
 
-    Eigen::Vector3d dx = (std::min(0.1 ,Potential))*(-self_directed_vectors[k].direction);
+    std::cout << "Potential after = " << Potential << std::endl;
+
+    Eigen::Vector3d dx = (std::min(max_scaling_distance, Potential))*(self_directed_vectors[k].direction);
 
     dxs.push_back(dx);    
   }
@@ -510,6 +512,10 @@ std::vector<Eigen::Vector3d> CollisionEnvironment::self_collision_dx(){
 
 void CollisionEnvironment::set_safety_distance(double & safety_dist_in){
   safety_dist = safety_dist_in;
+}
+
+void CollisionEnvironment::set_max_scaling_distance(double & max_scaling_dist_in){
+  max_scaling_distance = max_scaling_dist_in;
 }
 
 

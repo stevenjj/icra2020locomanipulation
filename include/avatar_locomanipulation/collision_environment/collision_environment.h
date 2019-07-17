@@ -26,6 +26,10 @@ private:
   // The tolerance distance for avoiding self collisions
   double safety_dist = 0.05;
 
+  // The distance for a link to move away from the body if inside the safety distance
+  double max_scaling_distance = 0.15;
+
+
 
   // appends the models internally
   // Input: robot config, object config 
@@ -95,6 +99,9 @@ public:
 
   // Sets the safety distance between robot links
   void set_safety_distance(double & safety_dist_in);
+
+  // Sets the safety distance between robot links
+  void set_max_scaling_distance(double & max_scaling_dist_in);
 };
 
 

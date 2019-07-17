@@ -48,7 +48,11 @@ private:
   void buildPinocchioModel(const std::string & filename);
   void buildPinocchioGeomModel(const std::string & filename, const std::string & meshDir);
   void commonInitialization();
+  void commonInitialization_appended();
 
+  bool updateGeomWithKinematics = false;
+
+  bool srdf_bool = false;
 
 public:
   std::string srdf_filename;
@@ -83,6 +87,9 @@ public:
   RobotModel(const std::string & filename, const std::string & meshDir, const std::string & srdf);
 
   ~RobotModel();
+
+  void enableUpdateGeomOnKinematicsUpdate(bool enable);
+
 
   void common_initialization();
 

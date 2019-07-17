@@ -12,6 +12,7 @@ RobotModel::RobotModel(const std::string & filename, const std::string & meshDir
 RobotModel::RobotModel(const std::string & filename, const std::string & meshDir, const std::string & srdf){
   buildPinocchioModel(filename);
   buildPinocchioGeomModel(filename, meshDir);
+  srdf_bool = true;
   commonInitialization();
   srdf_filename = srdf;
 }
@@ -57,21 +58,66 @@ void RobotModel::commonInitialization(){
     q_lower_pos_limit[i] = model.lowerPositionLimit[i];
     q_upper_pos_limit[i] = model.upperPositionLimit[i];
   }
+  updateGeomWithKinematics = false;
+
+  geomModel.addAllCollisionPairs();
+  if(srdf_bool) pinocchio::srdf::removeCollisionPairs(model, geomModel, srdf_filename, false);
+  
+  geomData = std::unique_ptr<pinocchio::GeometryData>(new pinocchio::GeometryData(geomModel));
 
   std::cout << "Robot Model Constructed" << std::endl;
 }
 
+
+
+void RobotModel::commonInitialization_appended(){
+
+  data = std::unique_ptr<pinocchio::Data>(new pinocchio::Data(model));
+  A = Eigen::MatrixXd::Zero(model.nv, model.nv);
+  Ainv = Eigen::MatrixXd::Zero(model.nv, model.nv);
+  C = Eigen::MatrixXd::Zero(model.nv, model.nv);
+  g = Eigen::VectorXd::Zero(model.nv);  
+  q_current = Eigen::VectorXd(model.nq);
+
+  q_lower_pos_limit = Eigen::VectorXd(model.nq);
+  q_upper_pos_limit = Eigen::VectorXd(model.nq);
+
+  x_com.setZero();
+  xdot_com.setZero();
+  xddot_com.setZero();
+
+  J_com = Eigen::Matrix3Xd::Zero(3, model.nv);
+  Jdot_com = Eigen::Matrix3Xd::Zero(3, model.nv);
+
+  joint_names.clear();
+  for (int k=VAL_MODEL_JOINT_INDX_OFFSET ; k<model.njoints ; ++k){
+    joint_names.push_back(model.names[k]);
+  } 
+
+  for(int i = 0; i < model.lowerPositionLimit.size(); i++){
+    q_lower_pos_limit[i] = model.lowerPositionLimit[i];
+    q_upper_pos_limit[i] = model.upperPositionLimit[i];
+  }
+  updateGeomWithKinematics = false;
+
+  geomData = std::unique_ptr<pinocchio::GeometryData>(new pinocchio::GeometryData(geomModel));
+
+  std::cout << "Robot Model Constructed" << std::endl;
+}
+
+
+
+void RobotModel::enableUpdateGeomOnKinematicsUpdate(bool enable){
+  updateGeomWithKinematics = enable;
+}
+
+
 void RobotModel::common_initialization(){
-  commonInitialization();
+  commonInitialization_appended();
 }
 
 void RobotModel::updateGeometry(const Eigen::VectorXd & q_update){
   q_current = q_update;
-
-  geomModel.addAllCollisionPairs();
-  pinocchio::srdf::removeCollisionPairs(model, geomModel, srdf_filename, false);
-
-  geomData = std::unique_ptr<pinocchio::GeometryData>(new pinocchio::GeometryData(geomModel));
 
   pinocchio::updateGeometryPlacements(model, *data, geomModel, *geomData, q_current);
 }
@@ -87,6 +133,11 @@ void RobotModel::updateFullKinematics(const Eigen::VectorXd & q_update){
   // Update CoM position and Jacobian
   computeCoMPos(q_update);
   computeCoMJacobian(); 
+
+  if (updateGeomWithKinematics){
+      this->updateGeometry(q_update);
+  }
+
 }
 
 void RobotModel::updateKinematicsDerivatives(const Eigen::VectorXd & q_update, const Eigen::VectorXd & qdot_update, const Eigen::VectorXd & qddot_update){

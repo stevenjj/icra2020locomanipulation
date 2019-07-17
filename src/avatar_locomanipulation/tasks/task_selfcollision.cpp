@@ -88,13 +88,6 @@ void TaskSelfCollision::computeError(){
  	if(frame_name == "leftElbowPitch"){
  		collision_env->build_directed_vector_to_lknee();
  	}
-
- 	for(int o=0; o<collision_env->self_directed_vectors.size(); ++o){
-    std::cout << "collision_env->self_directed_vectors[o].from: " << collision_env->self_directed_vectors[o].from << std::endl;
-    std::cout << "collision_env->self_directed_vectors[o].to: " << collision_env->self_directed_vectors[o].to << std::endl;
-    std::cout << "collision_env->self_directed_vectors[o].magnitude: " << collision_env->self_directed_vectors[o].magnitude << std::endl;
-    std::cout << "collision_env->self_directed_vectors[o].direction: \n" << collision_env->self_directed_vectors[o].direction << std::endl;
-  	}
 	
 	std::vector<Eigen::Vector3d> dxs = collision_env->self_collision_dx();
 
