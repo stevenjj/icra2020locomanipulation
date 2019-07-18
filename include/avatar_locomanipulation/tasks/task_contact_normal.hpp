@@ -10,7 +10,7 @@
 
 class TaskContactNormalTask: public Task{
 public:
-	TaskContactNormalTask(std::shared_ptr<ValkyrieModel> & input_model, const std::string & input_frame_name, 
+	TaskContactNormalTask(std::shared_ptr<RobotModel> & input_model, const std::string & input_frame_name, 
 						    const Eigen::Vector3d & normal_vec, const Eigen::Vector3d normal_vec_tail);	
 
 	virtual ~TaskContactNormalTask();

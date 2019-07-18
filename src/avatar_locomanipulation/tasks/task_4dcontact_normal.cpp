@@ -1,6 +1,6 @@
 #include <avatar_locomanipulation/tasks/task_4dcontact_normal.hpp>
 
-Task4DContactNormalTask::Task4DContactNormalTask(std::shared_ptr<ValkyrieModel> & input_model, const std::string & input_frame_name, 
+Task4DContactNormalTask::Task4DContactNormalTask(std::shared_ptr<RobotModel> & input_model, const std::string & input_frame_name, 
 					 						     const Eigen::Vector3d & normal_vec, const Eigen::Vector3d normal_vec_tail){
 	robot_model = input_model;
 	task_dim = 4;

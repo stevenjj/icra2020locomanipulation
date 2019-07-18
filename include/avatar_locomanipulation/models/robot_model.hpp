@@ -124,6 +124,21 @@ public:
   void get6DTaskJacobianDot(const std::string & frame_name, Eigen::MatrixXd & Jdot_out);
 
 
+  /* get6DTaskJacobianLocal
+  Input: the frame name.   
+  Output: the 6D task jacobian (dimension 6 x model.nv) expressed in the local frame
+          with the linear components first: [(dx/dq)^T , (dy/dq)^T, (dz/dq)^T]^T
+          then the rotational components: [(wx/dq)^T , (wy/dq)^T, (wz/dq)^T]^T
+  */
+  void get6DTaskJacobianLocal(const std::string & frame_name, Eigen::MatrixXd & J_out);
+
+  /* get6DTaskJacobianDotLocal
+  Input: the frame name.
+  Output: the 6D task jacobian dot (6 x model.nv) expressed in world frame.
+  */
+  void get6DTaskJacobianDotLocal(const std::string & frame_name, Eigen::MatrixXd & Jdot_out);
+
+
   /* getFrameWorldPose
   Input: the frame name.   
   Output: the position and orientation of the frame with respect to world.

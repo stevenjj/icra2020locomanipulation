@@ -1,6 +1,6 @@
 #include <avatar_locomanipulation/tasks/task_6dcontact_normal.hpp>
 
-Task6DContactNormalTask::Task6DContactNormalTask(std::shared_ptr<ValkyrieModel> & input_model, const std::string & input_frame_name,
+Task6DContactNormalTask::Task6DContactNormalTask(std::shared_ptr<RobotModel> & input_model, const std::string & input_frame_name,
 												 const Eigen::Vector3d & normal_vec, const Eigen::Vector3d normal_vec_tail): 
 	Task6DPose(input_model, input_frame_name){
 	normal_vec_hat_ = normal_vec.normalized();
