@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <avatar_locomanipulation/walking/footstep_planner.hpp>
 
+#include <chrono>
+#include <ctime>
 
 using namespace footstep_planner;
 
@@ -128,7 +130,13 @@ int main(int argc, char **argv){
 	// std::cout << "start == end?" << start->key.compare(neighborx->key) << std::endl;
 	// std::cout << "start == end?" << start->key.compare(end->key) << std::endl;
 
+    auto start = std::chrono::system_clock::now();
 	planner.doAstar();
+    auto end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end-start;
+
+    std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
+
 	//planner.getNeighbors(test,3,1);
 	// shared_ptr<Node> test2(new Node(1,0));
 	// std::map< std::shared_ptr<Node>, bool, NodePtr_Compare> ClosedSet;
@@ -195,9 +203,41 @@ int main(int argc, char **argv){
 	// // for (size_t i(0); i < ClosedSet.size();i++){
 	// // cout << "Node key: " << ClosedSet[i]->key << endl;
 	// // }
+	NodePtr_Compare_key node_ptr_compare_key_obj;
+	std::set< std::shared_ptr<Node>, NodePtr_Compare_key> testClosedSet;
+
+	std::set< shared_ptr<Node> >::iterator node_it;
+	//std::pair<std::set<int>::iterator,bool> ret;
+
+
+	//insertion
+	testClosedSet.insert(test);
+	testClosedSet.insert(test1);
+	testClosedSet.insert(test2);
+	testClosedSet.insert(test3);
+	testClosedSet.insert(test4);
 
 
 
+	//searching
+	// it = testClosedSet.find(test1);
+
+
+	// if (it != testClosedSet.end()){
+	// 	cout << "found node with key: " << (it*->key) << endl;
+	// }
+	// else{
+	// 	cout << "did not find node" << endl;
+	// }
+	shared_ptr<Node> node_to_find;
+	node_to_find = test1;
+	node_it = std::find_if(testClosedSet.begin(), testClosedSet.end(), NodePtr_Equality(node_to_find));
+	// // If we didn't reach the end of the set, that means we found a node with a matching key.
+	if (node_it != testClosedSet.end()){
+		std::cout << "Found the node with key " << (*node_it)->key << " and f_score = " << (*node_it)->f_score << std::endl;
+	}else{
+	 	std::cout << "could not find the node" << std::endl;
+	}
 
 	// // if ((binary_search(ClosedSet.begin(), ClosedSet.end(), test, node_ptr_compare_key_obj))){ 
  // //       cout << "test exists in vector"; 

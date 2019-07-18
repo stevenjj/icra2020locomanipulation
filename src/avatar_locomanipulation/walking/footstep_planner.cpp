@@ -134,8 +134,8 @@ namespace footstep_planner{
 	}
 
 	shared_ptr<Node> A_starPlanner::GoalNode(){
-		double x_f = 200;// 5;
-		double y_f = 1; //5;
+		double x_f = 75;
+		double y_f = 15;
 
 		shared_ptr<Node> goal (new Node(x_f, y_f));
 
@@ -248,12 +248,15 @@ namespace footstep_planner{
 		//define all vectors, maps and iterators 
 		shared_ptr<Node> current_node;
 
-		std::vector< std::shared_ptr<Node> > OpenSet;
-		std::vector< std::shared_ptr<Node> > ClosedSet;
-		std::map< std::shared_ptr<Node>, bool, NodePtr_Compare_key> ExploredSet;
+		std::vector< std::shared_ptr<Node> > OpenSet; 
+		//OpenSet.resize(10000); //preallocate memory
+		std::set<shared_ptr<Node>, NodePtr_Compare_key> ClosedSet;
+		// ClosedSet.resize(10000); //preallocate memory
+		std::set< std::shared_ptr<Node>, NodePtr_Compare_key> ExploredSet;
 	
 		std::vector< shared_ptr<Node> >::iterator node_it;
-		std::map< std::shared_ptr<Node>, bool>::iterator es_it;
+		std::set< std::shared_ptr<Node> >::iterator es_it;
+		std::set< shared_ptr<Node> >::iterator node_set_it;
 		
 		OpenSet.push_back(begin); //append starting node to open set
 
@@ -291,13 +294,11 @@ namespace footstep_planner{
 					*node_it = std::move(OpenSet.back());
 					OpenSet.pop_back();
 
-					//put current node onto closed set
-					int vector_pos;
-					// binary search to find where to insert it.
-					vector_pos = lower_bound(ClosedSet.begin(),ClosedSet.end(),current_node, node_ptr_compare_key_obj) - ClosedSet.begin();
-					vector< shared_ptr<Node> >::iterator it;
-					it = ClosedSet.begin() + vector_pos;
-					ClosedSet.insert(it,current_node); 
+					//Erase node from the explored set
+					ExploredSet.erase(current_node);
+
+					//insert current node onto closed set
+					ClosedSet.insert(current_node); //*****************************
 
 					//create new neighbor nodes
 					std::vector< shared_ptr<Node> > neighbors;
@@ -306,10 +307,11 @@ namespace footstep_planner{
 					//iterate through all neighbors
 					for (size_t i(0);i < neighbors.size(); i++){
 
-						//binary search to see if neighbor node in closed set
-						if (!(binary_search(ClosedSet.begin(), ClosedSet.end(), neighbors[i], node_ptr_compare_key_obj))){
-							
-							//find neighbor in explored set
+						//check if node exists in closed set
+						node_set_it = ClosedSet.find(neighbors[i]);
+						if (node_set_it == ClosedSet.end()){ 
+				
+							// find neighbor in explored set
 							es_it = ExploredSet.find(neighbors[i]);
 
 							//if neighbor exists in explored set
@@ -319,27 +321,26 @@ namespace footstep_planner{
 								double tentative_gscore = current_node->g_score + a_star.gScore(current_node,neighbors[i]);
 								
 								//check to see if g score path is better than previous
-								if (tentative_gscore < es_it->first->g_score){ 
+								if (tentative_gscore < (*es_it)->g_score){ 
 
 									//update node
-									es_it->first->parent = current_node; 
-									es_it->first->g_score = tentative_gscore; 
-									es_it->first->f_score = tentative_gscore + a_star.heuristicCost(neighbors[i],goal); 
+									(*es_it)->parent = current_node; 
+									(*es_it)->g_score = tentative_gscore; 
+									(*es_it)->f_score = tentative_gscore + a_star.heuristicCost(neighbors[i],goal); 
 								
 								}
+
 							}
 							else{
 								neighbors[i]->g_score = current_node->g_score + a_star.gScore(current_node,neighbors[i]);
 								neighbors[i]->f_score = neighbors[i]->g_score + a_star.heuristicCost(neighbors[i],goal);
 								OpenSet.push_back(neighbors[i]);
-								ExploredSet.insert(pair<shared_ptr<Node>,bool> (neighbors[i],false)); 
+								ExploredSet.insert(neighbors[i]);
 							}		
 						}
-		
 					}
 				}
-		}
-		
+		}	
 	}
 }
 
