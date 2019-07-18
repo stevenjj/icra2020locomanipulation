@@ -6,12 +6,14 @@ CollisionEnvironment::CollisionEnvironment(std::shared_ptr<RobotModel> & val, st
 	valkyrie = val;
 	object = obj;
 	std::cout << "Collision Environment Created" << std::endl;
+  object_flag = true;
   map_collision_names_to_frame_names();
 }
 
 CollisionEnvironment::CollisionEnvironment(std::shared_ptr<RobotModel> & val){
   valkyrie = val;
   std::cout << "Collision Environment Created Only Val" << std::endl;
+  object_flag = false;
   map_collision_names_to_frame_names();
 }
 
@@ -621,7 +623,7 @@ void CollisionEnvironment::build_object_directed_vectors(std::string & frame_nam
       // and we need a different way to get a dvector
       if(it->second == it2->second){
         std::cout << "Collision between " << it->first << " and " << object_links[i] << std::endl;
-        get_dvector_collision_links(it->first, object_links[i]);
+        get_dvector_collision_links_appended(appended, object_links[i], it->first);
         ++it2;
       } // end if
 
@@ -649,7 +651,6 @@ std::vector<Eigen::Vector3d> CollisionEnvironment::get_collision_dx(){
   double Potential;
   std::vector<Eigen::Vector3d> dxs;
   Eigen::MatrixXd J_out(6, valkyrie->getDimQdot()); J_out.fill(0);
-  // std::map<std::string, std::string> map_to_frame_names_subset = make_map_to_frame_names_subset();
 
   for(int k=0; k<directed_vectors.size(); ++k){
     Potential = safety_dist*2 - (directed_vectors[k].magnitude);
@@ -693,6 +694,24 @@ void CollisionEnvironment::get_dvector_collision_links(const std::string & from_
 
 }
 
+void CollisionEnvironment::get_dvector_collision_links_appended(std::shared_ptr<RobotModel> & appended, const std::string & from_name, const std::string & to_name){
+  std::cout << "get_dvector_collision_links_appended " << from_name << std::endl;
+
+  Eigen::Vector3d cur_pos_to, cur_pos_from, difference; 
+  Eigen::Quaternion<double> cur_ori;
+  
+  appended->getFrameWorldPose(collision_to_frame.find(to_name)->second, cur_pos_to, cur_ori);
+  appended->getFrameWorldPose(collision_to_frame.find(from_name)->second, cur_pos_from, cur_ori);
+
+  std::cout << "cur_pos_to : \n" << cur_pos_to << std::endl;
+  std::cout << "cur_pos_from : \n" << cur_pos_from << std::endl;
+
+  difference = cur_pos_to - cur_pos_from;
+  dvector.from = from_name; dvector.to = to_name;
+  dvector.direction = difference.normalized(); dvector.magnitude = 0.005;
+  directed_vectors.push_back(dvector);
+
+}
 
 void CollisionEnvironment::map_collision_names_to_frame_names(){
   collision_to_frame["leftElbowNearLink_0"] = "leftElbowPitch";
@@ -704,6 +723,17 @@ void CollisionEnvironment::map_collision_names_to_frame_names(){
   collision_to_frame["rightPalm_0"] = "rightPalm";
   collision_to_frame["leftPalm_0"] = "leftPalm_0";
   collision_to_frame["head_0"] = "head";
+
+  std::string tmp;
+  // if we added an object to the collision environment
+  if(object_flag){
+    // add the map from collision names to frame names
+    for(int i=0; i<object->geomModel.geometryObjects.size(); ++i){
+      tmp = object->geomModel.getGeometryName(i); tmp.pop_back(); tmp.pop_back();
+      collision_to_frame[object->geomModel.getGeometryName(i)] = tmp;
+    }
+  }
+  
 }
 
 

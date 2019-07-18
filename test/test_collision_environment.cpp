@@ -14,12 +14,14 @@ int main(int argc, char ** argv){
   // Initialize Cart RobotModel
   std::shared_ptr<RobotModel> cart(new RobotModel(filename, meshDir) );
 	
-	// std::cout << "------ Valkyrie Model ------ " << std::endl;
- //  std::cout << valkyrie->model;	
- //  std::cout << "------ Valkyrie GeometryModel ------ " << std::endl;
- //  std::cout << valkyrie->geomModel; 
- //  std::cout << "------ Cart Model ------ " << std::endl;
- //  std::cout << cart->model;	
+	std::cout << "------ Valkyrie Model ------ " << std::endl;
+  std::cout << valkyrie->model;	
+  // std::cout << "------ Valkyrie GeometryModel ------ " << std::endl;
+  // std::cout << valkyrie->geomModel; 
+  std::cout << "------ Cart Model ------ " << std::endl;
+  std::cout << cart->model;	
+  std::cout << "------ Cart GeometryModel ------ " << std::endl;
+  std::cout << cart->geomModel;
 
   std::cout << "valkyrie->getDimQ(): " << valkyrie->getDimQ() << std::endl;
 
@@ -56,7 +58,7 @@ int main(int argc, char ** argv){
   // Define the configuration of the cart
   Eigen::VectorXd cart_config;
   cart_config = Eigen::VectorXd::Zero(cart->getDimQ());
-  cart_config[0] = 2.0;  cart_config[1] = 0.0;  cart_config[2] = 0.0;
+  cart_config[0] = 0.0;  cart_config[1] = 0.0;  cart_config[2] = -0.2;
   double theta1 = 0;//M_PI/4.0;	
   Eigen::AngleAxis<double> bb(theta1, Eigen::Vector3d(0.0, 0.0, 1.0)); // yaw pi/4 to the left	
   Eigen::Quaternion<double> quat_init; quat_init =  bb;
@@ -75,7 +77,7 @@ int main(int argc, char ** argv){
 
   collision->directed_vectors.clear();
   // collision->build_directed_vector_to_rhand();
-  // collision->self_collision_dx();
+  // 
   std::string frame = "rightPalm";
   collision->build_object_directed_vectors(frame);
   for(int o=0; o<collision->directed_vectors.size(); ++o){
@@ -84,6 +86,7 @@ int main(int argc, char ** argv){
     std::cout << "collision->directed_vectors[o].magnitude: " << collision->directed_vectors[o].magnitude << std::endl;
     std::cout << "collision->directed_vectors[o].direction: \n" << collision->directed_vectors[o].direction << std::endl;
   }
+  collision->self_collision_dx();
 
   // collision->directed_vectors.clear();
   // collision->build_directed_vector_to_lhand();

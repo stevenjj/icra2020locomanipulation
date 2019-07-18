@@ -29,6 +29,9 @@ private:
   // The distance for a link to move away from the body if inside the safety distance
   double max_scaling_distance = 0.15;
 
+  // If we input an object RobotModel into the environment, then this is true and 
+  //  map_collision_names_to_frame_names also includes the object frame names
+  bool object_flag = false;
 
 
   // appends the models internally
@@ -46,6 +49,10 @@ private:
   // called internally from build_directed_vectors_name
   // Input: name of two collision bodies
   void get_dvector_collision_links(const std::string & from_name, const std::string & to_name);
+
+  // same as the function get_dvector_collision_links, except it is used for instances of collision
+  //  between the robot and the environmental object, hence we must use the appended RobotModel
+  void get_dvector_collision_links_appended(std::shared_ptr<RobotModel> & appended, const std::string & from_name, const std::string & to_name);
 
 
   std::vector<std::string> get_object_links();
