@@ -975,14 +975,14 @@
       </geometry>
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
     </visual>
-    <collision>
+    <collision name="leftShoulderRollLink_test">
       <geometry>
         <cylinder radius="0.06" length="0.186"/>
       </geometry>
       <origin rpy="1.57 0 0" xyz="0 0.145 0"/>
     </collision>
     <collision_checking>
-      <capsule name="rightShoulderRollLink_test"/>
+      <capsule name="leftShoulderRollLink_test"/>
     </collision_checking>
   </link>
   <link name="leftShoulderYawLink">

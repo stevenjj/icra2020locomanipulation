@@ -152,8 +152,14 @@ void CollisionEnvironment::build_directed_vector_to_rhand(){
   collision_names.push_back("rightPalm_0");
   collision_names.push_back("leftPalm_0");
   collision_names.push_back("leftElbowNearLink_0");
+  collision_names.push_back("leftShoulderRollLink_0");
+  collision_names.push_back("leftForearmLink_0");
   collision_names.push_back("rightKneeNearLink_0");
   collision_names.push_back("leftKneeNearLink_0");
+  collision_names.push_back("rightHipPitchLink_0");
+  collision_names.push_back("leftHipPitchLink_0");
+  collision_names.push_back("rightKneePitchLink_0");
+  collision_names.push_back("leftKneePitchLink_0");
   collision_names.push_back("head_0");
   collision_names.push_back("pelvis_0");
   collision_names.push_back("torso_0");
@@ -206,8 +212,14 @@ void CollisionEnvironment::build_directed_vector_to_lhand(){
   collision_names.push_back("leftPalm_0");
   collision_names.push_back("rightPalm_0");
   collision_names.push_back("rightElbowNearLink_0");// left elbow
+  collision_names.push_back("rightShoulderRollLink_0");
+  collision_names.push_back("rightForearmLink_0");
   collision_names.push_back("rightKneeNearLink_0");// right knee
   collision_names.push_back("leftKneeNearLink_0");// left knee
+  collision_names.push_back("rightHipPitchLink_0");
+  collision_names.push_back("leftHipPitchLink_0");
+  collision_names.push_back("rightKneePitchLink_0");
+  collision_names.push_back("leftKneePitchLink_0");
   collision_names.push_back("head_0");
   collision_names.push_back("pelvis_0");
   collision_names.push_back("torso_0");
@@ -300,6 +312,8 @@ void CollisionEnvironment::build_directed_vector_to_rknee(){
   std::vector<std::string> collision_names;
   collision_names.push_back("rightKneeNearLink_0");
   collision_names.push_back("leftKneeNearLink_0");
+  collision_names.push_back("leftHipPitchLink_0");
+  collision_names.push_back("leftKneePitchLink_0");
 
   Eigen::Vector3d difference;
 
@@ -342,6 +356,8 @@ void CollisionEnvironment::build_directed_vector_to_lknee(){
   std::vector<std::string> collision_names;
   collision_names.push_back("leftKneeNearLink_0");
   collision_names.push_back("rightKneeNearLink_0");
+  collision_names.push_back("rightHipPitchLink_0");
+  collision_names.push_back("rightKneePitchLink_0");
 
   Eigen::Vector3d difference;
 
@@ -388,6 +404,9 @@ void CollisionEnvironment::build_directed_vector_to_relbow(){
   collision_names.push_back("rightElbowNearLink_0");
   collision_names.push_back("rightKneeNearLink_0");
   collision_names.push_back("leftKneeNearLink_0");
+  collision_names.push_back("leftForearmLink_0");
+  collision_names.push_back("rightHipPitchLink_0");
+  collision_names.push_back("leftHipPitchLink_0");
   collision_names.push_back("pelvis_0");
   collision_names.push_back("torso_0");
 
@@ -434,6 +453,9 @@ void CollisionEnvironment::build_directed_vector_to_lelbow(){
   collision_names.push_back("leftElbowNearLink_0");
   collision_names.push_back("rightKneeNearLink_0");
   collision_names.push_back("leftKneeNearLink_0");
+  collision_names.push_back("rightForearmLink_0");
+  collision_names.push_back("rightHipPitchLink_0");
+  collision_names.push_back("leftHipPitchLink_0");
   collision_names.push_back("pelvis_0");
   collision_names.push_back("torso_0");
 
