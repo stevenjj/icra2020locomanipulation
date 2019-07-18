@@ -86,7 +86,7 @@ int main(int argc, char ** argv){
     std::cout << "collision->directed_vectors[o].magnitude: " << collision->directed_vectors[o].magnitude << std::endl;
     std::cout << "collision->directed_vectors[o].direction: \n" << collision->directed_vectors[o].direction << std::endl;
   }
-  collision->self_collision_dx();
+  // collision->self_collision_dx();
 
   // collision->directed_vectors.clear();
   // collision->build_directed_vector_to_lhand();

@@ -43,8 +43,8 @@ std::shared_ptr<RobotModel> CollisionEnvironment::append_models(){
   appended->q_current << valkyrie->q_current, object->q_current;
 
   // Update the full kinematics 
+  appended->enableUpdateGeomOnKinematicsUpdate(true);
   appended->updateFullKinematics(appended->q_current);
-  appended->updateGeometry(appended->q_current);
 
   return appended;
 }
@@ -695,7 +695,6 @@ void CollisionEnvironment::get_dvector_collision_links(const std::string & from_
 }
 
 void CollisionEnvironment::get_dvector_collision_links_appended(std::shared_ptr<RobotModel> & appended, const std::string & from_name, const std::string & to_name){
-  std::cout << "get_dvector_collision_links_appended " << from_name << std::endl;
 
   Eigen::Vector3d cur_pos_to, cur_pos_from, difference; 
   Eigen::Quaternion<double> cur_ori;

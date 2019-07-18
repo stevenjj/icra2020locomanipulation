@@ -23,6 +23,7 @@
 add_executable(test_collision_environment test_collision_environment.cpp ${PROJECT_SOURCES})
 # add_executable(test_ik_selfcollision test_ik_selfcollision.cpp ${PROJECT_SOURCES})
 # add_executable(test_directedvectors_case_incollision test_directedvectors_case_incollision.cpp ${PROJECT_SOURCES})
+add_executable(test_ik_objectcollision test_ik_objectcollision.cpp ${PROJECT_SOURCES})
 
 # target_link_libraries(test_load_urdf_model ${PROJECT_LIBRARIES})
 # target_link_libraries(test_valkyrie_model  ${PROJECT_LIBRARIES})
@@ -49,3 +50,4 @@ add_executable(test_collision_environment test_collision_environment.cpp ${PROJE
 target_link_libraries(test_collision_environment ${PROJECT_LIBRARIES})
 # target_link_libraries(test_ik_selfcollision ${PROJECT_LIBRARIES})
 # target_link_libraries(test_directedvectors_case_incollision ${PROJECT_LIBRARIES})
+target_link_libraries(test_ik_objectcollision ${PROJECT_LIBRARIES})
