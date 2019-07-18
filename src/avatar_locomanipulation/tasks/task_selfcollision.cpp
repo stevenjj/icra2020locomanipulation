@@ -89,7 +89,7 @@ void TaskSelfCollision::computeError(){
  		collision_env->build_directed_vector_to_lknee();
  	}
 	
-	std::vector<Eigen::Vector3d> dxs = collision_env->self_collision_dx();
+	std::vector<Eigen::Vector3d> dxs = collision_env->get_collision_dx();
 
 	Eigen::Vector3d dx;
 	dx = dxs[0];

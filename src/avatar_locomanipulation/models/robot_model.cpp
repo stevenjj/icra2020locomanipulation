@@ -71,7 +71,7 @@ void RobotModel::commonInitialization(){
 
 
 
-void RobotModel::commonInitialization_appended(){
+void RobotModel::appendedInitialization(){
 
   data = std::unique_ptr<pinocchio::Data>(new pinocchio::Data(model));
   A = Eigen::MatrixXd::Zero(model.nv, model.nv);
@@ -103,7 +103,7 @@ void RobotModel::commonInitialization_appended(){
 
   geomData = std::unique_ptr<pinocchio::GeometryData>(new pinocchio::GeometryData(geomModel));
 
-  std::cout << "Robot Model Constructed" << std::endl;
+  std::cout << "Appended Model Constructed" << std::endl;
 }
 
 
@@ -113,8 +113,8 @@ void RobotModel::enableUpdateGeomOnKinematicsUpdate(bool enable){
 }
 
 
-void RobotModel::common_initialization(){
-  commonInitialization_appended();
+void RobotModel::appended_initialization(){
+  appendedInitialization();
 }
 
 void RobotModel::updateGeometry(const Eigen::VectorXd & q_update){

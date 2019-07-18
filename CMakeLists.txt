@@ -85,7 +85,8 @@ SET (TASK_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_3dorientation.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_joint_config.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_stack.cpp
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_selfcollision.cpp)
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_selfcollision.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_objectcollision.cpp)
 
 
 SET (COLLISION_ENVIRONMENT_SOURCES

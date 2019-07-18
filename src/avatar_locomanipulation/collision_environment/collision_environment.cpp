@@ -22,7 +22,7 @@ CollisionEnvironment::~CollisionEnvironment(){
 
 
 
-std::shared_ptr<RobotModel> CollisionEnvironment::append_models(Eigen::VectorXd & q, Eigen::VectorXd & obj_config){
+std::shared_ptr<RobotModel> CollisionEnvironment::append_models(){
   // Define a new RobotModel which will be the appended model
   std::shared_ptr<RobotModel> appended(new RobotModel() );
 
@@ -35,14 +35,14 @@ std::shared_ptr<RobotModel> CollisionEnvironment::append_models(Eigen::VectorXd 
   // Append the object onto the robot, and fill appended RobotModel
   pinocchio::appendModel(valkyrie->model, object->model, valkyrie->geomModel, object->geomModel, valkyrie->model.frames.size()-1, pinocchio::SE3::Identity(), appended->model, appended->geomModel);
 
-  // Define the appended configuration vector
-  Eigen::VectorXd appended_config(appended->model.nq);
-  appended_config << q, obj_config;
+  appended->appended_initialization();
 
-  appended->common_initialization();
+  // Define the appended configuration vector
+  appended->q_current << valkyrie->q_current, object->q_current;
 
   // Update the full kinematics 
-  appended->updateFullKinematics(appended_config);
+  appended->updateFullKinematics(appended->q_current);
+  appended->updateGeometry(appended->q_current);
 
   return appended;
 }
@@ -50,11 +50,14 @@ std::shared_ptr<RobotModel> CollisionEnvironment::append_models(Eigen::VectorXd 
 
 
 
-void CollisionEnvironment::find_near_points(std::vector<std::string> & list, std::map<std::string, Eigen::Vector3d> & from_near_points, std::map<std::string, Eigen::Vector3d> & to_near_points){
+void CollisionEnvironment::find_self_near_points(std::vector<std::string> & list, std::map<std::string, Eigen::Vector3d> & from_near_points, std::map<std::string, Eigen::Vector3d> & to_near_points){
   
   // first name in the vector is the link to which we want to get near_point pairs
   std::string to_link_name = list[0];
   std::string from_link_name;
+
+  from_near_points.clear();
+  to_near_points.clear();
 
   for(int i=1; i<list.size(); ++i){
     // iterating thru rest of list, we get pairs with each of the other links
@@ -102,45 +105,103 @@ void CollisionEnvironment::find_near_points(std::vector<std::string> & list, std
   } // Outer for closed (i.e we have found nearest_point pairs for every link in our input list)
 
 }
-	
-	
-void CollisionEnvironment::compute_collision(Eigen::VectorXd & q, Eigen::VectorXd & obj_config){
-  // Define the new appended model and fill it with the current configuration
-  std::shared_ptr<RobotModel> appended = append_models(q, obj_config);
 
-  // Build the appended_config for collision computation
-  Eigen::VectorXd appended_config(appended->model.nq);
-  appended_config << q, obj_config;
 
-	int j, k;
 
-  // Compute all collisions
-	pinocchio::computeCollisions(appended->model, *appended->data, appended->geomModel, *appended->geomData, appended_config);
+void CollisionEnvironment::find_object_near_points(std::shared_ptr<RobotModel> & appended, std::vector<std::string> & list, std::map<std::string, Eigen::Vector3d> & from_near_points, std::map<std::string, Eigen::Vector3d> & to_near_points){
+  // first name in the vector is the link to which we want to get near_point pairs
+  std::string to_link_name = list[0];
+  std::string from_link_name;
 
-  // Loop thru results and print them
-	for(j=0; j< appended->geomModel.collisionPairs.size(); j++)
-	{
-		appended->result = (*appended->geomData).collisionResults[j];
-		pinocchio::CollisionPair id2 = appended->geomModel.collisionPairs[j];
-		appended->result.getContacts(appended->contacts);
-			if(appended->contacts.size() != 0)
-			{
-				for(k=0; k<appended->contacts.size(); k++)
-      			{
-      				std::cout << "Contact Found Between: " << appended->geomModel.getGeometryName(id2.first) << " and " << appended->geomModel.getGeometryName(id2.second) << std::endl;
-        			std::cout << "position: " << appended->contacts[k].pos << std::endl;
-        			std::cout << "-------------------" << std::endl;
-      			}
-			}
-	}
+  from_near_points.clear();
+  to_near_points.clear();
+
+  for(int i=1; i<list.size(); ++i){
+    // iterating thru rest of list, we get pairs with each of the other links
+    from_link_name = list[i];
+
+    // loop thru all of the collision pairs
+    for(int j=0; j<appended->geomModel.collisionPairs.size(); ++j){
+      // grab this collision pair
+      pinocchio::CollisionPair id2 = appended->geomModel.collisionPairs[j];
+
+      // check if pair.first and pair.second are our pair
+      if((appended->geomModel.getGeometryName(id2.first) == to_link_name && appended->geomModel.getGeometryName(id2.second) == from_link_name)){
+        
+        // if this is our pair, computeDistance
+        appended->dresult = pinocchio::computeDistance(appended->geomModel, *(appended->geomData), appended->geomModel.findCollisionPair(id2));
+        
+        // fill this map with nearest point on from object 
+          // (i.e nearest point on link list[i] to link list[0])
+        from_near_points[from_link_name] = appended->dresult.nearest_points[1];
+        
+        // fill this map with nearest point on to object 
+          // (i.e nearest point on link list[0] to link list[i])       
+        to_near_points[from_link_name] = appended->dresult.nearest_points[0];
+      } // First if closed
+      
+      // check if pair.second and pair.first are our pair 
+      //  (note that we do not know a priori which is pair.first and pair.second respectively)
+      else if((appended->geomModel.getGeometryName(id2.first) == from_link_name && appended->geomModel.getGeometryName(id2.second) == to_link_name)){
+        
+        // if this is our pair, computeDistance
+        appended->dresult = pinocchio::computeDistance(appended->geomModel, *(appended->geomData), appended->geomModel.findCollisionPair(id2));
+        
+        // fill this map with nearest point on from object 
+          // (i.e nearest point on link list[i] to link list[0])
+        from_near_points[from_link_name] = appended->dresult.nearest_points[0];
+        
+        // fill this map with nearest point on to object 
+          // (i.e nearest point on link list[0] to link list[i])
+        to_near_points[from_link_name] = appended->dresult.nearest_points[1];
+      
+      } // else if closed
+
+    } // Inner for closed (i.e for this pair we have found the collisionpair and filled our map)
+
+  } // Outer for closed (i.e we have found nearest_point pairs for every link in our input list)
+
+
 }
+	
+	
+// void CollisionEnvironment::compute_collision(Eigen::VectorXd & q, Eigen::VectorXd & obj_config){
+//   // Define the new appended model and fill it with the current configuration
+//   std::shared_ptr<RobotModel> appended = append_models();
+
+//   // Build the appended_config for collision computation
+//   Eigen::VectorXd appended_config(appended->model.nq);
+//   appended_config << q, obj_config;
+
+// 	int j, k;
+
+//   // Compute all collisions
+// 	pinocchio::computeCollisions(appended->model, *appended->data, appended->geomModel, *appended->geomData, appended_config);
+
+//   // Loop thru results and print them
+// 	for(j=0; j< appended->geomModel.collisionPairs.size(); j++)
+// 	{
+// 		appended->result = (*appended->geomData).collisionResults[j];
+// 		pinocchio::CollisionPair id2 = appended->geomModel.collisionPairs[j];
+// 		appended->result.getContacts(appended->contacts);
+// 			if(appended->contacts.size() != 0)
+// 			{
+// 				for(k=0; k<appended->contacts.size(); k++)
+//       			{
+//       				std::cout << "Contact Found Between: " << appended->geomModel.getGeometryName(id2.first) << " and " << appended->geomModel.getGeometryName(id2.second) << std::endl;
+//         			std::cout << "position: " << appended->contacts[k].pos << std::endl;
+//         			std::cout << "-------------------" << std::endl;
+//       			}
+// 			}
+// 	}
+// }
 
 
 
 
 void CollisionEnvironment::build_directed_vector_to_rhand(){
   
-  // for clarity on these maps, see control flow in find_near_points function
+  // for clarity on these maps, see control flow in find_self_near_points function
   std::map<std::string, Eigen::Vector3d> from_near_points, to_near_points;
 
   // initialize two iterators to be used in pushing to DirectedVectors struct
@@ -167,7 +228,7 @@ void CollisionEnvironment::build_directed_vector_to_rhand(){
   Eigen::Vector3d difference;
 
   // fill our two maps
-  find_near_points(collision_names, from_near_points, to_near_points);
+  find_self_near_points(collision_names, from_near_points, to_near_points);
 
   it2 = to_near_points.begin();
 
@@ -199,7 +260,7 @@ void CollisionEnvironment::build_directed_vector_to_rhand(){
 
 void CollisionEnvironment::build_directed_vector_to_lhand(){
   
-  // for clarity on these maps, see control flow in find_near_points function
+  // for clarity on these maps, see control flow in find_self_near_points function
   std::map<std::string, Eigen::Vector3d> from_near_points, to_near_points;
 
   // initialize two iterators to be used in pushing to DirectedVectors struct
@@ -226,7 +287,7 @@ void CollisionEnvironment::build_directed_vector_to_lhand(){
 
   Eigen::Vector3d difference;
 
-  find_near_points(collision_names, from_near_points, to_near_points);
+  find_self_near_points(collision_names, from_near_points, to_near_points);
 
   it2 = to_near_points.begin();
 
@@ -258,7 +319,7 @@ void CollisionEnvironment::build_directed_vector_to_lhand(){
 
 void CollisionEnvironment::build_directed_vector_to_head(){
   
-  // for clarity on these maps, see control flow in find_near_points function
+  // for clarity on these maps, see control flow in find_self_near_points function
   std::map<std::string, Eigen::Vector3d> from_near_points, to_near_points;
 
   // initialize two iterators to be used in pushing to DirectedVectors struct
@@ -272,7 +333,7 @@ void CollisionEnvironment::build_directed_vector_to_head(){
 
   Eigen::Vector3d difference;
 
-  find_near_points(collision_names, from_near_points, to_near_points);
+  find_self_near_points(collision_names, from_near_points, to_near_points);
 
   it2 = to_near_points.begin();
 
@@ -301,7 +362,7 @@ void CollisionEnvironment::build_directed_vector_to_head(){
 
 
 void CollisionEnvironment::build_directed_vector_to_rknee(){
-  // for clarity on these maps, see control flow in find_near_points function
+  // for clarity on these maps, see control flow in find_self_near_points function
   std::map<std::string, Eigen::Vector3d> from_near_points, to_near_points;
 
   // initialize two iterators to be used in pushing to DirectedVectors struct
@@ -317,7 +378,7 @@ void CollisionEnvironment::build_directed_vector_to_rknee(){
 
   Eigen::Vector3d difference;
 
-  find_near_points(collision_names, from_near_points, to_near_points);
+  find_self_near_points(collision_names, from_near_points, to_near_points);
 
   it2 = to_near_points.begin();
 
@@ -345,7 +406,7 @@ void CollisionEnvironment::build_directed_vector_to_rknee(){
 }
 
 void CollisionEnvironment::build_directed_vector_to_lknee(){
-  // for clarity on these maps, see control flow in find_near_points function
+  // for clarity on these maps, see control flow in find_self_near_points function
   std::map<std::string, Eigen::Vector3d> from_near_points, to_near_points;
 
   // initialize two iterators to be used in pushing to DirectedVectors struct
@@ -361,7 +422,7 @@ void CollisionEnvironment::build_directed_vector_to_lknee(){
 
   Eigen::Vector3d difference;
 
-  find_near_points(collision_names, from_near_points, to_near_points);
+  find_self_near_points(collision_names, from_near_points, to_near_points);
 
   it2 = to_near_points.begin();
 
@@ -392,7 +453,7 @@ void CollisionEnvironment::build_directed_vector_to_lknee(){
 
 
 void CollisionEnvironment::build_directed_vector_to_relbow(){
-  // for clarity on these maps, see control flow in find_near_points function
+  // for clarity on these maps, see control flow in find_self_near_points function
   std::map<std::string, Eigen::Vector3d> from_near_points, to_near_points;
 
   // initialize two iterators to be used in pushing to DirectedVectors struct
@@ -412,7 +473,7 @@ void CollisionEnvironment::build_directed_vector_to_relbow(){
 
   Eigen::Vector3d difference;
 
-  find_near_points(collision_names, from_near_points, to_near_points);
+  find_self_near_points(collision_names, from_near_points, to_near_points);
 
   it2 = to_near_points.begin();
 
@@ -441,7 +502,7 @@ void CollisionEnvironment::build_directed_vector_to_relbow(){
 
 
 void CollisionEnvironment::build_directed_vector_to_lelbow(){
-  // for clarity on these maps, see control flow in find_near_points function
+  // for clarity on these maps, see control flow in find_self_near_points function
   std::map<std::string, Eigen::Vector3d> from_near_points, to_near_points;
 
   // initialize two iterators to be used in pushing to DirectedVectors struct
@@ -461,7 +522,7 @@ void CollisionEnvironment::build_directed_vector_to_lelbow(){
 
   Eigen::Vector3d difference;
 
-  find_near_points(collision_names, from_near_points, to_near_points);
+  find_self_near_points(collision_names, from_near_points, to_near_points);
 
   it2 = to_near_points.begin();
 
@@ -482,15 +543,109 @@ void CollisionEnvironment::build_directed_vector_to_lelbow(){
     dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
     directed_vectors.push_back(dvector);
     ++it2;
+    }
   }
-}
 
   std::cout << "directed_vectors.size(): " << directed_vectors.size() << std::endl;
 }
 
 
 
-std::vector<Eigen::Vector3d> CollisionEnvironment::self_collision_dx(){
+void CollisionEnvironment::build_object_directed_vectors(std::string & frame_name){
+  // for clarity on these maps, see control flow in find_self_near_points function
+  std::map<std::string, Eigen::Vector3d> from_near_points, to_near_points;
+
+  // initialize two iterators to be used in pushing to DirectedVectors struct
+  std::map<std::string, Eigen::Vector3d>::iterator it, it2;
+
+  // fill list with collision_names[0] = name of link to which we want directed vectors
+  // and collision_names[>0] = name of links from which we want directed vectors
+  std::vector<std::string> collision_names;
+
+  // used to build directed vectors
+  Eigen::Vector3d difference;
+
+  // gives a list of object link names
+  std::vector<std::string> object_links = get_object_links();
+
+  // Need to append the models for computeDistance to work inside find_object_near_points
+  std::shared_ptr<RobotModel> appended = append_models();
+
+  // we will build the directed vectors from each of the object links
+  for(int i=0; i<object_links.size(); ++i){
+    if(frame_name == "rightPalm"){
+      collision_names.push_back(object_links[i]);
+      collision_names.push_back("rightPalm_0");
+    }
+
+    if(frame_name == "leftPalm"){
+      collision_names.push_back(object_links[i]);
+      collision_names.push_back("leftPalm_0");
+    } 
+
+    if(frame_name == "head"){
+      collision_names.push_back(object_links[i]);
+      collision_names.push_back("head_0");
+    }
+
+    if(frame_name == "rightKneePitch"){
+      collision_names.push_back(object_links[i]);
+      collision_names.push_back("rightKneeNearLink_0");
+    }
+
+    if(frame_name == "leftKneePitch"){
+      collision_names.push_back(object_links[i]);
+      collision_names.push_back("leftKneeNearLink_0");
+    }
+
+    if(frame_name == "rightElbowPitch"){
+      collision_names.push_back(object_links[i]);
+      collision_names.push_back("rightElbowNearLink_0");
+      collision_names.push_back("rightForearmLink_0");
+    }
+
+    if(frame_name == "leftElbowPitch"){
+      collision_names.push_back(object_links[i]);
+      collision_names.push_back("leftElbowNearLink_0");
+      collision_names.push_back("leftForearmLink_0");
+    }
+
+    // Notice we reverse to and from near_points, because unlike in the self directed vectors,
+    // we want vectors away from the collision_names[0]
+    find_object_near_points(appended, collision_names, to_near_points, from_near_points);
+
+    it2 = to_near_points.begin();
+
+    for(it=from_near_points.begin(); it!=from_near_points.end(); ++it){
+      // If nearest_point[1] = nearest_point[0], then the two links are in collision
+      // and we need a different way to get a dvector
+      if(it->second == it2->second){
+        std::cout << "Collision between " << it->first << " and " << object_links[i] << std::endl;
+        get_dvector_collision_links(it->first, object_links[i]);
+        ++it2;
+      } // end if
+
+      // The typical case when two links are not in collision
+      else{
+      difference = it2->second - it->second;
+      // Fill the dvector and push back
+      dvector.from = object_links[i]; dvector.to = it->first;
+      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+      directed_vectors.push_back(dvector);
+      ++it2;
+      } // end else
+
+    } // end inner for
+
+  } // end outer for
+
+  std::cout << "directed_vectors.size(): " << directed_vectors.size() << std::endl;
+
+}
+
+
+
+std::vector<Eigen::Vector3d> CollisionEnvironment::get_collision_dx(){
   double Potential;
   std::vector<Eigen::Vector3d> dxs;
   Eigen::MatrixXd J_out(6, valkyrie->getDimQdot()); J_out.fill(0);
@@ -549,4 +704,17 @@ void CollisionEnvironment::map_collision_names_to_frame_names(){
   collision_to_frame["rightPalm_0"] = "rightPalm";
   collision_to_frame["leftPalm_0"] = "leftPalm_0";
   collision_to_frame["head_0"] = "head";
+}
+
+
+std::vector<std::string> CollisionEnvironment::get_object_links(){
+  // Will fill this vector with names of object collision body names
+  std::vector<std::string> names;
+
+  for(int i=0; i<object->geomModel.geometryObjects.size(); ++i){
+    names.push_back(object->geomModel.getGeometryName(i));
+  }
+
+  return names;
+
 }

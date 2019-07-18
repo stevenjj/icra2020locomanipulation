@@ -32,9 +32,8 @@ private:
 
 
   // appends the models internally
-  // Input: robot config, object config 
-  // Used in distance computation, which does not require the appended config
-  std::shared_ptr<RobotModel> append_models(Eigen::VectorXd & q, Eigen::VectorXd & obj_config);
+  // Used in distance/collision computation, which does not require the appended config
+  std::shared_ptr<RobotModel> append_models();
 
 
 
@@ -47,6 +46,9 @@ private:
   // called internally from build_directed_vectors_name
   // Input: name of two collision bodies
   void get_dvector_collision_links(const std::string & from_name, const std::string & to_name);
+
+
+  std::vector<std::string> get_object_links();
 
 public:
 
@@ -72,7 +74,13 @@ public:
   // Inputs: - List of collision object names, with the first being used as the "to" object
   //         - (Empty) map from names of "from" collision links to the nearest point on those objects
   //         - (Empty) map from names of "from"collision links to nearest points on the "to" objects
-  void find_near_points(std::vector<std::string> & list, std::map<std::string, Eigen::Vector3d> & from_near_points, std::map<std::string, Eigen::Vector3d> & to_near_points);
+  void find_self_near_points(std::vector<std::string> & list, std::map<std::string, Eigen::Vector3d> & from_near_points, std::map<std::string, Eigen::Vector3d> & to_near_points);
+
+
+  // Inputs: - List of collision object names, with the first being used as the "to" object
+  //         - (Empty) map from names of "from" collision links to the nearest point on those objects
+  //         - (Empty) map from names of "from"collision links to nearest points on the "to" objects
+  void find_object_near_points(std::shared_ptr<RobotModel> & appended, std::vector<std::string> & list, std::map<std::string, Eigen::Vector3d> & from_near_points, std::map<std::string, Eigen::Vector3d> & to_near_points);
 
   
   // Fills struct DirectedVector self_directed_vectors with the relevant vectors
@@ -87,12 +95,17 @@ public:
   void build_directed_vector_to_lelbow();
 
 
-  // computes collision and outputs any contacts
-  void compute_collision(Eigen::VectorXd & q, Eigen::VectorXd & obj_config);
+  // Fills the struct DirectedVector directed_vectors with the relevan vectors from each of the object
+  //  links
+  void build_object_directed_vectors(std::string & frame_name);
+
+
+  // // computes collision and outputs any contacts
+  // void compute_collision(Eigen::VectorXd & q, Eigen::VectorXd & obj_config);
 
 
   // gives us a command for dx to move away from self collision
-  std::vector<Eigen::Vector3d> self_collision_dx();
+  std::vector<Eigen::Vector3d> get_collision_dx();
   
 
   // Sets the safety distance between robot links

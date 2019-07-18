@@ -65,14 +65,19 @@ int main(int argc, char ** argv){
   cart_config[5] = quat_init.z(); //sin(theta/2.0);
   cart_config[6] = quat_init.w(); //cos(theta/2.0);
 
+  valkyrie->q_current = q_start;
+  cart->q_current = cart_config;
+
   valkyrie->updateFullKinematics(q_start);
   valkyrie->updateGeometry(q_start);
 
   std::shared_ptr<CollisionEnvironment> collision(new CollisionEnvironment(valkyrie, cart) );
 
   collision->directed_vectors.clear();
-  collision->build_directed_vector_to_rhand();
-  collision->self_collision_dx();
+  // collision->build_directed_vector_to_rhand();
+  // collision->self_collision_dx();
+  std::string frame = "rightPalm";
+  collision->build_object_directed_vectors(frame);
   for(int o=0; o<collision->directed_vectors.size(); ++o){
     std::cout << "collision->directed_vectors[o].from: " << collision->directed_vectors[o].from << std::endl;
     std::cout << "collision->directed_vectors[o].to: " << collision->directed_vectors[o].to << std::endl;

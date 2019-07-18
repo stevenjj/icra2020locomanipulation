@@ -48,7 +48,7 @@ private:
   void buildPinocchioModel(const std::string & filename);
   void buildPinocchioGeomModel(const std::string & filename, const std::string & meshDir);
   void commonInitialization();
-  void commonInitialization_appended();
+  void appendedInitialization();
 
   bool updateGeomWithKinematics = false;
 
@@ -91,7 +91,7 @@ public:
   void enableUpdateGeomOnKinematicsUpdate(bool enable);
 
 
-  void common_initialization();
+  void appended_initialization();
 
   /* updateGeometry
   Input: a vector of configuration with dimension model.nq to update the kinematics.   
