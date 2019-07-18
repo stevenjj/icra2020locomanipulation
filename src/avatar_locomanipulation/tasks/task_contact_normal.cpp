@@ -40,28 +40,29 @@ TaskContactNormalTask::~TaskContactNormalTask(){
 }
 
 void TaskContactNormalTask::getTaskJacobian(Eigen::MatrixXd & J_task){
-	// TODO: Change this to body frame
-	robot_model->get6DTaskJacobian(frame_name, J_tmp);
+	// Get the local frame Jacobian (Body Jacobian)
+	robot_model->get6DTaskJacobianLocal(frame_name, J_tmp);
 	J_task = J_tmp.bottomRows(3); 
 
 	// Compute the top row to be the Jacobian of the distance between the contact point and the plane
 	computeError();
 
 	if (fabs(dist_to_plane) > 1e-6){
-		J_task.row(2) = (1.0/(closest_point_on_plane_-cur_pos_).norm())*(closest_point_on_plane_ - cur_pos_).transpose()*J_tmp.topRows(3);
+		J_task.row(2) = (1.0/ (R_frame_ori_.transpose()*(closest_point_on_plane_-cur_pos_)).norm()) * (R_frame_ori_*(closest_point_on_plane_ - cur_pos_)).transpose()*J_tmp.topRows(3);
 	}else{
 		J_task.row(2) = Eigen::MatrixXd::Zero(1, robot_model->getDimQdot());		
 	}
 
 }
 void TaskContactNormalTask::getTaskJacobianDot(Eigen::MatrixXd & Jdot_task){
-	robot_model->get6DTaskJacobianDot(frame_name, Jdot_tmp);
+	// Get the local frame Jacobian dot (Body Jacobian Dot)
+	robot_model->get6DTaskJacobianDotLocal(frame_name, Jdot_tmp);
 	Jdot_task = Jdot_tmp.bottomRows(3);
 
 	// Compute the top row to be the Jacobian dot of the distance between the contact point and the plane
 	computeError();
 	if (fabs(dist_to_plane) > 1e-6){
-		Jdot_task.row(2) = (1.0/(closest_point_on_plane_-cur_pos_).norm())*(closest_point_on_plane_ - cur_pos_).transpose()*Jdot_tmp.topRows(3);
+		Jdot_task.row(2) = (1.0/(R_frame_ori_.transpose()*(closest_point_on_plane_-cur_pos_)).norm())*(R_frame_ori_*(closest_point_on_plane_ - cur_pos_)).transpose()*Jdot_tmp.topRows(3);
 	}else{
 		Jdot_task.row(2) = Eigen::MatrixXd::Zero(1, robot_model->getDimQdot());		
 	}
@@ -70,10 +71,14 @@ void TaskContactNormalTask::getTaskJacobianDot(Eigen::MatrixXd & Jdot_task){
 
 
 void TaskContactNormalTask::computeError(){
-	// Get current position of the end-effector
+	// Get current position of the end-effector w.r.t world
 	robot_model->getFrameWorldPose(frame_name, cur_pos_, quat_current_);
-	
-	// Compute signed perpendicular distance to the plane.
+
+	// Get z hat vector of the end effector frame
+	R_frame_ori_ = quat_current_.toRotationMatrix();
+	z_hat_ = R_frame_ori_.col(2); // Third column of the rotation matrix	
+
+	// Compute signed perpendicular distance to the plane w.r.t world.
 	// v = end_effector - plane_center
 	// distance = v \cdot normal_vec_hat
 	dist_to_plane = (cur_pos_ - normal_vec_tail_).dot(normal_vec_hat_);
@@ -82,12 +87,7 @@ void TaskContactNormalTask::computeError(){
 	des_pos = cur_pos_ - normal_vec_hat_*dist_to_plane;
 	closest_point_on_plane_ = des_pos;
 
-	// Get z hat vector of the end effector frame
-	R_frame_ori_ = quat_current_.toRotationMatrix();
-	z_hat_ = R_frame_ori_.col(2); // Third column of the rotation matrix
-
-	// TODO: Change axis of rotation w.r.t body frame. 
-	// Compute orientation error (zhat) to normal vector zhat.
+	// Compute orientation error (zhat) to normal vector zhat w.r.t world .
 	theta_angle_ = acos(z_hat_.dot(normal_vec_hat_));
 	omega_hat_ =  z_hat_.cross(normal_vec_hat_);
 	omega_hat_.normalize();
@@ -95,17 +95,15 @@ void TaskContactNormalTask::computeError(){
 	omega_.axis() = omega_hat_;
 	// std::cout << "Axis " << omega_.axis().transpose() << ", Angle  " << omega_.angle() << std::endl;  
 
-	// Find desired quaternion
+	// Find desired quaternion w.r.t world
 	quat_omega_ = omega_;
-	// math_utils::printQuat(quat_omega_);
 	des_quat = quat_omega_*quat_current_;
 
-	// Compute Errors
+	// Compute Errors w.r.t the local frame of the end effector
 	// Compute Quaternion Error
-	error_.head(2) = kp_task_gain_*(omega_.axis()*omega_.angle()).head(2);
-
+	error_.head(2) = kp_task_gain_*(  R_frame_ori_.transpose()*omega_.axis()*omega_.angle()).head(2);
 	// Compute Linear Error
-	error_[2] = kp_task_gain_*(des_pos - cur_pos_).norm();
+	error_[2] = kp_task_gain_*( R_frame_ori_.transpose()*(des_pos - cur_pos_) ) .norm();
 
 }
 

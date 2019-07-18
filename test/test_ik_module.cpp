@@ -176,7 +176,7 @@ void testIK_module(){
   Eigen::Vector3d rpalm_des_pos;
   Eigen::Quaternion<double> rpalm_des_quat;
   ik_module.robot_model->getFrameWorldPose("rightPalm", rpalm_des_pos, rpalm_des_quat);
-  rpalm_des_pos[0] += 1.35;//0.4;//0.35;//0.25;
+  rpalm_des_pos[0] += 0.35;//0.4;//0.35;//0.25;
   rpalm_des_pos[1] += 0.25;//0.3;//0.25; 
   rpalm_des_pos[2] += 0.3; 
   Eigen::AngleAxis<double> axis_angle;

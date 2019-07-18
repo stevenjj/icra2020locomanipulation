@@ -3,6 +3,11 @@
 
 #include <avatar_locomanipulation/tasks/task.hpp>
 
+// which axis of the EE frame to use for alignment
+#define ALIGN_X_HAT_WITH_NORMAL 0;
+#define ALIGN_Y_HAT_WITH_NORMAL 1;
+#define ALIGN_Z_HAT_WITH_NORMAL 2;
+
 class TaskContactNormalTask: public Task{
 public:
 	TaskContactNormalTask(std::shared_ptr<ValkyrieModel> & input_model, const std::string & input_frame_name, 
@@ -45,6 +50,9 @@ protected:
 
 	Eigen::Vector3d closest_point_on_plane_;
 	double dist_to_plane;
+
+	// Whether the axis to be aligned needs to be pointing in the opposite direction
+	bool opposite_direction_;
 
 
 	void computeDistances();
