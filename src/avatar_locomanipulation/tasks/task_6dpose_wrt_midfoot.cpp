@@ -47,4 +47,6 @@ void Task6DPosewrtMidFeet::computeError(){
 	// Compute Quaternion Error
 	math_utils::compute_quat_error(des_quat, quat_current_, quat_error_);
 	error_.tail(3) = kp_task_gain_*(quat_error_);	
+
+	std::cout << "pelvis wrt midfeet error_ = " << error_.transpose() << std::endl;
 }
