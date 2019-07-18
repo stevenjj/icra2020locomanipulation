@@ -65,7 +65,7 @@ void TaskSelfCollision::getReference(Eigen::Quaterniond & quat_ref_out){
 
 void TaskSelfCollision::computeError(){
 
- 	collision_env->self_directed_vectors.clear();
+ 	collision_env->directed_vectors.clear();
 
  	if(frame_name == "rightPalm"){
  		collision_env->build_directed_vector_to_rhand();

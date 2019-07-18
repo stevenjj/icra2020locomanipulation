@@ -35,7 +35,7 @@ private:
   // Input: robot config, object config 
   // Used in distance computation, which does not require the appended config
   std::shared_ptr<RobotModel> append_models(Eigen::VectorXd & q, Eigen::VectorXd & obj_config);
-  
+
 
 
   // Input: empty map string to string
@@ -54,7 +54,7 @@ public:
   std::shared_ptr<RobotModel> valkyrie, object;
 
   // The vector of directed vectors and related information
-  std::vector<DirectedVectors>  self_directed_vectors;
+  std::vector<DirectedVectors>  directed_vectors;
   
 
   // Constructor fills the local data for valkyrie, object RobotModels
@@ -72,7 +72,7 @@ public:
   // Inputs: - List of collision object names, with the first being used as the "to" object
   //         - (Empty) map from names of "from" collision links to the nearest point on those objects
   //         - (Empty) map from names of "from"collision links to nearest points on the "to" objects
-  void find_self_near_points(std::vector<std::string> & list, std::map<std::string, Eigen::Vector3d> & from_near_points, std::map<std::string, Eigen::Vector3d> & to_near_points);
+  void find_near_points(std::vector<std::string> & list, std::map<std::string, Eigen::Vector3d> & from_near_points, std::map<std::string, Eigen::Vector3d> & to_near_points);
 
   
   // Fills struct DirectedVector self_directed_vectors with the relevant vectors
