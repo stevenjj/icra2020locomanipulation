@@ -4,10 +4,13 @@
 #include <avatar_locomanipulation/tasks/task.hpp>
 #include <avatar_locomanipulation/tasks/task_6dpose.hpp>
 #include <avatar_locomanipulation/tasks/task_6dpose_wrt_midfeet.hpp>
+#include <avatar_locomanipulation/tasks/task_6dcontact_normal.hpp>
 #include <avatar_locomanipulation/tasks/task_3dorientation.hpp>
 #include <avatar_locomanipulation/tasks/task_joint_config.hpp>
 #include <avatar_locomanipulation/tasks/task_stack.hpp>
 #include <avatar_locomanipulation/tasks/task_com.hpp>
+#include <avatar_locomanipulation/tasks/task_4dcontact_normal.hpp>
+#include <avatar_locomanipulation/tasks/task_contact_normal.hpp>
 
 // Import ROS and Rviz visualization
 #include <ros/ros.h>
@@ -56,7 +59,7 @@ void initialize_config(Eigen::VectorXd & q_init){
   q_start[valkyrie.getJointIndex("leftKneePitch")] = 0.6;
   q_start[valkyrie.getJointIndex("rightKneePitch")] = 0.6;
   q_start[valkyrie.getJointIndex("leftAnklePitch")] = -0.3;
-  q_start[valkyrie.getJointIndex("rightAnklePitch")] = -0.3;
+  q_start[valkyrie.getJointIndex("rightAnklePitch")] = 0.0;//-0.3;
 
   q_start[valkyrie.getJointIndex("rightShoulderPitch")] = -0.2;
   q_start[valkyrie.getJointIndex("rightShoulderRoll")] = 1.1;
@@ -107,36 +110,48 @@ void testIK_module(){
   // Update Robot Kinematics
   ik_module.robot_model->updateFullKinematics(q_init);
 
-  ik_module.robot_model->printFrameNames();
+  Eigen::Vector3d floor_normal(0,0,1);
+  Eigen::Vector3d floor_center(0,0,0);  
 
   // Create Tasks
   std::shared_ptr<Task> pelvis_task(new Task6DPose(ik_module.robot_model, "pelvis"));
   std::shared_ptr<Task> pelvis_wrt_mf_task(new Task6DPosewrtMidFeet(ik_module.robot_model, "pelvis"));
 
   std::shared_ptr<Task> lfoot_task(new Task6DPose(ik_module.robot_model, "leftCOP_Frame"));
-  std::shared_ptr<Task> lfoot_ori_task(new Task3DOrientation(ik_module.robot_model, "leftCOP_Frame"));
   std::shared_ptr<Task> rfoot_task(new Task6DPose(ik_module.robot_model, "rightCOP_Frame"));
+
+  std::shared_ptr<Task> lfoot_contact_task(new Task4DContactNormalTask(ik_module.robot_model, "leftCOP_Frame", floor_normal, floor_center));
+  std::shared_ptr<Task> rfoot_contact_task(new Task4DContactNormalTask(ik_module.robot_model, "rightCOP_Frame", floor_normal, floor_center));
+
+  std::shared_ptr<Task> lfoot_contact_normal_task(new TaskContactNormalTask(ik_module.robot_model, "leftCOP_Frame", floor_normal, floor_center));
+  std::shared_ptr<Task> rfoot_contact_normal_task(new TaskContactNormalTask(ik_module.robot_model, "rightCOP_Frame", floor_normal, floor_center));
 
   std::shared_ptr<Task> com_task(new TaskCOM(ik_module.robot_model));
   std::shared_ptr<Task> rpalm_task(new Task6DPose(ik_module.robot_model, "rightPalm"));
-
 
   // posture tasks
   std::vector<std::string> selected_names = {"torsoYaw", "torsoPitch", "torsoRoll", 
                                              "leftShoulderPitch", "leftShoulderRoll", "leftShoulderYaw", "leftElbowPitch", "leftForearmYaw", "leftWristRoll", "leftWristPitch", 
                                              "lowerNeckPitch", "neckYaw", "upperNeckPitch"};
 
-  std::vector<std::string> right_arm_joint_names = {"rightShoulderPitch", "rightShoulderRoll", "rightShoulderYaw", "rightElbowPitch", "rightForearmYaw", "rightWristRoll", "rightWristPitch"};
-
   // selected_names = ik_module.robot_model->joint_names;
   std::shared_ptr<Task> posture_task(new TaskJointConfig(ik_module.robot_model, selected_names));
-  std::shared_ptr<Task> rarm_posture_task(new TaskJointConfig(ik_module.robot_model, right_arm_joint_names));
+  posture_task->setTaskGain(1e-1);
 
   // Stack Tasks in order of priority
-  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task, pelvis_wrt_mf_task}));
-  std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {rpalm_task}));
-  std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {posture_task}));
-  // std::shared_ptr<Task> task_stack_priority_4(new TaskStack(ik_module.robot_model, {rarm_posture_task}));
+  // Stance Generation Test
+  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {rpalm_task, lfoot_contact_normal_task, rfoot_contact_normal_task, posture_task}));
+  // std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {rpalm_task, lfoot_contact_task, rfoot_contact_task}));
+  // std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {pelvis_wrt_mf_task})); 
+  // std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {lfoot_contact_task, rfoot_contact_task}));
+
+  // std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {pelvis_wrt_mf_task, posture_task}));
+
+  // Regular IK test
+  // std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {lfoot_task, rfoot_task, pelvis_wrt_mf_task}));
+  // std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {rpalm_task}));
+  // std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {posture_task}));
+  // std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {posture_task, com_task}));
 
 
   // Set desired Pelvis configuration
@@ -183,11 +198,11 @@ void testIK_module(){
   Eigen::Vector3d rpalm_des_pos;
   Eigen::Quaternion<double> rpalm_des_quat;
   ik_module.robot_model->getFrameWorldPose("rightPalm", rpalm_des_pos, rpalm_des_quat);
-  rpalm_des_pos[0] += 0.35;//0.25;//0.25;
-  rpalm_des_pos[1] += 0.25; 
+  rpalm_des_pos[0] += 0.35;//0.4;//0.35;//0.25;
+  rpalm_des_pos[1] += 0.25;//0.3;//0.25; 
   rpalm_des_pos[2] += 0.3; 
   Eigen::AngleAxis<double> axis_angle;
-  axis_angle.angle() = (M_PI/2.0);
+  axis_angle.angle() = (M_PI/2.0) + (M_PI/4.0);
   axis_angle.axis() = Eigen::Vector3d(0, 0, 1.0);
   rpalm_des_quat = axis_angle;
 
@@ -197,7 +212,6 @@ void testIK_module(){
 
   // Set Desired Posture to be close to initial
   Eigen::VectorXd q_des;
-  // getPostureTaskReferences(ik_module.robot_model, q_init, q_des);
 
   // Set references ------------------------------------------------------------------------
   pelvis_task->setReference(pelvis_des_pos, pelvis_des_quat);
@@ -210,10 +224,7 @@ void testIK_module(){
   getSelectedPostureTaskReferences(ik_module.robot_model, selected_names, q_init, q_des);
   posture_task->setReference(q_des);
 
-  getSelectedPostureTaskReferences(ik_module.robot_model, right_arm_joint_names, q_init, q_des);
-  rarm_posture_task->setReference(q_des);
-
-  // Get Errors -----------------------------------------------------------------------------
+  // Check if we can get errors given configuration -----------------------------------------------------------------------------
   Eigen::VectorXd task_error;
   lfoot_task->getError(task_error);
   std::cout << "Left Foot Task Error = " << task_error.transpose() << std::endl;
@@ -226,32 +237,35 @@ void testIK_module(){
 
   posture_task->getError(task_error);
   std::cout << "Posture Task Error = " << task_error.transpose() << std::endl;
-
-  posture_task->getError(task_error);
-  std::cout << "Posture Task Error = " << task_error.transpose() << std::endl;
   
   pelvis_wrt_mf_task->getError(task_error);
   std::cout << "Pelivs wrt Midfeeet Task Error = " << task_error.transpose() << std::endl;
 
-
+  // Add tasks to hierarchy 
   ik_module.addTasktoHierarchy(task_stack_priority_1);
-  ik_module.addTasktoHierarchy(task_stack_priority_2);
-  ik_module.addTasktoHierarchy(task_stack_priority_3);
-  // ik_module.addTasktoHierarchy(task_stack_priority_4);
-  
+  // ik_module.addTasktoHierarchy(task_stack_priority_2);
+  // ik_module.addTasktoHierarchy(task_stack_priority_3);
+
+  // Perform IK  
   int solve_result;
-  double error_norm;
+  double total_error_norm;
+  std::vector<double> task_error_norms;
   Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(ik_module.robot_model->getDimQdot());
 
-  // ik_module.setEnableInertiaWeighting(true);
   ik_module.prepareNewIKDataStrcutures();
-  std::cout << "test_ik s1" << std::endl;
-  ik_module.solveIK(solve_result, error_norm, q_sol);
-  std::cout << "test_ik s2" << std::endl;
+// <<<<<<< HEAD
+//   std::cout << "test_ik s1" << std::endl;
+//   ik_module.solveIK(solve_result, error_norm, q_sol);
+//   std::cout << "test_ik s2" << std::endl;
 
-  Eigen::VectorXd q_config = Eigen::VectorXd::Zero(q_init.size());
-  printVec("q_sol", q_sol);
+//   Eigen::VectorXd q_config = Eigen::VectorXd::Zero(q_init.size());
+//   printVec("q_sol", q_sol);
+// =======
+  ik_module.solveIK(solve_result, task_error_norms, total_error_norm, q_sol);
+  ik_module.printSolutionResults();
+// >>>>>>> origin/master
 
+  // Visualize Solution:
   visualize_robot(q_init, q_sol);
   
 }

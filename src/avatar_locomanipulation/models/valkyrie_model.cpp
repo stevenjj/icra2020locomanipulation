@@ -77,8 +77,17 @@ void ValkyrieModel::get6DTaskJacobian(const std::string & frame_name, Eigen::Mat
   pinocchio::getFrameJacobian(model, *data, tmp_frame_index, pinocchio::WORLD, J_out);
 }
 
+void ValkyrieModel::get6DTaskJacobianLocal(const std::string & frame_name, Eigen::MatrixXd & J_out){
+  tmp_frame_index = model.getFrameId(frame_name);
+  pinocchio::getFrameJacobian(model, *data, tmp_frame_index, pinocchio::LOCAL, J_out);
+}
+
 void ValkyrieModel::get6DTaskJacobianDot(const std::string & frame_name, Eigen::MatrixXd & Jdot_out){
   pinocchio::getFrameJacobianTimeVariation(model, *data, model.getFrameId(frame_name), pinocchio::WORLD, Jdot_out);
+}
+
+void ValkyrieModel::get6DTaskJacobianDotLocal(const std::string & frame_name, Eigen::MatrixXd & Jdot_out){
+  pinocchio::getFrameJacobianTimeVariation(model, *data, model.getFrameId(frame_name), pinocchio::LOCAL, Jdot_out);
 }
 
 void ValkyrieModel::getFrameWorldPose(const std::string & name, Eigen::Vector3d & pos, Eigen::Quaternion<double> & ori){

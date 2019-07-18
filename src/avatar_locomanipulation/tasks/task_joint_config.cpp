@@ -20,7 +20,7 @@ TaskJointConfig::TaskJointConfig(std::shared_ptr<RobotModel> & input_model, cons
 }
 
 TaskJointConfig::~TaskJointConfig(){
-	std::cout << "[Task Joint Config] for joints " << task_name << " Destroyed" << std::endl;
+	// std::cout << "[Task Joint Config] for joints " << task_name << " Destroyed" << std::endl;
 }
 
 void TaskJointConfig::getTaskJacobian(Eigen::MatrixXd & J_task){
@@ -42,7 +42,7 @@ void TaskJointConfig::computeError(){
 	for(int i = 0; i < joint_names_.size(); i++){
 		cur_joint_pos[i] = robot_model->q_current[robot_model->getJointIndex(joint_names_[i])];
 	}
-	error_ = vec_ref_ - cur_joint_pos;
+	error_ = kp_task_gain_*(vec_ref_ - cur_joint_pos);
 }
 void TaskJointConfig::getError(Eigen::VectorXd & error_out, bool compute){
 	if (compute){

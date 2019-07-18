@@ -11,7 +11,7 @@ TaskCOM::TaskCOM(std::shared_ptr<RobotModel> & input_model){
 }
 
 TaskCOM::~TaskCOM(){
-	std::cout << "[Task COM] Destroyed" << std::endl;
+	// std::cout << "[Task COM] Destroyed" << std::endl;
 }
 
 void TaskCOM::getTaskJacobian(Eigen::MatrixXd & J_task){
@@ -36,7 +36,7 @@ void TaskCOM::computeError(){
 	// Get COM
 	cur_pos_ = robot_model->x_com;
 	// Compute Linear Error
-	error_.head(3) = vec_ref_ - cur_pos_;
+	error_.head(3) = kp_task_gain_*(vec_ref_ - cur_pos_);
 }
 
 // Computes the error for a given reference

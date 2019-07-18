@@ -23,7 +23,7 @@ TaskStack::TaskStack(std::shared_ptr<RobotModel> & input_model, const std::vecto
 }
 
 TaskStack::~TaskStack(){
-	std::cout << "[Task Stack] for tasks " << task_name << " Destroyed" << std::endl;
+	// std::cout << "[Task Stack] for tasks " << task_name << " Destroyed" << std::endl;
 }
 
 void TaskStack::getTaskJacobian(Eigen::MatrixXd & J_task){

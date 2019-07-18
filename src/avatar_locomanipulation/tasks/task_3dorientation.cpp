@@ -14,7 +14,7 @@ Task3DOrientation::Task3DOrientation(std::shared_ptr<RobotModel> & input_model, 
 }
 
 Task3DOrientation::~Task3DOrientation(){
-	std::cout << "[Task 3D Orientation] for frame " << frame_name << " Destroyed" << std::endl;
+	// std::cout << "[Task 3D Orientation] for frame " << frame_name << " Destroyed" << std::endl;
 }
 
 void Task3DOrientation::getTaskJacobian(Eigen::MatrixXd & J_task){
@@ -39,7 +39,7 @@ void Task3DOrientation::computeError(){
 	robot_model->getFrameWorldPose(frame_name, cur_pos_, quat_current_);
 	// Compute Quaternion Error
 	math_utils::compute_quat_error(quat_ref_, quat_current_, quat_error_);
-	error_ = quat_error_;
+	error_ = kp_task_gain_*quat_error_;
 }
 
 void Task3DOrientation::getError(Eigen::VectorXd & error_out, bool compute){
