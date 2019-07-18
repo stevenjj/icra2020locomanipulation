@@ -134,8 +134,8 @@ namespace footstep_planner{
 	}
 
 	shared_ptr<Node> A_starPlanner::GoalNode(){
-		double x_f = -11;
-		double y_f = 10;
+		double x_f = 200;// 5;
+		double y_f = 1; //5;
 
 		shared_ptr<Node> goal (new Node(x_f, y_f));
 
@@ -230,6 +230,10 @@ namespace footstep_planner{
 
 	bool A_starPlanner::doAstar(){
 		A_starPlanner a_star;
+		NodePtr_Compare node_ptr_compare_obj;
+
+		NodePtr_Compare_key node_ptr_compare_key_obj;
+		NodePtr_Compare_Fcost node_compare_fcost_obj;
 
 		//initial config of the robot
 		std::shared_ptr<Node> begin;
@@ -237,35 +241,33 @@ namespace footstep_planner{
 		begin = a_star.Initialization();
 		goal = a_star.GoalNode();
 
+		//Initialize starting node with g score and f score
 		begin->g_score = 0;
 		begin->f_score = a_star.heuristicCost(begin,goal);
 
-		//define all vectors and iterators 
+		//define all vectors, maps and iterators 
 		shared_ptr<Node> current_node;
 
 		std::vector< std::shared_ptr<Node> > OpenSet;
 		std::vector< std::shared_ptr<Node> > ClosedSet;
-
-		std::vector< shared_ptr<Node> >::iterator node_it_closed;
-		std::vector< shared_ptr<Node> >::iterator node_it_open;
+		std::map< std::shared_ptr<Node>, bool, NodePtr_Compare_key> ExploredSet;
+	
 		std::vector< shared_ptr<Node> >::iterator node_it;
+		std::map< std::shared_ptr<Node>, bool>::iterator es_it;
 		
 		OpenSet.push_back(begin); //append starting node to open set
 
-		NodePtr_Compare_key node_ptr_compare_key_obj;
-		NodePtr_Compare_Fcost node_compare_fcost_obj;
+
 
 		while (!OpenSet.empty()){
 
 				//sort the open set
 				cout << "size of open set: " << OpenSet.size() << endl;
+				cout << "size of explored set: " << ExploredSet.size() << endl;
 				std::sort(OpenSet.begin(), OpenSet.end(), node_compare_fcost_obj);
 
-				
 				//choose top value of open set as current node;
 				current_node = OpenSet[0];
-
-				std::cout << "smallest cost node (key, fscore) = (" << current_node->key << ", " << current_node->f_score << ")" << std::endl;
 
 				//is current node = goal node?
 				if (a_star.goalReached(current_node, goal) == true){
@@ -291,10 +293,11 @@ namespace footstep_planner{
 
 					//put current node onto closed set
 					int vector_pos;
+					// binary search to find where to insert it.
 					vector_pos = lower_bound(ClosedSet.begin(),ClosedSet.end(),current_node, node_ptr_compare_key_obj) - ClosedSet.begin();
 					vector< shared_ptr<Node> >::iterator it;
 					it = ClosedSet.begin() + vector_pos;
-					ClosedSet.insert(it,current_node);
+					ClosedSet.insert(it,current_node); 
 
 					//create new neighbor nodes
 					std::vector< shared_ptr<Node> > neighbors;
@@ -303,34 +306,33 @@ namespace footstep_planner{
 					//iterate through all neighbors
 					for (size_t i(0);i < neighbors.size(); i++){
 
-						std::shared_ptr<Node> node_to_find;
-						node_to_find = neighbors[i];
-						//check to see if neighbor already in closed set
-						node_it_closed = std::find_if(ClosedSet.begin(), ClosedSet.end(), NodePtr_Equality(node_to_find));
-						node_it_open = std::find_if(OpenSet.begin(), OpenSet.end(), NodePtr_Equality(node_to_find));
-
 						//binary search to see if neighbor node in closed set
 						if (!(binary_search(ClosedSet.begin(), ClosedSet.end(), neighbors[i], node_ptr_compare_key_obj))){
+							
+							//find neighbor in explored set
+							es_it = ExploredSet.find(neighbors[i]);
 
-							//check to see if neighbor already in open set
-							if (node_it_open != OpenSet.end()){
+							//if neighbor exists in explored set
+							if (es_it != ExploredSet.end()){ 
+
+								//determine tentative g score
 								double tentative_gscore = current_node->g_score + a_star.gScore(current_node,neighbors[i]);
-								// cout << "tentative g_Score" << tentative_gscore << endl;
+								
+								//check to see if g score path is better than previous
+								if (tentative_gscore < es_it->first->g_score){ 
 
-								//check to see if g_score of this node path is better than previous
-								if (tentative_gscore < (*node_it_open)->g_score){
-
-									//update neighbor node
-									(*node_it_open)->parent = current_node;
-									(*node_it_open)->g_score = tentative_gscore;
-									(*node_it_open)->f_score = tentative_gscore + a_star.heuristicCost((*node_it_open),goal); 
-			
+									//update node
+									es_it->first->parent = current_node; 
+									es_it->first->g_score = tentative_gscore; 
+									es_it->first->f_score = tentative_gscore + a_star.heuristicCost(neighbors[i],goal); 
+								
 								}
 							}
 							else{
 								neighbors[i]->g_score = current_node->g_score + a_star.gScore(current_node,neighbors[i]);
 								neighbors[i]->f_score = neighbors[i]->g_score + a_star.heuristicCost(neighbors[i],goal);
 								OpenSet.push_back(neighbors[i]);
+								ExploredSet.insert(pair<shared_ptr<Node>,bool> (neighbors[i],false)); 
 							}		
 						}
 		

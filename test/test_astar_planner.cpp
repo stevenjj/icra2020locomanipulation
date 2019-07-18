@@ -4,6 +4,11 @@
 
 using namespace footstep_planner;
 
+
+
+
+
+
 int main(int argc, char **argv){
 	A_starPlanner planner;
 
@@ -15,14 +20,14 @@ int main(int argc, char **argv){
 	shared_ptr<Node> test5(new Node(7,0));
 	shared_ptr<Node> test6(new Node(8,0));
 	shared_ptr<Node> test7(new Node(1,1));
-	// test->key = '7';
-	// test1->key = '1';
-	// test2->key = '2';
-	// test3->key = '3';
-	// test4->key = '4';
-	// test5->key = '5';
-	// test6->key = '10';
-	// test7->key = '12';
+	test->f_score = 2;
+	test1->f_score = 3;
+	test2->f_score = 4;
+	test3->f_score = 1;
+	test4->f_score = 5;
+	test5->f_score = 6;
+	test6->f_score = 10;
+	test7->f_score = 8;
 	// Create Notes
 	// std::shared_ptr<Node> begin (new Node(10, 10) );
 	// std::shared_ptr<Node> neighbor (new Node(30, 30) );
@@ -84,7 +89,7 @@ int main(int argc, char **argv){
 
 	// // Closed set operations ------------------------------------------------------------------------------------------
 	// std::map< std::shared_ptr<Node>, bool, NodePtr_Compare> closed_set;
-	// std::map< std::shared_ptr<Node>, bool, NodePtr_Compare>::iterator cs_it;
+	//std::map< std::shared_ptr<Node>, bool>::iterator es_it;
 
 
 	// // 1. Inserting elements into the closed_set
@@ -137,56 +142,92 @@ int main(int argc, char **argv){
 	// else{
 	// 	cout << "test2 in closed set" << endl;
 	// }
-	// vector< shared_ptr<Node> > ClosedSet;
 
-	// ClosedSet.push_back(test1);
-	// ClosedSet.push_back(test2);
-	// ClosedSet.push_back(test3);
-	// ClosedSet.push_back(test4);
-	// ClosedSet.push_back(test5);
-	// ClosedSet.push_back(test6);
-	// ClosedSet.push_back(test7);
 
-	// std::cout << "pre sort:" << std::endl;
-	// for (size_t i(0); i < ClosedSet.size();i++){
-	// cout << "Node key: " << ClosedSet[i]->key << endl;
+	// vector< shared_ptr<Node> > OpenSet;
+
+	// OpenSet.push_back(test1);
+	// OpenSet.push_back(test2);
+	// OpenSet.push_back(test3);
+	// OpenSet.push_back(test4);
+	// OpenSet.push_back(test5);
+	// OpenSet.push_back(test6);
+	// OpenSet.push_back(test7);
+
+
+	// NodePtr_Compare_Fcost node_compare_fcost_obj;
+	// // std::cout << "pre sort:" << std::endl;
+	// // for (size_t i(0); i < ClosedSet.size();i++){
+	// // cout << "Node key: " << ClosedSet[i]->key << endl;
+	// // }
+
+	// // std::cout << "test1 compare test2 " << test1->key.compare(test2->key) << std::endl;
+	// // std::cout << "test2 compare test3 " << test2->key.compare(test3->key) << std::endl;
+	// // std::cout << "test1 compare test3 " << test1->key.compare(test3->key) << std::endl;
+
+	// // NodePtr_Compare_key node_ptr_compare_key_obj;
+	// // std::sort(OpenSet.begin(),OpenSet.end(), node_compare_fcost_obj);
+
+
+	// // int vector_pos;
+	// // vector_pos = lower_bound(OpenSet.begin(),OpenSet.end(),test, node_compare_fcost_obj) - OpenSet.begin();
+	// // vector< shared_ptr<Node> >::iterator it;
+	// // it = OpenSet.begin() + vector_pos;
+	// // OpenSet.insert(it,test);
+
+	// // std::cout << "post sort:" << std::endl;
+	// // for (size_t i(0); i < OpenSet.size();i++){
+	// // 	cout << "Node f_score: " << OpenSet[i]->f_score << endl;
+	// // }
+
+
+
+
+	// // int vector_pos;
+	// // vector_pos = lower_bound(ClosedSet.begin(),ClosedSet.end(),test,node_ptr_compare_key_obj) - ClosedSet.begin();
+	// // cout << "f_scores: " << test7->f_score << endl;
+	// // cout << "positon of vector: " << vector_pos << endl;
+
+	// // vector< shared_ptr<Node> >::iterator it;
+	// // it = ClosedSet.begin() + vector_pos;
+	// // ClosedSet.insert(it,test);
+
+	// // for (size_t i(0); i < ClosedSet.size();i++){
+	// // cout << "Node key: " << ClosedSet[i]->key << endl;
+	// // }
+
+
+
+
+	// // if ((binary_search(ClosedSet.begin(), ClosedSet.end(), test, node_ptr_compare_key_obj))){ 
+ // //       cout << "test exists in vector"; 
+ // //    }
+ // //   	else{
+ // //   		cout << "test not in Closed set" << endl;
+ // //   	}
+
+
+	// std::map<shared_ptr<Node>,bool> Exploredtest;
+
+	// Exploredtest.insert(pair<shared_ptr<Node>,bool> (test,true));
+	// Exploredtest.insert(pair<shared_ptr<Node>,bool> (test1,true));
+	// Exploredtest.insert(pair<shared_ptr<Node>,bool> (test2,true));
+	// Exploredtest.insert(pair<shared_ptr<Node>,bool> (test3,true));
+	// Exploredtest.insert(pair<shared_ptr<Node>,bool> (test4,true));
+
+	// cout << "size of explored test: " << Exploredtest.size() << endl;
+	
+	// es_it = Exploredtest.find(test4);
+	// if (es_it != Exploredtest.end()){
+	// 	cout << "found node with key: " << es_it->first->key << endl;
+	// 	cout << "pre change f score of found node: " << es_it->first->f_score << endl;
+	// 	es_it->first->f_score = 54321;
+	// 	cout << "post change f score of found node: " << es_it->first->f_score << endl;
+	// }
+	// else{
+	// 	cout << "node not present in map" << endl;
 	// }
 
-	// std::cout << "test1 compare test2 " << test1->key.compare(test2->key) << std::endl;
-	// std::cout << "test2 compare test3 " << test2->key.compare(test3->key) << std::endl;
-	// std::cout << "test1 compare test3 " << test1->key.compare(test3->key) << std::endl;
-
-	// NodePtr_Compare_key node_ptr_compare_key_obj;
-	// std::sort(ClosedSet.begin(),ClosedSet.end(), node_ptr_compare_key_obj);
-
-	// std::cout << "post sort:" << std::endl;
-	// for (size_t i(0); i < ClosedSet.size();i++){
-	// cout << "Node key: " << ClosedSet[i]->key << endl;
-	// }
-
-
-	// int vector_pos;
-	// vector_pos = lower_bound(ClosedSet.begin(),ClosedSet.end(),test,node_ptr_compare_key_obj) - ClosedSet.begin();
-	// cout << "f_scores: " << test7->f_score << endl;
-	// cout << "positon of vector: " << vector_pos << endl;
-
-	// vector< shared_ptr<Node> >::iterator it;
-	// it = ClosedSet.begin() + vector_pos;
-	// ClosedSet.insert(it,test);
-
-	// for (size_t i(0); i < ClosedSet.size();i++){
-	// cout << "Node key: " << ClosedSet[i]->key << endl;
-	// }
-
-
-
-
-	// if ((binary_search(ClosedSet.begin(), ClosedSet.end(), test, node_ptr_compare_key_obj))){ 
- //       cout << "test exists in vector"; 
- //    }
- //   	else{
- //   		cout << "test not in Closed set" << endl;
- //   	}
 
 	return 0;
 }
