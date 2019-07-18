@@ -97,6 +97,9 @@ void testIK_module(){
   std::shared_ptr<CollisionEnvironment> collision;
   collision = std::shared_ptr<CollisionEnvironment>(new CollisionEnvironment(ik_module.robot_model) ) ;
 
+  double safety = 0.1;
+  collision->set_safety_distance(safety);
+
   // Create Tasks
   std::shared_ptr<Task> pelvis_task(new Task6DPose(ik_module.robot_model, "pelvis"));
   std::shared_ptr<Task> lfoot_task(new Task6DPose(ik_module.robot_model, "leftCOP_Frame"));
