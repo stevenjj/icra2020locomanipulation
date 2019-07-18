@@ -35,10 +35,7 @@ private:
   // Input: robot config, object config 
   // Used in distance computation, which does not require the appended config
   std::shared_ptr<RobotModel> append_models(Eigen::VectorXd & q, Eigen::VectorXd & obj_config);
-
-
-  // builds a map from our common names like "rhand" to frame names like "rightPalm"
-  std::map<std::string, std::string> make_map_to_frame_names_subset();
+  
 
 
   // Input: empty map string to string
@@ -80,6 +77,7 @@ public:
   
   // Fills struct DirectedVector self_directed_vectors with the relevant vectors
   //  to the link indicated in the fnc name
+  //    these directed vectors used in self_collision_dx to get the world dx
   void build_directed_vector_to_rhand();
   void build_directed_vector_to_lhand();
   void build_directed_vector_to_head();
@@ -100,7 +98,7 @@ public:
   // Sets the safety distance between robot links
   void set_safety_distance(double & safety_dist_in);
 
-  // Sets the safety distance between robot links
+  // Sets the max scaling factor for dx
   void set_max_scaling_distance(double & max_scaling_dist_in);
 };
 

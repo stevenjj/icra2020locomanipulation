@@ -490,29 +490,11 @@ void CollisionEnvironment::build_directed_vector_to_lelbow(){
 
 
 
-std::map<std::string, std::string> CollisionEnvironment::make_map_to_frame_names_subset(){
-  std::map<std::string, std::string> map_to_frame_names_subset;
-
-  map_to_frame_names_subset["rknee"] = "rightKneePitch";
-  map_to_frame_names_subset["lknee"] = "leftKneePitch";
-  map_to_frame_names_subset["pelvis"] = "pelvis";
-  map_to_frame_names_subset["torso"] = "torso";
-  map_to_frame_names_subset["relbow"] = "rightElbowPitch";
-  map_to_frame_names_subset["lelbow"] = "leftElbowPitch";
-  map_to_frame_names_subset["rhand"] = "rightPalm";
-  map_to_frame_names_subset["lhand"] = "leftPalm";
-  map_to_frame_names_subset["head"] = "head";
-
-  return map_to_frame_names_subset;
-}
-
-
-
 std::vector<Eigen::Vector3d> CollisionEnvironment::self_collision_dx(){
   double Potential;
   std::vector<Eigen::Vector3d> dxs;
-  Eigen::MatrixXd J_out(6, valkyrie->getDimQdot()); J_out.fill(0);;
-  std::map<std::string, std::string> map_to_frame_names_subset = make_map_to_frame_names_subset();
+  Eigen::MatrixXd J_out(6, valkyrie->getDimQdot()); J_out.fill(0);
+  // std::map<std::string, std::string> map_to_frame_names_subset = make_map_to_frame_names_subset();
 
   for(int k=0; k<self_directed_vectors.size(); ++k){
     Potential = safety_dist*2 - (self_directed_vectors[k].magnitude);
