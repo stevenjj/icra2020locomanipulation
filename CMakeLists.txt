@@ -45,7 +45,8 @@ include_directories(
 )
 
 SET (MODEL_SOURCES
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/models/valkyrie_model.cpp)
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/models/valkyrie_model.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/models/robot_model.cpp)
 
 SET (DATA_TYPES_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/data_types/footstep.cpp
@@ -86,13 +87,17 @@ SET (TASK_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_contact_normal.cpp	
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_3dorientation.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_joint_config.cpp
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_stack.cpp)
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_stack.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_selfcollision.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_objectcollision.cpp)
 
-SET (COLLISION_SOURCES
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/collision_module/collision_class.cpp)
+
+SET (COLLISION_ENVIRONMENT_SOURCES
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/collision_environment/collision_environment.cpp)
 
 SET (IK_MODULE_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/ik_module/ik_module.cpp)
+
 
 SET(PROJECT_SOURCES
 	${MODEL_SOURCES}
@@ -102,7 +107,7 @@ SET(PROJECT_SOURCES
 	${ROS_BRIDGE_SOURCES}
 	${FEASIBILITY_SOURCES}
 	${TASK_SOURCES}
-	${COLLISION_SOURCES}
+	${COLLISION_ENVIRONMENT_SOURCES}
 	${IK_MODULE_SOURCES})
 
 # Grab all the libraries

@@ -28,14 +28,21 @@ void printVec(const std::string & vec_name, const::Eigen::VectorXd vec){
 }
 
 void initialize_config(Eigen::VectorXd & q_init){
-  std::cout << "Initialize Valkyrie Model" << std::endl;
-  ValkyrieModel valkyrie;
 
+  std::cout << "Initialize Valkyrie Model" << std::endl;
+  std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
+  std::string srdf_filename = THIS_PACKAGE_PATH"models/valkyrie_disable_collisions.srdf";
+  std::string meshDir_  = THIS_PACKAGE_PATH"../val_model/"; 
+  RobotModel valkyrie(urdf_filename, meshDir_, srdf_filename);
+
+  std::cout << "test_ik s1" << std::endl;
   // X dimensional state vectors
   Eigen::VectorXd q_start;
 
+  std::cout << "valkyrie.getDimQ(): " << valkyrie.getDimQ() << std::endl;
   // Set origin at 0.0
   q_start = Eigen::VectorXd::Zero(valkyrie.getDimQ());
+  std::cout << "test_ik s2" << std::endl;
   double theta = 0.0;
   Eigen::AngleAxis<double> aa(theta, Eigen::Vector3d(0.0, 0.0, 1.0));
 
@@ -45,6 +52,7 @@ void initialize_config(Eigen::VectorXd & q_init){
   q_start[3] = init_quat.x(); q_start[4] = init_quat.y(); q_start[5] = init_quat.z(); q_start[6] = init_quat.w(); // Set up the quaternion in q
 
   q_start[2] = 1.0; // set z value to 1.0, this is the pelvis location
+  std::cout << "test_ik s3" << std::endl;
 
   q_start[valkyrie.getJointIndex("leftHipPitch")] = -0.3;
   q_start[valkyrie.getJointIndex("rightHipPitch")] = -0.3;
@@ -66,7 +74,21 @@ void initialize_config(Eigen::VectorXd & q_init){
   q_init = q_start;
 }
 
-void getSelectedPostureTaskReferences(std::shared_ptr<ValkyrieModel> valkyrie, std::vector<std::string> & selected_names, Eigen::VectorXd & q_start, Eigen::VectorXd & q_ref){
+void getPostureTaskReferences(std::shared_ptr<RobotModel> valkyrie, Eigen::VectorXd & q_start, Eigen::VectorXd & q_ref){
+  Eigen::VectorXd q_des;
+  q_des = Eigen::VectorXd::Zero(valkyrie->joint_names.size());
+
+  for(int i = 0; i < valkyrie->joint_names.size(); i++){
+    std::cout << valkyrie->joint_names[i] << std::endl;
+    q_des[i] = q_start[valkyrie->getJointIndex(valkyrie->joint_names[i])];
+  }
+  q_des[valkyrie->getJointIndexNoFloatingJoints("leftElbowPitch")] = -1.25;
+  std::cout << "q_start = " << q_start.transpose() << std::endl;
+  std::cout << "q_des = " << q_des.transpose() << std::endl;
+  q_ref = q_des;
+}
+
+void getSelectedPostureTaskReferences(std::shared_ptr<RobotModel> valkyrie, std::vector<std::string> & selected_names, Eigen::VectorXd & q_start, Eigen::VectorXd & q_ref){
   Eigen::VectorXd q_des;
   q_des = Eigen::VectorXd::Zero(selected_names.size());
   for(int i = 0; i < selected_names.size(); i++){
@@ -231,8 +253,17 @@ void testIK_module(){
   Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(ik_module.robot_model->getDimQdot());
 
   ik_module.prepareNewIKDataStrcutures();
+// <<<<<<< HEAD
+//   std::cout << "test_ik s1" << std::endl;
+//   ik_module.solveIK(solve_result, error_norm, q_sol);
+//   std::cout << "test_ik s2" << std::endl;
+
+//   Eigen::VectorXd q_config = Eigen::VectorXd::Zero(q_init.size());
+//   printVec("q_sol", q_sol);
+// =======
   ik_module.solveIK(solve_result, task_error_norms, total_error_norm, q_sol);
   ik_module.printSolutionResults();
+// >>>>>>> origin/master
 
   // Visualize Solution:
   visualize_robot(q_init, q_sol);
@@ -262,7 +293,11 @@ void visualize_robot(Eigen::VectorXd & q_start, Eigen::VectorXd & q_end){
   sensor_msgs::JointState joint_msg_end;
 
   // Initialize Robot Model
-  ValkyrieModel valkyrie;
+  std::cout << "Initialize Valkyrie Model" << std::endl;
+  std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
+  std::string srdf_filename = THIS_PACKAGE_PATH"models/valkyrie_disable_collisions.srdf";
+  std::string meshDir_  = THIS_PACKAGE_PATH"../val_model/"; 
+  RobotModel valkyrie(urdf_filename, meshDir_, srdf_filename);
 
   // Visualize q_start and q_end in RVIZ
   rviz_translator.populate_joint_state_msg(valkyrie.model, q_start, tf_world_pelvis_init, joint_msg_init);

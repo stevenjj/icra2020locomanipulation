@@ -6,7 +6,7 @@
 
 class Task6DPosewrtMidFeet: public Task6DPose{
 public:
-	Task6DPosewrtMidFeet(std::shared_ptr<ValkyrieModel> & input_model, const std::string & input_frame_name);
+	Task6DPosewrtMidFeet(std::shared_ptr<RobotModel> & input_model, const std::string & input_frame_name);
 	virtual ~Task6DPosewrtMidFeet();
 
 	// Computes the error for a given reference

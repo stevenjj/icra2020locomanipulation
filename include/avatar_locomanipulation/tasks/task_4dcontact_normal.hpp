@@ -5,7 +5,7 @@
 
 class Task4DContactNormalTask: public Task{
 public:
-	Task4DContactNormalTask(std::shared_ptr<ValkyrieModel> & input_model, const std::string & input_frame_name, 
+	Task4DContactNormalTask(std::shared_ptr<RobotModel> & input_model, const std::string & input_frame_name, 
 						    const Eigen::Vector3d & normal_vec, const Eigen::Vector3d normal_vec_tail);	
 
 	virtual ~Task4DContactNormalTask();

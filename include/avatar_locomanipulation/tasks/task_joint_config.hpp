@@ -7,7 +7,7 @@
 
 class TaskJointConfig: public Task{
 public:
-	TaskJointConfig(std::shared_ptr<ValkyrieModel> & input_model, const std::vector<std::string> & joint_names);
+	TaskJointConfig(std::shared_ptr<RobotModel> & input_model, const std::vector<std::string> & joint_names);
 
 	virtual ~TaskJointConfig();
 

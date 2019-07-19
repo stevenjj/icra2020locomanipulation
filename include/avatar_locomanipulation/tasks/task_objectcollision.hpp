@@ -1,13 +1,14 @@
-#ifndef ALM_6DPOSE_TASK_H
-#define ALM_6DPOSE_TASK_H
+#ifndef ALM_OBJECTCOLLISION_TASK_H
+#define ALM_OBJECTCOLLISION_TASK_H
 
 #include <avatar_locomanipulation/tasks/task.hpp>
+#include <avatar_locomanipulation/collision_environment/collision_environment.h>
 
-class Task6DPose: public Task{
+class TaskObjectCollision: public Task{
 public:
-	Task6DPose(std::shared_ptr<RobotModel> & input_model, const std::string & input_frame_name);
+	TaskObjectCollision(std::shared_ptr<RobotModel> & input_model, const std::string & input_frame_name, std::shared_ptr<CollisionEnvironment> & collision, const std::string & link_name_in);
 
-	virtual ~Task6DPose();
+	virtual ~TaskObjectCollision();
 
 	// Warning: robot_model->updateFullKinematics(q) and 
 	virtual void getTaskJacobian(Eigen::MatrixXd & J_task);
@@ -36,9 +37,14 @@ public:
 	virtual void setError(const Eigen::VectorXd & error_in);
 
 protected:
+	Eigen::MatrixXd J_tmp;
+	Eigen::MatrixXd Jdot_tmp;
+
 	Eigen::Vector3d cur_pos_;
 	Eigen::Quaterniond quat_current_;
 	Eigen::Vector3d quat_error_;
+	std::shared_ptr<CollisionEnvironment> collision_env;
+	std::string link_name;
 
 
 };

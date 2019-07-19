@@ -1,7 +1,7 @@
 #ifndef ALP_IK_MODULE_H
 #define ALP_IK_MODULE_H
 
-#include <avatar_locomanipulation/models/valkyrie_model.hpp>
+#include <avatar_locomanipulation/models/robot_model.hpp>
 #include <avatar_locomanipulation/tasks/task.hpp>
 #include <avatar_locomanipulation/helpers/pseudo_inverse.hpp>
 #include <iostream>
@@ -14,11 +14,11 @@
 class IKModule{
 public:
 	IKModule();
-	IKModule(std::shared_ptr<ValkyrieModel> robot_model_in);
+	IKModule(std::shared_ptr<RobotModel> robot_model_in);
 
 	~IKModule();
 
-	std::shared_ptr<ValkyrieModel> robot_model;
+	std::shared_ptr<RobotModel> robot_model;
 
 	// Sets the initial configuration of the robot
 	void setInitialConfig(const Eigen::VectorXd & q_init);

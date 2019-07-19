@@ -1,4 +1,4 @@
-#include <avatar_locomanipulation/models/valkyrie_model.hpp>
+#include <avatar_locomanipulation/models/robot_model.hpp>
 #include <avatar_locomanipulation/tasks/task.hpp>
 #include <avatar_locomanipulation/tasks/task_com.hpp>
 #include <avatar_locomanipulation/tasks/task_6dpose.hpp>
@@ -11,7 +11,7 @@
 
 #include <iostream>
 
-void get_initial_configuration(const std::shared_ptr<ValkyrieModel> & valkyrie, Eigen::VectorXd & q_start){
+void get_initial_configuration(const std::shared_ptr<RobotModel> & valkyrie, Eigen::VectorXd & q_start){
   q_start = Eigen::VectorXd::Zero(valkyrie->getDimQ());
 
   double theta = 0.0; //M_PI/4.0;
@@ -45,7 +45,10 @@ void get_initial_configuration(const std::shared_ptr<ValkyrieModel> & valkyrie, 
 }
 
 int main(int argc, char ** argv){
-	std::shared_ptr<ValkyrieModel> valkyrie_model(new ValkyrieModel());
+
+  std::string filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf"; 
+	std::shared_ptr<RobotModel> valkyrie_model(new RobotModel(filename));
+
   Eigen::VectorXd q_start;
   Eigen::VectorXd qdot_start = Eigen::VectorXd::Zero(valkyrie_model->getDimQdot());
   Eigen::VectorXd qddot_start = Eigen::VectorXd::Zero(valkyrie_model->getDimQdot());

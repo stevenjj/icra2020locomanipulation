@@ -1,7 +1,7 @@
 #include <avatar_locomanipulation/tasks/task.hpp>
 
 Task::Task(){}
-Task::Task(std::shared_ptr<ValkyrieModel> & input_model){
+Task::Task(std::shared_ptr<RobotModel> & input_model){
 	robot_model = input_model;
 	std::cout << "[Task] Constructed" << std::endl;
 }

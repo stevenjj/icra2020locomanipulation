@@ -5,7 +5,7 @@
 
 class TaskCOM: public Task{
 public:
-	TaskCOM(std::shared_ptr<ValkyrieModel> & input_model);
+	TaskCOM(std::shared_ptr<RobotModel> & input_model);
 
 	virtual ~TaskCOM();
 

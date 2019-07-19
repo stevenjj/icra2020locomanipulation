@@ -1,6 +1,6 @@
 #include <avatar_locomanipulation/tasks/task_3dorientation.hpp>
 
-Task3DOrientation::Task3DOrientation(std::shared_ptr<ValkyrieModel> & input_model, const std::string & input_frame_name){
+Task3DOrientation::Task3DOrientation(std::shared_ptr<RobotModel> & input_model, const std::string & input_frame_name){
 	robot_model = input_model;
 	task_dim = 3;
 	task_name = input_frame_name;

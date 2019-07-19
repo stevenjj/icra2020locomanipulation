@@ -1,6 +1,6 @@
 #include <avatar_locomanipulation/tasks/task_stack.hpp>
 
-TaskStack::TaskStack(std::shared_ptr<ValkyrieModel> & input_model, const std::vector< std::shared_ptr<Task> > & task_list_input){
+TaskStack::TaskStack(std::shared_ptr<RobotModel> & input_model, const std::vector< std::shared_ptr<Task> > & task_list_input){
 	robot_model = input_model;
 	task_list = task_list_input;
 

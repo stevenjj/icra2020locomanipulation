@@ -3,7 +3,7 @@
 
 #include <Eigen/Dense>
 
-#include <avatar_locomanipulation/models/valkyrie_model.hpp>
+#include <avatar_locomanipulation/models/robot_model.hpp>
 #include <avatar_locomanipulation/helpers/orientation_utils.hpp>
 
 #include <string>
@@ -12,7 +12,7 @@
 class Task{
 public:
 	Task();
-	Task(std::shared_ptr<ValkyrieModel> & input_model);
+	Task(std::shared_ptr<RobotModel> & input_model);
 	virtual ~Task();
 
 	virtual void getTaskJacobian(Eigen::MatrixXd & J_task);
@@ -40,7 +40,7 @@ public:
 
 
 	int task_dim = 0;
-	std::shared_ptr<ValkyrieModel> robot_model;
+	std::shared_ptr<RobotModel> robot_model;
 	std::string task_name = "empty task";
 	std::string frame_name = "no frame";
 

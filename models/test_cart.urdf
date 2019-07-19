@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
 <robot name="cart" xmlns:xacro="http://ros.org/wiki/xacro">
+  
   <link name="base_link">
     <inertial>
       <mass value="3.0"/>
@@ -10,13 +11,40 @@
       <geometry>
         <mesh filename="package://avatar_locomanipulation/models/cart/Trolley0.001.dae"/>
       </geometry>
+      <origin rpy="1.57 0.0 1.57" xyz="0.0 0.0 0.0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.45 0.85 0.58"/>
+      </geometry>
+      <origin rpy="1.57 0 1.57" xyz="-0.25 0.0 0.425"/>
+    </collision>
+  </link>
+  <joint name="handle_joint" type="fixed">
+    <origin rpy="1.57 0 0" xyz="-0.5665 0 0.9155"/>
+    <!-- <origin rpy="0 0 0" xyz="-0.6446 0 0.0880"/> -->
+    <parent link="base_link"/>
+    <child link="handle_link"/>
+    <axis xyz="1 0 0"/>
+    <dynamics damping="0.01" friction="0"/>
+  </joint>
+  <link name="handle_link">
+    <inertial>
+      <mass value="0.5"/>
+      <origin rpy="0 0 0" xyz="0.000000 0.000000 -0.010000"/>
+      <inertia ixx="0.000608427" ixy="-1.172e-06" ixz="1.647e-06" iyy="0.000620328" iyz="-2.33e-07" izz="0.001078108"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <cylinder length="0.38" radius="0.0175"/>
+      </geometry>
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
     </visual>
     <collision>
       <geometry>
-        <box size="1.5 0.5 10"/>
+        <cylinder length="0.38" radius="0.0175"/>
       </geometry>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
     </collision>
   </link>
 </robot>

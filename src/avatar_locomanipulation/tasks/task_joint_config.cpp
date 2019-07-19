@@ -1,6 +1,6 @@
 #include <avatar_locomanipulation/tasks/task_joint_config.hpp>
 
-TaskJointConfig::TaskJointConfig(std::shared_ptr<ValkyrieModel> & input_model, const std::vector<std::string> & joint_names){
+TaskJointConfig::TaskJointConfig(std::shared_ptr<RobotModel> & input_model, const std::vector<std::string> & joint_names){
 	robot_model = input_model;
 	task_dim = joint_names.size();
 	J_config = Eigen::MatrixXd::Zero(task_dim, robot_model->getDimQdot());
