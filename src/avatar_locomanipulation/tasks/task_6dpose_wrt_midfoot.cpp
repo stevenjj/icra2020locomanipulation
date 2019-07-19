@@ -79,5 +79,5 @@ void Task6DPosewrtMidFeet::computeError(){
 	math_utils::compute_quat_error(des_quat, quat_current_, quat_error_);
 	error_.tail(3) = kp_task_gain_*(des_aa.axis()*des_aa.angle() - cur_aa.axis()*cur_aa.angle()); //kp_task_gain_*(quat_error_);	
 
-	std::cout << "pelvis wrt midfeet error_ = " << error_.transpose() << std::endl;
+	// std::cout << "pelvis wrt midfeet error_ = " << error_.transpose() << std::endl;
 }

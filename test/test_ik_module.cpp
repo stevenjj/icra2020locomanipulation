@@ -141,9 +141,9 @@ void testIK_module(){
                                              "leftShoulderPitch", "leftShoulderRoll", "leftShoulderYaw", "leftElbowPitch", "leftForearmYaw", "leftWristRoll", "leftWristPitch", 
                                              "lowerNeckPitch", "neckYaw", "upperNeckPitch"};
 
-  // selected_names = ik_module.robot_model->joint_names;
+  selected_names = ik_module.robot_model->joint_names;
   std::shared_ptr<Task> posture_task(new TaskJointConfig(ik_module.robot_model, selected_names));
-  posture_task->setTaskGain(1e-1);
+  posture_task->setTaskGain(1e-2);
 
   // Stack Tasks in order of priority
   // Stance Generation Test

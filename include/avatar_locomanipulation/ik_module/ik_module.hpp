@@ -83,6 +83,9 @@ private:
 	// Check if the first task has converged
 	bool checkFirstTaskConvergence();
 
+	// Checks the backtracking condition
+	bool checkBackTrackCondition(int task_idx_to_minimize);
+
 	// Prints task errors
 	void printTaskErrorsHeader();
 	void printTaskErrors();
@@ -125,6 +128,19 @@ private:
 	double grad_tol = 1e-12;//6; // Gradient descent tolerance for suboptimality
 	bool inertia_weighted_ = false;
 
+
+	// if true: use dq in the order of task hierarchy and only include next tasks when higher priority tasks have converged
+	// if false: uses the total_dq for all the tasks in the hierarchy.
+	bool sequential_descent = false; 
+
+	// if true: uses the current task error norm for computing the backtracking condition. 
+	// if false: uses the total error norm for computing the backtracking condition
+	bool backtrack_with_current_task_error = true; 
+
+	// if true: during descent, ensures that higher priority tasks are not violated. 
+	// if false: assumes that the overall error norm will eventually descend 
+	bool check_prev_violations = false; 
+
 	// Errors and Error gradient values:
 	double total_error_norm = 0.0;
 	double f_q = 0.0;
@@ -132,6 +148,7 @@ private:
 	double grad_f_norm_squared = 0.0;
 
 	// Internal solve result
+	bool first_task_convergence = false;
 	int solve_result_ = 0;
 	Eigen::VectorXd q_sol_;	
 

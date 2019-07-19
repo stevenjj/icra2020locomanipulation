@@ -43,10 +43,6 @@ void Task6DPosewrtFrame::computeError(){
 	des_pos = frame_pos + frame_quat.toRotationMatrix()*vec_ref_;
 	des_quat = frame_quat*quat_ref_;
 
-	// std::cout << "des_pos = " << des_pos << std::endl;
-	// std::cout << "des_quat = ";
-	// math_utils::printQuat(des_quat);
-
 	Eigen::AngleAxisd des_aa(des_quat);
 	Eigen::AngleAxisd cur_aa(quat_current_);
 
@@ -57,5 +53,4 @@ void Task6DPosewrtFrame::computeError(){
 	math_utils::compute_quat_error(des_quat, quat_current_, quat_error_);
 	error_.tail(3) = kp_task_gain_*(des_aa.axis()*des_aa.angle() - cur_aa.axis()*cur_aa.angle()); //kp_task_gain_*(quat_error_);	
 
-	std::cout << "Frame:" << frame_name << " wrt frame " << wrt_frame_name << " error = " << error_.transpose() << std::endl;
 }

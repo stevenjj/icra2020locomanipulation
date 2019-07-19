@@ -195,8 +195,7 @@ void IKModule::compute_dq(const int & task_idx_to_minimize){
 }
 
 void IKModule::compute_dq(){
-  // add a condition to break depending on which task we are currently optimizing.
-  // Compute dq_tot
+  // Compute dq_tot for all tasks
   for(int i = 0; i < task_hierarchy.size(); i++){
     if (i == 0){
       dq_tot = JNpinv_[0]*dx_[0];
@@ -222,13 +221,26 @@ bool IKModule::checkPrevTaskViolation(const int & task_idx_to_minimize){
 bool IKModule::checkFirstTaskConvergence(){
   if (dx_norms_[0] < error_tol){
     // std::cout << "Task 1 converged within error tolerance." << std::endl;
-    return true;
+    first_task_convergence = true;
   }else{
     // std::cout << "Task 1 did not converge within error tolerance." << std::endl;
-    return false;
+    first_task_convergence = false;
   }
+  return first_task_convergence;
 }
 
+bool IKModule::checkBackTrackCondition(int task_idx_to_minimize){
+  // At each descent step, whether or not to ensure that the previous task was not violated
+  if (check_prev_violations){
+      //    - the new error is larger than the previous error.
+      //    - or if the new configuration significantly altered previous tasks:
+    return ((f_q_p_dq > f_q) || checkPrevTaskViolation(task_idx_to_minimize));
+  }else{
+    // Assume that we can descend anyway
+    //    - the new error is larger than the previous error.
+    return (f_q_p_dq > f_q);
+  }
+}
 
 bool IKModule::solveIK(int & solve_result, std::vector<double> & task_error_norms, double & total_error_norm_out, Eigen::VectorXd & q_sol){
   bool convergence = solveIK(solve_result, total_error_norm_out, q_sol);
@@ -250,24 +262,34 @@ bool IKModule::solveIK(int & solve_result, double & total_error_norm_out, Eigen:
       computeTaskErrors();
     }
 
-    // f_q = total_error_norm; // If we are only comparing with total error
-
     // Check task convergence in order of priority
     f_q = 0;
-    for(int j = 0; j < dx_norms_.size(); j++){
-      if (dx_norms_[j] < error_tol){
-        continue; 
-      }else{
-        f_q = dx_norms_[j];
-        task_idx_to_minimize = j;
-        break;
-      }
+    if (backtrack_with_current_task_error){
+      // Using the current task error norm as the condition for back tracking
+      for(int j = 0; j < dx_norms_.size(); j++){
+        if (dx_norms_[j] < error_tol){
+          continue; 
+        }else{
+          f_q = dx_norms_[j];
+          task_idx_to_minimize = j;
+          break;
+        }
+      }     
+    }else{
+      // Using the total error norm as the condition for back tracking
+      f_q = total_error_norm;
     }
+
 
     // Compute PseudoInverses and Find Descent Direction
     computePseudoInverses();
-    // Compute dq in order of priority
-    compute_dq(task_idx_to_minimize);
+    if (sequential_descent){
+      // Compute dq of lower priorty tasks if higher priority tasks have converged already
+      compute_dq(task_idx_to_minimize);
+    }else{
+      // Compute dq for all tasks
+      compute_dq();
+    }
 
     // Start Gradient Descent with backtracking
     k_step = 1.0;
@@ -282,8 +304,13 @@ bool IKModule::solveIK(int & solve_result, double & total_error_norm_out, Eigen:
       // Compute errors for this configuration change proposal
       computeTaskErrors();
 
-      // f_q_p_dq = total_error_norm; // if we are only comparing with total error
-      f_q_p_dq = dx_norms_[task_idx_to_minimize]; // compare with current task
+      if (backtrack_with_current_task_error){
+        // Using the current task error norm as the condition for back tracking
+        f_q_p_dq = dx_norms_[task_idx_to_minimize]; // compare with current task
+      }else{
+        // Using the total error norm as the condition for back tracking
+        f_q_p_dq = total_error_norm; // compare with total error
+      }
 
       // Check if we hit minor iterations limit
       minor_iter_count++;
@@ -294,6 +321,10 @@ bool IKModule::solveIK(int & solve_result, double & total_error_norm_out, Eigen:
         total_error_norm_out = total_error_norm;
         q_sol = q_current;
         q_sol_ = q_current;
+
+        // Recompute errors for the solution
+        robot_model->updateFullKinematics(q_sol);
+        computeTaskErrors();
         return checkFirstTaskConvergence(); // true if at least the first task converged
       }
 
@@ -306,14 +337,16 @@ bool IKModule::solveIK(int & solve_result, double & total_error_norm_out, Eigen:
         total_error_norm_out = total_error_norm;
         q_sol = q_current;
         q_sol_ = q_current;
+        // Recompute errors for the solution
+        robot_model->updateFullKinematics(q_sol);
+        computeTaskErrors();
         return checkFirstTaskConvergence();  // true if at least the first task converged
       }
       
 
-      // Backtrack if:
-      //    - the new error is larger than the previous error.
-      //    - or if the new configuration significantly altered previous tasks:
-      if ((f_q_p_dq > f_q) || checkPrevTaskViolation(task_idx_to_minimize)) {
+      // Backtrack
+      if (checkBackTrackCondition(task_idx_to_minimize)) {
+      // if (f_q_p_dq > f_q) {
         // Decrease the step size
         k_step = beta*k_step;        
         // std::cout << "backtracking with k_step = " << k_step << std::endl;
@@ -370,6 +403,7 @@ double IKModule::clampValue(const double & low, double high, const double & valu
 
 void IKModule::printSolutionResults(){
   std::cout << std::endl;
+  std::cout << "[IK Module] First Task Convergence: " << first_task_convergence << std::endl;
   if (solve_result_ == IK_OPTIMAL_SOL){
     std::cout << "[IK Module] Result: Optimal Solution" << std::endl;
   } else if (solve_result_ == IK_SUBOPTIMAL_SOL){
