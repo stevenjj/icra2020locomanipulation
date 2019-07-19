@@ -26,7 +26,7 @@
 // Import ROS and Rviz visualization
 #include <ros/ros.h>
 #include <avatar_locomanipulation/bridge/val_rviz_translator.hpp>
-#include <avatar_locomanipulation/models/valkyrie_model.hpp>
+#include <avatar_locomanipulation/models/robot_model.hpp>
 
 #include <avatar_locomanipulation/feasibility/feasibility.hpp>
 
@@ -39,7 +39,7 @@ int main(int argc, char ** argv){
     // fs.InverseKinematicsTop(10);
   // Test to see if this is working
   // std::cout << "Initialize Valkyrie Model" << std::endl;
-  ValkyrieModel valkyrie;
+  RobotModel valkyrie;
   //
   // // X dimensional state vectors
   // Eigen::VectorXd q_start;

@@ -4,7 +4,7 @@
 // Import ROS and Rviz visualization
 #include <ros/ros.h>
 #include <avatar_locomanipulation/bridge/val_rviz_translator.hpp>
-#include <avatar_locomanipulation/models/valkyrie_model.hpp>
+#include <avatar_locomanipulation/models/robot_model.hpp>
 
 #include <avatar_locomanipulation/helpers/yaml_data_saver.hpp>
 #include <avatar_locomanipulation/helpers/param_handler.hpp>
@@ -16,7 +16,12 @@
 
 
 int main(int argc, char **argv){
-  ValkyrieModel valkyrie;
+
+  std::string filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
+  std::string srdf_filename = THIS_PACKAGE_PATH"models/valkyrie_disable_collisions.srdf";
+  std::string meshDir  = THIS_PACKAGE_PATH"../val_model/";
+
+  RobotModel valkyrie(filename, meshDir, srdf_filename);
   ParamHandler param_handler;
   std::vector<double> q_end_vec;
   std::vector<double> q_start_vec;

@@ -17,7 +17,7 @@
 // Recursive Newton-Euler Algorithm
 #include "pinocchio/algorithm/rnea.hpp"
 // Robot Model
-#include <avatar_locomanipulation/models/valkyrie_model.hpp>
+#include <avatar_locomanipulation/models/robot_model.hpp>
 // PseudoInverse
 #include <avatar_locomanipulation/helpers/pseudo_inverse.hpp>
 
@@ -55,8 +55,11 @@ int main(int argc, char ** argv){
   sensor_msgs::JointState joint_msg_init;
   sensor_msgs::JointState joint_msg_end;
 
-  // Initialize Robot Model
-  ValkyrieModel valkyrie;
+  std::string filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
+  std::string srdf_filename = THIS_PACKAGE_PATH"models/valkyrie_disable_collisions.srdf";
+  std::string meshDir  = THIS_PACKAGE_PATH"../val_model/";
+
+  RobotModel valkyrie(filename, meshDir, srdf_filename);
   // Visualize q_start and q_end in RVIZ
   rviz_translator.populate_joint_state_msg(valkyrie.model, q_start, tf_world_pelvis_init, joint_msg_init);
   rviz_translator.populate_joint_state_msg(valkyrie.model, q_end, tf_world_pelvis_end, joint_msg_end);
@@ -79,7 +82,11 @@ int main(int argc, char ** argv){
 void testIK(Eigen::VectorXd & q_init, Eigen::VectorXd & q_final){
   // Test to see if this is working
   std::cout << "Initialize Valkyrie Model" << std::endl;
-  ValkyrieModel valkyrie;
+  std::string filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
+  std::string srdf_filename = THIS_PACKAGE_PATH"models/valkyrie_disable_collisions.srdf";
+  std::string meshDir  = THIS_PACKAGE_PATH"../val_model/";
+
+  RobotModel valkyrie(filename, meshDir, srdf_filename);
 
   // X dimensional state vectors
   Eigen::VectorXd q_start;
