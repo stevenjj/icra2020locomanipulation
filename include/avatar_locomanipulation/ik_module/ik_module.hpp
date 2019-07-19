@@ -62,6 +62,20 @@ public:
 	// Whether or not the inertia matrix is used for a weighted pseudoinverse. Default: false
 	void setEnableInertiaWeighting(bool inertia_weighted_in);
 
+	// if true: use dq in the order of task hierarchy and only include next tasks when higher priority tasks have converged
+	// if false: uses the total_dq for all the tasks in the hierarchy.
+	// Default: true
+	void setSequentialDescent(bool sequential_descent_in);
+	// if true: uses the current task error norm for computing the backtracking condition. 
+	// if false: uses the total error norm for computing the backtracking condition
+	// Default: true
+	void setBackTrackwithCurrentTaskError(bool backtrack_with_current_task_error_in);
+	// if true: during descent, ensures that higher priority tasks are not violated. 
+	// if false: assumes that the overall error norm will eventually descend 
+	// Default: true
+	void setCheckPrevViolations(bool check_prev_violations_in);
+
+
 	// Print the latest solution results
 	void printSolutionResults();
 
@@ -124,7 +138,7 @@ private:
 	int max_minor_iters  = 30; // maximum number of backtracks
 	double k_step = 1.0; // starting step
 	double beta = 0.8; // Backtracking Line Search Parameter
-	double error_tol = 1e-4; // Task tolerance for success
+	double error_tol = 1e-3; // Task tolerance for success
 	double grad_tol = 1e-12;//6; // Gradient descent tolerance for suboptimality
 	bool inertia_weighted_ = false;
 

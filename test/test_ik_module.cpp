@@ -212,7 +212,7 @@ void testIK_module(){
   rpalm_des_pos[1] += 0.25;//0.3;//0.25; 
   rpalm_des_pos[2] += 0.3; 
   Eigen::AngleAxis<double> axis_angle;
-  axis_angle.angle() = (M_PI/2.0) + (M_PI/4.0);
+  axis_angle.angle() = (M_PI/2.0) - (M_PI/4.0);
   axis_angle.axis() = Eigen::Vector3d(0, 0, 1.0);
   rpalm_des_quat = axis_angle;
 
@@ -271,6 +271,14 @@ void testIK_module(){
   ik_module.addTasktoHierarchy(task_stack_priority_2);
   // ik_module.addTasktoHierarchy(task_stack_priority_3);
 
+
+
+  // Set backtracking parameters
+  ik_module.setSequentialDescent(false);
+  ik_module.setBackTrackwithCurrentTaskError(true);
+  ik_module.setCheckPrevViolations(false);
+
+
   // Perform IK  
   int solve_result;
   double total_error_norm;
@@ -278,17 +286,8 @@ void testIK_module(){
   Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(ik_module.robot_model->getDimQdot());
 
   ik_module.prepareNewIKDataStrcutures();
-// <<<<<<< HEAD
-//   std::cout << "test_ik s1" << std::endl;
-//   ik_module.solveIK(solve_result, error_norm, q_sol);
-//   std::cout << "test_ik s2" << std::endl;
-
-//   Eigen::VectorXd q_config = Eigen::VectorXd::Zero(q_init.size());
-//   printVec("q_sol", q_sol);
-// =======
   ik_module.solveIK(solve_result, task_error_norms, total_error_norm, q_sol);
   ik_module.printSolutionResults();
-// >>>>>>> origin/master
 
   // Visualize Solution:
   visualize_robot(q_init, q_sol);

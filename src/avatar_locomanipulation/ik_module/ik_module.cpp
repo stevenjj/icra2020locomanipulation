@@ -103,6 +103,22 @@ void IKModule::setEnableInertiaWeighting(bool inertia_weighted_in){
   inertia_weighted_ = inertia_weighted_in;
 }
 
+// if true: use dq in the order of task hierarchy and only include next tasks when higher priority tasks have converged
+// if false: uses the total_dq for all the tasks in the hierarchy.
+void IKModule::setSequentialDescent(bool sequential_descent_in){
+  sequential_descent = sequential_descent_in;
+}
+// if true: uses the current task error norm for computing the backtracking condition. 
+// if false: uses the total error norm for computing the backtracking condition
+void IKModule::setBackTrackwithCurrentTaskError(bool backtrack_with_current_task_error_in){
+  backtrack_with_current_task_error = backtrack_with_current_task_error_in;
+}
+// if true: during descent, ensures that higher priority tasks are not violated. 
+// if false: assumes that the overall error norm will eventually descend 
+void IKModule::setCheckPrevViolations(bool check_prev_violations_in){
+  check_prev_violations = check_prev_violations_in;
+}
+
 
 
 void IKModule::updateTaskJacobians(){
