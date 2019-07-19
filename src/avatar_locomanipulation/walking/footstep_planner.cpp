@@ -67,7 +67,7 @@ namespace planner{
 
 	// Node class Implementation ------------------------------
 	Node::Node(){
-		std::cout << "[Node Constructed]" << std::endl;	
+		// std::cout << "[Node Constructed]" << std::endl;	
 	}
 
 	// Destructor
@@ -75,41 +75,51 @@ namespace planner{
 		// std::cout << "[Node Destroyed] with key " << this->key << std::endl;	
 	}
 
-	Node::Node(const double x_in,const double y_in){
+	XYNode::XYNode(){		
+		commonInitialization();
+	}
+	XYNode::~XYNode(){		
+	}
+
+	XYNode::XYNode(const double x_in,const double y_in){
 		commonInitialization();
 		x = x_in;
 		y = y_in;
 		key = (to_string(x) + "-" + to_string(y));	
 	}
 
-	void Node::commonInitialization(){
+	void XYNode::commonInitialization(){
 		x = 0.0;
 		y = 0.0;
 		g_score = 100000;
 		f_score = 100000;
-		key = (to_string(x) + "-" + to_string(y));		
+		key = (to_string(x) + "-" + to_string(y));	
 	}
 
-
-
-	FootstepPlanner::FootstepPlanner(){	
-		std::cout << "[FootstepPlanner Constructed]" << std::endl;
+	XYPlanner::XYPlanner(){	
+		std::cout << "[XYPlanner Constructed]" << std::endl;
 	}
 	// Destructor
-	FootstepPlanner::~FootstepPlanner(){
-		std::cout << "[FootstepPlanner Destroyed]" << std::endl;
+	XYPlanner::~XYPlanner(){
+		std::cout << "[XYPlanner Destroyed]" << std::endl;
 	}
 
-	double FootstepPlanner::gScore(const shared_ptr<Node> current, const shared_ptr<Node> neighbor){
-		return sqrt(pow(neighbor->x - current->x,2) + pow((neighbor->y - current->y),2));
+	double XYPlanner::gScore(const shared_ptr<Node> current, const shared_ptr<Node> neighbor){
+		current_ = std::static_pointer_cast<XYNode>(current);
+		neighbor_ = std::static_pointer_cast<XYNode>(neighbor);
+		return sqrt(pow(neighbor_->x - current_->x,2) + pow((neighbor_->y - current_->y),2));
 	}
 
-	double FootstepPlanner::heuristicCost(const shared_ptr<Node> neighbor,const shared_ptr<Node> goal){
-		return sqrt(pow(goal->x - neighbor->x,2) + pow(abs(goal->y - neighbor->y),2));
+	double XYPlanner::heuristicCost(const shared_ptr<Node> neighbor,const shared_ptr<Node> goal){
+		goal_ = std::static_pointer_cast<XYNode>(goal);
+		neighbor_ = std::static_pointer_cast<XYNode>(neighbor);
+		return sqrt(pow(goal_->x - neighbor_->x,2) + pow(abs(goal_->y - neighbor_->y),2));
 	}
 
-	bool FootstepPlanner::goalReached(shared_ptr<Node> current_node, shared_ptr<Node> goal){
-		if (abs(current_node->x - goal->x) < 0.1 && abs(current_node->y - goal->y) < 0.1){
+	bool XYPlanner::goalReached(shared_ptr<Node> current_node, shared_ptr<Node> goal){
+		current_ = std::static_pointer_cast<XYNode>(current_node);
+		goal_ = std::static_pointer_cast<XYNode>(goal);
+		if (abs(current_->x - goal_->x) < 0.1 && abs(current_->y - goal_->y) < 0.1){
 			return true;
 		}
 		else{
@@ -118,24 +128,28 @@ namespace planner{
 	}
 
 
-	void FootstepPlanner::WriteData(vector< shared_ptr<Node> > optimal_path){
+	void XYPlanner::WriteData(vector< shared_ptr<Node> > optimal_path){
 		for (size_t i(0); i < optimal_path.size(); i++){
-			cout << "optimal path::  " << "x: " << optimal_path[i]->x << "y: " << optimal_path[i]->y << endl;
+			opt_node_ = std::static_pointer_cast<XYNode>(optimal_path[i]);
+			cout << "optimal path::  " << "x: " << opt_node_->x << "y: " << opt_node_->y << endl;
 			vector<double> optimal_coord;
-			optimal_coord.push_back(optimal_path[i]->x);
-			optimal_coord.push_back(optimal_path[i]->y);
+			optimal_coord.push_back(opt_node_->x);
+			optimal_coord.push_back(opt_node_->y);
 			saveVector(optimal_coord,"optimal_path");
 		}
 	}
 
-	void FootstepPlanner::printPath(){
+	void XYPlanner::printPath(){
 		for (size_t i(0); i < optimal_path.size(); i++){
-			cout << "optimal path::  " << "x: " << optimal_path[i]->x << "y: " << optimal_path[i]->y << endl;
+			opt_node_ = std::static_pointer_cast<XYNode>(optimal_path[i]);
+			cout << "optimal path::  " << "x: " << opt_node_->x << "y: " << opt_node_->y << endl;
 		}		
 		std::cout << "Optimal path size:" << optimal_path.size() << std::endl;
 	}
 
-	std::vector< shared_ptr<Node> > FootstepPlanner::getNeighbors(shared_ptr<Node> & current){
+	std::vector< shared_ptr<Node> > XYPlanner::getNeighbors(shared_ptr<Node> & current){
+		current_ = std::static_pointer_cast<XYNode>(current);
+
 		int branch = 3;
 		double disc = 1.0;
 
@@ -152,8 +166,8 @@ namespace planner{
 		int k = -branch;
 		while(k < branch + 1){
 			temp_val = disc*k;
-			x_new = current->x + temp_val;
-			y_new = current->y + temp_val;
+			x_new = current_->x + temp_val;
+			y_new = current_->y + temp_val;
 			x_vals.push_back(x_new);
 			y_vals.push_back(y_new);
 			k++;
@@ -166,8 +180,8 @@ namespace planner{
 				x_y_coord.push_back(y_vals[j]);
 				saveVector(x_y_coord,"foot coordinates");
 				coords.push_back(x_y_coord);
-				shared_ptr<Node> neighbor(new Node(x_vals[i],y_vals[j]));
-				neighbor->parent = current;
+				shared_ptr<Node> neighbor(std::make_shared<XYNode>(x_vals[i],y_vals[j]));
+				neighbor->parent = current_;
 				neighbors.push_back(neighbor);
 			}
 		}

@@ -13,24 +13,25 @@ using namespace planner;
 
 int main(int argc, char **argv){
 	A_starPlanner planner;
-	FootstepPlanner fs_planner;
+	XYPlanner xy_planner;
 
-	shared_ptr<Node> test(new Node(7,7));
-	shared_ptr<Node> test1(new Node(2,2));
-	shared_ptr<Node> test2(new Node(3,3));
-	shared_ptr<Node> test3(new Node(5,0));
-	shared_ptr<Node> test4(new Node(6,0));
-	shared_ptr<Node> test5(new Node(7,0));
-	shared_ptr<Node> test6(new Node(8,0));
-	shared_ptr<Node> test7(new Node(1,1));
-	test->f_score = 2;
-	test1->f_score = 3;
-	test2->f_score = 4;
-	test3->f_score = 1;
-	test4->f_score = 5;
-	test5->f_score = 6;
-	test6->f_score = 10;
-	test7->f_score = 8;
+	// shared_ptr<Node> test(std::make_shared<XYNode>(7,7));
+	// shared_ptr<Node> test1(std::make_shared<XYNode>(2,2));
+	// shared_ptr<Node> test2(std::make_shared<XYNode>(3,3));
+	// shared_ptr<Node> test3(std::make_shared<XYNode>(5,0));
+	// shared_ptr<Node> test4(std::make_shared<XYNode>(6,0));
+	// shared_ptr<Node> test5(std::make_shared<XYNode>(7,0));
+	// shared_ptr<Node> test6(std::make_shared<XYNode>(8,0));
+	// shared_ptr<Node> test7(std::make_shared<XYNode>(1,1));
+	// test->f_score = 2;
+	// test1->f_score = 3;
+	// test2->f_score = 4;
+	// test3->f_score = 1;
+	// test4->f_score = 5;
+	// test5->f_score = 6;
+	// test6->f_score = 10;
+	// test7->f_score = 8;
+
 	// Create Notes
 	// std::shared_ptr<Node> begin (new Node(10, 10) );
 	// std::shared_ptr<Node> neighbor (new Node(30, 30) );
@@ -131,34 +132,35 @@ int main(int argc, char **argv){
 	// std::cout << "start == end?" << start->key.compare(neighborx->key) << std::endl;
 	// std::cout << "start == end?" << start->key.compare(end->key) << std::endl;
 
-	// fs_planner.doAstar();
+	// xy_planner.doAstar();
 
+	shared_ptr<Node> parent_node(std::make_shared<XYNode>(0.0, 1.0));
+	// shared_ptr<XYNode> fnode = std::dynamic_pointer_cast< XYNode > (parent_node);
+	shared_ptr<XYNode> fnode;
+	fnode = std::static_pointer_cast< XYNode > (parent_node);		
 
 	// Create Start Node
 	double x_i = 1;
 	double y_i = 1;
-	shared_ptr<Node> begin (new Node(x_i, y_i));
+	shared_ptr<Node> begin (std::make_shared<XYNode>(x_i, y_i));
 	// Create Goal Node
-	double x_f = 75;
-	double y_f = 15;
-	shared_ptr<Node> goal (new Node(x_f, y_f));
+	double x_f = 25;
+	double y_f = -7;
+	shared_ptr<Node> goal (std::make_shared<XYNode>(x_f, y_f));
 
-	planner.setStartNode(begin);
-	planner.setGoalNode(goal);
+	// Set Start and End Goals
+    xy_planner.setStartNode(begin);
+    xy_planner.setGoalNode(goal);
 
-    fs_planner.setStartNode(begin);
-    fs_planner.setGoalNode(goal);
-
+    // Start Timer
     auto start = std::chrono::system_clock::now();
-	// planner.doAstar();
-	fs_planner.doAstar();
-	fs_planner.printPath();
-
+	// Do A Star on the xy 
+	xy_planner.doAstar();
+	// End Timer
     auto end = std::chrono::system_clock::now();
+	//  Print Path and Time
+	xy_planner.printPath();
     std::chrono::duration<double> elapsed_seconds = end-start;
-
-
-
     std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
 
 	// planner.getNeighbors(test,3,1);

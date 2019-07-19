@@ -25,20 +25,12 @@ namespace planner{
 	class Node {
 	public:
 		Node(); // Constructor
-		~Node(); // Destructor
+		virtual ~Node(); // Destructor
 
 		double g_score;
 		double f_score;
 		shared_ptr<Node> parent;
 		string key;
-
-	// Problem specific:
-		Node(const double x_in, const double y_in); // Constructor
-		double x;
-		double y;
-
-	private:
-		void commonInitialization();
 
 	};
 
@@ -78,11 +70,26 @@ namespace planner{
 
 	};
 
-
-	class FootstepPlanner: public A_starPlanner{
+	class XYNode: public Node{
 	public:
-		FootstepPlanner();
-		virtual ~FootstepPlanner();
+		XYNode(); // Constructor
+		virtual ~XYNode(); // Destructor
+
+
+	// Problem specific:
+		XYNode(const double x_in, const double y_in); // Constructor
+		double x;
+		double y;
+
+		void commonInitialization();
+
+	};
+
+
+	class XYPlanner: public A_starPlanner{
+	public:
+		XYPlanner();
+		virtual ~XYPlanner();
 
 		virtual	double gScore(const shared_ptr<Node> current, const shared_ptr<Node> neighbor);
 		virtual double heuristicCost(const shared_ptr<Node> neighbor,const shared_ptr<Node> goal);
@@ -95,6 +102,12 @@ namespace planner{
 
 		int branch;
 		double disc;
+
+		std::shared_ptr<XYNode> current_;
+		std::shared_ptr<XYNode> goal_;
+		std::shared_ptr<XYNode> neighbor_;		
+		std::shared_ptr<XYNode> opt_node_;
+
 
 	};
 
