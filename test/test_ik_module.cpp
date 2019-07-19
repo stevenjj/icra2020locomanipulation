@@ -137,17 +137,20 @@ void testIK_module(){
 
 
   // posture tasks
-  std::vector<std::string> selected_names = {"torsoYaw", "torsoPitch", "torsoRoll", 
+  std::vector<std::string> uncontrolled_names = {"torsoYaw", "torsoPitch", "torsoRoll", 
                                              "leftShoulderPitch", "leftShoulderRoll", "leftShoulderYaw", "leftElbowPitch", "leftForearmYaw", "leftWristRoll", "leftWristPitch", 
                                              "lowerNeckPitch", "neckYaw", "upperNeckPitch"};
+  std::shared_ptr<Task> torso_larm_task(new TaskJointConfig(ik_module.robot_model, uncontrolled_names));
+  torso_larm_task->setTaskGain(1e-1);
 
-  selected_names = ik_module.robot_model->joint_names;
+  // std::vector<std::string> selected_names = {"rightShoulderPitch", "rightShoulderRoll", "rightShoulderYaw", "rightElbowPitch", "rightForearmYaw", "rightWristRoll", "rightWristPitch"};
+ std::vector<std::string> selected_names = ik_module.robot_model->joint_names;
   std::shared_ptr<Task> posture_task(new TaskJointConfig(ik_module.robot_model, selected_names));
-  posture_task->setTaskGain(1e-2);
+  posture_task->setTaskGain(1e-1);
 
   // Stack Tasks in order of priority
   // Stance Generation Test
-  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {rpalm_task, lfoot_contact_normal_task, rfoot_contact_normal_task, pelvis_wrt_mf_task}));
+  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {rpalm_task, lfoot_contact_normal_task, rfoot_contact_normal_task, pelvis_wrt_mf_task, torso_larm_task}));
   // std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {rpalm_task, lfoot_contact_task, rfoot_contact_task}));
   std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {lf_wrt_rf_task, posture_task})); 
   // std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {lfoot_contact_task, rfoot_contact_task}));
@@ -240,6 +243,11 @@ void testIK_module(){
 
   getSelectedPostureTaskReferences(ik_module.robot_model, selected_names, q_init, q_des);
   posture_task->setReference(q_des);
+
+
+  getSelectedPostureTaskReferences(ik_module.robot_model, uncontrolled_names, q_init, q_des);
+  torso_larm_task->setReference(q_des);
+  
 
   // Check if we can get errors given configuration -----------------------------------------------------------------------------
   Eigen::VectorXd task_error;
