@@ -64,9 +64,9 @@ void initialize_config(Eigen::VectorXd & q_init){
   q_start[valkyrie.getJointIndex("leftAnklePitch")] = -0.3;
   q_start[valkyrie.getJointIndex("rightAnklePitch")] = 0.0;//-0.3;
 
-  q_start[valkyrie.getJointIndex("rightShoulderPitch")] = -0.2;
+  q_start[valkyrie.getJointIndex("rightShoulderPitch")] = 0.2;
   q_start[valkyrie.getJointIndex("rightShoulderRoll")] = 1.1;
-  q_start[valkyrie.getJointIndex("rightElbowPitch")] = 0.4;
+  q_start[valkyrie.getJointIndex("rightElbowPitch")] = 1.0 ; //0.4;
   q_start[valkyrie.getJointIndex("rightForearmYaw")] = 1.5;
 
   q_start[valkyrie.getJointIndex("leftShoulderPitch")] = -0.2;
@@ -208,11 +208,11 @@ void testIK_module(){
   Eigen::Vector3d rpalm_des_pos;
   Eigen::Quaternion<double> rpalm_des_quat;
   ik_module.robot_model->getFrameWorldPose("rightPalm", rpalm_des_pos, rpalm_des_quat);
-  rpalm_des_pos[0] += 1.35;//0.4;//0.35;//0.25;
+  rpalm_des_pos[0] -= 1.35;//0.4;//0.35;//0.25;
   rpalm_des_pos[1] += 0.25;//0.3;//0.25; 
   rpalm_des_pos[2] += 0.3; 
   Eigen::AngleAxis<double> axis_angle;
-  axis_angle.angle() = (M_PI/2.0) - (M_PI/4.0);
+  axis_angle.angle() = (M_PI/2.0) + (M_PI/4.0);
   axis_angle.axis() = Eigen::Vector3d(0, 0, 1.0);
   rpalm_des_quat = axis_angle;
 
@@ -276,7 +276,7 @@ void testIK_module(){
   // Set backtracking parameters
   ik_module.setSequentialDescent(false);
   ik_module.setBackTrackwithCurrentTaskError(true);
-  ik_module.setCheckPrevViolations(false);
+  ik_module.setCheckPrevViolations(true);
 
 
   // Perform IK  
