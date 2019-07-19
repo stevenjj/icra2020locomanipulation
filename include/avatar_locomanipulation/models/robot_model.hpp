@@ -83,6 +83,7 @@ public:
   Eigen::Matrix3Xd Jdot_com; // Center of mass Jacobian Derivative
 
   RobotModel();
+  RobotModel(const std::string & filename);
   RobotModel(const std::string & filename, const std::string & meshDir);
   RobotModel(const std::string & filename, const std::string & meshDir, const std::string & srdf);
 

@@ -2,11 +2,12 @@
 #include <math.h>       
 #include <iostream>
 
-#include <avatar_locomanipulation/models/valkyrie_model.hpp>
+#include <avatar_locomanipulation/models/robot_model.hpp>
 
 int main(int argc, char ** argv){
   std::cout << "Initialize Valkyrie Model" << std::endl;
-  ValkyrieModel valkyrie;
+  std::string filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
+  RobotModel valkyrie(filename);
 
   // Test Dimensions
   std::cout << "joint dimension: " << valkyrie.getDimQ() << std::endl;

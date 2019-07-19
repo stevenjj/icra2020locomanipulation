@@ -18,7 +18,6 @@
 // #include "pinocchio/algorithm/rnea.hpp"
 // //
 // // #include <math.h>
-// #include <avatar_locomanipulation/models/valkyrie_model.hpp>
 
 // Package Path Definition
 #include <Configuration.h>
@@ -39,7 +38,8 @@ int main(int argc, char ** argv){
     // fs.InverseKinematicsTop(10);
   // Test to see if this is working
   // std::cout << "Initialize Valkyrie Model" << std::endl;
-  RobotModel valkyrie;
+  std::string filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
+  RobotModel valkyrie(filename);
   //
   // // X dimensional state vectors
   // Eigen::VectorXd q_start;

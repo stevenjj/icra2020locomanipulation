@@ -56,11 +56,11 @@ int main(int argc, char ** argv){
 
   collision->directed_vectors.clear();
   collision->build_directed_vector_to_rhand();
-  collision->self_collision_dx();
-  for(int o=0; o<collision->directed_vectors.size(); ++o){
-    std::cout << "collision->directed_vectors[o].from: " << collision->directed_vectors[o].from << std::endl;
-    std::cout << "collision->directed_vectors[o].to: " << collision->directed_vectors[o].to << std::endl;
-    std::cout << "collision->directed_vectors[o].magnitude: " << collision->directed_vectors[o].magnitude << std::endl;
-    std::cout << "collision->directed_vectors[o].direction: \n" << collision->directed_vectors[o].direction << std::endl;
-  }
+  // collision->self_collision_dx();
+  // for(int o=0; o<collision->directed_vectors.size(); ++o){
+  //   std::cout << "collision->directed_vectors[o].from: " << collision->directed_vectors[o].from << std::endl;
+  //   std::cout << "collision->directed_vectors[o].to: " << collision->directed_vectors[o].to << std::endl;
+  //   std::cout << "collision->directed_vectors[o].magnitude: " << collision->directed_vectors[o].magnitude << std::endl;
+  //   std::cout << "collision->directed_vectors[o].direction: \n" << collision->directed_vectors[o].direction << std::endl;
+  // }
 }

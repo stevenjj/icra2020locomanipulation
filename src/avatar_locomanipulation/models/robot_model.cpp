@@ -3,6 +3,11 @@
 RobotModel::RobotModel(){
 }
 
+RobotModel::RobotModel(const std::string & filename){
+  buildPinocchioModel(filename);
+  commonInitialization();
+}
+
 RobotModel::RobotModel(const std::string & filename, const std::string & meshDir){
   buildPinocchioModel(filename);
   buildPinocchioGeomModel(filename, meshDir);
@@ -10,10 +15,10 @@ RobotModel::RobotModel(const std::string & filename, const std::string & meshDir
 }
 
 RobotModel::RobotModel(const std::string & filename, const std::string & meshDir, const std::string & srdf){
-  buildPinocchioModel(filename);
-  buildPinocchioGeomModel(filename, meshDir);
   srdf_bool = true;
   srdf_filename = srdf;
+  buildPinocchioModel(filename);
+  buildPinocchioGeomModel(filename, meshDir);
   commonInitialization();
 }
 
@@ -27,8 +32,11 @@ void RobotModel::buildPinocchioModel(const std::string & filename){
 void RobotModel::buildPinocchioGeomModel(const std::string & filename, const std::string & meshDir){
   std::vector < std::string > packageDirs;
   packageDirs.push_back(meshDir);
-
   pinocchio::urdf::buildGeom(model, filename, pinocchio::COLLISION, geomModel, packageDirs );
+
+  geomModel.addAllCollisionPairs();
+  if(srdf_bool) pinocchio::srdf::removeCollisionPairs(model, geomModel, srdf_filename, false);
+  geomData = std::unique_ptr<pinocchio::GeometryData>(new pinocchio::GeometryData(geomModel));
 }
 
 void RobotModel::commonInitialization(){
@@ -59,12 +67,6 @@ void RobotModel::commonInitialization(){
     q_upper_pos_limit[i] = model.upperPositionLimit[i];
   }
   updateGeomWithKinematics = false;
-
-
-  geomModel.addAllCollisionPairs();
-  if(srdf_bool) pinocchio::srdf::removeCollisionPairs(model, geomModel, srdf_filename, false);
-  
-  geomData = std::unique_ptr<pinocchio::GeometryData>(new pinocchio::GeometryData(geomModel));
 
   std::cout << "Robot Model Constructed" << std::endl;
 }
