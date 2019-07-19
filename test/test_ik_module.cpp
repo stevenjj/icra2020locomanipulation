@@ -140,7 +140,7 @@ void testIK_module(){
 
   // Stack Tasks in order of priority
   // Stance Generation Test
-  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {rpalm_task, lfoot_contact_normal_task, rfoot_contact_normal_task, posture_task}));
+  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {rpalm_task, lfoot_contact_normal_task, rfoot_contact_normal_task, posture_task, pelvis_wrt_mf_task}));
   // std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {rpalm_task, lfoot_contact_task, rfoot_contact_task}));
   // std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {pelvis_wrt_mf_task})); 
   // std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {lfoot_contact_task, rfoot_contact_task}));
@@ -198,7 +198,7 @@ void testIK_module(){
   Eigen::Vector3d rpalm_des_pos;
   Eigen::Quaternion<double> rpalm_des_quat;
   ik_module.robot_model->getFrameWorldPose("rightPalm", rpalm_des_pos, rpalm_des_quat);
-  rpalm_des_pos[0] += 0.35;//0.4;//0.35;//0.25;
+  rpalm_des_pos[0] += 1.35;//0.4;//0.35;//0.25;
   rpalm_des_pos[1] += 0.25;//0.3;//0.25; 
   rpalm_des_pos[2] += 0.3; 
   Eigen::AngleAxis<double> axis_angle;
