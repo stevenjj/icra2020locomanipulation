@@ -33,6 +33,7 @@ void Task6DPosewrtMidFeet::getTaskJacobian(Eigen::MatrixXd & J_task){
 	robot_model->get6DTaskJacobian(frame_name, J_tmp);
 	robot_model->get6DTaskJacobian(left_foot_frame, J_lf);
 	robot_model->get6DTaskJacobian(right_foot_frame, J_rf);
+	// 2nd term is the midfeet frame Jacobian
 	J_task = J_tmp - 0.5*(J_lf + J_rf);
 }
 void Task6DPosewrtMidFeet::getTaskJacobianDot(Eigen::MatrixXd & Jdot_task){
