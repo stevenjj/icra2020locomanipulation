@@ -14,7 +14,7 @@ class CollisionEnvironment
 {
 private:
   // for internally filling the vector of directed vectors  
-  // Members: std::string to - name of joint vector points to
+  // Members: std::string to - name of joint/link vector points to
   //          std::string from - name of joint vector comes from
   //          Eigen::Vector3d direction - normalized direction of vector
   //          double magnitude - magnitude of the vector for use with potential
@@ -98,6 +98,8 @@ public:
   void build_directed_vector_to_head();
   void build_directed_vector_to_lknee();
   void build_directed_vector_to_rknee();
+  void build_directed_vector_to_rwrist();
+  void build_directed_vector_to_lwrist();
   void build_directed_vector_to_relbow();
   void build_directed_vector_to_lelbow();
 
