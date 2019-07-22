@@ -118,7 +118,7 @@ public:
   
 
   // Sets the safety distance between robot links
-  void set_safety_distance(double & safety_dist_in);
+  void set_safety_distance(double safety_dist_in);
 
   // Sets the max scaling factor for dx
   void set_max_scaling_distance(double & max_scaling_dist_in);

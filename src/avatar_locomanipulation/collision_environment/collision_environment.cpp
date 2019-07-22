@@ -222,7 +222,9 @@ void CollisionEnvironment::build_directed_vector_to_rhand(){
   collision_names.push_back("rightKneeNearLink_0");
   collision_names.push_back("leftKneeNearLink_0");
   collision_names.push_back("rightHipPitchLink_0");
+  collision_names.push_back("rightHipUpperLink_0");
   collision_names.push_back("leftHipPitchLink_0");
+  collision_names.push_back("leftHipUpperLink_0");
   collision_names.push_back("rightKneePitchLink_0");
   collision_names.push_back("leftKneePitchLink_0");
   collision_names.push_back("head_0");
@@ -252,7 +254,8 @@ void CollisionEnvironment::build_directed_vector_to_rhand(){
       difference = it2->second - it->second;
       // Fill the dvector and push back
       dvector.from = it->first; dvector.to = "rightPalm_0";
-      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+      dvector.using_worldFramePose = false;
       directed_vectors.push_back(dvector);
       ++it2;
     }
@@ -282,7 +285,9 @@ void CollisionEnvironment::build_directed_vector_to_lhand(){
   collision_names.push_back("rightKneeNearLink_0");// right knee
   collision_names.push_back("leftKneeNearLink_0");// left knee
   collision_names.push_back("rightHipPitchLink_0");
+  collision_names.push_back("rightHipUpperLink_0");
   collision_names.push_back("leftHipPitchLink_0");
+  collision_names.push_back("leftHipUpperLink_0");
   collision_names.push_back("rightKneePitchLink_0");
   collision_names.push_back("leftKneePitchLink_0");
   collision_names.push_back("head_0");
@@ -310,7 +315,8 @@ void CollisionEnvironment::build_directed_vector_to_lhand(){
       difference = it2->second - it->second;
       // Fill the dvector and push back
       dvector.from = it->first; dvector.to = "leftPalm_0";
-      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+      dvector.using_worldFramePose = false;
       directed_vectors.push_back(dvector);
       ++it2;
     }
@@ -355,7 +361,8 @@ void CollisionEnvironment::build_directed_vector_to_head(){
       difference = it2->second - it->second;
       // Fill the dvector and push back
       dvector.from = "torso_0"; dvector.to = "head_0";
-      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+      dvector.using_worldFramePose = false;
       directed_vectors.push_back(dvector);
       ++it2;
     }
@@ -378,6 +385,7 @@ void CollisionEnvironment::build_directed_vector_to_rknee(){
   collision_names.push_back("rightKneeNearLink_0");
   collision_names.push_back("leftKneeNearLink_0");
   collision_names.push_back("leftHipPitchLink_0");
+  collision_names.push_back("leftHipUpperLink_0");
   collision_names.push_back("leftKneePitchLink_0");
 
   Eigen::Vector3d difference;
@@ -400,7 +408,8 @@ void CollisionEnvironment::build_directed_vector_to_rknee(){
       difference = it2->second - it->second;
       // Fill the dvector and push back
       dvector.from = "leftKneeNearLink_0"; dvector.to = "rightKneeNearLink_0";
-      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+      dvector.using_worldFramePose = false;
       directed_vectors.push_back(dvector);
       ++it2;
     }
@@ -422,6 +431,7 @@ void CollisionEnvironment::build_directed_vector_to_lknee(){
   collision_names.push_back("leftKneeNearLink_0");
   collision_names.push_back("rightKneeNearLink_0");
   collision_names.push_back("rightHipPitchLink_0");
+  collision_names.push_back("rightHipUpperLink_0");
   collision_names.push_back("rightKneePitchLink_0");
 
   Eigen::Vector3d difference;
@@ -444,7 +454,8 @@ void CollisionEnvironment::build_directed_vector_to_lknee(){
       difference = it2->second - it->second;
       // Fill the dvector and push back
       dvector.from = "rightKneeNearLink_0"; dvector.to = "leftKneeNearLink_0";
-      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+      dvector.using_worldFramePose = false;
       directed_vectors.push_back(dvector);
       ++it2;
     }
@@ -470,7 +481,9 @@ void CollisionEnvironment::build_directed_vector_to_rwrist(){
   collision_names.push_back("leftKneeNearLink_0");
   collision_names.push_back("leftForearmLink_0");
   collision_names.push_back("rightHipPitchLink_0");
+  collision_names.push_back("rightHipUpperLink_0");
   collision_names.push_back("leftHipPitchLink_0");
+  collision_names.push_back("leftHipUpperLink_0");
   collision_names.push_back("pelvis_0");
   collision_names.push_back("torso_0");
 
@@ -494,7 +507,8 @@ void CollisionEnvironment::build_directed_vector_to_rwrist(){
       difference = it2->second - it->second;
       // Fill the dvector and push back
       dvector.from = it->first; dvector.to = "rightForearmLink_0";
-      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+      dvector.using_worldFramePose = false;
       directed_vectors.push_back(dvector);
       ++it2;
     }
@@ -519,7 +533,9 @@ void CollisionEnvironment::build_directed_vector_to_lwrist(){
   collision_names.push_back("leftKneeNearLink_0");
   collision_names.push_back("leftForearmLink_0");
   collision_names.push_back("rightHipPitchLink_0");
+  collision_names.push_back("rightHipUpperLink_0");
   collision_names.push_back("leftHipPitchLink_0");
+  collision_names.push_back("leftHipUpperLink_0");
   collision_names.push_back("pelvis_0");
   collision_names.push_back("torso_0");
 
@@ -543,7 +559,8 @@ void CollisionEnvironment::build_directed_vector_to_lwrist(){
       difference = it2->second - it->second;
       // Fill the dvector and push back
       dvector.from = it->first; dvector.to = "leftForearmLink_0";
-      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+      dvector.using_worldFramePose = false;
       directed_vectors.push_back(dvector);
       ++it2;
     }
@@ -570,7 +587,9 @@ void CollisionEnvironment::build_directed_vector_to_relbow(){
   collision_names.push_back("leftKneeNearLink_0");
   collision_names.push_back("leftForearmLink_0");
   collision_names.push_back("rightHipPitchLink_0");
+  collision_names.push_back("rightHipUpperLink_0");
   collision_names.push_back("leftHipPitchLink_0");
+  collision_names.push_back("leftHipUpperLink_0");
   collision_names.push_back("pelvis_0");
   collision_names.push_back("torso_0");
 
@@ -594,7 +613,8 @@ void CollisionEnvironment::build_directed_vector_to_relbow(){
       difference = it2->second - it->second;
       // Fill the dvector and push back
       dvector.from = it->first; dvector.to = "rightElbowNearLink_0";
-      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+      dvector.using_worldFramePose = false;
       directed_vectors.push_back(dvector);
       ++it2;
     }
@@ -619,7 +639,9 @@ void CollisionEnvironment::build_directed_vector_to_lelbow(){
   collision_names.push_back("leftKneeNearLink_0");
   collision_names.push_back("rightForearmLink_0");
   collision_names.push_back("rightHipPitchLink_0");
+  collision_names.push_back("rightHipUpperLink_0");
   collision_names.push_back("leftHipPitchLink_0");
+  collision_names.push_back("leftHipUpperLink_0");
   collision_names.push_back("pelvis_0");
   collision_names.push_back("torso_0");
 
@@ -643,7 +665,8 @@ void CollisionEnvironment::build_directed_vector_to_lelbow(){
     difference = it2->second - it->second;
     // Fill the dvector and push back
     dvector.from = it->first; dvector.to = "leftElbowNearLink_0";
-    dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+    dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+      dvector.using_worldFramePose = false;
     directed_vectors.push_back(dvector);
     ++it2;
     }
@@ -733,7 +756,8 @@ void CollisionEnvironment::build_object_directed_vectors(std::string & frame_nam
       difference = it2->second - it->second;
       // Fill the dvector and push back
       dvector.from = object_links[i]; dvector.to = it->first;
-      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+      dvector.using_worldFramePose = false;
       directed_vectors.push_back(dvector);
       ++it2;
       } // end else
@@ -754,7 +778,13 @@ std::vector<Eigen::Vector3d> CollisionEnvironment::get_collision_dx(){
   Eigen::MatrixXd J_out(6, valkyrie->getDimQdot()); J_out.fill(0);
 
   for(int k=0; k<directed_vectors.size(); ++k){
-    Potential = safety_dist*3 - (directed_vectors[k].magnitude);
+    if(directed_vectors[k].using_worldFramePose){
+      set_safety_distance(0.2);
+      std::cout << "Collision between these links: (to, from) (" << directed_vectors[k].to << ", " << directed_vectors[k].from << ")" << std::endl;
+    } 
+    else set_safety_distance(0.075);
+
+    Potential = safety_dist*2 - (directed_vectors[k].magnitude);
     std::cout << "To link " << directed_vectors[k].to << " from link " << directed_vectors[k].from << std::endl;
     std::cout << "Potential before = " << Potential << std::endl;
 
@@ -772,7 +802,7 @@ std::vector<Eigen::Vector3d> CollisionEnvironment::get_collision_dx(){
 }
 
 
-void CollisionEnvironment::set_safety_distance(double & safety_dist_in){
+void CollisionEnvironment::set_safety_distance(double safety_dist_in){
   safety_dist = safety_dist_in;
 }
 
@@ -792,6 +822,7 @@ void CollisionEnvironment::get_dvector_collision_links(const std::string & from_
   difference = cur_pos_to - cur_pos_from;
   dvector.from = from_name; dvector.to = to_name;
   dvector.direction = difference.normalized(); dvector.magnitude = 0.005;
+  dvector.using_worldFramePose = true;
   directed_vectors.push_back(dvector);
 
 }
@@ -810,6 +841,7 @@ void CollisionEnvironment::get_dvector_collision_links_appended(std::shared_ptr<
   difference = cur_pos_to - cur_pos_from;
   dvector.from = from_name; dvector.to = to_name;
   dvector.direction = difference.normalized(); dvector.magnitude = 0.005;
+  dvector.using_worldFramePose = true;
   directed_vectors.push_back(dvector);
 
 }
@@ -824,6 +856,8 @@ void CollisionEnvironment::map_collision_names_to_frame_names(){
   collision_to_frame["rightPalm_0"] = "rightPalm";
   collision_to_frame["leftPalm_0"] = "leftPalm_0";
   collision_to_frame["head_0"] = "head";
+  collision_to_frame["rightHipUpperLink_0"] = "rightHipUpperLink";
+  collision_to_frame["leftHipUpperLink_0"] = "leftHipUpperLink";
 
   std::string tmp;
   // if we added an object to the collision environment

@@ -1525,6 +1525,21 @@
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
     </visual>
   </link>
+
+  <link name="rightHipUpperLink">
+    <inertial>
+      <mass value="10.2"/>
+      <origin rpy="0 0 0" xyz="0.016691 -0.091397 -0.207875"/>
+      <inertia ixx="0.24083413" ixy="-3.5915e-05" ixz="0.003699383" iyy="0.25689705" iyz="0.001333005" izz="0.023276352"/>
+    </inertial>
+    <collision name="rightHipPitchLink_upper">
+      <geometry>
+        <box size="0.125 0.065 0.19"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0.01 -0.115 0.0"/>
+    </collision>
+  </link>
+
   <link name="rightHipPitchLink">
     <inertial>
       <mass value="10.2"/>
@@ -1543,13 +1558,9 @@
       </geometry>
       <origin rpy="0 0 0" xyz="0.0225 -0.085 -0.3"/>
     </collision>
-    <collision name="rightHipPitchLink_upper">
-      <geometry>
-        <box size="0.125 0.065 0.19"/>
-      </geometry>
-      <origin rpy="0 0 0" xyz="0.01 -0.115 -0.07"/>
-    </collision>
   </link>
+
+
   <link name="rightKneePitchLink">
     <inertial>
       <mass value="6.2"/>
@@ -1627,6 +1638,17 @@
     <provideFeedback>1</provideFeedback>
     <implicitSpringDamper>1</implicitSpringDamper>
   </gazebo>
+
+  <joint name="rightHipUpper" type="fixed">
+    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 -0.0609"/>
+    <axis xyz="0 1 0"/>
+    <parent link="rightHipPitchLink"/>
+    <child link="rightHipUpperLink"/>
+    <limit effort="350" lower="-2.42" upper="1.619" velocity="6.11"/>
+    <controller_gains Kd="0.0" Ki="0.0" Kp="0.0"/>
+    <dynamics damping="0.1" friction="0.0"/>
+  </joint>
+
   <joint name="rightHipPitch" type="revolute">
     <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 -0.0609"/>
     <axis xyz="0 1 0"/>
@@ -1636,6 +1658,8 @@
     <controller_gains Kd="0.0" Ki="0.0" Kp="0.0"/>
     <dynamics damping="0.1" friction="0.0"/>
   </joint>
+
+
   <gazebo reference="rightHipPitch">
     <provideFeedback>1</provideFeedback>
     <implicitSpringDamper>1</implicitSpringDamper>
@@ -1726,6 +1750,21 @@
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
     </visual>
   </link>
+
+  <link name="leftHipUpperLink">
+    <inertial>
+      <mass value="10.2"/>
+      <origin rpy="0 0 0" xyz="0.016691 0.091397 -0.207875"/>
+      <inertia ixx="0.24083413" ixy="3.5915e-05" ixz="0.003699383" iyy="0.25689705" iyz="-0.001333005" izz="0.023276352"/>
+    </inertial>
+    <collision name="leftHipPitchLink_upper">
+      <geometry>
+        <box size="0.125 0.065 0.19"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0.01 0.115 0.0"/>
+    </collision>
+  </link>
+
   <link name="leftHipPitchLink">
     <inertial>
       <mass value="10.2"/>
@@ -1744,13 +1783,9 @@
       </geometry>
       <origin rpy="0 0 0" xyz="0.0225 0.085 -0.3"/>
     </collision>
-    <collision name="leftHipPitchLink_upper">
-      <geometry>
-        <box size="0.125 0.065 0.19"/>
-      </geometry>
-      <origin rpy="0 0 0" xyz="0.01 0.115 -0.07"/>
-    </collision>
   </link>
+
+
   <link name="leftKneePitchLink">
     <inertial>
       <mass value="6.2"/>
@@ -1828,6 +1863,17 @@
     <provideFeedback>1</provideFeedback>
     <implicitSpringDamper>1</implicitSpringDamper>
   </gazebo>
+
+  <joint name="leftHipUpper" type="fixed">
+    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 -0.0609"/>
+    <axis xyz="0 1 0"/>
+    <parent link="leftHipPitchLink"/>
+    <child link="leftHipUpperLink"/>
+    <limit effort="350" lower="-2.42" upper="1.619" velocity="6.11"/>
+    <controller_gains Kd="0.0" Ki="0.0" Kp="0.0"/>
+    <dynamics damping="0.1" friction="0.0"/>
+  </joint>
+
   <joint name="leftHipPitch" type="revolute">
     <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 -0.0609"/>
     <axis xyz="0 1 0"/>
@@ -1837,6 +1883,8 @@
     <controller_gains Kd="0.0" Ki="0.0" Kp="0.0"/>
     <dynamics damping="0.1" friction="0.0"/>
   </joint>
+
+
   <gazebo reference="leftHipPitch">
     <provideFeedback>1</provideFeedback>
     <implicitSpringDamper>1</implicitSpringDamper>
