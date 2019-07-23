@@ -14,11 +14,13 @@
 class IKModule{
 public:
 	IKModule();
-	IKModule(std::shared_ptr<RobotModel> robot_model_in);
+	IKModule(std::shared_ptr<RobotModel> & robot_model_in);
 
 	~IKModule();
 
 	std::shared_ptr<RobotModel> robot_model;
+
+	void setRobotModel(std::shared_ptr<RobotModel> & robot_model_in);
 
 	// Sets the initial configuration of the robot
 	void setInitialConfig(const Eigen::VectorXd & q_init);

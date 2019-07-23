@@ -108,7 +108,12 @@ void testIK_module(){
   initialize_config(q_init);
 
   // Create IK Module
-  IKModule ik_module;
+  std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
+  std::string srdf_filename = THIS_PACKAGE_PATH"models/valkyrie_disable_collisions.srdf";
+  std::string meshDir_  = THIS_PACKAGE_PATH"../val_model/"; 
+  std::shared_ptr<RobotModel> robot_model(new RobotModel(urdf_filename, meshDir_, srdf_filename));
+
+  IKModule ik_module(robot_model);
   ik_module.setInitialConfig(q_init);  
   // Update Robot Kinematics
   ik_module.robot_model->updateFullKinematics(q_init);
@@ -292,6 +297,7 @@ void testIK_module(){
   ik_module.printSolutionResults();
 
   // Visualize Solution:
+  std::cout << "Visualizing solution..." << std::endl;
   visualize_robot(q_init, q_sol);
   
 }

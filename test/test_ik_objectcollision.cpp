@@ -99,7 +99,13 @@ void testIK_module(){
   std::shared_ptr<RobotModel> cart = initialize_config(q_init, cart_init);
 
    // Create IK Module
-  IKModule ik_module;
+  std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
+  std::string srdf_filename = THIS_PACKAGE_PATH"models/valkyrie_disable_collisions.srdf";
+  std::string meshDir_  = THIS_PACKAGE_PATH"../val_model/"; 
+  std::cout << "Initialize Valkyrie Model" << std::endl;
+  std::shared_ptr<RobotModel> valkyrie(new RobotModel(urdf_filename, meshDir_, srdf_filename));
+  
+  IKModule ik_module(valkyrie);
   ik_module.setInitialConfig(q_init);  
 
   // Update Robot Kinematics
