@@ -279,6 +279,8 @@ void testIK_module(){
   ik_module.setCheckPrevViolations(true);
 
 
+  ik_module.setEnableInertiaWeighting(false);
+
   // Perform IK  
   int solve_result;
   double total_error_norm;
