@@ -7,6 +7,12 @@
 #include <avatar_locomanipulation/ik_module/ik_module.hpp>
 #include <avatar_locomanipulation/data_types/trajectory_SE3.hpp>
 
+#include <avatar_locomanipulation/tasks/task_6dpose.hpp>
+#include <avatar_locomanipulation/tasks/task_3dorientation.hpp>
+#include <avatar_locomanipulation/tasks/task_com.hpp>
+#include <avatar_locomanipulation/tasks/task_joint_config.hpp>
+
+
 // This class outputs a trajectory of robot configuration q from
 //     - a starting configuration, q, and a sequence of footsteps
 // 	   - a desired hand/s pose/s trajectory, starting config, and a sequence of footsteps
@@ -24,9 +30,10 @@ public:
 	// Destructors
 	~ConfigTrajectoryGenerator();
 
-	// Public Member Functions
+	// Required Initializations
     void setRobotModel(std::shared_ptr<RobotModel> & robot_model_in);
     void initializeDiscretization(const int & N_size_in);
+    void initializeTasks();
 
     // Computes an initial configuration that ensures that the robot's feet are flat on the ground.
     // If the feet are already flat on the ground q_out is set to the input q_guess.   
@@ -46,8 +53,25 @@ public:
 	std::shared_ptr<RobotModel> robot_model;
     IKModule starting_config_ik_module; // IK module to use for computing the starting configuration
     IKModule ik_module; // 
-
 	WalkingPatternGenerator wpg;
+
+
+	// Set Tasks
+	std::shared_ptr<Task> pelvis_ori_task;
+	std::shared_ptr<Task> com_task;
+
+	std::shared_ptr<Task> rfoot_task;
+	std::shared_ptr<Task> lfoot_task;
+
+	std::shared_ptr<Task> rhand_task;
+	std::shared_ptr<Task> lhand_task;
+
+	std::shared_ptr<Task> torso_posture_task;
+	std::shared_ptr<Task> neck_posture_task;
+	std::shared_ptr<Task> rarm_posture_task;
+	std::shared_ptr<Task> larm_posture_task;
+
+	std::shared_ptr<Task> task_stack;
 
 	// Trajectory containers
 	TrajEuclidean   traj_q_config; 	// Trajectory of configurations q
@@ -58,10 +82,11 @@ public:
 
 
 private:
+	void createTaskStack();
+
+	bool use_right_hand = true;
 	bool use_left_hand = false;
-	bool use_right_hand = false;
-
-
+	bool use_torso_joint_position = false;
 
 };
 
