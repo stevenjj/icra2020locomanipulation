@@ -1,0 +1,86 @@
+# Waypoints are designed wrt to the hinge height
+# We assume that hinge height = handle height
+# We multiply x,y values by hinge->handle distance
+# z = 0.0 since the origin is at the hinge
+# x = positive distance from hinge->handle when door is closed fully
+# y = positive distance from hinge->handle when door is 90 degreed opened
+waypoint_1:
+  x: 1.0
+  y: 0.0
+  z: 0.0
+  rx: 0.0
+  ry: -0.707
+  rz: 0.0
+  rw: 0.707 
+waypoint_2:
+  x: 0.9848
+  y: 0.1736
+  z: 0.0
+  rx: 0.0616283
+  ry: -0.704416
+  rz: 0.0616283
+  rw: 0.704416
+waypoint_3:
+  x: 0.9397
+  y: 0.342
+  z: 0.0
+  rx: 0.1227877
+  ry: -0.6963643
+  rz: 0.1227877
+  rw: 0.6963643
+waypoint_4:
+  x: 0.866
+  y: 0.5
+  z: 0.0
+  rx: 0.1830127
+  ry: -0.6830127
+  rz: 0.1830127
+  rw: 0.6830127
+waypoint_5:
+  x: 0.766
+  y: 0.6428
+  z: 0.0
+  rx: 0.2418449
+  ry: -0.664463
+  rz: 0.2418449
+  rw: 0.664463
+waypoint_6:
+  x: 0.6428
+  y: 0.766
+  z: 0.0
+  rx: 0.298836
+  ry: -0.6408565
+  rz: 0.298836
+  rw: 0.6408565
+waypoint_7:
+  x: 0.5
+  y: 0.866
+  z: 0.0
+  rx: 0.3535533
+  ry: -0.6123725
+  rz: 0.3535533
+  rw: 0.6123725
+waypoint_8:
+  x: 0.342
+  y: 0.9397
+  z: 0.0
+  rx: 0.4055799
+  ry: -0.5792279
+  rz: 0.4055799
+  rw: 0.5792279
+waypoint_9:
+  x: 0.1736
+  y: 0.9848
+  z: 0.0
+  rx: 0.4545196
+  ry: -0.5416751
+  rz: 0.4545196
+  rw: 0.5416751
+waypoint_10:
+  x: 0.0
+  y: 1.0
+  z: 0.0
+  rx: 0.5
+  ry: -0.5
+  rz: 0.5
+  rw: 0.5
