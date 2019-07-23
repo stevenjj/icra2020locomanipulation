@@ -1,6 +1,7 @@
 #ifndef ALM_CONFIG_TRAJECTORY_GENERATOR_H
 #define ALM_CONFIG_TRAJECTORY_GENERATOR_H
 
+#include <avatar_locomanipulation/models/robot_model.hpp>
 #include <avatar_locomanipulation/walking/walking_pattern_generator.hpp>
 #include <avatar_locomanipulation/ik_module/ik_module.hpp>
 
@@ -10,8 +11,12 @@
 
 class ConfigTrajectoryGenerator{
 public:
-	ConfigTrajectoryGenerator();
+	ConfigTrajectoryGenerator(); // By default constructs a valkyrie model
+	ConfigTrajectoryGenerator(std::shared_ptr<RobotModel> & robot_model_in); // Accepts a robot model to use
+
 	~ConfigTrajectoryGenerator();
+
+	std::shared_ptr<RobotModel> robot_model;
 };
 
 
