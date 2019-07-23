@@ -5,7 +5,7 @@
 #include <math.h>
 #include <cassert>
 
-int main(int argc, char ** argv){   
+void test_config_trajectory_generator(){
   std::cout << "[Running Config Trajectory Generator Test]" << std::endl;
 
   std::cout << "[ConfigTrajectoryGenerator] Constructed" << std::endl;
@@ -13,5 +13,12 @@ int main(int argc, char ** argv){
   std::shared_ptr<RobotModel> valkyrie_model(new RobotModel(urdf_filename));
 
   ConfigTrajectoryGenerator ctg(valkyrie_model);
+  int N_resolution = 100;
+  ctg.initializeDiscretization(N_resolution);
+
+}
+
+int main(int argc, char ** argv){   
+  test_config_trajectory_generator();
   return 0;
 }
