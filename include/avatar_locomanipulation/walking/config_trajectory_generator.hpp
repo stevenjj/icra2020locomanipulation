@@ -12,14 +12,18 @@
 
 class ConfigTrajectoryGenerator{
 public:
+	// Constructors
 	ConfigTrajectoryGenerator(); // By default constructs a valkyrie model
 	ConfigTrajectoryGenerator(std::shared_ptr<RobotModel> & robot_model_in); // Accepts a robot model to use
-
+	// Destructors
 	~ConfigTrajectoryGenerator();
 
+	// Public Member Functions
+    void setRobotModel(std::shared_ptr<RobotModel> & robot_model_in);
+
+    // Public Member Variables
 	std::shared_ptr<RobotModel> robot_model;
     IKModule ik_module;
-
 };
 
 
