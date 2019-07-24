@@ -358,7 +358,7 @@ namespace planner{
 	void FootstepPlanner::printPath(){
 		for (size_t i(0); i < optimal_path.size(); i++){
 			opt_node_ = std::static_pointer_cast<FootstepNode>(optimal_path[i]);
-			cout << "optimal path:: " << "xLF: " << opt_node_->xLF << "yLF: " << opt_node_->yLF << "xRF: " << opt_node_->xRF << "yRF: " << opt_node_->yRF << "thetaLF: " << opt_node_->thetaLF << "thetaRF: " << opt_node_->thetaRF;
+			cout << "optimal path:: " << "xLF: " << opt_node_->xLF << "yLF: " << opt_node_->yLF << "xRF: " << opt_node_->xRF << "yRF: " << opt_node_->yRF << "thetaLF: " << opt_node_->thetaLF << "thetaRF: " << opt_node_->thetaRF << endl;
 		}		
 	}
 
@@ -451,10 +451,18 @@ namespace planner{
 				
 					if (current_->turn == "LF"){
 						shared_ptr<Node> neighbor (std::make_shared<FootstepNode>(coord_Oframe[0],coord_Oframe[1],current_->xRF,current_->yRF,coord_Oframe[2],current_->thetaRF,"RF"));
+						shared_ptr<FootstepNode> neighbor_change;
+						neighbor_change = static_pointer_cast<FootstepNode>(neighbor);
+						neighbor_change->parent = current;
+						neighbor = static_pointer_cast<Node>(neighbor_change);
 						neighbors.push_back(neighbor);
 					}
 					else if (current_->turn == "RF"){
 						shared_ptr<Node> neighbor (std::make_shared<FootstepNode>(current_->xLF,current_->yLF,coord_Oframe[0],coord_Oframe[1],current_->thetaLF,coord_Oframe[2],"LF"));
+						shared_ptr<FootstepNode> neighbor_change;
+						neighbor_change = static_pointer_cast<FootstepNode>(neighbor);
+						neighbor_change->parent = current;
+						neighbor = static_pointer_cast<Node>(neighbor_change);
 						neighbors.push_back(neighbor);
 					}
 					//neighbors.push_back(neighbor);	
@@ -562,9 +570,9 @@ namespace planner{
 		
 		OpenSet.push_back(begin); //append starting node to open set
 
-		int f = 0;
+		
 		while (!OpenSet.empty()){
-			if (f < 5000){
+
 				//sort the open set
 				// cout << "size of open set: " << OpenSet.size() << endl;
 				// cout << "size of explored set: " << ExploredSet.size() << endl;
@@ -587,7 +595,10 @@ namespace planner{
 					// cout << "made it to the end!!!!!" << endl;
 					achieved_goal = current_node;
 					// Construct the path
-					constructPath();	
+					constructPath();
+					cout << "completed constructpath" << endl;
+					WriteData(optimal_path);
+
 					return true;
 				}
 
@@ -644,8 +655,8 @@ namespace planner{
 						}
 					}
 				}
-				f++;
-			}
+			
+
 		}
 		cout << "did not find a path" << endl;
 		return false; // Failed to find a path

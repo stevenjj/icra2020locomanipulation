@@ -72,5 +72,6 @@ int main(int argc, char **argv){
 
     footstepplanner.printPath();
 
+
 	return 0;
 }
