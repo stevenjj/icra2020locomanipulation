@@ -4,8 +4,13 @@ RVizVisualizer::RVizVisualizer(){
 	std::cout << "[RVizVisualizer] constructed" << std::endl;
 }
 
+RVizVisualizer::RVizVisualizer(std::shared_ptr<ros::NodeHandle> & n_input, std::shared_ptr<RobotModel> & robot_model_input){
+	setNodeHandle(n_input);
+	setRobotModel(robot_model);
+}
+
 RVizVisualizer::RVizVisualizer(std::shared_ptr<ros::NodeHandle> & n_input){
-	n = n_input;
+	setNodeHandle(n_input);
 }
 
 
@@ -34,3 +39,22 @@ void RVizVisualizer::setNodeHandle(std::shared_ptr<ros::NodeHandle> & n_input){
 	br_robot = std::make_shared<tf::TransformBroadcaster>();
 }
 
+void RVizVisualizer::setStartConfig(const Eigen::VectorXd & q_start_in){
+	q_start = q_start_in;	
+}
+
+void RVizVisualizer::setCurrentConfig(const Eigen::VectorXd & q_current_in){	
+	q_current = q_current_in;
+}
+
+void RVizVisualizer::populateStartConfigJointMsg(){	
+	rviz_translator.populate_joint_state_msg( robot_model->model, q_start, tf_world_pelvis_init, joint_msg_init);
+}
+
+void RVizVisualizer::populateCurrentConfigJointMsg(){	
+	rviz_translator.populate_joint_state_msg(robot_model->model, q_current, tf_world_pelvis_current, joint_msg_current);
+}
+
+void RVizVisualizer::setPubFreq(const double & pub_freq_in){
+	pub_freq = pub_freq_in;
+}
