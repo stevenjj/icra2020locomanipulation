@@ -6,17 +6,44 @@ ConfigTrajectoryGenerator::ConfigTrajectoryGenerator(){
 
 ConfigTrajectoryGenerator::ConfigTrajectoryGenerator(std::shared_ptr<RobotModel> & robot_model_in){
 	this->setRobotModel(robot_model_in);
-	initializeDiscretization(100);
-	initializeTasks();
-	createTaskStack();
+	commonInitialization();
 }
 
+ConfigTrajectoryGenerator::ConfigTrajectoryGenerator(std::shared_ptr<RobotModel> & robot_model_in, const int & N_size_in){
+	N_size = N_size_in;
+	this->setRobotModel(robot_model_in);
+	commonInitialization();
+}
 
 // Destructor
 ConfigTrajectoryGenerator::~ConfigTrajectoryGenerator(){
 	std::cout << "[ConfigTrajectoryGenerator] Destroyed" << std::endl;
 }
 
+
+void ConfigTrajectoryGenerator::commonInitialization(){
+	initializeDiscretization(N_size);
+	initializeTasks();
+	createTaskStack();
+
+	// initialize temporary variables 
+	tmp_pelvis_ori.setIdentity();
+	tmp_com_pos.setZero();
+
+	tmp_right_foot.setRightSide();
+	tmp_left_foot.setLeftSide();
+
+	tmp_rhand_pos.setZero();
+	tmp_rhand_ori.setIdentity();
+
+	tmp_lhand_pos.setZero();
+	tmp_lhand_ori.setIdentity();
+
+	tmp_torso_posture = Eigen::VectorXd::Zero(torso_posture_task->task_dim);
+	tmp_neck_posture = Eigen::VectorXd::Zero(neck_posture_task->task_dim);
+	tmp_rarm_posture = Eigen::VectorXd::Zero(rarm_posture_task->task_dim);
+	tmp_larm_posture = Eigen::VectorXd::Zero(larm_posture_task->task_dim);
+}
 
 void ConfigTrajectoryGenerator::setRobotModel(std::shared_ptr<RobotModel> & robot_model_in){
 	robot_model = robot_model_in;
@@ -27,6 +54,8 @@ void ConfigTrajectoryGenerator::setRobotModel(std::shared_ptr<RobotModel> & robo
 
 void ConfigTrajectoryGenerator::initializeDiscretization(const int & N_size_in){
 	N_size = N_size_in;
+
+	// std::cout << "Discretization set to " << N_size << std::endl;
 
 	// Set a dummy dt. 
 	double dt_dummy = 1e-3;
@@ -144,6 +173,7 @@ void ConfigTrajectoryGenerator::computeInitialConfigForFlatGround(const Eigen::V
 	// Set the starting config
 	setStartingConfig(q_guess);
 	// Update robot kinematics
+	robot_model->updateFullKinematics(q_guess);
 
 	// get x,y,z of left and right feet.
 	// set joint position tasks for the torso, arms, and neck 
@@ -161,6 +191,7 @@ void ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 	// Set the starting config
 	setStartingConfig(q_init);
 	// Update robot kinematics
+	robot_model->updateFullKinematics(q_init);
 
 	// Get the initial footstep stances
 	// Get the initial CoM position

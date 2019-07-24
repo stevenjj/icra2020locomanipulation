@@ -31,10 +31,14 @@ public:
 	// Constructors
 	ConfigTrajectoryGenerator(); 
 	ConfigTrajectoryGenerator(std::shared_ptr<RobotModel> & robot_model_in); // Accepts a robot model to use
+	ConfigTrajectoryGenerator(std::shared_ptr<RobotModel> & robot_model_in, const int & N_size_in); // robot model to use and the discretization factor
+
 	// Destructors
 	~ConfigTrajectoryGenerator();
 
 	// Required Initializations
+	void commonInitialization();
+
     void setRobotModel(std::shared_ptr<RobotModel> & robot_model_in);
     void initializeDiscretization(const int & N_size_in);
     void initializeTasks();
@@ -108,6 +112,23 @@ private:
 	bool use_right_hand = true;
 	bool use_left_hand = false;
 	bool use_torso_joint_position = false;
+
+	Eigen::Quaterniond tmp_pelvis_ori;
+	Eigen::Vector3d tmp_com_pos;	
+
+	Footstep tmp_left_foot;
+	Footstep tmp_right_foot;
+
+	Eigen::Vector3d tmp_rhand_pos;
+	Eigen::Quaterniond tmp_rhand_ori;
+
+	Eigen::Vector3d tmp_lhand_pos;
+	Eigen::Quaterniond tmp_lhand_ori;
+
+	Eigen::VectorXd tmp_torso_posture;
+	Eigen::VectorXd tmp_neck_posture;
+	Eigen::VectorXd tmp_rarm_posture;
+	Eigen::VectorXd tmp_larm_posture;
 
 };
 

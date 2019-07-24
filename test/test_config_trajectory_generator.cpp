@@ -12,9 +12,8 @@ void test_config_trajectory_generator(){
   std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
   std::shared_ptr<RobotModel> valkyrie_model(new RobotModel(urdf_filename));
 
-  ConfigTrajectoryGenerator ctg(valkyrie_model);
-  int N_resolution = 100;
-  ctg.initializeDiscretization(N_resolution);
+  int N_resolution = 50;
+  ConfigTrajectoryGenerator ctg(valkyrie_model, N_resolution);
 }
 
 int main(int argc, char ** argv){   
