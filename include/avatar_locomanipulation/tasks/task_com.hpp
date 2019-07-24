@@ -5,7 +5,7 @@
 
 class TaskCOM: public Task{
 public:
-	TaskCOM(std::shared_ptr<ValkyrieModel> & input_model);
+	TaskCOM(std::shared_ptr<RobotModel> & input_model);
 
 	virtual ~TaskCOM();
 
@@ -19,6 +19,21 @@ public:
 	//  		robot_model->computeCoMJacobianDot(q, qdot);
 	//			must have been called first	
 	virtual void getTaskJacobianDot(Eigen::MatrixXd & Jdot_task);
+
+	// Sets a reference for the task
+	virtual void setReference(const Eigen::VectorXd & vec_ref_in);
+
+	// Gets the currently set References
+	virtual void getReference(Eigen::VectorXd & vec_ref_out);
+
+	// Computes the error for a given reference
+	virtual void computeError();
+	// Gets the current error
+	virtual void getError(Eigen::VectorXd & error_out, bool compute=true);
+
+
+protected:
+	Eigen::Vector3d cur_pos_;
 
 };
 

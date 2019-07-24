@@ -11,7 +11,7 @@ class GMMFit{
 public:
   int dim;
   int num_clus;
-  int num_data;
+  double num_data;
   double pi = 3.14159265358979323846;
 
   std::vector<Eigen::VectorXd> list_of_datums_raw;
@@ -59,6 +59,9 @@ public:
   void normalizeData();
   void useRawData();
   double mixtureModelProb(Eigen::VectorXd & x_in);
+  void normalizeInputCalculate(const Eigen::VectorXd & x_in, Eigen::VectorXd & x_normalized);
+  void setDataParams(const Eigen::VectorXd & mean_in, const Eigen::VectorXd & std_dev_in);
+  void normalizeInputInverse(const Eigen::VectorXd & x_in, Eigen::VectorXd & x_unnormalized);
 };
 
 #endif

@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<robot name="valkyrie">
+	<!-- ADJACENT LINKS -->
+	<disable_collisions link1="head" link2="neckYawLink" reason="Adjacent"/>
+	<disable_collisions link1="neckYawLink" link2="torso" reason="Adjacent"/>
+	<disable_collisions link1="torso" link2="pelvis" reason="Adjacent"/>
+	<disable_collisions link1="rightShoulderRollLink" link2="rightForearmLink" reason="Adjacent"/>
+	<disable_collisions link1="rightForearmLink" link2="rightPalm" reason="Adjacent"/>
+	<disable_collisions link1="leftShoulderRollLink" link2="leftForearmLink" reason="Adjacent"/>
+	<disable_collisions link1="leftForearmLink" link2="leftPalm" reason="Adjacent"/>
+	<disable_collisions link1="pelvis" link2="rightHipPitchLink" reason="Adjacent"/>
+	<disable_collisions link1="pelvis" link2="leftHipPitchLink" reason="Adjacent"/>
+	<disable_collisions link1="rightHipPitchLink" link2="rightKneePitchLink" reason="Adjacent"/>
+	<disable_collisions link1="leftHipPitchLink" link2="leftKneePitchLink" reason="Adjacent"/>
+
+
+	<!-- NEVER COLLIDE (KINEMATICALLY INFEASIBLE) -->
+	<disable_collisions link1="head" link2="pelvis" reason="Never"/>
+	<disable_collisions link1="head" link2="rightHipPitchLink" reason="Never"/>
+	<disable_collisions link1="head" link2="leftHipPitchLink" reason="Never"/>
+	<disable_collisions link1="head" link2="rightKneePitchLink" reason="Never"/>
+	<disable_collisions link1="head" link2="leftKneePitchLink" reason="Never"/>
+	<disable_collisions link1="head" link2="rightFoot" reason="Never"/>
+	<disable_collisions link1="head" link2="leftFoot" reason="Never"/>
+	<disable_collisions link1="pelvis" link2="rightKneePitchLink" reason="Never"/>
+	<disable_collisions link1="pelvis" link2="leftKneePitchLink" reason="Never"/>
+	<disable_collisions link1="pelvis" link2="rightFoot" reason="Never"/>
+	<disable_collisions link1="pelvis" link2="leftFoot" reason="Never"/>
+	<disable_collisions link1="rightShoulderRollLink" link2="rightFoot" reason="Never"/>
+	<disable_collisions link1="rightShoulderRollLink" link2="leftFoot" reason="Never"/>
+	<disable_collisions link1="rightShoulderRollLink" link2="rightKneePitchLink" reason="Never"/>
+	<disable_collisions link1="rightShoulderRollLink" link2="leftKneePitchLink" reason="Never"/>
+	<disable_collisions link1="leftShoulderRollLink" link2="rightFoot" reason="Never"/>
+	<disable_collisions link1="leftShoulderRollLink" link2="leftFoot" reason="Never"/>
+	<disable_collisions link1="leftShoulderRollLink" link2="rightKneePitchLink" reason="Never"/>
+	<disable_collisions link1="leftShoulderRollLink" link2="leftKneePitchLink" reason="Never"/>
+
+	<!-- NEVER COLLIDE - These added solely for self collision/nearest_point purposes -->
+	<disable_collisions link1="leftElbowNearLink" link2="leftShoulderRollLink" reason="Never"/>
+	<disable_collisions link1="leftElbowNearLink" link2="leftForearmLink" reason="Never"/>
+	<disable_collisions link1="leftElbowNearLink" link2="head" reason="Never"/>
+	<disable_collisions link1="leftElbowNearLink" link2="rightElbowNearLink" reason="Never"/>
+	<disable_collisions link1="leftElbowNearLink" link2="rightShoulderRollLink" reason="Never"/>
+	<disable_collisions link1="leftElbowNearLink" link2="rightForearmLink" reason="Never"/>
+	<disable_collisions link1="leftElbowNearLink" link2="rightFoot" reason="Never"/>
+	<disable_collisions link1="leftElbowNearLink" link2="leftFoot" reason="Never"/>
+	<disable_collisions link1="leftElbowNearLink" link2="leftKneePitchLink" reason="Never"/>
+	<disable_collisions link1="leftElbowNearLink" link2="rightKneePitchLink" reason="Never"/>
+	<disable_collisions link1="rightElbowNearLink" link2="rightShoulderRollLink" reason="Never"/>
+	<disable_collisions link1="rightElbowNearLink" link2="rightForearmLink" reason="Never"/>
+	<disable_collisions link1="rightElbowNearLink" link2="head" reason="Never"/>
+	<disable_collisions link1="rightElbowNearLink" link2="rightShoulderRollLink" reason="Never"/>
+	<disable_collisions link1="rightElbowNearLink" link2="lefttForearmLink" reason="Never"/>
+	<disable_collisions link1="rightElbowNearLink" link2="rightFoot" reason="Never"/>
+	<disable_collisions link1="rightElbowNearLink" link2="leftFoot" reason="Never"/>
+	<disable_collisions link1="rightElbowNearLink" link2="leftKneePitchLink" reason="Never"/>
+	<disable_collisions link1="rightElbowNearLink" link2="rightKneePitchLink" reason="Never"/>
+	<disable_collisions link1="leftKneeNearLink" link2="leftKneePitchLink" reason="Never"/>
+	<disable_collisions link1="leftKneeNearLink" link2="leftHipPitchLink" reason="Never"/>
+	<disable_collisions link1="leftKneeNearLink" link2="rightFoot" reason="Never"/>
+	<disable_collisions link1="leftKneeNearLink" link2="leftFoot" reason="Never"/>
+	<disable_collisions link1="rightKneeNearLink" link2="leftKneePitchLink" reason="Never"/>
+	<disable_collisions link1="rightKneeNearLink" link2="leftHipPitchLink" reason="Never"/>
+	<disable_collisions link1="rightKneeNearLink" link2="rightFoot" reason="Never"/>
+	<disable_collisions link1="rightKneeNearLink" link2="leftFoot" reason="Never"/>
+
+<!-- 	<disable_collisions link1="" link2="" reason="Never"/>
+	<disable_collisions link1="" link2="" reason="Never"/>
+	<disable_collisions link1="" link2="" reason="Never"/>
+	<disable_collisions link1="" link2="" reason="Never"/>
+	<disable_collisions link1="" link2="" reason="Never"/>
+	<disable_collisions link1="" link2="" reason="Never"/>
+	<disable_collisions link1="" link2="" reason="Never"/>
+	<disable_collisions link1="" link2="" reason="Never"/> -->
+
+
+</robot>
+

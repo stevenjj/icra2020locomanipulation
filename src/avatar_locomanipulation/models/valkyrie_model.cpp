@@ -24,7 +24,11 @@ void ValkyrieModel::commonInitialization(){
   Ainv = Eigen::MatrixXd::Zero(model.nv, model.nv);
   C = Eigen::MatrixXd::Zero(model.nv, model.nv);
   g = Eigen::VectorXd::Zero(model.nv);	
-  
+  q_current = Eigen::VectorXd(model.nq);
+
+  q_lower_pos_limit = Eigen::VectorXd(model.nq);
+  q_upper_pos_limit = Eigen::VectorXd(model.nq);
+
   x_com.setZero();
   xdot_com.setZero();
   xddot_com.setZero();
@@ -32,16 +36,30 @@ void ValkyrieModel::commonInitialization(){
   J_com = Eigen::Matrix3Xd::Zero(3, model.nv);
   Jdot_com = Eigen::Matrix3Xd::Zero(3, model.nv);
 
+  joint_names.clear();
+  for (int k=VAL_MODEL_JOINT_INDX_OFFSET ; k<model.njoints ; ++k){
+    joint_names.push_back(model.names[k]);
+  } 
+
+  for(int i = 0; i < model.lowerPositionLimit.size(); i++){
+    q_lower_pos_limit[i] = model.lowerPositionLimit[i];
+    q_upper_pos_limit[i] = model.upperPositionLimit[i];
+  }
+
   std::cout << "Valkyrie Model Constructed" << std::endl;
 }
 
 void ValkyrieModel::updateFullKinematics(const Eigen::VectorXd & q_update){
+  q_current = q_update;
   // Perform initial forward kinematics
   pinocchio::forwardKinematics(model, *data, q_update);
   // Compute Joint Jacobians
   pinocchio::computeJointJacobians(model,*data, q_update);
   // Update Frame Placements
   pinocchio::updateFramePlacements(model, *data);	
+  // Update CoM position and Jacobian
+  computeCoMPos(q_update);
+  computeCoMJacobian();  
 }
 
 void ValkyrieModel::updateKinematicsDerivatives(const Eigen::VectorXd & q_update, const Eigen::VectorXd & qdot_update, const Eigen::VectorXd & qddot_update){
@@ -59,8 +77,17 @@ void ValkyrieModel::get6DTaskJacobian(const std::string & frame_name, Eigen::Mat
   pinocchio::getFrameJacobian(model, *data, tmp_frame_index, pinocchio::WORLD, J_out);
 }
 
+void ValkyrieModel::get6DTaskJacobianLocal(const std::string & frame_name, Eigen::MatrixXd & J_out){
+  tmp_frame_index = model.getFrameId(frame_name);
+  pinocchio::getFrameJacobian(model, *data, tmp_frame_index, pinocchio::LOCAL, J_out);
+}
+
 void ValkyrieModel::get6DTaskJacobianDot(const std::string & frame_name, Eigen::MatrixXd & Jdot_out){
   pinocchio::getFrameJacobianTimeVariation(model, *data, model.getFrameId(frame_name), pinocchio::WORLD, Jdot_out);
+}
+
+void ValkyrieModel::get6DTaskJacobianDotLocal(const std::string & frame_name, Eigen::MatrixXd & Jdot_out){
+  pinocchio::getFrameJacobianTimeVariation(model, *data, model.getFrameId(frame_name), pinocchio::LOCAL, Jdot_out);
 }
 
 void ValkyrieModel::getFrameWorldPose(const std::string & name, Eigen::Vector3d & pos, Eigen::Quaternion<double> & ori){
@@ -82,6 +109,10 @@ int ValkyrieModel::getDimQdot(){
 
 int ValkyrieModel::getJointIndex(const std::string & name){
   return VAL_MODEL_NUM_FLOATING_JOINTS + model.getJointId(name) - VAL_MODEL_JOINT_INDX_OFFSET;  
+}
+
+int ValkyrieModel::getJointIndexNoFloatingJoints(const std::string & name){
+  return model.getJointId(name) - VAL_MODEL_JOINT_INDX_OFFSET;    
 }
 
 void ValkyrieModel::forwardIntegrate(const Eigen::VectorXd & q_start, const Eigen::VectorXd & qdotDt, Eigen::VectorXd & q_post){

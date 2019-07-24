@@ -182,7 +182,7 @@ void GMMFit::addData(Eigen::VectorXd & datum){
 
 void GMMFit::prepData(){
   num_data = list_of_datums_raw.size();
-  data_mean = data_mean/num_data;
+  data_mean = data_mean_sum/(num_data);
   for (int i = 0; i<num_data; i++){
     for (int k = 0; k<dim; k++){
       data_std_dev_sum[k]+= pow(list_of_datums_raw[i][k]-data_mean[k],2);
@@ -219,4 +219,17 @@ double GMMFit::mixtureModelProb(Eigen::VectorXd & x_in){
     // std::cout << "--------------------------" << std::endl;
   }
   return p;
+}
+
+void GMMFit::normalizeInputCalculate(const Eigen::VectorXd & x_in, Eigen::VectorXd & x_normalized) {
+  x_normalized = (x_in - data_mean).cwiseQuotient(data_std_dev);
+}
+
+void GMMFit::setDataParams(const Eigen::VectorXd & mean_in, const Eigen::VectorXd & std_dev_in) {
+  data_mean = mean_in;
+  data_std_dev = std_dev_in;
+}
+
+void GMMFit::normalizeInputInverse(const Eigen::VectorXd & x_in, Eigen::VectorXd & x_unnormalized) {
+  x_unnormalized = (x_in.cwiseProduct(data_std_dev)) + data_mean;
 }

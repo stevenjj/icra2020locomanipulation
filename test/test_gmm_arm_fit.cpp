@@ -63,8 +63,28 @@ int main(int argc, char ** argv){
   gmmfitter.prepData();
 
   gmmfitter.normalizeData();
+
   gmmfitter.randInitialGuess();
   gmmfitter.expectationMax();
+
+
+  std::vector<std::string> list_of_vars;
+
+  list_of_vars.push_back("x");
+  list_of_vars.push_back("y");
+  list_of_vars.push_back("z");
+  list_of_vars.push_back("rx");
+  list_of_vars.push_back("ry");
+  list_of_vars.push_back("rz");
+
+  YAML::Emitter out1;
+  out1 << YAML::BeginMap;
+    data_saver::emit_gmm_normalize(out1, gmmfitter.data_mean, gmmfitter.data_std_dev, list_of_vars);
+  out1 << YAML::EndMap;
+  char filename1[64];
+  snprintf(filename1, sizeof(char)*32, "/home/mihir/lMD/norm.yaml");
+  std::ofstream file_output_stream1(filename1);
+  file_output_stream1 << out1.c_str();
 
   std::vector<Eigen::VectorXd> list_of_mus;
   std::vector<Eigen::MatrixXd> list_of_Sigmas;

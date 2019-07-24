@@ -66,9 +66,12 @@ public:
   Eigen::Vector3d pelvis_ori_error;
   Eigen::Quaternion<double> pelvis_cur_ori;
   Eigen::Vector3d pelvis_cur_pos;
+  Eigen::Vector3d pelvis_des_pos;
+  Eigen::Vector3d pelvis_pos_error;
   Eigen::MatrixXd J_pelvis;
 
   // CoM in support region and specified height
+  Eigen::Vector3d com_cur_pos;
   Eigen::Vector3d com_des_pos;
   Eigen::Vector3d com_pos_error;
 

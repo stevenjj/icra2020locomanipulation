@@ -4,7 +4,11 @@
 // Import ROS and Rviz visualization
 #include <ros/ros.h>
 #include <avatar_locomanipulation/bridge/val_rviz_translator.hpp>
-#include <avatar_locomanipulation/models/valkyrie_model.hpp>
+#include <avatar_locomanipulation/models/robot_model.hpp>
+#include "visualization_msgs/Marker.h"
+#include "geometry_msgs/PoseStamped.h"
+#include <tf/transform_listener.h>
+
 
 int main(int argc, char **argv){
 	// Initialize ROS node for publishing joint messages
@@ -21,16 +25,24 @@ int main(int argc, char **argv){
 	// Joint State Publisher
 	ros::Publisher robot_ik_joint_state_pub = n.advertise<sensor_msgs::JointState>("robot1/joint_states", 10);
 	ros::Publisher robot_joint_state_pub = n.advertise<sensor_msgs::JointState>("robot2/joint_states", 10);
-
+	// Box Publisher
+	ros::Publisher box_pub = n.advertise<visualization_msgs::Marker>("box", 100);
+	
 	// Initialize Transforms and Messages
 	tf::Transform tf_world_pelvis_init;
 	tf::Transform tf_world_pelvis_end;
+	tf::TransformListener listener;
 
 	sensor_msgs::JointState joint_msg_init; 
 	sensor_msgs::JointState joint_msg_end; 
+	visualization_msgs::Marker box_msg;
 
-	// Initialize Robot Model
-	ValkyrieModel valkyrie;
+	std::cout << "Initialize Valkyrie Model" << std::endl;
+	std::string filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
+	std::string srdf_filename = THIS_PACKAGE_PATH"models/valkyrie_disable_collisions.srdf";
+	std::string meshDir  = THIS_PACKAGE_PATH"../val_model/";
+
+ 	RobotModel valkyrie(filename, meshDir, srdf_filename);
 	Eigen::VectorXd  q_start(valkyrie.getDimQ()); q_start.setZero();
 	Eigen::VectorXd  q_end(valkyrie.getDimQ()); q_end.setZero();
 
@@ -64,9 +76,33 @@ int main(int argc, char **argv){
 	rviz_translator.populate_joint_state_msg(valkyrie.model, q_start, tf_world_pelvis_init, joint_msg_init);
 	rviz_translator.populate_joint_state_msg(valkyrie.model, q_end, tf_world_pelvis_end, joint_msg_end);
 
+	
+	// Fill the box marker msg
+	box_msg.pose.position.x = 1.0;
+	box_msg.pose.position.y = 0.;
+	box_msg.pose.position.z = 1.125;
+	box_msg.pose.orientation.y = 0.;
+	box_msg.pose.orientation.z = 0.;
+	box_msg.pose.orientation.w = 1.;
+	box_msg.scale.x = 0.05;
+	box_msg.scale.y = 1.0;
+	box_msg.scale.z = 2.25;
+	box_msg.header.frame_id = "world";
+	box_msg.text = "box";
+	box_msg.header.stamp = ros::Time::now();
+	box_msg.color.r = 0.0f;
+	box_msg.color.g = 1.0f;
+	box_msg.color.b = 0.0f;
+	box_msg.color.a = 1.0;
+	box_msg.lifetime = ros::Duration();
+	box_msg.action = visualization_msgs::Marker::ADD;
+	box_msg.type = visualization_msgs::Marker::CUBE;
+
 	while (ros::ok()){
 	    br_robot.sendTransform(tf::StampedTransform(tf_world_pelvis_init, ros::Time::now(), "world",  "val_robot/pelvis"));
 	    robot_joint_state_pub.publish(joint_msg_init);
+	    
+	    box_pub.publish(box_msg);
 
 	    br_ik.sendTransform(tf::StampedTransform(tf_world_pelvis_end, ros::Time::now(), "world", "val_ik_robot/pelvis"));
 	    robot_ik_joint_state_pub.publish(joint_msg_end);

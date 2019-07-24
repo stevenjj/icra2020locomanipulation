@@ -48,6 +48,11 @@ public:
   Eigen::MatrixXd C; // coriolis matrix
   Eigen::VectorXd g; // gravity vector
 
+  Eigen::VectorXd q_current;
+  Eigen::VectorXd q_lower_pos_limit;
+  Eigen::VectorXd q_upper_pos_limit;
+  std::vector<std::string> joint_names; 
+
   Eigen::Vector3d x_com; // com position
   Eigen::Vector3d xdot_com; // com velocity
   Eigen::Vector3d xddot_com; // com acceleration
@@ -75,12 +80,25 @@ public:
   */
   void get6DTaskJacobian(const std::string & frame_name, Eigen::MatrixXd & J_out);
 
+  /* get6DTaskJacobianLocal
+  Input: the frame name.   
+  Output: the 6D task jacobian (dimension 6 x model.nv) expressed in the local frame
+          with the linear components first: [(dx/dq)^T , (dy/dq)^T, (dz/dq)^T]^T
+          then the rotational components: [(wx/dq)^T , (wy/dq)^T, (wz/dq)^T]^T
+  */
+  void get6DTaskJacobianLocal(const std::string & frame_name, Eigen::MatrixXd & J_out);
+
   /* get6DTaskJacobianDot
   Input: the frame name.
   Output: the 6D task jacobian dot (6 x model.nv) expressed in world frame.
   */
   void get6DTaskJacobianDot(const std::string & frame_name, Eigen::MatrixXd & Jdot_out);
 
+  /* get6DTaskJacobianDotLocal
+  Input: the frame name.
+  Output: the 6D task jacobian dot (6 x model.nv) expressed in world frame.
+  */
+  void get6DTaskJacobianDotLocal(const std::string & frame_name, Eigen::MatrixXd & Jdot_out);
 
   /* getFrameWorldPose
   Input: the frame name.   
@@ -99,6 +117,16 @@ public:
       this function should return 7.
   */
   int getJointIndex(const std::string & name); 
+
+  /* getJointIndexNoFloatingJoints
+  Input std::string name
+  Output: The joint index in configuration space
+      unlike getJointIndex, this one does not include the floating joints
+
+      Thus, for a "leftHipYaw" input, which is the first joint in the kinematic chain,
+      this function should return 0.
+  */
+  int getJointIndexNoFloatingJoints(const std::string & name); 
 
   /* getDimQ();
   Output: The dimension of the configuration space

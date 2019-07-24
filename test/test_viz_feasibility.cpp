@@ -4,13 +4,13 @@
 // Import ROS and Rviz visualization
 #include <ros/ros.h>
 #include <avatar_locomanipulation/bridge/val_rviz_translator.hpp>
-#include <avatar_locomanipulation/models/valkyrie_model.hpp>
+#include <avatar_locomanipulation/models/robot_model.hpp>
 
 #include <avatar_locomanipulation/feasibility/feasibility.hpp>
 
 int main(int argc, char **argv){
 	// Initialize ROS node for publishing joint messages
-	ros::init(argc, argv, "test_rviz");
+	ros::init(argc, argv, "test_viz_feasibility");
 	ros::NodeHandle n;
 	ros::Rate loop_rate(20);
 
@@ -32,7 +32,11 @@ int main(int argc, char **argv){
 	sensor_msgs::JointState joint_msg_end;
 
 	// Initialize Robot Model
-	ValkyrieModel valkyrie;
+	std::string filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
+	std::string srdf_filename = THIS_PACKAGE_PATH"models/valkyrie_disable_collisions.srdf";
+	std::string meshDir  = THIS_PACKAGE_PATH"../val_model/";
+
+ 	RobotModel valkyrie(filename, meshDir, srdf_filename);
 	Eigen::VectorXd  q_start(valkyrie.getDimQ()); q_start.setZero();
 	Eigen::VectorXd  q_end(valkyrie.getDimQ()); q_end.setZero();
 	Eigen::VectorXd  q_data(valkyrie.getDimQ()); q_data.setZero();

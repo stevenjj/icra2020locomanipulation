@@ -45,16 +45,22 @@ include_directories(
 )
 
 SET (MODEL_SOURCES
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/models/valkyrie_model.cpp)
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/models/valkyrie_model.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/models/robot_model.cpp)
 
 SET (DATA_TYPES_SOURCES
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/data_types/footstep.cpp)
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/data_types/footstep.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/data_types/trajectory_euclidean.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/data_types/trajectory_orientation.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/data_types/trajectory_SE3.cpp)
+
 
 SET (WALKING_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/walking/walking_pattern_generator.cpp)
 
 SET (HELPER_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/hermite_curve.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/hermite_curve_vec.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/hermite_quaternion_curve.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/rkf45.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/convex_hull.cpp
@@ -74,7 +80,25 @@ SET (FEASIBILITY_SOURCES
 SET (TASK_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_com.cpp
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_6dpose.cpp)
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_6dpose.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_6dpose_wrt_midfoot.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_6dpose_wrt_frame.cpp	
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_6dcontact_normal.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_4dcontact_normal.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_contact_normal.cpp	
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_3dorientation.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_joint_config.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_stack.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_selfcollision.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_objectcollision.cpp)
+
+
+SET (COLLISION_ENVIRONMENT_SOURCES
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/collision_environment/collision_environment.cpp)
+
+SET (IK_MODULE_SOURCES
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/ik_module/ik_module.cpp)
+
 
 SET(PROJECT_SOURCES
 	${MODEL_SOURCES}
@@ -83,7 +107,9 @@ SET(PROJECT_SOURCES
 	${HELPER_SOURCES}
 	${ROS_BRIDGE_SOURCES}
 	${FEASIBILITY_SOURCES}
-	${TASK_SOURCES})
+	${TASK_SOURCES}
+	${COLLISION_ENVIRONMENT_SOURCES}
+	${IK_MODULE_SOURCES})
 
 # Grab all the libraries
 SET(PROJECT_LIBRARIES
