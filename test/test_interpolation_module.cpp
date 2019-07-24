@@ -9,7 +9,7 @@ int main(int argc, char ** argv){
 
 	SevenDimVec example(N, filename);
 
-	double s = 0.1;
+	double s = 0.44;
 	example.evaluate(s);
 	
 }
