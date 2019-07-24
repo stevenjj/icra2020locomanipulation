@@ -149,7 +149,7 @@ namespace planner{
 
 		virtual std::vector< shared_ptr<Node> > getNeighbors(shared_ptr<Node> & current);
 
-		void WriteData(vector< shared_ptr<Node> > optimal_path);
+		void WriteData();
 		void printPath();
 
 		int branch;

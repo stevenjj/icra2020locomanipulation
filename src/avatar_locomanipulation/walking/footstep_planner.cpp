@@ -281,6 +281,9 @@ namespace planner{
 		double midpt_goal_x;
 		double midpt_goal_y;
 		double distance;
+
+		double midpt_neigh_theta;
+		double midpt_goal_theta;
 		// double distance1;
 		// double distance2;
 
@@ -290,13 +293,18 @@ namespace planner{
 		midpt_goal_x = (goal_->xRF + goal_->xLF)/2;
 		midpt_goal_y = (goal_->yRF + goal_->yLF)/2;
 
+		midpt_neigh_theta = (neighbor_->thetaLF + neighbor_->thetaRF)/2;
+		midpt_goal_theta = (goal_->thetaLF + goal_->thetaRF)/2;
+
+		double theta_err = abs(midpt_goal_theta - midpt_neigh_theta);
+
 		
 		//distance = sqrt(pow(neighbor_->xLF - goal_->xLF,2) + pow(neighbor_->yLF - goal_->yLF,2));
 		// // }
 		// // else{
 		// distance2 = sqrt(pow(neighbor_->xRF - goal_->xRF,2) + pow(neighbor_->yRF - goal_->yRF,2));
 
-		distance = sqrt(pow(midpt_neigh_x - midpt_goal_x,2) + pow(midpt_neigh_y - midpt_goal_y,2));
+		distance = sqrt(pow(midpt_neigh_x - midpt_goal_x,2) + pow(midpt_neigh_y - midpt_goal_y,2)) + theta_err;
 		// }
 
 		return distance;
@@ -340,7 +348,7 @@ namespace planner{
 	}
 
 
-	void FootstepPlanner::WriteData(vector< shared_ptr<Node> > optimal_path){
+	void FootstepPlanner::WriteData(){
 		for (size_t i(0); i < optimal_path.size(); i++){
 			vector<double> optimal_coord;
 			opt_node_ = std::static_pointer_cast<FootstepNode>(optimal_path[i]);
@@ -358,7 +366,7 @@ namespace planner{
 	void FootstepPlanner::printPath(){
 		for (size_t i(0); i < optimal_path.size(); i++){
 			opt_node_ = std::static_pointer_cast<FootstepNode>(optimal_path[i]);
-			cout << "optimal path:: " << "xLF: " << opt_node_->xLF << "yLF: " << opt_node_->yLF << "xRF: " << opt_node_->xRF << "yRF: " << opt_node_->yRF << "thetaLF: " << opt_node_->thetaLF << "thetaRF: " << opt_node_->thetaRF << endl;
+			cout << "optimal path:: " << " xLF: " << opt_node_->xLF << " yLF: " << opt_node_->yLF << " xRF: " << opt_node_->xRF << " yRF: " << opt_node_->yRF << " thetaLF: " << opt_node_->thetaLF << " thetaRF: " << opt_node_->thetaRF << endl;
 		}		
 	}
 
@@ -378,8 +386,8 @@ namespace planner{
 		double maxdist_y = 3.0;
 		double mindist_x = -2.0;
 		double maxdist_x = 2.0;
-		double mintheta = 0.0;
-		double maxtheta = 0.0;
+		double mintheta = -M_PI/4;
+		double maxtheta = M_PI/4;
 
 		//bool change = true; //LF moving
 
@@ -597,7 +605,6 @@ namespace planner{
 					// Construct the path
 					constructPath();
 					cout << "completed constructpath" << endl;
-					WriteData(optimal_path);
 
 					return true;
 				}

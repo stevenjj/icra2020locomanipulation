@@ -63,7 +63,7 @@ int main(int argc, char **argv){
     //footstepplanner.getNeighbors(current);
 
     shared_ptr<Node> begin_footstep (std::make_shared<FootstepNode>(1.0,1.0,1.0,-1.0,0.0,0.0,"LF"));
-    shared_ptr<Node> goal_footstep (std::make_shared<FootstepNode>(10.0,-4.0,10.0,-6.0,0.0,0.0,"RF"));
+    shared_ptr<Node> goal_footstep (std::make_shared<FootstepNode>(10.0,11.0,10.0,9.0,0.0,-M_PI/4,"RF"));
 
     footstepplanner.setStartNode(begin_footstep);
     footstepplanner.setGoalNode(goal_footstep);
@@ -71,6 +71,7 @@ int main(int argc, char **argv){
     footstepplanner.doAstar();
 
     footstepplanner.printPath();
+    footstepplanner.WriteData();
 
 
 	return 0;
