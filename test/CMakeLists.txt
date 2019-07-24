@@ -26,7 +26,8 @@
 # add_executable(test_ik_objectcollision test_ik_objectcollision.cpp ${PROJECT_SOURCES})
 #add_executable(test_multiple_selfcollision test_multiple_selfcollision.cpp ${PROJECT_SOURCES})
 # add_executable(test_visualize_door_waypoints test_visualize_door_waypoints.cpp ${PROJECT_SOURCES})
-add_executable(test_visualize_panel_waypoints test_visualize_panel_waypoints.cpp ${PROJECT_SOURCES})
+# add_executable(test_visualize_panel_waypoints test_visualize_panel_waypoints.cpp ${PROJECT_SOURCES})
+add_executable(test_interpolation_module test_interpolation_module.cpp ${PROJECT_SOURCES})
 
 # target_link_libraries(test_load_urdf_model ${PROJECT_LIBRARIES})
 # target_link_libraries(test_valkyrie_model  ${PROJECT_LIBRARIES})
@@ -56,4 +57,5 @@ add_executable(test_visualize_panel_waypoints test_visualize_panel_waypoints.cpp
 # target_link_libraries(test_ik_objectcollision ${PROJECT_LIBRARIES})
 # target_link_libraries(test_multiple_selfcollision ${PROJECT_LIBRARIES})
 # target_link_libraries(test_visualize_door_waypoints ${PROJECT_LIBRARIES})
-target_link_libraries(test_visualize_panel_waypoints ${PROJECT_LIBRARIES})
+# target_link_libraries(test_visualize_panel_waypoints ${PROJECT_LIBRARIES})
+target_link_libraries(test_interpolation_module ${PROJECT_LIBRARIES})
