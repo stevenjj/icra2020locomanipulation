@@ -32,7 +32,7 @@ void SevenDimVec::evaluate(const double & s_global){
 
 	for(int i=0; i<(N-2); ++i){
 		// DEBUG: 
-		std::cout << "s_ = " << s_ << std::endl;
+		// std::cout << "s_ = " << s_ << std::endl;
 		// std::cout << "Denom: ((double) (1/N-3)) = " << ( (1/ ((double) (N-3)) ) ) << std::endl;
 		// std::cout << "Numerator: (s_ - (i / ((double) (N-3)))) = " << ( s_ - (i / ((double) (N-3))) ) << std::endl;
 		// std::cout << "Lower Bound: ( i / ((double) (N)) ) = " << ( i / ((double) (N)) ) << std::endl;
@@ -42,18 +42,15 @@ void SevenDimVec::evaluate(const double & s_global){
 		if( ( i / ((double) (N)) ) <= s_ && s_ < ( ((double) (i+3))/((double) (N-1)) ) ){
 
 			// Use the global s to obtain the local s as used by each OneDim
-			// s_local = (s_ - i/(N-3)) / (1/(N-3))
-			// double s_local = ( (s_/3.0) - (i / ((double) (N-3))) ) / ( (1/ ((double) (N-3)) ) );
-
+			// s_local = (1/(smax - smin))*(sg - smin)
 			double s_local = ( 1 / ( ( ((double) (i+3))/((double) (N-1)) ) - ( i / ((double) (N)) ) )) * ( s_ - ( i / ((double) (N)) ) );
-			std::cout << "s_local = " << s_local << std::endl;
 			
 			// Feed evaluate the local s value
 			seven_dim_vec[i]->evaluate(s_local);
 			break;
 
-			//DEBUG:
-			
+			// DEBUG:
+			// std::cout << "s_local = " << s_local << std::endl;			
 			// std::cout <<"i " << i << std::endl;
 		}
 	} 
