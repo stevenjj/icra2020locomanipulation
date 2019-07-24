@@ -28,7 +28,7 @@ std::shared_ptr<RobotModel> CollisionEnvironment::append_models(){
   // Define a new RobotModel which will be the appended model
   std::shared_ptr<RobotModel> appended(new RobotModel() );
 
-  // Prepare the models for appending
+  // Prepare the input models for appending
   valkyrie->geomModel.addAllCollisionPairs();
   object->geomModel.addAllCollisionPairs();
   // Removes all collision pairs as specified in the srdf_filename
@@ -37,6 +37,8 @@ std::shared_ptr<RobotModel> CollisionEnvironment::append_models(){
   // Append the object onto the robot, and fill appended RobotModel
   pinocchio::appendModel(valkyrie->model, object->model, valkyrie->geomModel, object->geomModel, valkyrie->model.frames.size()-1, pinocchio::SE3::Identity(), appended->model, appended->geomModel);
 
+  // Like common intialization but for appended objects
+  // Difference is the initialization of geomData
   appended->appended_initialization();
 
   // Define the appended configuration vector
@@ -220,7 +222,9 @@ void CollisionEnvironment::build_directed_vector_to_rhand(){
   collision_names.push_back("rightKneeNearLink_0");
   collision_names.push_back("leftKneeNearLink_0");
   collision_names.push_back("rightHipPitchLink_0");
+  collision_names.push_back("rightHipUpperLink_0");
   collision_names.push_back("leftHipPitchLink_0");
+  collision_names.push_back("leftHipUpperLink_0");
   collision_names.push_back("rightKneePitchLink_0");
   collision_names.push_back("leftKneePitchLink_0");
   collision_names.push_back("head_0");
@@ -250,7 +254,8 @@ void CollisionEnvironment::build_directed_vector_to_rhand(){
       difference = it2->second - it->second;
       // Fill the dvector and push back
       dvector.from = it->first; dvector.to = "rightPalm_0";
-      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+      dvector.using_worldFramePose = false;
       directed_vectors.push_back(dvector);
       ++it2;
     }
@@ -280,7 +285,9 @@ void CollisionEnvironment::build_directed_vector_to_lhand(){
   collision_names.push_back("rightKneeNearLink_0");// right knee
   collision_names.push_back("leftKneeNearLink_0");// left knee
   collision_names.push_back("rightHipPitchLink_0");
+  collision_names.push_back("rightHipUpperLink_0");
   collision_names.push_back("leftHipPitchLink_0");
+  collision_names.push_back("leftHipUpperLink_0");
   collision_names.push_back("rightKneePitchLink_0");
   collision_names.push_back("leftKneePitchLink_0");
   collision_names.push_back("head_0");
@@ -308,7 +315,8 @@ void CollisionEnvironment::build_directed_vector_to_lhand(){
       difference = it2->second - it->second;
       // Fill the dvector and push back
       dvector.from = it->first; dvector.to = "leftPalm_0";
-      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+      dvector.using_worldFramePose = false;
       directed_vectors.push_back(dvector);
       ++it2;
     }
@@ -353,7 +361,8 @@ void CollisionEnvironment::build_directed_vector_to_head(){
       difference = it2->second - it->second;
       // Fill the dvector and push back
       dvector.from = "torso_0"; dvector.to = "head_0";
-      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+      dvector.using_worldFramePose = false;
       directed_vectors.push_back(dvector);
       ++it2;
     }
@@ -376,6 +385,7 @@ void CollisionEnvironment::build_directed_vector_to_rknee(){
   collision_names.push_back("rightKneeNearLink_0");
   collision_names.push_back("leftKneeNearLink_0");
   collision_names.push_back("leftHipPitchLink_0");
+  collision_names.push_back("leftHipUpperLink_0");
   collision_names.push_back("leftKneePitchLink_0");
 
   Eigen::Vector3d difference;
@@ -398,7 +408,8 @@ void CollisionEnvironment::build_directed_vector_to_rknee(){
       difference = it2->second - it->second;
       // Fill the dvector and push back
       dvector.from = "leftKneeNearLink_0"; dvector.to = "rightKneeNearLink_0";
-      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+      dvector.using_worldFramePose = false;
       directed_vectors.push_back(dvector);
       ++it2;
     }
@@ -420,6 +431,7 @@ void CollisionEnvironment::build_directed_vector_to_lknee(){
   collision_names.push_back("leftKneeNearLink_0");
   collision_names.push_back("rightKneeNearLink_0");
   collision_names.push_back("rightHipPitchLink_0");
+  collision_names.push_back("rightHipUpperLink_0");
   collision_names.push_back("rightKneePitchLink_0");
 
   Eigen::Vector3d difference;
@@ -442,12 +454,118 @@ void CollisionEnvironment::build_directed_vector_to_lknee(){
       difference = it2->second - it->second;
       // Fill the dvector and push back
       dvector.from = "rightKneeNearLink_0"; dvector.to = "leftKneeNearLink_0";
-      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+      dvector.using_worldFramePose = false;
       directed_vectors.push_back(dvector);
       ++it2;
     }
   }
   
+  std::cout << "directed_vectors.size(): " << directed_vectors.size() << std::endl;
+}
+
+
+void CollisionEnvironment::build_directed_vector_to_rwrist(){
+  // for clarity on these maps, see control flow in find_self_near_points function
+  std::map<std::string, Eigen::Vector3d> from_near_points, to_near_points;
+
+  // initialize two iterators to be used in pushing to DirectedVectors struct
+  std::map<std::string, Eigen::Vector3d>::iterator it, it2;
+
+  // fill list with collision_names[0] = name of link to which we want directed vectors
+  // and collision_names[>0] = name of links from which we want directed vectors
+  std::vector<std::string> collision_names;
+  collision_names.push_back("rightForearmLink_0");
+  collision_names.push_back("leftElbowNearLink_0");
+  collision_names.push_back("rightKneeNearLink_0");
+  collision_names.push_back("leftKneeNearLink_0");
+  collision_names.push_back("leftForearmLink_0");
+  collision_names.push_back("rightHipPitchLink_0");
+  collision_names.push_back("rightHipUpperLink_0");
+  collision_names.push_back("leftHipPitchLink_0");
+  collision_names.push_back("leftHipUpperLink_0");
+  collision_names.push_back("pelvis_0");
+  collision_names.push_back("torso_0");
+
+  Eigen::Vector3d difference;
+
+  find_self_near_points(collision_names, from_near_points, to_near_points);
+
+  it2 = to_near_points.begin();
+
+  for(it=from_near_points.begin(); it!=from_near_points.end(); ++it){
+    // If nearest_point[1] = nearest_point[0], then the two links are in collision
+    // and we need a different way to get a dvector
+    if(it->second == it2->second){
+      std::cout << "Collision between " << it->first << " and rightForearmLink_0" << std::endl;
+      get_dvector_collision_links(it->first, "rightForearmLink_0");
+      ++it2;
+    }
+
+    // The typical case when two links are not in collision
+    else{
+      difference = it2->second - it->second;
+      // Fill the dvector and push back
+      dvector.from = it->first; dvector.to = "rightForearmLink_0";
+      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+      dvector.using_worldFramePose = false;
+      directed_vectors.push_back(dvector);
+      ++it2;
+    }
+  }
+
+  std::cout << "directed_vectors.size(): " << directed_vectors.size() << std::endl;
+}
+
+void CollisionEnvironment::build_directed_vector_to_lwrist(){
+  // for clarity on these maps, see control flow in find_self_near_points function
+  std::map<std::string, Eigen::Vector3d> from_near_points, to_near_points;
+
+  // initialize two iterators to be used in pushing to DirectedVectors struct
+  std::map<std::string, Eigen::Vector3d>::iterator it, it2;
+
+  // fill list with collision_names[0] = name of link to which we want directed vectors
+  // and collision_names[>0] = name of links from which we want directed vectors
+  std::vector<std::string> collision_names;
+  collision_names.push_back("leftForearmLink_0");
+  collision_names.push_back("rightElbowNearLink_0");
+  collision_names.push_back("rightKneeNearLink_0");
+  collision_names.push_back("leftKneeNearLink_0");
+  collision_names.push_back("leftForearmLink_0");
+  collision_names.push_back("rightHipPitchLink_0");
+  collision_names.push_back("rightHipUpperLink_0");
+  collision_names.push_back("leftHipPitchLink_0");
+  collision_names.push_back("leftHipUpperLink_0");
+  collision_names.push_back("pelvis_0");
+  collision_names.push_back("torso_0");
+
+  Eigen::Vector3d difference;
+
+  find_self_near_points(collision_names, from_near_points, to_near_points);
+
+  it2 = to_near_points.begin();
+
+  for(it=from_near_points.begin(); it!=from_near_points.end(); ++it){
+    // If nearest_point[1] = nearest_point[0], then the two links are in collision
+    // and we need a different way to get a dvector
+    if(it->second == it2->second){
+      std::cout << "Collision between " << it->first << " and leftForearmLink_0" << std::endl;
+      get_dvector_collision_links(it->first, "leftForearmLink_0");
+      ++it2;
+    }
+
+    // The typical case when two links are not in collision
+    else{
+      difference = it2->second - it->second;
+      // Fill the dvector and push back
+      dvector.from = it->first; dvector.to = "leftForearmLink_0";
+      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+      dvector.using_worldFramePose = false;
+      directed_vectors.push_back(dvector);
+      ++it2;
+    }
+  }
+
   std::cout << "directed_vectors.size(): " << directed_vectors.size() << std::endl;
 }
 
@@ -469,7 +587,9 @@ void CollisionEnvironment::build_directed_vector_to_relbow(){
   collision_names.push_back("leftKneeNearLink_0");
   collision_names.push_back("leftForearmLink_0");
   collision_names.push_back("rightHipPitchLink_0");
+  collision_names.push_back("rightHipUpperLink_0");
   collision_names.push_back("leftHipPitchLink_0");
+  collision_names.push_back("leftHipUpperLink_0");
   collision_names.push_back("pelvis_0");
   collision_names.push_back("torso_0");
 
@@ -493,7 +613,8 @@ void CollisionEnvironment::build_directed_vector_to_relbow(){
       difference = it2->second - it->second;
       // Fill the dvector and push back
       dvector.from = it->first; dvector.to = "rightElbowNearLink_0";
-      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+      dvector.using_worldFramePose = false;
       directed_vectors.push_back(dvector);
       ++it2;
     }
@@ -518,7 +639,9 @@ void CollisionEnvironment::build_directed_vector_to_lelbow(){
   collision_names.push_back("leftKneeNearLink_0");
   collision_names.push_back("rightForearmLink_0");
   collision_names.push_back("rightHipPitchLink_0");
+  collision_names.push_back("rightHipUpperLink_0");
   collision_names.push_back("leftHipPitchLink_0");
+  collision_names.push_back("leftHipUpperLink_0");
   collision_names.push_back("pelvis_0");
   collision_names.push_back("torso_0");
 
@@ -542,7 +665,8 @@ void CollisionEnvironment::build_directed_vector_to_lelbow(){
     difference = it2->second - it->second;
     // Fill the dvector and push back
     dvector.from = it->first; dvector.to = "leftElbowNearLink_0";
-    dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+    dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+      dvector.using_worldFramePose = false;
     directed_vectors.push_back(dvector);
     ++it2;
     }
@@ -632,7 +756,8 @@ void CollisionEnvironment::build_object_directed_vectors(std::string & frame_nam
       difference = it2->second - it->second;
       // Fill the dvector and push back
       dvector.from = object_links[i]; dvector.to = it->first;
-      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();;
+      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+      dvector.using_worldFramePose = false;
       directed_vectors.push_back(dvector);
       ++it2;
       } // end else
@@ -653,10 +778,17 @@ std::vector<Eigen::Vector3d> CollisionEnvironment::get_collision_dx(){
   Eigen::MatrixXd J_out(6, valkyrie->getDimQdot()); J_out.fill(0);
 
   for(int k=0; k<directed_vectors.size(); ++k){
+    if(directed_vectors[k].using_worldFramePose){
+      set_safety_distance(0.2);
+      std::cout << "Collision between these links: (to, from) (" << directed_vectors[k].to << ", " << directed_vectors[k].from << ")" << std::endl;
+    } 
+    else set_safety_distance(0.075);
+
     Potential = safety_dist*2 - (directed_vectors[k].magnitude);
+    std::cout << "To link " << directed_vectors[k].to << " from link " << directed_vectors[k].from << std::endl;
     std::cout << "Potential before = " << Potential << std::endl;
 
-    if(Potential <= safety_dist) Potential = 0;
+    if(Potential <= safety_dist || directed_vectors[k].magnitude > safety_dist) Potential = 0;
 
     std::cout << "Potential after = " << Potential << std::endl;
 
@@ -670,7 +802,7 @@ std::vector<Eigen::Vector3d> CollisionEnvironment::get_collision_dx(){
 }
 
 
-void CollisionEnvironment::set_safety_distance(double & safety_dist_in){
+void CollisionEnvironment::set_safety_distance(double safety_dist_in){
   safety_dist = safety_dist_in;
 }
 
@@ -690,6 +822,7 @@ void CollisionEnvironment::get_dvector_collision_links(const std::string & from_
   difference = cur_pos_to - cur_pos_from;
   dvector.from = from_name; dvector.to = to_name;
   dvector.direction = difference.normalized(); dvector.magnitude = 0.005;
+  dvector.using_worldFramePose = true;
   directed_vectors.push_back(dvector);
 
 }
@@ -708,6 +841,7 @@ void CollisionEnvironment::get_dvector_collision_links_appended(std::shared_ptr<
   difference = cur_pos_to - cur_pos_from;
   dvector.from = from_name; dvector.to = to_name;
   dvector.direction = difference.normalized(); dvector.magnitude = 0.005;
+  dvector.using_worldFramePose = true;
   directed_vectors.push_back(dvector);
 
 }
@@ -722,6 +856,8 @@ void CollisionEnvironment::map_collision_names_to_frame_names(){
   collision_to_frame["rightPalm_0"] = "rightPalm";
   collision_to_frame["leftPalm_0"] = "leftPalm_0";
   collision_to_frame["head_0"] = "head";
+  collision_to_frame["rightHipUpperLink_0"] = "rightHipUpperLink";
+  collision_to_frame["leftHipUpperLink_0"] = "leftHipUpperLink";
 
   std::string tmp;
   // if we added an object to the collision environment
