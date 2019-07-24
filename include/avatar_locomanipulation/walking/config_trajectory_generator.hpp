@@ -52,7 +52,8 @@ public:
     // If the feet are already flat on the ground q_out is set to the input q_guess.   
     void computeInitialConfigForFlatGround(const Eigen::VectorXd & q_guess, Eigen::VectorXd & q_out); 
 
-    // Given an initial configuration, 
+    // Given an initial configuration and footstep data list input, compute the task space walking trajectory.
+    // Warning: If hand tasks are enabled, they need to have been set already.
     void computeConfigurationTrajectory(const Eigen::VectorXd & q_init, const std::vector<Footstep> & input_footstep_list);
 
     // returns N_size
@@ -60,7 +61,7 @@ public:
 
     // Sets the SE3 trajectories for the left and right hands
     void setLeftHandTrajectory(const TrajSE3 & traj_SE3_left_hand_in);
-    void setRightHandTrajectory(const TrajSE3 & traj_SE3_left_hand_in);    
+    void setRightHandTrajectory(const TrajSE3 & traj_SE3_right_hand_in);    
 
     // Public Member Variables
 	std::shared_ptr<RobotModel> robot_model;
@@ -85,6 +86,8 @@ public:
 	std::shared_ptr<Task> larm_posture_task;
 
 	std::shared_ptr<Task> task_stack;
+	std::shared_ptr<Task> task_stack_starting_config;
+
 
 	// Trajectory containers
 	TrajEuclidean   traj_q_config; 	// Trajectory of configurations q

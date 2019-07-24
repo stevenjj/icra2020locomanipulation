@@ -83,6 +83,11 @@ void ConfigTrajectoryGenerator::reinitializeTaskStack(){
 }
 
 void ConfigTrajectoryGenerator::createTaskStack(){
+	// Set the task stack for the starting config IK
+	std::vector< std::shared_ptr<Task> > vec_task_stack_start_config = {pelvis_ori_task, com_task, rfoot_task, lfoot_task, 
+																						 rarm_posture_task, larm_posture_task, 
+																						 torso_posture_task, neck_posture_task};
+
 	std::vector< std::shared_ptr<Task> > vec_task_stack = {pelvis_ori_task, com_task, lfoot_task, rfoot_task, neck_posture_task};
 
 	// Check whether to use a right hand SE(3) task or a right arm joint position task
@@ -109,10 +114,11 @@ void ConfigTrajectoryGenerator::createTaskStack(){
 	ik_module.clearTaskHierarchy();
 
 	// Stack the tasks. Use reset to deallocate old value
+	task_stack_starting_config.reset(new TaskStack(robot_model, vec_task_stack_start_config));
 	task_stack.reset(new TaskStack(robot_model, vec_task_stack));
 
 	// Add the tasks to the task hierarchy in the ik module
-	starting_config_ik_module.addTasktoHierarchy(task_stack);
+	starting_config_ik_module.addTasktoHierarchy(task_stack_starting_config);
 	ik_module.addTasktoHierarchy(task_stack);
 }
 
@@ -134,8 +140,43 @@ void ConfigTrajectoryGenerator::getSelectedPostureTaskReferences(std::vector<std
 }
 
 
-void ConfigTrajectoryGenerator::computeInitialConfigForFlatGround(const Eigen::VectorXd & q_guess, Eigen::VectorXd & q_out){	
+void ConfigTrajectoryGenerator::computeInitialConfigForFlatGround(const Eigen::VectorXd & q_guess, Eigen::VectorXd & q_out){
+	// Set the starting config
+	setStartingConfig(q_guess);
+	// Update robot kinematics
+
+	// get x,y,z of left and right feet.
+	// set joint position tasks for the torso, arms, and neck 
+	// bring feet to z = 0.0;
+	// bring com height to current + offset from feet.
+
+
+	// Set Task References
+
 }
+
+// Given an initial configuration and footstep data list input, compute the task space walking trajectory.
+// Warning: If hand tasks are enabled, they need to have been set already.
+void ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::VectorXd & q_init, const std::vector<Footstep> & input_footstep_list){
+	// Set the starting config
+	setStartingConfig(q_init);
+	// Update robot kinematics
+
+	// Get the initial footstep stances
+	// Get the initial CoM position
+	// Get the initial pelvis orientation
+
+	// Construct the task space trajectories.
+	// wpg.construct_trajectories(input_footstep_list, initial_left_footstance, initial_right_footsance, initial_com, initial_pelvis_ori)
+
+
+	// set joint position task reference.
+	// for loop. set references. check for convergence.
+
+
+
+}
+
 
 
 // construct_trajectories(const std::vector<Footstep> & input_footstep_list, 
