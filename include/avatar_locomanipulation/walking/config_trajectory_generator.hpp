@@ -53,6 +53,7 @@ public:
 	void setUseTorsoJointPosition(bool use_torso_joint_position_in);
 
     // Computes an initial configuration that ensures that the robot's feet are flat on the ground.
+    // and the CoM is at a height equal to the z dimension of the DCM's virtual repellant point
     // If the feet are already flat on the ground q_out is set to the input q_guess.   
     void computeInitialConfigForFlatGround(const Eigen::VectorXd & q_guess, Eigen::VectorXd & q_out); 
 

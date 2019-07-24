@@ -197,11 +197,18 @@ void ConfigTrajectoryGenerator::computeInitialConfigForFlatGround(const Eigen::V
 	robot_model->getFrameWorldPose("pelvis", tmp_pelvis_pos, tmp_pelvis_ori);	
 	tmp_com_pos = robot_model->x_com;
 
+    // Set q_out to q_guess if the foot is already touching the ground
+    if ((fabs(tmp_left_foot.position[2]) <= 1e-4) && (fabs(tmp_left_foot.position[2]) <= 1e-4)) {
+        std::cout << "[ConfigTrajectoryGenerator] Feet are already flat on the ground. Initial Config for flat ground solver will not run." << std::endl;
+        q_out = q_guess;
+        return;
+    }
+
 	// bring feet to z = 0.0;
-	// bring com height to z = 1.0.
+	// bring com height to the desired virtual-repellant point of the DCM. typically this is close to 1.0m for Valkyrie.
 	tmp_left_foot.position[2] = 0.0;
 	tmp_right_foot.position[2] = 0.0;
-	tmp_com_pos[2] = 1.0;
+	tmp_com_pos[2] = wpg.z_vrp; //1.0;
 
 	// Set Task References
 	pelvis_ori_task->setReference(tmp_pelvis_ori);

@@ -40,7 +40,7 @@ public:
 
   // DCM parameters:
   double gravity = 9.81;
-  double z_vrp = 0.95; // desired VRP height / CoM height
+  double z_vrp = 1.0; // desired VRP height / CoM height
   double b = std::sqrt(z_vrp/gravity); // time constant of DCM dynamics  
 
   double t_ds = 0.9; // time in double support

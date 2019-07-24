@@ -57,6 +57,7 @@ void test_config_trajectory_generator(){
   initialize_config(q_start, valkyrie_model);
 
   ctg.computeInitialConfigForFlatGround(q_start, q_end);
+  ctg.computeInitialConfigForFlatGround(q_end, q_end);
 
 }
 
