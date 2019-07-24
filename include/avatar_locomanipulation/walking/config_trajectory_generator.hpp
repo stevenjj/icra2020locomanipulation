@@ -11,6 +11,7 @@
 #include <avatar_locomanipulation/tasks/task_3dorientation.hpp>
 #include <avatar_locomanipulation/tasks/task_com.hpp>
 #include <avatar_locomanipulation/tasks/task_joint_config.hpp>
+#include <avatar_locomanipulation/tasks/task_stack.hpp>
 
 
 // This class outputs a trajectory of robot configuration q from
@@ -18,9 +19,12 @@
 // 	   - a desired hand/s pose/s trajectory, starting config, and a sequence of footsteps
 
 
-// To initialize this object, first call these functions:
+// To initialize this object, these functions must be called:
 // setRobotModel() 
 // initializeDiscretization()
+// initializeTasks()
+// reinitializeTaskStack()
+// setStartingConfig()
 
 class ConfigTrajectoryGenerator{
 public:
@@ -34,6 +38,15 @@ public:
     void setRobotModel(std::shared_ptr<RobotModel> & robot_model_in);
     void initializeDiscretization(const int & N_size_in);
     void initializeTasks();
+	void reinitializeTaskStack();
+
+	void setStartingConfig(const Eigen::VectorXd & q_start_in);
+
+	// Setters to active certain task types. When these functions have been called,
+	// reinitializeTaskStack() has to be called again.
+	void setUseRightHand(bool use_right_hand_in);
+	void setUseLeftHand(bool use_left_hand_in);
+	void setUseTorsoJointPosition(bool use_torso_joint_position_in);
 
     // Computes an initial configuration that ensures that the robot's feet are flat on the ground.
     // If the feet are already flat on the ground q_out is set to the input q_guess.   
@@ -42,7 +55,7 @@ public:
     // Given an initial configuration, 
     void computeConfigurationTrajectory(const Eigen::VectorXd & q_init, const std::vector<Footstep> & input_footstep_list);
 
-
+    // returns N_size
     int getDiscretizationSize();
 
     // Sets the SE3 trajectories for the left and right hands
@@ -52,7 +65,7 @@ public:
     // Public Member Variables
 	std::shared_ptr<RobotModel> robot_model;
     IKModule starting_config_ik_module; // IK module to use for computing the starting configuration
-    IKModule ik_module; // 
+    IKModule ik_module; 
 	WalkingPatternGenerator wpg;
 
 
@@ -78,11 +91,16 @@ public:
 	TrajSE3         traj_SE3_left_hand; // Left Hand Trajectories (if it exists)
 	TrajSE3         traj_SE3_right_hand; // Right Hand Trajectories (if it exists)
 
+	Eigen::VectorXd q_start;
+
 	int N_size = 100;
 
 
 private:
 	void createTaskStack();
+
+	// Reference will use the initial joint configuration in traj_q_config.
+	void getSelectedPostureTaskReferences(std::vector<std::string> & selected_names, Eigen::VectorXd & q_ref);
 
 	bool use_right_hand = true;
 	bool use_left_hand = false;

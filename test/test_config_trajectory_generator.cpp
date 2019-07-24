@@ -15,7 +15,6 @@ void test_config_trajectory_generator(){
   ConfigTrajectoryGenerator ctg(valkyrie_model);
   int N_resolution = 100;
   ctg.initializeDiscretization(N_resolution);
-
 }
 
 int main(int argc, char ** argv){   
