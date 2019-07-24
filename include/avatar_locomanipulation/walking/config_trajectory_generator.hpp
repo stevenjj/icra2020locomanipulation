@@ -116,7 +116,10 @@ private:
 	bool use_left_hand = false;
 	bool use_torso_joint_position = false;
 
+	
 	Eigen::Quaterniond tmp_pelvis_ori;
+	Eigen::Vector3d tmp_pelvis_pos;
+
 	Eigen::Vector3d tmp_com_pos;	
 
 	Footstep tmp_left_foot;

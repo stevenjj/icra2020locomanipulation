@@ -28,6 +28,7 @@ void ConfigTrajectoryGenerator::commonInitialization(){
 
 	// initialize temporary variables 
 	tmp_pelvis_ori.setIdentity();
+	tmp_pelvis_pos.setZero();
 	tmp_com_pos.setZero();
 
 	tmp_right_foot.setRightSide();
@@ -149,6 +150,11 @@ void ConfigTrajectoryGenerator::createTaskStack(){
 	// Add the tasks to the task hierarchy in the ik module
 	starting_config_ik_module.addTasktoHierarchy(task_stack_starting_config);
 	ik_module.addTasktoHierarchy(task_stack);
+
+	// Prepare the ik modules
+	starting_config_ik_module.prepareNewIKDataStrcutures();
+	ik_module.prepareNewIKDataStrcutures();
+
 }
 
 int ConfigTrajectoryGenerator::getDiscretizationSize(){
@@ -172,7 +178,7 @@ void ConfigTrajectoryGenerator::getSelectedPostureTaskReferences(std::vector<std
 
   // Use the initial configuration to find the reference vector for the posture task
   for(int i = 0; i < selected_names.size(); i++){
-    std::cout << selected_names[i] << std::endl;
+    // std::cout << selected_names[i] << std::endl;
     q_des[i] = q_config[robot_model->getJointIndex(selected_names[i])];
   }
   q_ref = q_des;	
@@ -185,21 +191,40 @@ void ConfigTrajectoryGenerator::computeInitialConfigForFlatGround(const Eigen::V
 	// Update robot kinematics
 	robot_model->updateFullKinematics(q_guess);
 
-	// get x,y,z of left and right feet.
-	// set joint position tasks for the torso, arms, and neck 
-	// bring feet to z = 0.0;
-	// bring com height to current + offset from feet.
+	// get x,y,z of left and right feet. pelvis orientation and com position 
+	robot_model->getFrameWorldPose("leftCOP_Frame", tmp_left_foot.position, tmp_left_foot.orientation);
+	robot_model->getFrameWorldPose("rightCOP_Frame", tmp_right_foot.position, tmp_right_foot.orientation);	
+	robot_model->getFrameWorldPose("pelvis", tmp_pelvis_pos, tmp_pelvis_ori);	
+	tmp_com_pos = robot_model->x_com;
 
+	// bring feet to z = 0.0;
+	// bring com height to z = 1.0.
+	tmp_left_foot.position[2] = 0.0;
+	tmp_right_foot.position[2] = 0.0;
+	tmp_com_pos[2] = 1.0;
 
 	// Set Task References
+	pelvis_ori_task->setReference(tmp_pelvis_ori);
+	com_task->setReference(tmp_com_pos);
+	rfoot_task->setReference(tmp_right_foot.position, tmp_right_foot.orientation);
+	lfoot_task->setReference(tmp_left_foot.position, tmp_left_foot.orientation);
+
 	setPostureTaskReference(torso_posture_task, q_start);
+	setPostureTaskReference(neck_posture_task, q_start);
+	setPostureTaskReference(rarm_posture_task, q_start);
 	setPostureTaskReference(larm_posture_task, q_start);
 
-	Eigen::VectorXd vec_ref;
-	larm_posture_task->getReference(vec_ref);
-	std::cout << "larm_posture_task reference = " << vec_ref.transpose() << std::endl;
 
+	// Perform IK
+    int solve_result;
+    double total_error_norm;
+    std::vector<double> task_error_norms;
+    Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(robot_model->getDimQdot());	
 
+	starting_config_ik_module.solveIK(solve_result, task_error_norms, total_error_norm, q_sol);
+	starting_config_ik_module.printSolutionResults();
+
+    q_out = q_sol;
 }
 
 // Given an initial configuration and footstep data list input, compute the task space walking trajectory.
