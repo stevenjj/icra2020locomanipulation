@@ -254,11 +254,19 @@ namespace planner{
 		double midpt_neigh_y;
 		double distance;
 
+		double midpt_curr_theta;
+		double midpt_neigh_theta;
+
 		midpt_curr_x = (current_->xRF + current_->xLF)/2;
 		midpt_curr_y = (current_->yRF + current_->yLF)/2;
 
 		midpt_neigh_x = (neighbor_->xRF + neighbor_->xLF)/2;
 		midpt_neigh_y = (neighbor_->yRF + neighbor_->yLF)/2;
+
+		midpt_curr_theta = (current_->thetaLF + current_->thetaRF)/2;
+		midpt_neigh_theta = (neighbor_->thetaLF + neighbor_->thetaRF)/2;
+
+		double theta_err = abs(midpt_neigh_theta - midpt_curr_theta);
 
 		
 		//distance = sqrt(pow(neighbor_->xLF - goal_->xLF,2) + pow(neighbor_->yLF - goal_->yLF,2));
@@ -268,7 +276,7 @@ namespace planner{
 		// else if (current_->turn == "RF"){
 		// 	distance = sqrt(pow(current_->xLF - neighbor_->xRF,2) + pow(current_->yLF - neighbor_->yRF,2));
 		// }
-		distance = sqrt(pow(midpt_curr_x - midpt_neigh_x,2) + pow(midpt_curr_y - midpt_neigh_y,2));
+		distance = sqrt(pow(midpt_curr_x - midpt_neigh_x,2) + pow(midpt_curr_y - midpt_neigh_y,2)) + theta_err;
 		return distance;
 	}
 
