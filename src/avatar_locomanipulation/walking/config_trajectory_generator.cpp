@@ -156,14 +156,24 @@ int ConfigTrajectoryGenerator::getDiscretizationSize(){
 }
 
 
-void ConfigTrajectoryGenerator::getSelectedPostureTaskReferences(std::vector<std::string> & selected_names, Eigen::VectorXd & q_ref){
+void ConfigTrajectoryGenerator::setPostureTaskReference(std::shared_ptr<Task> & posture_task, const Eigen::VectorXd & q_config){
+	Eigen::VectorXd q_ref;
+
+	std::vector<std::string> posture_task_joint_names;
+	posture_task_joint_names = std::static_pointer_cast<TaskJointConfig>(posture_task)->getJointNames();
+
+	getSelectedPostureTaskReferences(posture_task_joint_names, q_config, q_ref);
+	posture_task->setReference(q_ref);
+}
+
+void ConfigTrajectoryGenerator::getSelectedPostureTaskReferences(std::vector<std::string> & selected_names, const Eigen::VectorXd & q_config, Eigen::VectorXd & q_ref){
   Eigen::VectorXd q_des;
   q_des = Eigen::VectorXd::Zero(selected_names.size());
 
   // Use the initial configuration to find the reference vector for the posture task
   for(int i = 0; i < selected_names.size(); i++){
     std::cout << selected_names[i] << std::endl;
-    q_des[i] = q_start[robot_model->getJointIndex(selected_names[i])];
+    q_des[i] = q_config[robot_model->getJointIndex(selected_names[i])];
   }
   q_ref = q_des;	
 }
@@ -182,6 +192,13 @@ void ConfigTrajectoryGenerator::computeInitialConfigForFlatGround(const Eigen::V
 
 
 	// Set Task References
+	setPostureTaskReference(torso_posture_task, q_start);
+	setPostureTaskReference(larm_posture_task, q_start);
+
+	Eigen::VectorXd vec_ref;
+	larm_posture_task->getReference(vec_ref);
+	std::cout << "larm_posture_task reference = " << vec_ref.transpose() << std::endl;
+
 
 }
 

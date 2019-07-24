@@ -106,8 +106,11 @@ public:
 private:
 	void createTaskStack();
 
+	// Set the task reference using the input configuration q_config. Note that q_config contains the configuration of the entire robot.
+	void setPostureTaskReference(std::shared_ptr<Task> & posture_task, const Eigen::VectorXd & q_config);
+
 	// Reference will use the initial joint configuration in traj_q_config.
-	void getSelectedPostureTaskReferences(std::vector<std::string> & selected_names, Eigen::VectorXd & q_ref);
+	void getSelectedPostureTaskReferences(std::vector<std::string> & selected_names, const Eigen::VectorXd & q_config, Eigen::VectorXd & q_ref);
 
 	bool use_right_hand = true;
 	bool use_left_hand = false;

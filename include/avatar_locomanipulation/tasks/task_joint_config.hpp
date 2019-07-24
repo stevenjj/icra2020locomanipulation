@@ -20,11 +20,15 @@ public:
 	virtual void getError(Eigen::VectorXd & error_out, bool compute=true);
 
 
+	virtual std::vector<std::string> getJointNames();
+
 	Eigen::MatrixXd J_config;
 	Eigen::MatrixXd Jdot_config;
+
 private:
 	Eigen::VectorXd cur_joint_pos;
 	std::vector<std::string> joint_names_;
+	
 };
 
 #endif
