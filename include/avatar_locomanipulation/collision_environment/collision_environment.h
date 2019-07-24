@@ -7,6 +7,7 @@
 #include <avatar_locomanipulation/models/robot_model.hpp>
 // Directed Vectors
 #include <avatar_locomanipulation/collision_environment/directed_vectors.hpp>
+#include <math.h>
 
 
 
@@ -115,6 +116,8 @@ public:
 
   // gives us a command for dx to move away from self collision
   std::vector<Eigen::Vector3d> get_collision_dx();
+
+  double get_collision_potential();
   
 
   // Sets the safety distance between robot links

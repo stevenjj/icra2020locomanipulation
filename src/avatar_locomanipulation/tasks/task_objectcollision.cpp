@@ -69,21 +69,21 @@ void TaskObjectCollision::computeError(){
  	
  	collision_env->build_object_directed_vectors(frame_name);
 	
-	std::vector<Eigen::Vector3d> dxs = collision_env->get_collision_dx();
+	// std::vector<Eigen::Vector3d> dxs = collision_env->get_collision_dx();
 
-	Eigen::Vector3d dx;
-	dx = dxs[0];
+	// Eigen::Vector3d dx;
+	// dx = dxs[0];
 
 
-	if(dxs.size() != 1){
-		for(int i=1; i<dxs.size(); ++i){
-			dx += dxs[i];
-		}
-	}
+	// if(dxs.size() != 1){
+	// 	for(int i=1; i<dxs.size(); ++i){
+	// 		dx += dxs[i];
+	// 	}
+	// }
 
-	error_[0] = dx[0];
-	error_[1] = dx[1];
-	error_[2] = dx[2];
+	// error_[0] = dx[0];
+	// error_[1] = dx[1];
+	// error_[2] = dx[2];
 }
 
 // Computes the error for a given reference
