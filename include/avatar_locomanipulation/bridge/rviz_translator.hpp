@@ -1,5 +1,5 @@
-#ifndef ALM_VAL_RVIZ_TRANSLATOR_H
-#define ALM_VAL_RVIZ_TRANSLATOR_H
+#ifndef ALM_RVIZ_TRANSLATOR_H
+#define ALM_RVIZ_TRANSLATOR_H
 
 #include <Eigen/Dense>
 #include "pinocchio/multibody/model.hpp"
@@ -8,7 +8,7 @@
 #include <tf/transform_broadcaster.h>
 #include <tf/tf.h>
 
-class ValRvizTranslator{
+class RvizTranslator{
 public:
   void populate_joint_state_msg( const pinocchio::Model & model,
   								 const Eigen::VectorXd & q,
@@ -16,8 +16,8 @@ public:
                                  sensor_msgs::JointState & joint_state_msg);
   int getJointId(const pinocchio::Model & model, const std::string & name);
 
-  ValRvizTranslator();
-  ~ValRvizTranslator();  
+  RvizTranslator();
+  ~RvizTranslator();  
 
 
 };

@@ -1,5 +1,5 @@
 #include <avatar_locomanipulation/walking/config_trajectory_generator.hpp>
-
+#include <avatar_locomanipulation/bridge/rviz_visualizer.hpp>
 // Standard
 #include <iostream>
 #include <math.h>
@@ -57,7 +57,9 @@ void test_config_trajectory_generator(){
   initialize_config(q_start, valkyrie_model);
 
   ctg.computeInitialConfigForFlatGround(q_start, q_end);
-  ctg.computeInitialConfigForFlatGround(q_end, q_end);
+
+
+  RVizVisualizer visualizer;
 
 }
 

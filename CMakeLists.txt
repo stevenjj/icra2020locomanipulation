@@ -73,7 +73,9 @@ SET (HELPER_SOURCES
 )
 
 SET (ROS_BRIDGE_SOURCES
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/bridge/val_rviz_translator.cpp)
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/bridge/val_rviz_translator.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/bridge/rviz_translator.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/bridge/rviz_visualizer.cpp)
 
 SET (FEASIBILITY_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/feasibility/feasibility.cpp)
