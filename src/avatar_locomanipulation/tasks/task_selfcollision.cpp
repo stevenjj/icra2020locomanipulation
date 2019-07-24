@@ -69,9 +69,11 @@ void TaskSelfCollision::computeError(){
 
  	if(frame_name == "rightPalm"){
  		collision_env->build_directed_vector_to_rhand();
+ 		collision_env->build_directed_vector_to_rwrist();
  	}
  	if(frame_name == "leftPalm"){
  		collision_env->build_directed_vector_to_lhand();
+ 		collision_env->build_directed_vector_to_lwrist();
  	}
  	if(frame_name == "head"){
  		collision_env->build_directed_vector_to_head();

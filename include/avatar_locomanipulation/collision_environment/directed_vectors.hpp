@@ -12,7 +12,10 @@ public:
 	// name of link/joint from which vector originates
 	std::string from;
 	// name of link/joint where vector terminates
-	std::string to;
+	std::string to;	
+  	// If two links are in collision, rather than near collision, this is set true
+  	//  and the safety_distance is set to 0.15. When not in collision, safety distance is the 0.075
+  	bool using_worldFramePose;
 };
 
 

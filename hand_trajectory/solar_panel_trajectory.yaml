@@ -1,0 +1,156 @@
+# Waypoints are designed wrt to the panel height/ front right corner
+# We multiply x,y values by the x, y scale of the panel
+# z = 0.0 since the origin is at the table surface
+# x = horizontal distance across the table, same direction as world y
+# y = depth distance away from front of table, same as world x
+waypoint_1:
+  x: 0.1
+  y: 0.1
+  z: 0.0
+  rx: 0.5
+  ry: -0.5
+  rz: 0.5
+  rw: 0.5
+waypoint_2:
+  x: 0.35
+  y: 0.1
+  z: 0.0
+  rx: 0.5
+  ry: -0.5
+  rz: 0.5
+  rw: 0.5
+waypoint_3:
+  x: 0.65
+  y: 0.1
+  z: 0.0
+  rx: 0.5
+  ry: -0.5
+  rz: 0.5
+  rw: 0.5
+waypoint_4:
+  x: 0.9
+  y: 0.1
+  z: 0.0
+  rx: 0.5
+  ry: -0.5
+  rz: 0.5
+  rw: 0.5
+waypoint_5:
+  x: 0.9
+  y: 0.2
+  z: 0.0
+  rx: -0.707
+  ry: 0.0
+  rz: -0.707
+  rw: 0.0 
+waypoint_6:
+  x: 0.9
+  y: 0.3
+  z: 0.0
+  rx: 0.5
+  ry: 0.5
+  rz: 0.5
+  rw: -0.5
+waypoint_7:
+  x: 0.6
+  y: 0.3
+  z: 0.0
+  rx: 0.5
+  ry: 0.5
+  rz: 0.5
+  rw: -0.5
+waypoint_8:
+  x: 0.6
+  y: 0.675
+  z: 0.0
+  rx: 0.5
+  ry: 0.5
+  rz: 0.5
+  rw: -0.5
+waypoint_9:
+  x: 0.9
+  y: 0.675
+  z: 0.0
+  rx: 0.5
+  ry: 0.5
+  rz: 0.5
+  rw: -0.5
+waypoint_10:
+  x: 0.9
+  y: 0.9
+  z: 0.0
+  rx: 0.5
+  ry: 0.5
+  rz: 0.5
+  rw: -0.5
+waypoint_11:
+  x: 0.65
+  y: 0.9
+  z: 0.0
+  rx: 0.5
+  ry: 0.5
+  rz: 0.5
+  rw: -0.5
+waypoint_12:
+  x: 0.35
+  y: 0.9
+  z: 0.0
+  rx: 0.5
+  ry: 0.5
+  rz: 0.5
+  rw: -0.5
+waypoint_13:
+  x: 0.1
+  y: 0.9
+  z: 0.0
+  rx: 0.5
+  ry: 0.5
+  rz: 0.5
+  rw: -0.5
+waypoint_14:
+  x: 0.1
+  y: 0.8
+  z: 0.0
+  rx: 0.0
+  ry: -0.707
+  rz: 0.0
+  rw: 0.707
+waypoint_15:
+  x: 0.1
+  y: 0.675
+  z: 0.0
+  rx: 0.5
+  ry: -0.5
+  rz: 0.5
+  rw: 0.5
+waypoint_16:
+  x: 0.4
+  y: 0.675
+  z: 0.0
+  rx: 0.5
+  ry: -0.5
+  rz: 0.5
+  rw: 0.5
+waypoint_17:
+  x: 0.4
+  y: 0.3
+  z: 0.0
+  rx: 0.5
+  ry: -0.5
+  rz: 0.5
+  rw: 0.5
+waypoint_18:
+  x: 0.1
+  y: 0.3
+  z: 0.0
+  rx: 0.5
+  ry: -0.5
+  rz: 0.5
+  rw: 0.5
+#######
+
+
+  # rx: -0.707
+  # ry: 0.0
+  # rz: -0.707
+  # rw: 0.0
