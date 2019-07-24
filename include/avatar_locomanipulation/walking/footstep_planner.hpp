@@ -15,6 +15,8 @@
 #include <memory>
 #include <cstdlib>
 #include <sstream>
+#include <Eigen/Dense>
+#include <fstream>
 
 using namespace std;
 
@@ -107,6 +109,56 @@ namespace planner{
 		std::shared_ptr<XYNode> goal_;
 		std::shared_ptr<XYNode> neighbor_;		
 		std::shared_ptr<XYNode> opt_node_;
+
+
+	};
+
+
+
+	class FootstepNode: public Node{
+	public:
+		FootstepNode(); // Constructor
+		virtual ~FootstepNode(); // Destructor
+
+
+	// Problem specific:
+		FootstepNode(const double xLF_in, const double yLF_in, const double xRF_in, const double yRF_in, const double thetaLF_in, const double thetaRF_in, string turn_in); // Constructor
+		double xLF;
+		double yLF;
+		double xRF;
+		double yRF;
+
+		double thetaLF;
+		double thetaRF;
+
+		string turn; //true = LF, false = RF
+
+		void commonInitializationFootstep();
+
+	};
+
+
+	class FootstepPlanner: public A_starPlanner{
+	public:
+		FootstepPlanner();
+		virtual ~FootstepPlanner();
+
+		virtual	double gScore(const shared_ptr<Node> current, const shared_ptr<Node> neighbor);
+		virtual double heuristicCost(const shared_ptr<Node> neighbor,const shared_ptr<Node> goal);
+		virtual bool goalReached(shared_ptr<Node> current_node, shared_ptr<Node> goal);
+
+		virtual std::vector< shared_ptr<Node> > getNeighbors(shared_ptr<Node> & current);
+
+		void WriteData(vector< shared_ptr<Node> > optimal_path);
+		void printPath();
+
+		int branch;
+		double disc;
+
+		std::shared_ptr<FootstepNode> current_;
+		std::shared_ptr<FootstepNode> goal_;
+		std::shared_ptr<FootstepNode> neighbor_;		
+		std::shared_ptr<FootstepNode> opt_node_;
 
 
 	};
