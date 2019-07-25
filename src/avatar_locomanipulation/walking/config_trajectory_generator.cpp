@@ -103,6 +103,7 @@ void ConfigTrajectoryGenerator::initializeTasks(){
     neck_posture_task = std::shared_ptr<Task>(new TaskJointConfig(robot_model, neck_joint_names));
     rarm_posture_task = std::shared_ptr<Task>(new TaskJointConfig(robot_model, right_arm_joint_names));
     larm_posture_task = std::shared_ptr<Task>(new TaskJointConfig(robot_model, left_arm_joint_names));
+
 }
 
 
@@ -296,6 +297,8 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 	// wpg.construct_trajectories(input_footstep_list, initial_left_footstance, initial_right_footsance, initial_com, initial_pelvis_ori)
 	wpg.construct_trajectories(input_footstep_list, tmp_left_foot, tmp_right_foot, tmp_com_pos, tmp_pelvis_ori);
 
+	// Set the dt of the configuration to the dt of the CoM. Which is set by the object wpg.
+	traj_q_config.set_dt( wpg.traj_pos_com.get_dt() );
 
 	// Prepare IK solver
     int solve_result;
@@ -349,11 +352,15 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 		if (primary_task_convergence){
 			q_current = q_sol;
 			traj_q_config.set_pos(i, q_current);
+			continue;
+		}else{
+			//  If it did not converge populate remaining trajectory with final good configuration
+			for(int j = i; j < N_size; j++){
+				traj_q_config.set_pos(j, q_current);								
+			}
+			return false;
 		}
 
-		// 	continue
-		// else
-		//  populate remaining trajectory with final good configuration
 
 	}
 

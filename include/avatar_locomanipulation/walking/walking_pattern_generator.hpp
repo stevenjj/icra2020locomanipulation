@@ -40,16 +40,16 @@ public:
 
   // DCM parameters:
   double gravity = 9.81;
-  double z_vrp = 1.0; // desired VRP height / CoM height
+  double z_vrp = 0.95; //1.0; // desired VRP height / CoM height
   double b = std::sqrt(z_vrp/gravity); // time constant of DCM dynamics  
 
-  double t_ds = 0.9; // time in double support
+  double t_ds = 0.45; //0.9; // time in double support
   double t_ss = 1.2; // time in single support
   double t_settle = -b*log(0.001); // settling time at the end of the full walking trajectory 
 
   double alpha = 0.5; // ratio between double initial and final double support time
 
-  double swing_height = 0.05; // swing height in meters.
+  double swing_height = 0.1; //0.05; // swing height in meters.
 
   // DCM trajectory calculation
   // input: input_footstep_list - a list of footsteps to take not including the current stance configuration.

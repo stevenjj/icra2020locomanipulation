@@ -98,8 +98,8 @@ void RVizVisualizer::visualizeConfigurationTrajectory(const Eigen::VectorXd & q_
 
 	// Set loop rate for the actual time of the trajectory
 	// ros::Rate loop_rate(pub_freq);
-	ros::Rate loop_rate(5.0);
-	// ros::Rate loop_rate(1.0/traj_q_in.get_dt());
+	// ros::Rate loop_rate(5.0);
+	ros::Rate loop_rate(1.0/traj_q_in.get_dt());
 
   	// Publish Forever until terminated
   	while (ros::ok()){

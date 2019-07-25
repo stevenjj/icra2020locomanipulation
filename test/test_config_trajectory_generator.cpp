@@ -50,7 +50,7 @@ void test_config_trajectory_generator(){
   std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
   std::shared_ptr<RobotModel> valkyrie_model(new RobotModel(urdf_filename));
 
-  int N_resolution = 50;
+  int N_resolution = 150;
   ConfigTrajectoryGenerator ctg(valkyrie_model, N_resolution);
 
   Eigen::VectorXd q_start, q_end;
@@ -70,13 +70,26 @@ void test_config_trajectory_generator(){
   valkyrie_model->updateFullKinematics(q_start);
 
   // Create footsteps in place
-  Footstep footstep_1; 
-  Footstep footstep_2; 
-  valkyrie_model->getFrameWorldPose("leftCOP_Frame", footstep_1.position, footstep_1.orientation);   footstep_1.setLeftSide();
-  valkyrie_model->getFrameWorldPose("rightCOP_Frame", footstep_2.position, footstep_2.orientation);  footstep_2.setRightSide();
+  Footstep footstep_1; footstep_1.setLeftSide();
+  Footstep footstep_2; footstep_2.setRightSide();
+  Footstep footstep_3; footstep_3.setLeftSide();
+  Footstep footstep_4; footstep_4.setRightSide();
+  valkyrie_model->getFrameWorldPose("leftCOP_Frame", footstep_1.position, footstep_1.orientation);  
+  valkyrie_model->getFrameWorldPose("rightCOP_Frame", footstep_2.position, footstep_2.orientation);  
+
+
+  // Walk forward 4 steps
+  footstep_1.position[0] += 0.15;
+  footstep_2.position[0] += 0.15;
+
+  footstep_3 = footstep_1;
+  footstep_4 = footstep_2;
+
+  footstep_3.position[0] += 0.15;
+  footstep_4.position[0] += 0.15;
 
   // Create Footstep list
-  std::vector<Footstep> input_footstep_list = {footstep_1, footstep_2};
+  std::vector<Footstep> input_footstep_list = {footstep_1, footstep_2, footstep_3, footstep_4};
 
   // Solve for configurations
   ctg.computeConfigurationTrajectory(q_start, input_footstep_list);
