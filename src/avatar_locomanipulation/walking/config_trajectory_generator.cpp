@@ -128,23 +128,26 @@ void ConfigTrajectoryGenerator::createTaskStack(){
 
 	std::vector< std::shared_ptr<Task> > vec_task_stack = {pelvis_ori_task, com_task, lfoot_task, rfoot_task, neck_posture_task};
 
+	// The task stack for configuration only
+	std::vector< std::shared_ptr<Task> > vec_posture_task_stack;
+
 	// Check whether to use a right hand SE(3) task or a right arm joint position task
 	if (use_right_hand){
 		vec_task_stack.push_back(rhand_task);
 	}else{
-		vec_task_stack.push_back(rarm_posture_task);
+		vec_posture_task_stack.push_back(rarm_posture_task);
 	}
 
 	// Check whether to use a left hand SE(3) task or a left arm joint position task
 	if (use_left_hand){
 		vec_task_stack.push_back(lhand_task);
 	}else{
-		vec_task_stack.push_back(larm_posture_task);
+		vec_posture_task_stack.push_back(larm_posture_task);
 	}
 
 	// Check whether to use a torso joint position task
 	if (use_torso_joint_position){
-		vec_task_stack.push_back(torso_posture_task);	
+		vec_posture_task_stack.push_back(torso_posture_task);	
 	}
 
 	// Clear the task hierarchy in the IK module
@@ -158,6 +161,13 @@ void ConfigTrajectoryGenerator::createTaskStack(){
 	// Add the tasks to the task hierarchy in the ik module
 	starting_config_ik_module.addTasktoHierarchy(task_stack_starting_config);
 	ik_module.addTasktoHierarchy(task_stack);
+
+	// Stack posture tasks and add it to the hierarchy if it exists
+	if (vec_posture_task_stack.size() > 0){
+		task_stack_posture_config.reset(new TaskStack(robot_model, vec_posture_task_stack));
+		starting_config_ik_module.addTasktoHierarchy(task_stack_posture_config);
+		ik_module.addTasktoHierarchy(task_stack_posture_config);		
+	}
 
 	// Prepare the ik modules
 	starting_config_ik_module.prepareNewIKDataStrcutures();
@@ -293,6 +303,8 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
     std::vector<double> task_error_norms;
     Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(robot_model->getDimQdot());	
     bool primary_task_convergence = false;
+
+    ik_module.setSequentialDescent(true);
 
 	// for loop. set references. check for convergence.
 	for(int i = 0; i < N_size; i++){

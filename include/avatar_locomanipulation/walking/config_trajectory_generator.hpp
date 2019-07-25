@@ -96,6 +96,7 @@ public:
 	std::shared_ptr<Task> larm_posture_task;
 
 	std::shared_ptr<Task> task_stack;
+	std::shared_ptr<Task> task_stack_posture_config;
 	std::shared_ptr<Task> task_stack_starting_config;
 
 
