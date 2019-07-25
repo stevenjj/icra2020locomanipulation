@@ -77,16 +77,29 @@ void test_config_trajectory_generator(){
   valkyrie_model->getFrameWorldPose("leftCOP_Frame", footstep_1.position, footstep_1.orientation);  
   valkyrie_model->getFrameWorldPose("rightCOP_Frame", footstep_2.position, footstep_2.orientation);  
 
-
-  // Walk forward 4 steps
-  footstep_1.position[0] += 0.15;
-  footstep_2.position[0] += 0.15;
-
   footstep_3 = footstep_1;
   footstep_4 = footstep_2;
 
-  footstep_3.position[0] += 0.15;
-  footstep_4.position[0] += 0.15;
+  // Walk forward 4 steps
+  // footstep_1.position[0] += 0.15;
+  // footstep_2.position[0] += 0.25;
+
+  // footstep_3.position[0] += 0.35;
+  // footstep_4.position[0] += 0.35;
+
+
+  // footstep_1.position[0] += 0.15;
+  // footstep_2.position[0] += 0.30;
+
+  // footstep_3.position[0] += 0.45;
+  // footstep_4.position[0] += 0.45;
+
+  footstep_1.position[0] += 0.20;
+  footstep_2.position[0] += 0.40;
+
+  footstep_3.position[0] += 0.60;
+  footstep_4.position[0] += 0.60;
+
 
   // Create Footstep list
   std::vector<Footstep> input_footstep_list = {footstep_1, footstep_2, footstep_3, footstep_4};
