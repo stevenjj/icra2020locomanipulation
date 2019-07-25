@@ -13,6 +13,7 @@
 #include <avatar_locomanipulation/tasks/task_joint_config.hpp>
 #include <avatar_locomanipulation/tasks/task_stack.hpp>
 
+#include <avatar_locomanipulation/helpers/orientation_utils.hpp>
 
 // This class outputs a trajectory of robot configuration q from
 //     - a starting configuration, q, and a sequence of footsteps
@@ -44,7 +45,11 @@ public:
     void initializeTasks();
 	void reinitializeTaskStack();
 
+	// Set the starting configuration
 	void setStartingConfig(const Eigen::VectorXd & q_start_in);
+
+	// Sets the current configuration
+	void setCurrentConfig(const Eigen::VectorXd & q_current_in);
 
 	// Setters to active certain task types. When these functions have been called,
 	// reinitializeTaskStack() has to be called again.
@@ -100,6 +105,7 @@ public:
 	TrajSE3         traj_SE3_right_hand; // Right Hand Trajectories (if it exists)
 
 	Eigen::VectorXd q_start;
+	Eigen::VectorXd q_current;
 
 	int N_size = 100;
 
@@ -113,9 +119,9 @@ private:
 	// Reference will use the initial joint configuration in traj_q_config.
 	void getSelectedPostureTaskReferences(std::vector<std::string> & selected_names, const Eigen::VectorXd & q_config, Eigen::VectorXd & q_ref);
 
-	bool use_right_hand = true;
+	bool use_right_hand = false;
 	bool use_left_hand = false;
-	bool use_torso_joint_position = false;
+	bool use_torso_joint_position = true;
 
 	
 	Eigen::Quaterniond tmp_pelvis_ori;

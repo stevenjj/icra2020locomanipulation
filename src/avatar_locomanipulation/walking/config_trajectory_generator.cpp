@@ -51,6 +51,7 @@ void ConfigTrajectoryGenerator::setRobotModel(std::shared_ptr<RobotModel> & robo
 	starting_config_ik_module.setRobotModel(robot_model_in);
 	ik_module.setRobotModel(robot_model_in);
 	q_start = Eigen::VectorXd::Zero(robot_model->getDimQ());
+	q_current = Eigen::VectorXd::Zero(robot_model->getDimQ());
 }
 
 void ConfigTrajectoryGenerator::initializeDiscretization(const int & N_size_in){
@@ -74,6 +75,13 @@ void ConfigTrajectoryGenerator::setStartingConfig(const Eigen::VectorXd & q_star
 	starting_config_ik_module.setInitialConfig(q_start);
 	ik_module.setInitialConfig(q_start);
 }
+
+void ConfigTrajectoryGenerator::setCurrentConfig(const Eigen::VectorXd & q_current_in){
+	q_current = q_current_in;
+	starting_config_ik_module.setInitialConfig(q_current);
+	ik_module.setInitialConfig(q_current);
+}
+
 
 
 void ConfigTrajectoryGenerator::initializeTasks(){
@@ -253,16 +261,72 @@ void ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 	robot_model->updateFullKinematics(q_init);
 
 	// Get the initial footstep stances
+	robot_model->getFrameWorldPose("leftCOP_Frame", tmp_left_foot.position, tmp_left_foot.orientation);
+	robot_model->getFrameWorldPose("rightCOP_Frame", tmp_right_foot.position, tmp_right_foot.orientation);	
 	// Get the initial CoM position
+	tmp_com_pos = robot_model->x_com;
+
 	// Get the initial pelvis orientation
+	robot_model->getFrameWorldPose("pelvis", tmp_pelvis_pos, tmp_pelvis_ori);	
+
+	// set joint position task reference.
+	setPostureTaskReference(torso_posture_task, q_start);
+	setPostureTaskReference(neck_posture_task, q_start);
+	setPostureTaskReference(rarm_posture_task, q_start);
+	setPostureTaskReference(larm_posture_task, q_start);
 
 	// Construct the task space trajectories.
 	// wpg.construct_trajectories(input_footstep_list, initial_left_footstance, initial_right_footsance, initial_com, initial_pelvis_ori)
+	wpg.construct_trajectories(input_footstep_list, tmp_left_foot, tmp_right_foot, tmp_com_pos, tmp_pelvis_ori);
 
-
-	// set joint position task reference.
 	// for loop. set references. check for convergence.
+	for(int i = 0; i < N_size; i++){
+		if (i > 0){
+			// Use the previous configuration as the starting config for the IK		
+			traj_q_config.get_pos(i-1, q_current);
+			setCurrentConfig(q_current);
+			// Update robot kinematics
+			robot_model->updateFullKinematics(q_current);			
+		}
 
+		// Get and Set hand trajectory references if available
+		if (use_right_hand){
+			traj_SE3_right_hand.get_pos(i, tmp_rhand_pos, tmp_rhand_ori);
+			rhand_task->setReference(tmp_rhand_pos, tmp_rhand_ori);
+		}
+		if (use_left_hand){
+			traj_SE3_left_hand.get_pos(i, tmp_rhand_pos, tmp_rhand_ori);
+			traj_SE3_right_hand.get_pos(i, tmp_rhand_pos, tmp_rhand_ori);
+			rhand_task->setReference(tmp_rhand_pos, tmp_rhand_ori);
+		}
+
+		// Get walking trajectory references
+		wpg.traj_ori_pelvis.get_quat(i, tmp_pelvis_ori);
+		wpg.traj_pos_com.get_pos(i, tmp_com_pos);
+		wpg.traj_SE3_left_foot.get_pos(i, tmp_left_foot.position, tmp_left_foot.orientation);
+		wpg.traj_SE3_right_foot.get_pos(i, tmp_right_foot.position, tmp_right_foot.orientation);
+
+		// std::cout << i << " Pelvis Ori = ";
+		// math_utils::printQuat(tmp_pelvis_ori);
+		// std::cout << i << " COM pos = " << tmp_com_pos.transpose() << std::endl;
+		std::cout << i << " lf pos = " << tmp_left_foot.position.transpose() << std::endl;
+		// std::cout << i << " lf ori = ";
+		// math_utils::printQuat(tmp_left_foot.orientation);
+		// std::cout << i << " rf pos = " << tmp_right_foot.position.transpose() << std::endl;
+		// std::cout << i << " rf ori = ";
+		// math_utils::printQuat(tmp_right_foot.orientation);
+
+		// Set walking trajectory references
+
+		// Compute IK
+
+		// If converged
+		traj_q_config.set_pos(i, q_current);
+		// 	continue
+		// else
+		//  populate remaining trajectory with final good configuration
+
+	}
 
 
 }
