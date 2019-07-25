@@ -77,6 +77,10 @@ public:
 	// Default: true
 	void setCheckPrevViolations(bool check_prev_violations_in);
 
+	// if true: returns when the first task converges
+	// if false : continues to satisfy lower priority tasks
+	void setReturnWhenFirstTaskConverges(bool return_when_first_task_converges_in);
+
 	// returns the error tolerance for the problem
 	double getErrorTol();
 
@@ -158,6 +162,10 @@ private:
 	// if true: during descent, ensures that higher priority tasks are not violated. 
 	// if false: assumes that the overall error norm will eventually descend 
 	bool check_prev_violations = false; 
+
+	// if true: the solver immediately returns as soon as the first task converges.
+	// if false: the solver tries to satisfy lower priority tasks further
+	bool return_when_first_task_converges = false;
 
 	// Errors and Error gradient values:
 	double total_error_norm = 0.0;

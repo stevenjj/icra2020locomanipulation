@@ -304,7 +304,8 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
     Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(robot_model->getDimQdot());	
     bool primary_task_convergence = false;
 
-    ik_module.setSequentialDescent(true);
+    ik_module.setSequentialDescent(false);
+    ik_module.setReturnWhenFirstTaskConverges(true);
 
 	// for loop. set references. check for convergence.
 	for(int i = 0; i < N_size; i++){

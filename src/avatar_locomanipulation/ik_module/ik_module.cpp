@@ -117,6 +117,10 @@ void IKModule::setCheckPrevViolations(bool check_prev_violations_in){
   check_prev_violations = check_prev_violations_in;
 }
 
+void IKModule::setReturnWhenFirstTaskConverges(bool return_when_first_task_converges_in){
+  return_when_first_task_converges = return_when_first_task_converges_in;
+}
+
 
 double IKModule::getErrorTol(){
   return error_tol;
@@ -320,6 +324,16 @@ bool IKModule::solveIK(int & solve_result, double & total_error_norm_out, Eigen:
       robot_model->updateFullKinematics(q_step);
       // Compute errors for this configuration change proposal
       computeTaskErrors();
+
+      // Check if the first task has converged and if we are required to return immediately. 
+      if (return_when_first_task_converges && checkFirstTaskConvergence()){
+        solve_result = IK_OPTIMAL_SOL;
+        solve_result_ = IK_OPTIMAL_SOL;
+        total_error_norm_out = total_error_norm;
+        q_sol = q_current;
+        q_sol_ = q_current;
+        return checkFirstTaskConvergence();
+      }
 
       if (backtrack_with_current_task_error){
         // Using the current task error norm as the condition for back tracking
