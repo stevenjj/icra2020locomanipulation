@@ -309,6 +309,7 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 
     ik_module.setSequentialDescent(false);
     ik_module.setReturnWhenFirstTaskConverges(true);
+    ik_module.setEnableInertiaWeighting(true);
 
 	// for loop. set references. check for convergence.
 	for(int i = 0; i < N_size; i++){
