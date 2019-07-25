@@ -240,22 +240,22 @@ bool ConfigTrajectoryGenerator::computeInitialConfigForFlatGround(const Eigen::V
 	setPostureTaskReference(larm_posture_task, q_start);
 
 
-	// Perform IK
+	// Prepare IK output
     int solve_result;
     double total_error_norm;
     std::vector<double> task_error_norms;
     Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(robot_model->getDimQdot());	
+    bool primary_task_convergence = false;
 
-	starting_config_ik_module.solveIK(solve_result, task_error_norms, total_error_norm, q_sol);
+    // Solve IK
+	primary_task_convergence = starting_config_ik_module.solveIK(solve_result, task_error_norms, total_error_norm, q_sol);
 	starting_config_ik_module.printSolutionResults();
 
+	// Set solution
     q_out = q_sol;
 
-    if (total_error_norm < starting_config_ik_module.getErrorTol()){
-    	return true;
-    }else{
-    	return false;
-    }
+    // Check if first task converged
+    return primary_task_convergence;
 
 }
 
@@ -286,11 +286,20 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 	// wpg.construct_trajectories(input_footstep_list, initial_left_footstance, initial_right_footsance, initial_com, initial_pelvis_ori)
 	wpg.construct_trajectories(input_footstep_list, tmp_left_foot, tmp_right_foot, tmp_com_pos, tmp_pelvis_ori);
 
+
+	// Prepare IK solver
+    int solve_result;
+    double total_error_norm;
+    std::vector<double> task_error_norms;
+    Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(robot_model->getDimQdot());	
+    bool primary_task_convergence = false;
+
 	// for loop. set references. check for convergence.
 	for(int i = 0; i < N_size; i++){
 		if (i > 0){
 			// Use the previous configuration as the starting config for the IK		
 			traj_q_config.get_pos(i-1, q_current);
+			// Set the starting configuration for the IK
 			setCurrentConfig(q_current);
 			// Update robot kinematics
 			robot_model->updateFullKinematics(q_current);			
@@ -302,23 +311,33 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 			rhand_task->setReference(tmp_rhand_pos, tmp_rhand_ori);
 		}
 		if (use_left_hand){
-			traj_SE3_left_hand.get_pos(i, tmp_rhand_pos, tmp_rhand_ori);
-			traj_SE3_right_hand.get_pos(i, tmp_rhand_pos, tmp_rhand_ori);
-			rhand_task->setReference(tmp_rhand_pos, tmp_rhand_ori);
+			traj_SE3_left_hand.get_pos(i, tmp_lhand_pos, tmp_lhand_ori);
+			traj_SE3_right_hand.get_pos(i, tmp_lhand_pos, tmp_lhand_ori);
+			rhand_task->setReference(tmp_lhand_pos, tmp_lhand_ori);
 		}
 
 		// Get walking trajectory references
 		wpg.traj_ori_pelvis.get_quat(i, tmp_pelvis_ori);
 		wpg.traj_pos_com.get_pos(i, tmp_com_pos);
-		wpg.traj_SE3_left_foot.get_pos(i, tmp_left_foot.position, tmp_left_foot.orientation);
 		wpg.traj_SE3_right_foot.get_pos(i, tmp_right_foot.position, tmp_right_foot.orientation);
+		wpg.traj_SE3_left_foot.get_pos(i, tmp_left_foot.position, tmp_left_foot.orientation);
 
 		// Set walking trajectory references
+		pelvis_ori_task->setReference(tmp_pelvis_ori);
+		com_task->setReference(tmp_com_pos);
+		rfoot_task->setReference(tmp_right_foot.position, tmp_right_foot.orientation);
+		lfoot_task->setReference(tmp_left_foot.position, tmp_left_foot.orientation);
 
 		// Compute IK
+		primary_task_convergence = ik_module.solveIK(solve_result, task_error_norms, total_error_norm, q_sol);
+		ik_module.printSolutionResults();
 
 		// If converged
-		traj_q_config.set_pos(i, q_current);
+		if (primary_task_convergence){
+			q_current = q_sol;
+			traj_q_config.set_pos(i, q_current);
+		}
+
 		// 	continue
 		// else
 		//  populate remaining trajectory with final good configuration

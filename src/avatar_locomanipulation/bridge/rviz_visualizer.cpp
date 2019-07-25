@@ -89,7 +89,7 @@ void RVizVisualizer::visualizeConfiguration(const Eigen::VectorXd & q_start_in, 
 }
 
 // Visualize Configuration Trajectory
-void RVizVisualizer::visualizeConfigurationTrajectory(const Eigen::VectorXd & q_start_in, const TrajSE3 & traj_q_current_in){
+void RVizVisualizer::visualizeConfigurationTrajectory(const Eigen::VectorXd & q_start_in, const TrajEuclidean & traj_q_current_in){
 	std::cout << "[RVizVisualizer] Visualizing configuration trajectory" << std::endl;
 
 	// Initialize Starting Configuration

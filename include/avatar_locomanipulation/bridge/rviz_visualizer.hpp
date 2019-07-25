@@ -22,7 +22,7 @@ public:
 
     void visualizeConfiguration(const Eigen::VectorXd & q_start_in, const Eigen::VectorXd & q_current_in);
 
-    void visualizeConfigurationTrajectory(const Eigen::VectorXd & q_start_in, const TrajSE3 & traj_q_current_in);
+    void visualizeConfigurationTrajectory(const Eigen::VectorXd & q_start_in, const TrajEuclidean & traj_q_current_in);
 
     void populateStartConfigJointMsg();
     void populateCurrentConfigJointMsg();

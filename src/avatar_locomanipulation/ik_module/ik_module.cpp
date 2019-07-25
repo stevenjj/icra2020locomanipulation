@@ -383,7 +383,7 @@ bool IKModule::solveIK(int & solve_result, double & total_error_norm_out, Eigen:
       total_error_norm_out = total_error_norm;
       q_sol = q_current;
       q_sol_ = q_current;
-      return true;
+      return checkFirstTaskConvergence();
     }
 
 
