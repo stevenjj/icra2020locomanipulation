@@ -193,7 +193,7 @@ void ConfigTrajectoryGenerator::getSelectedPostureTaskReferences(std::vector<std
 }
 
 
-void ConfigTrajectoryGenerator::computeInitialConfigForFlatGround(const Eigen::VectorXd & q_guess, Eigen::VectorXd & q_out){
+bool ConfigTrajectoryGenerator::computeInitialConfigForFlatGround(const Eigen::VectorXd & q_guess, Eigen::VectorXd & q_out){
 	// Set the starting config
 	setStartingConfig(q_guess);
 	// Update robot kinematics
@@ -219,7 +219,7 @@ void ConfigTrajectoryGenerator::computeInitialConfigForFlatGround(const Eigen::V
     if ((fabs(tmp_left_foot.position[2]) <= 1e-4) && (fabs(tmp_left_foot.position[2]) <= 1e-4)) {
         std::cout << "[ConfigTrajectoryGenerator] Feet are already flat on the ground. Initial Config for flat ground solver will not run." << std::endl;
         q_out = q_guess;
-        return;
+        return true;
     }
 
 	// bring feet to z = 0.0;
@@ -250,11 +250,18 @@ void ConfigTrajectoryGenerator::computeInitialConfigForFlatGround(const Eigen::V
 	starting_config_ik_module.printSolutionResults();
 
     q_out = q_sol;
+
+    if (total_error_norm < starting_config_ik_module.getErrorTol()){
+    	return true;
+    }else{
+    	return false;
+    }
+
 }
 
 // Given an initial configuration and footstep data list input, compute the task space walking trajectory.
 // Warning: If hand tasks are enabled, they need to have been set already.
-void ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::VectorXd & q_init, const std::vector<Footstep> & input_footstep_list){
+bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::VectorXd & q_init, const std::vector<Footstep> & input_footstep_list){
 	// Set the starting config
 	setStartingConfig(q_init);
 	// Update robot kinematics
@@ -306,16 +313,6 @@ void ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 		wpg.traj_SE3_left_foot.get_pos(i, tmp_left_foot.position, tmp_left_foot.orientation);
 		wpg.traj_SE3_right_foot.get_pos(i, tmp_right_foot.position, tmp_right_foot.orientation);
 
-		// std::cout << i << " Pelvis Ori = ";
-		// math_utils::printQuat(tmp_pelvis_ori);
-		// std::cout << i << " COM pos = " << tmp_com_pos.transpose() << std::endl;
-		std::cout << i << " lf pos = " << tmp_left_foot.position.transpose() << std::endl;
-		// std::cout << i << " lf ori = ";
-		// math_utils::printQuat(tmp_left_foot.orientation);
-		// std::cout << i << " rf pos = " << tmp_right_foot.position.transpose() << std::endl;
-		// std::cout << i << " rf ori = ";
-		// math_utils::printQuat(tmp_right_foot.orientation);
-
 		// Set walking trajectory references
 
 		// Compute IK
@@ -328,6 +325,7 @@ void ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 
 	}
 
+	return true;
 
 }
 

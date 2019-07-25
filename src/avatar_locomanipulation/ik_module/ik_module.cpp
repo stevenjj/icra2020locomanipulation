@@ -118,6 +118,9 @@ void IKModule::setCheckPrevViolations(bool check_prev_violations_in){
 }
 
 
+double IKModule::getErrorTol(){
+  return error_tol;
+}
 
 void IKModule::updateTaskJacobians(){
   // Gets the task jacobians

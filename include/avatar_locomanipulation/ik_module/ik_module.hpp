@@ -77,6 +77,8 @@ public:
 	// Default: true
 	void setCheckPrevViolations(bool check_prev_violations_in);
 
+	// returns the error tolerance for the problem
+	double getErrorTol();
 
 	// Print the latest solution results
 	void printSolutionResults();

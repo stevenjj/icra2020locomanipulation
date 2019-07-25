@@ -60,11 +60,11 @@ public:
     // Computes an initial configuration that ensures that the robot's feet are flat on the ground.
     // and the CoM is at a height equal to the z dimension of the DCM's virtual repellant point
     // If the feet are already flat on the ground q_out is set to the input q_guess.   
-    void computeInitialConfigForFlatGround(const Eigen::VectorXd & q_guess, Eigen::VectorXd & q_out); 
+    bool computeInitialConfigForFlatGround(const Eigen::VectorXd & q_guess, Eigen::VectorXd & q_out); 
 
     // Given an initial configuration and footstep data list input, compute the task space walking trajectory.
     // Warning: If hand tasks are enabled, they need to have been set already.
-    void computeConfigurationTrajectory(const Eigen::VectorXd & q_init, const std::vector<Footstep> & input_footstep_list);
+    bool computeConfigurationTrajectory(const Eigen::VectorXd & q_init, const std::vector<Footstep> & input_footstep_list);
 
     // returns N_size
     int getDiscretizationSize();
