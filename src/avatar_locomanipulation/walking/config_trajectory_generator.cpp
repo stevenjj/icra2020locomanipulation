@@ -197,6 +197,15 @@ void ConfigTrajectoryGenerator::computeInitialConfigForFlatGround(const Eigen::V
 	robot_model->getFrameWorldPose("pelvis", tmp_pelvis_pos, tmp_pelvis_ori);	
 	tmp_com_pos = robot_model->x_com;
 
+    // Snap foot orientation to flat ground
+    tmp_left_foot.orientation.x() = 0.0;
+    tmp_left_foot.orientation.y() = 0.0;
+    tmp_left_foot.orientation.normalize();
+
+    tmp_right_foot.orientation.x() = 0.0;
+    tmp_right_foot.orientation.y() = 0.0;
+    tmp_right_foot.orientation.normalize();
+
     // Set q_out to q_guess if the foot is already touching the ground
     if ((fabs(tmp_left_foot.position[2]) <= 1e-4) && (fabs(tmp_left_foot.position[2]) <= 1e-4)) {
         std::cout << "[ConfigTrajectoryGenerator] Feet are already flat on the ground. Initial Config for flat ground solver will not run." << std::endl;

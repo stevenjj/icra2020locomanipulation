@@ -4,15 +4,16 @@ RVizVisualizer::RVizVisualizer(){
 	std::cout << "[RVizVisualizer] constructed" << std::endl;
 }
 
-RVizVisualizer::RVizVisualizer(std::shared_ptr<ros::NodeHandle> & n_input, std::shared_ptr<RobotModel> & robot_model_input){
-	setNodeHandle(n_input);
+// Need to initialize the robot_model shared pointer pointer as part of the list initialization
+RVizVisualizer::RVizVisualizer(std::shared_ptr<ros::NodeHandle> & n_input, std::shared_ptr<RobotModel> & robot_model_input):robot_model(robot_model_input){
 	setRobotModel(robot_model);
+	setNodeHandle(n_input);
 }
+
 
 RVizVisualizer::RVizVisualizer(std::shared_ptr<ros::NodeHandle> & n_input){
 	setNodeHandle(n_input);
 }
-
 
 RVizVisualizer::~RVizVisualizer(){	
 	std::cout << "[RVizVisualizer] destroyed" << std::endl;
@@ -57,4 +58,32 @@ void RVizVisualizer::populateCurrentConfigJointMsg(){
 
 void RVizVisualizer::setPubFreq(const double & pub_freq_in){
 	pub_freq = pub_freq_in;
+}
+
+void RVizVisualizer::visualizeConfiguration(const Eigen::VectorXd & q_start_in, const Eigen::VectorXd & q_current_in){
+	std::cout << "[RVizVisualizer] Visualizing starting and ending configurations" << std::endl;
+	// Set the configurations
+	setStartConfig(q_start_in);
+	setCurrentConfig(q_current_in);
+
+	// Populate Messages
+	populateStartConfigJointMsg();
+    populateCurrentConfigJointMsg();
+
+    // Set Loop Rate
+	ros::Rate loop_rate(pub_freq);
+  	
+  	// Publish Forever until terminated
+  	while (ros::ok()){
+		br_robot->sendTransform(tf::StampedTransform(tf_world_pelvis_init, ros::Time::now(), "world",  "val_robot/pelvis"));
+		robot_joint_state_pub.publish(joint_msg_init);
+
+		br_ik->sendTransform(tf::StampedTransform(tf_world_pelvis_current, ros::Time::now(), "world", "val_ik_robot/pelvis"));
+		robot_ik_joint_state_pub.publish(joint_msg_current);
+
+	    ros::spinOnce();
+	    loop_rate.sleep();
+  	}
+
+
 }

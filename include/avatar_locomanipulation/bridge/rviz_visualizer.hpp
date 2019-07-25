@@ -9,7 +9,6 @@ class RVizVisualizer{
 public:
 	RVizVisualizer();
     RVizVisualizer(std::shared_ptr<ros::NodeHandle> & n_input, std::shared_ptr<RobotModel> & robot_model_input);
-
 	RVizVisualizer(std::shared_ptr<ros::NodeHandle> & n_input);
 	~RVizVisualizer();
 
@@ -19,6 +18,8 @@ public:
     void setStartConfig(const Eigen::VectorXd & q_start_in);
     void setCurrentConfig(const Eigen::VectorXd & q_current_in);
     void setPubFreq(const double & pub_freq_in);
+
+    void visualizeConfiguration(const Eigen::VectorXd & q_start_in, const Eigen::VectorXd & q_current_in);
 
     void populateStartConfigJointMsg();
     void populateCurrentConfigJointMsg();

@@ -59,18 +59,16 @@ void test_config_trajectory_generator(){
   ctg.computeInitialConfigForFlatGround(q_start, q_end);
 
 
-
-
+  // Visualize the robot
+  std::shared_ptr<ros::NodeHandle> node(std::make_shared<ros::NodeHandle>());
+  RVizVisualizer visualizer(node, valkyrie_model);  
+  visualizer.visualizeConfiguration(q_start, q_end);
 }
 
 int main(int argc, char ** argv){   
-  RVizVisualizer visualizer;
+  ros::init(argc, argv, "test_config_trajectory_generator");
   test_config_trajectory_generator();
 
-  ros::init(argc, argv, "test_config_trajectory_generator");
-
-  std::shared_ptr<ros::NodeHandle> node(std::make_shared<ros::NodeHandle>());
-  visualizer.setNodeHandle(node);
 
   return 0;
 }
