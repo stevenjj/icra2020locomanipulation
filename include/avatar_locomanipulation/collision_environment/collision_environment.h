@@ -25,9 +25,6 @@ private:
   // a map from collision body names to frame names
   std::map<std::string, std::string> collision_to_frame;
 
-  // The tolerance distance for avoiding self collisions
-  double safety_dist = 0.05;
-
   // The distance for a link to move away from the body if inside the safety distance
   double max_scaling_distance = 0.15;
 
@@ -46,6 +43,13 @@ private:
   // fills the map with key being the collision body names and value being the corresponding frame name
   void map_collision_names_to_frame_names();
 
+  
+  // Create map for self collision to generakize self directed vectors
+  void generalize_build_self_directed_vectors();
+
+  // Create map for object collision to generalize the object directed vectors
+  void generalize_build_object_directed_vectors();
+
 
   // Builds a directed vector using world positions for the case when two bodies are in collision
   // called internally from build_directed_vectors_name
@@ -63,8 +67,18 @@ public:
   // Potential function scaling distance
   double eta;
 
+  // The tolerance distance for avoiding collisions
+  double safety_dist_normal = 0.075;
+  double safety_dist_collision = 0.2;
+
   // index of the closest directedvector for calculating potential
   int closest;
+
+  // Generalizes our build_self_directed_vectors
+  // link_to_collision_names["rightPalm_0"] = {"leftPalm_0", ....}
+  std::map<std::string, std::vector<std::string> > link_to_collision_names;
+
+  std::map<std::string, std::vector<std::string> > link_to_object_collision_names;
 
 
   // The two robot models which we are adding to the environment
@@ -89,27 +103,16 @@ public:
   // Inputs: - List of collision object names, with the first being used as the "to" object
   //         - (Empty) map from names of "from" collision links to the nearest point on those objects
   //         - (Empty) map from names of "from"collision links to nearest points on the "to" objects
-  void find_self_near_points(std::vector<std::string> & list, std::map<std::string, Eigen::Vector3d> & from_near_points, std::map<std::string, Eigen::Vector3d> & to_near_points);
+  void find_self_near_points(std::string & to_link, const std::vector<std::string>  & list, std::map<std::string, Eigen::Vector3d> & from_near_points, std::map<std::string, Eigen::Vector3d> & to_near_points);
 
 
   // Inputs: - List of collision object names, with the first being used as the "to" object
   //         - (Empty) map from names of "from" collision links to the nearest point on those objects
   //         - (Empty) map from names of "from"collision links to nearest points on the "to" objects
-  void find_object_near_points(std::shared_ptr<RobotModel> & appended, std::vector<std::string> & list, std::map<std::string, Eigen::Vector3d> & from_near_points, std::map<std::string, Eigen::Vector3d> & to_near_points);
+  void find_object_near_points(std::string & from_link, std::shared_ptr<RobotModel> & appended, std::vector<std::string> & list, std::map<std::string, Eigen::Vector3d> & from_near_points, std::map<std::string, Eigen::Vector3d> & to_near_points);
 
-  
-  // Fills struct DirectedVector self_directed_vectors with the relevant vectors
-  //  to the link indicated in the fnc name
-  //    these directed vectors used in self_collision_dx to get the world dx
-  void build_directed_vector_to_rhand();
-  void build_directed_vector_to_lhand();
-  void build_directed_vector_to_head();
-  void build_directed_vector_to_lknee();
-  void build_directed_vector_to_rknee();
-  void build_directed_vector_to_rwrist();
-  void build_directed_vector_to_lwrist();
-  void build_directed_vector_to_relbow();
-  void build_directed_vector_to_lelbow();
+  // Given a frame name from a task it will build the directed vectors to that link
+  void build_self_directed_vectors(const std::string & frame_name);
 
 
   // Fills the struct DirectedVector directed_vectors with the relevan vectors from each of the object
@@ -121,14 +124,14 @@ public:
   // void compute_collision(Eigen::VectorXd & q, Eigen::VectorXd & obj_config);
 
 
-  // // gives us a command for dx to move away from self collision
-  // std::vector<Eigen::Vector3d> get_collision_dx();
-
   double get_collision_potential();
   
 
-  // Sets the safety distance between robot links
-  void set_safety_distance(double safety_dist_in);
+  // Sets the safety distance between links when not in collision
+  void set_safety_distance_normal(double safety_dist_normal_in);
+
+  // Sets the safety distance between links when in collision
+  void set_safety_distance_collision(double safety_dist_collision_in);
 
   // Sets the max scaling factor for dx
   void set_max_scaling_distance(double & max_scaling_dist_in);

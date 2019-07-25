@@ -100,8 +100,6 @@ void testIK_module(){
   std::shared_ptr<CollisionEnvironment> collision;
   collision = std::shared_ptr<CollisionEnvironment>(new CollisionEnvironment(ik_module.robot_model) ) ;
 
-  double safety = 0.1;
-  collision->set_safety_distance(safety);
 
   // Create Tasks
   std::shared_ptr<Task> pelvis_task(new Task6DPose(ik_module.robot_model, "pelvis"));
@@ -167,7 +165,7 @@ void testIK_module(){
 
   Eigen::VectorXd q_config = Eigen::VectorXd::Zero(q_init.size());
   printVec("q_sol", q_sol);
-  test_safety_dist(collision);
+  // test_safety_dist(collision);
 
   visualize_robot(q_init, q_sol);
 
@@ -176,40 +174,40 @@ void testIK_module(){
 }
 
 
-void test_safety_dist(std::shared_ptr<CollisionEnvironment> & collision){
-  // Test to see if we actually enforce safety distance
-  std::vector<std::string> list;
-  std::map<std::string, Eigen::Vector3d> from_near_points;
-  std::map<std::string, Eigen::Vector3d> to_near_points;
-  // initialize two iterators to be used in pushing to DirectedVectors struct
-  std::map<std::string, Eigen::Vector3d>::iterator it, it2;
-  // The vector of directed vectors and related information
-  std::vector<DirectedVectors>  directed_vectors;
-  DirectedVectors dvector;
+// void test_safety_dist(std::shared_ptr<CollisionEnvironment> & collision){
+//   // Test to see if we actually enforce safety distance
+//   std::vector<std::string> list;
+//   std::map<std::string, Eigen::Vector3d> from_near_points;
+//   std::map<std::string, Eigen::Vector3d> to_near_points;
+//   // initialize two iterators to be used in pushing to DirectedVectors struct
+//   std::map<std::string, Eigen::Vector3d>::iterator it, it2;
+//   // The vector of directed vectors and related information
+//   std::vector<DirectedVectors>  directed_vectors;
+//   DirectedVectors dvector;
 
-  list.push_back("rightPalm_0");
-  list.push_back("pelvis_0");
+//   // list.push_back("rightPalm_0");
+//   list.push_back("pelvis_0");
 
-  collision->find_self_near_points(list, from_near_points, to_near_points);
-  Eigen::Vector3d difference;
+//   collision->find_self_near_points("rightPalm_0", list, from_near_points, to_near_points);
+//   Eigen::Vector3d difference;
 
-  it2 = to_near_points.begin();
+//   it2 = to_near_points.begin();
 
-  for(it=from_near_points.begin(); it!=from_near_points.end(); ++it){
+//   for(it=from_near_points.begin(); it!=from_near_points.end(); ++it){
       
-      difference = it2->second - it->second;
-      // Fill the dvector and push back
-      dvector.from = "pelvis"; dvector.to = "rightPalm";
-      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
-      dvector.using_worldFramePose = false;
-      directed_vectors.push_back(dvector);
-      ++it2;
-  }
+//       difference = it2->second - it->second;
+//       // Fill the dvector and push back
+//       dvector.from = "pelvis"; dvector.to = "rightPalm";
+//       dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+//       dvector.using_worldFramePose = false;
+//       directed_vectors.push_back(dvector);
+//       ++it2;
+//   }
 
-  std::cout << "    directed_vectors.size(): " << directed_vectors.size() << std::endl;
-  std::cout << "    directed_vectors[0].magnitude: " << directed_vectors[0].magnitude << std::endl;
+//   std::cout << "    directed_vectors.size(): " << directed_vectors.size() << std::endl;
+//   std::cout << "    directed_vectors[0].magnitude: " << directed_vectors[0].magnitude << std::endl;
   
-}
+// }
 
 void visualize_robot(Eigen::VectorXd & q_start, Eigen::VectorXd & q_end){
   // Initialize ROS node for publishing joint messages

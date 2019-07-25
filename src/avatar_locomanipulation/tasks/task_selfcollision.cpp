@@ -71,17 +71,17 @@ void TaskSelfCollision::getTaskJacobianDot(Eigen::MatrixXd & Jdot_task){
 	// If the links are in collision then we want higher safety distance
 	if(collision_env->directed_vectors[collision_env->closest].using_worldFramePose){
 		// If magnitude inside safety distance
-  		if(collision_env->directed_vectors[collision_env->closest].magnitude < 0.2){
+  		if(collision_env->directed_vectors[collision_env->closest].magnitude < collision_env->safety_dist_collision){
   			// Add this to Jdot_task
-  			Jdot_task = eta * ( (1/(collision_env->directed_vectors[collision_env->closest].magnitude)) - (1/(0.2)) ) * ((-1)/(std::pow((collision_env->directed_vectors[collision_env->closest].magnitude),2))) * (1/((collision_env->directed_vectors[collision_env->closest].magnitude))) * ((collision_env->directed_vectors[collision_env->closest].magnitude)*(collision_env->directed_vectors[collision_env->closest].direction).transpose()) * (Jpdot_tmp.topRows(3) - Jdot_tmp.topRows(3));
+  			Jdot_task = eta * ( (1/(collision_env->directed_vectors[collision_env->closest].magnitude)) - (1/(collision_env->safety_dist_collision)) ) * ((-1)/(std::pow((collision_env->directed_vectors[collision_env->closest].magnitude),2))) * (1/((collision_env->directed_vectors[collision_env->closest].magnitude))) * ((collision_env->directed_vectors[collision_env->closest].magnitude)*(collision_env->directed_vectors[collision_env->closest].direction).transpose()) * (Jpdot_tmp.topRows(3) - Jdot_tmp.topRows(3));
   		}
 	} 
 	// Else we want lower safety distance
 	else{
 		// If magnitude inside safety distance
-		if(collision_env->directed_vectors[collision_env->closest].magnitude < 0.075){
+		if(collision_env->directed_vectors[collision_env->closest].magnitude < collision_env->safety_dist_normal){
   			// Add this to J_task
-  			Jdot_task = eta * ( (1/(collision_env->directed_vectors[collision_env->closest].magnitude)) - (1/(0.075)) ) * ((-1)/(std::pow((collision_env->directed_vectors[collision_env->closest].magnitude),2))) * (1/((collision_env->directed_vectors[collision_env->closest].magnitude))) * ((collision_env->directed_vectors[collision_env->closest].magnitude)*(collision_env->directed_vectors[collision_env->closest].direction).transpose()) * (Jpdot_tmp.topRows(3) - Jdot_tmp.topRows(3));
+  			Jdot_task = eta * ( (1/(collision_env->directed_vectors[collision_env->closest].magnitude)) - (1/(collision_env->safety_dist_normal)) ) * ((-1)/(std::pow((collision_env->directed_vectors[collision_env->closest].magnitude),2))) * (1/((collision_env->directed_vectors[collision_env->closest].magnitude))) * ((collision_env->directed_vectors[collision_env->closest].magnitude)*(collision_env->directed_vectors[collision_env->closest].direction).transpose()) * (Jpdot_tmp.topRows(3) - Jdot_tmp.topRows(3));
   		}	
 	} 
 
@@ -125,29 +125,7 @@ void TaskSelfCollision::computeError(){
 
  	collision_env->directed_vectors.clear();
 
- 	if(frame_name == "rightPalm"){
- 		collision_env->build_directed_vector_to_rhand();
- 		// collision_env->build_directed_vector_to_rwrist();
- 	}
- 	if(frame_name == "leftPalm"){
- 		collision_env->build_directed_vector_to_lhand();
- 		// collision_env->build_directed_vector_to_lwrist();
- 	}
- 	if(frame_name == "head"){
- 		collision_env->build_directed_vector_to_head();
- 	}
- 	if(frame_name == "rightKneePitch"){
- 		collision_env->build_directed_vector_to_rknee();
- 	}
- 	if(frame_name == "leftKneePitch"){
- 		collision_env->build_directed_vector_to_lknee();
- 	}
- 	if(frame_name == "rightElbowPitch"){
- 		collision_env->build_directed_vector_to_rknee();
- 	}
- 	if(frame_name == "leftElbowPitch"){
- 		collision_env->build_directed_vector_to_lknee();
- 	}
+ 	collision_env->build_self_directed_vectors(frame_name);
 	
  	double V = collision_env->get_collision_potential();
 
