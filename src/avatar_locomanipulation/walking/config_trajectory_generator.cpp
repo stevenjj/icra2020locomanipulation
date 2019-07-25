@@ -206,6 +206,7 @@ void ConfigTrajectoryGenerator::computeInitialConfigForFlatGround(const Eigen::V
     tmp_right_foot.orientation.y() = 0.0;
     tmp_right_foot.orientation.normalize();
 
+    // Need to check for orientation.
     // Set q_out to q_guess if the foot is already touching the ground
     if ((fabs(tmp_left_foot.position[2]) <= 1e-4) && (fabs(tmp_left_foot.position[2]) <= 1e-4)) {
         std::cout << "[ConfigTrajectoryGenerator] Feet are already flat on the ground. Initial Config for flat ground solver will not run." << std::endl;

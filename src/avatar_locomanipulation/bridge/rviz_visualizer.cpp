@@ -87,3 +87,17 @@ void RVizVisualizer::visualizeConfiguration(const Eigen::VectorXd & q_start_in, 
 
 
 }
+
+// Visualize Configuration Trajectory
+void RVizVisualizer::visualizeConfigurationTrajectory(const Eigen::VectorXd & q_start_in, const TrajSE3 & traj_q_current_in){
+	std::cout << "[RVizVisualizer] Visualizing configuration trajectory" << std::endl;
+
+	// Initialize Starting Configuration
+	setStartConfig(q_start_in);
+	populateStartConfigJointMsg();
+
+	// Set loop rate for the actual time of the trajectory
+
+	// Visualize the robot on a loop
+
+}

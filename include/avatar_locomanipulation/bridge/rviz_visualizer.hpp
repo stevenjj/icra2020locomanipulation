@@ -4,6 +4,7 @@
 #include <ros/ros.h>
 #include <avatar_locomanipulation/bridge/rviz_translator.hpp>
 #include <avatar_locomanipulation/models/robot_model.hpp>
+#include <avatar_locomanipulation/data_types/trajectory_SE3.hpp>
 
 class RVizVisualizer{
 public:
@@ -20,6 +21,8 @@ public:
     void setPubFreq(const double & pub_freq_in);
 
     void visualizeConfiguration(const Eigen::VectorXd & q_start_in, const Eigen::VectorXd & q_current_in);
+
+    void visualizeConfigurationTrajectory(const Eigen::VectorXd & q_start_in, const TrajSE3 & traj_q_current_in);
 
     void populateStartConfigJointMsg();
     void populateCurrentConfigJointMsg();
