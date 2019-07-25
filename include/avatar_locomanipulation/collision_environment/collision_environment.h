@@ -21,6 +21,7 @@ private:
   //          double magnitude - magnitude of the vector for use with potential
   DirectedVectors dvector;
 
+
   // a map from collision body names to frame names
   std::map<std::string, std::string> collision_to_frame;
 
@@ -59,6 +60,12 @@ private:
   std::vector<std::string> get_object_links();
 
 public:
+  // Potential function scaling distance
+  double eta;
+
+  // index of the closest directedvector for calculating potential
+  int closest;
+
 
   // The two robot models which we are adding to the environment
   std::shared_ptr<RobotModel> valkyrie, object;
@@ -114,8 +121,8 @@ public:
   // void compute_collision(Eigen::VectorXd & q, Eigen::VectorXd & obj_config);
 
 
-  // gives us a command for dx to move away from self collision
-  std::vector<Eigen::Vector3d> get_collision_dx();
+  // // gives us a command for dx to move away from self collision
+  // std::vector<Eigen::Vector3d> get_collision_dx();
 
   double get_collision_potential();
   

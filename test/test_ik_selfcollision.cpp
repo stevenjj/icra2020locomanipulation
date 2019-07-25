@@ -15,8 +15,11 @@
 #include <ros/ros.h>
 #include <avatar_locomanipulation/bridge/val_rviz_translator.hpp>
 
+#include <map>
+
 
 void visualize_robot(Eigen::VectorXd & q_start, Eigen::VectorXd & q_end);
+void test_safety_dist(std::shared_ptr<CollisionEnvironment> & collision);
 
 void printVec(const std::string & vec_name, const::Eigen::VectorXd vec){
   std::cout << vec_name << ": ";
@@ -106,8 +109,11 @@ void testIK_module(){
   std::shared_ptr<Task> rfoot_task(new Task6DPose(ik_module.robot_model, "rightCOP_Frame"));
   std::shared_ptr<Task> rhand_task(new TaskSelfCollision(ik_module.robot_model, "rightPalm", collision, "rhand"));
 
+  rhand_task->setTaskGain(20.0);
+
   // Stack Tasks in order of priority
-  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {pelvis_task, lfoot_task, rfoot_task, rhand_task}));
+  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {pelvis_task, lfoot_task, rfoot_task}));
+  std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {rhand_task}));
 
   // Set desired Pelvis configuration
   Eigen::Vector3d pelvis_des_pos;
@@ -146,18 +152,62 @@ void testIK_module(){
   std::cout << "Right Hand Task Error = " << task_error.transpose() << std::endl;
 
   ik_module.addTasktoHierarchy(task_stack_priority_1);
+  ik_module.addTasktoHierarchy(task_stack_priority_2);
 
   int solve_result;
   double error_norm;
   Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(ik_module.robot_model->getDimQdot());
 
+  double error_tol = 1e-6;
+  ik_module.setErrorTol(error_tol);
+
   ik_module.prepareNewIKDataStrcutures();
   ik_module.solveIK(solve_result, error_norm, q_sol);
+  ik_module.printSolutionResults();
 
   Eigen::VectorXd q_config = Eigen::VectorXd::Zero(q_init.size());
   printVec("q_sol", q_sol);
+  test_safety_dist(collision);
 
   visualize_robot(q_init, q_sol);
+
+//------------------------------------------------------------------
+  
+}
+
+
+void test_safety_dist(std::shared_ptr<CollisionEnvironment> & collision){
+  // Test to see if we actually enforce safety distance
+  std::vector<std::string> list;
+  std::map<std::string, Eigen::Vector3d> from_near_points;
+  std::map<std::string, Eigen::Vector3d> to_near_points;
+  // initialize two iterators to be used in pushing to DirectedVectors struct
+  std::map<std::string, Eigen::Vector3d>::iterator it, it2;
+  // The vector of directed vectors and related information
+  std::vector<DirectedVectors>  directed_vectors;
+  DirectedVectors dvector;
+
+  list.push_back("rightPalm_0");
+  list.push_back("pelvis_0");
+
+  collision->find_self_near_points(list, from_near_points, to_near_points);
+  Eigen::Vector3d difference;
+
+  it2 = to_near_points.begin();
+
+  for(it=from_near_points.begin(); it!=from_near_points.end(); ++it){
+      
+      difference = it2->second - it->second;
+      // Fill the dvector and push back
+      dvector.from = "pelvis"; dvector.to = "rightPalm";
+      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+      dvector.using_worldFramePose = false;
+      directed_vectors.push_back(dvector);
+      ++it2;
+  }
+
+  std::cout << "    directed_vectors.size(): " << directed_vectors.size() << std::endl;
+  std::cout << "    directed_vectors[0].magnitude: " << directed_vectors[0].magnitude << std::endl;
   
 }
 

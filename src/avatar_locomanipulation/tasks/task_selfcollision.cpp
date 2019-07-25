@@ -16,6 +16,7 @@ TaskSelfCollision::TaskSelfCollision(std::shared_ptr<RobotModel> & input_model, 
 	quat_ref_.setIdentity();
 
 	collision_env = collision;
+	eta = collision_env->eta;
 
 	std::cout << "[Task " << link_name << " Self Collision] for frame " << frame_name << " Constructed" << std::endl;
 }
@@ -26,48 +27,68 @@ TaskSelfCollision::~TaskSelfCollision(){
 
 void TaskSelfCollision::getTaskJacobian(Eigen::MatrixXd & J_task){
 
-	Eigen::MatrixXd Jp_tmp = Eigen::MatrixXd::Zero(3, robot_model->getDimQdot());
+	Eigen::MatrixXd Jp_tmp = Eigen::MatrixXd::Zero(6, robot_model->getDimQdot());
 
 
 	robot_model->get6DTaskJacobian(frame_name, J_tmp);
 	J_task = Eigen::MatrixXd::Zero(1, robot_model->getDimQdot());
 
-	double eta = 0.05;
-
-//--------------------
-	// Loop thru all directed vectors
-	for(int i=0; i < collision_env->directed_vectors.size(); ++i){
-		robot_model->get6DTaskJacobian(collision_env->directed_vectors[i].from, Jp_tmp);
-		// If the links are in collision then we want higher safety distance
-		if(collision_env->directed_vectors[i].using_worldFramePose){
-			// If magnitude inside safety distance
-      		if(collision_env->directed_vectors[i].magnitude < 0.2){
-      			// Add this to J_task
-      			J_task += eta * ( (1/(collision_env->directed_vectors[i].magnitude)) - (1/(0.2)) ) * ((-1)/(std::pow((collision_env->directed_vectors[i].magnitude),2))) * (1/((collision_env->directed_vectors[i].magnitude))) * ((collision_env->directed_vectors[i].magnitude)*(collision_env->directed_vectors[i].direction).transpose()) * (J_tmp.topRows(3) - Jp_tmp.topRows(3));
-      		}
-    	} 
-    	// Else we want lower safety distance
-    	else{
-    		// If magnitude inside safety distance
-    		if(collision_env->directed_vectors[i].magnitude < 0.075){
-      			// Add this to J_task
-      			J_task += eta * ( (1/(collision_env->directed_vectors[i].magnitude)) - (1/(0.075)) ) * ((-1)/(std::pow((collision_env->directed_vectors[i].magnitude),2))) * (1/((collision_env->directed_vectors[i].magnitude))) * ((collision_env->directed_vectors[i].magnitude)*(collision_env->directed_vectors[i].direction).transpose()) * (J_tmp.topRows(3) - Jp_tmp.topRows(3));
-      		}	
-    	} 
-	}
 	
+	robot_model->get6DTaskJacobian(collision_env->directed_vectors[collision_env->closest].from, Jp_tmp);
 
-    
-//--------------------
+	// If the links are in collision then we want higher safety distance
+	if(collision_env->directed_vectors[collision_env->closest].using_worldFramePose){
+		// If magnitude inside safety distance
+  		if(collision_env->directed_vectors[collision_env->closest].magnitude < 0.2){
+  			// Add this to J_task
+  			std::cout << "Task1" << std::endl;
+  			J_task = eta * ( (1/(collision_env->directed_vectors[collision_env->closest].magnitude)) - (1/(0.2)) ) * ((-1)/(std::pow((collision_env->directed_vectors[collision_env->closest].magnitude),2))) * (1/((collision_env->directed_vectors[collision_env->closest].magnitude))) * ((collision_env->directed_vectors[collision_env->closest].magnitude)*(collision_env->directed_vectors[collision_env->closest].direction).transpose()) * (Jp_tmp.topRows(3) - J_tmp.topRows(3));
+  		}
+	} 
+	// Else we want lower safety distance
+	else{
+		// If magnitude inside safety distance
+		if(collision_env->directed_vectors[collision_env->closest].magnitude < 0.075){
+  			// Add this to J_task
+  			std::cout << "Task2" << std::endl;
+  			J_task = eta * ( (1/(collision_env->directed_vectors[collision_env->closest].magnitude)) - (1/(0.075)) ) * ((-1)/(std::pow((collision_env->directed_vectors[collision_env->closest].magnitude),2))) * (1/((collision_env->directed_vectors[collision_env->closest].magnitude))) * ((collision_env->directed_vectors[collision_env->closest].magnitude)*(collision_env->directed_vectors[collision_env->closest].direction).transpose()) * (Jp_tmp.topRows(3) - J_tmp.topRows(3));
+  		}	
+	} 
 
-	// J_task = eta * ( (1/(collision_env->directed_vectors[0].magnitude)) -  )
 
-	
-	//  = J_tmp.topRows(3);	
 }
 void TaskSelfCollision::getTaskJacobianDot(Eigen::MatrixXd & Jdot_task){
+
+	Eigen::MatrixXd Jpdot_tmp = Eigen::MatrixXd::Zero(6, robot_model->getDimQdot());
+
+
 	robot_model->get6DTaskJacobianDot(frame_name, Jdot_tmp);
-	Jdot_task = Jdot_tmp.topRows(3);
+	Jdot_task = Eigen::MatrixXd::Zero(1, robot_model->getDimQdot());
+
+	
+	std:: cout << "collision_env->directed_vectors[collision_env->closest].from: " << collision_env->directed_vectors[collision_env->closest].from << std::endl;
+	robot_model->get6DTaskJacobianDot(collision_env->directed_vectors[collision_env->closest].from, Jpdot_tmp);
+	// If the links are in collision then we want higher safety distance
+	if(collision_env->directed_vectors[collision_env->closest].using_worldFramePose){
+		// If magnitude inside safety distance
+  		if(collision_env->directed_vectors[collision_env->closest].magnitude < 0.2){
+  			// Add this to Jdot_task
+  			Jdot_task = eta * ( (1/(collision_env->directed_vectors[collision_env->closest].magnitude)) - (1/(0.2)) ) * ((-1)/(std::pow((collision_env->directed_vectors[collision_env->closest].magnitude),2))) * (1/((collision_env->directed_vectors[collision_env->closest].magnitude))) * ((collision_env->directed_vectors[collision_env->closest].magnitude)*(collision_env->directed_vectors[collision_env->closest].direction).transpose()) * (Jpdot_tmp.topRows(3) - Jdot_tmp.topRows(3));
+  		}
+	} 
+	// Else we want lower safety distance
+	else{
+		// If magnitude inside safety distance
+		if(collision_env->directed_vectors[collision_env->closest].magnitude < 0.075){
+  			// Add this to J_task
+  			Jdot_task = eta * ( (1/(collision_env->directed_vectors[collision_env->closest].magnitude)) - (1/(0.075)) ) * ((-1)/(std::pow((collision_env->directed_vectors[collision_env->closest].magnitude),2))) * (1/((collision_env->directed_vectors[collision_env->closest].magnitude))) * ((collision_env->directed_vectors[collision_env->closest].magnitude)*(collision_env->directed_vectors[collision_env->closest].direction).transpose()) * (Jpdot_tmp.topRows(3) - Jdot_tmp.topRows(3));
+  		}	
+	} 
+
+
+
+
+
 }
 
 // Set Task References
@@ -106,11 +127,11 @@ void TaskSelfCollision::computeError(){
 
  	if(frame_name == "rightPalm"){
  		collision_env->build_directed_vector_to_rhand();
- 		collision_env->build_directed_vector_to_rwrist();
+ 		// collision_env->build_directed_vector_to_rwrist();
  	}
  	if(frame_name == "leftPalm"){
  		collision_env->build_directed_vector_to_lhand();
- 		collision_env->build_directed_vector_to_lwrist();
+ 		// collision_env->build_directed_vector_to_lwrist();
  	}
  	if(frame_name == "head"){
  		collision_env->build_directed_vector_to_head();
@@ -130,25 +151,9 @@ void TaskSelfCollision::computeError(){
 	
  	double V = collision_env->get_collision_potential();
 
-	// std::vector<Eigen::Vector3d> dxs = collision_env->get_collision_dx();
+	error_[0] = kp_task_gain_*V;
+	std::cout << "error_[0]: " << error_[0] << std::endl;
 
-	// Eigen::Vector3d dx;
-	// dx = dxs[0];
-	// // for(int i=0; i<dxs.size(); ++i){
-	// // 	std::cout << "dxs[" << i << "]: \n" << dxs[i] << std::endl;
-	// // }
-
-	// if(dxs.size() != 1){
-	// 	for(int i=1; i<dxs.size(); ++i){
-	// 		dx += dxs[i];
-	// 	}
-	// }
-
-	error_[0] = V;
-
-// 	std::cout << "error_[0]: " << error_[0] << std::endl;
-// 	std::cout << "error_[1]: " << error_[1] << std::endl;
-// 	std::cout << "error_[2]: " << error_[2] << std::endl;
 }
 
 // Computes the error for a given reference

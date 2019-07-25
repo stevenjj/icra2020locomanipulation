@@ -7,6 +7,7 @@ CollisionEnvironment::CollisionEnvironment(std::shared_ptr<RobotModel> & val, st
 	object = obj;
 	std::cout << "Collision Environment Created" << std::endl;
   object_flag = true;
+  eta = 1.0;
   map_collision_names_to_frame_names();
 }
 
@@ -14,6 +15,7 @@ CollisionEnvironment::CollisionEnvironment(std::shared_ptr<RobotModel> & val){
   valkyrie = val;
   std::cout << "Collision Environment Created Only Val" << std::endl;
   object_flag = false;
+  eta = 1.0;
   map_collision_names_to_frame_names();
 }
 
@@ -231,7 +233,9 @@ void CollisionEnvironment::build_directed_vector_to_rhand(){
   std::cout << "directed_vectors.size(): " << directed_vectors.size() << std::endl;
 }
 
+// void CollisionEnvironment::build_self_directed_vectors(const std::string link_name){}
 
+// steven messed with these lines
 void CollisionEnvironment::build_directed_vector_to_lhand(){
   
   // for clarity on these maps, see control flow in find_self_near_points function
@@ -240,6 +244,8 @@ void CollisionEnvironment::build_directed_vector_to_lhand(){
   // initialize two iterators to be used in pushing to DirectedVectors struct
   std::map<std::string, Eigen::Vector3d>::iterator it, it2;
 
+  // std::map<std::string, std::vector<std::string> > link_to_collision_names;
+  // link_to_collision_names["leftPalm_0"] = {"rightPalm_0", "rightElbowNearLink_0", ... }
 
   // fill list with collision_names[0] = name of link to which we want directed vectors
   // and collision_names[>0] = name of links from which we want directed vectors
@@ -263,6 +269,7 @@ void CollisionEnvironment::build_directed_vector_to_lhand(){
 
   Eigen::Vector3d difference;
 
+//  find_self_near_points(link_name, collision_names, from_near_points, to_near_points);
   find_self_near_points(collision_names, from_near_points, to_near_points);
 
   it2 = to_near_points.begin();
@@ -270,10 +277,14 @@ void CollisionEnvironment::build_directed_vector_to_lhand(){
   for(it=from_near_points.begin(); it!=from_near_points.end(); ++it){
     // If nearest_point[1] = nearest_point[0], then the two links are in collision
     // and we need a different way to get a dvector
-    if(it->second == it2->second){
+    if( (it->second - it2->second).norm() <= 1e-6 ) {
       std::cout << "Collision between " << it->first << " and leftPalm_0" << std::endl;
       get_dvector_collision_links(it->first, "leftPalm_0");
       ++it2;
+
+      // to_near_points[it->first]
+
+
     }
 
     // The typical case when two links are not in collision
@@ -741,20 +752,38 @@ void CollisionEnvironment::build_object_directed_vectors(std::string & frame_nam
 double CollisionEnvironment::get_collision_potential(){
   double Potential, temp;
   Potential = 0;
-  double eta = 0.05;
+  closest = 0;
+  std::vector<double> Potential_closestid;
 
-  for(int k=0; k<directed_vectors.size(); ++k){
-    if(directed_vectors[k].using_worldFramePose){
-      set_safety_distance(0.2);
-      std::cout << "Collision between these links: (to, from) (" << directed_vectors[k].to << ", " << directed_vectors[k].from << ")" << std::endl;
-    } else set_safety_distance(0.075);
-
-    if(directed_vectors[k].magnitude < safety_dist){
-      temp = (1.0/2.0) * eta * std::pow(( (1/(directed_vectors[k].magnitude)) - (1/(safety_dist)) ),2);
-      Potential += temp;
+  temp = directed_vectors[0].magnitude;
+  
+  // Sort thru all of the directed vectors
+  for(int j=1; j<directed_vectors.size(); ++j){
+    // If in collision, this is the pair we want
+    if(directed_vectors[j].using_worldFramePose){
+      temp = directed_vectors[j].magnitude;
+      closest = j;
+      break;
     }
-    
+    // Else if the jth directed vector has magnitude less than temo
+    else if(directed_vectors[j].magnitude < temp){
+      // The jth directed vector is the closest pair 
+      temp = directed_vectors[j].magnitude;
+      closest = j;
+    }
   }
+
+  if(directed_vectors[closest].using_worldFramePose){
+    set_safety_distance(0.2);
+    std::cout << "Collision between these links: (to, from) (" << directed_vectors[closest].to << ", " << directed_vectors[closest].from << ")" << std::endl;
+  } else set_safety_distance(0.075);
+
+
+  if(directed_vectors[closest].magnitude < safety_dist){
+    Potential = (1.0/2.0) * eta * std::pow(( (1/(directed_vectors[closest].magnitude)) - (1/(safety_dist)) ),2);
+  }
+
+  return Potential;
 
 }
 
@@ -804,6 +833,7 @@ void CollisionEnvironment::get_dvector_collision_links_appended(std::shared_ptr<
 
 }
 
+
 void CollisionEnvironment::map_collision_names_to_frame_names(){
   collision_to_frame["leftElbowNearLink_0"] = "leftElbowPitch";
   collision_to_frame["rightElbowNearLink_0"] = "rightElbowPitch";
@@ -816,6 +846,14 @@ void CollisionEnvironment::map_collision_names_to_frame_names(){
   collision_to_frame["head_0"] = "head";
   collision_to_frame["rightHipUpperLink_0"] = "rightHipUpperLink";
   collision_to_frame["leftHipUpperLink_0"] = "leftHipUpperLink";
+  collision_to_frame["rightForearmLink_0"] = "rightForearmLink";
+  collision_to_frame["leftForearmLink_0"] = "leftForearmLink";
+  collision_to_frame["rightShoulderRollLink_0"] = "rightShoulderRollLink";
+  collision_to_frame["leftShoulderRollLink_0"] = "leftShoulderRollLink";
+  collision_to_frame["rightHipPitchLink_0"] = "rightHipPitchLink";
+  collision_to_frame["leftHipPitchLink_0"] = "leftHipPitchLink";
+  collision_to_frame["rightKneePitchLink_0"] = "rightKneePitchLink";
+  collision_to_frame["leftKneePitchLink_0"] = "leftKneePitchLink";
 
   std::string tmp;
   // if we added an object to the collision environment
