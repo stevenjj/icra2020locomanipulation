@@ -89,7 +89,7 @@ void RVizVisualizer::visualizeConfiguration(const Eigen::VectorXd & q_start_in, 
 }
 
 // Visualize Configuration Trajectory
-void RVizVisualizer::visualizeConfigurationTrajectory(const Eigen::VectorXd & q_start_in, const TrajEuclidean & traj_q_current_in){
+void RVizVisualizer::visualizeConfigurationTrajectory(const Eigen::VectorXd & q_start_in, TrajEuclidean & traj_q_in){
 	std::cout << "[RVizVisualizer] Visualizing configuration trajectory" << std::endl;
 
 	// Initialize Starting Configuration
@@ -97,6 +97,33 @@ void RVizVisualizer::visualizeConfigurationTrajectory(const Eigen::VectorXd & q_
 	populateStartConfigJointMsg();
 
 	// Set loop rate for the actual time of the trajectory
+	// ros::Rate loop_rate(pub_freq);
+	ros::Rate loop_rate(5.0);
+	// ros::Rate loop_rate(1.0/traj_q_in.get_dt());
+
+  	// Publish Forever until terminated
+  	while (ros::ok()){
+  		for(int i = 0; i < traj_q_in.get_trajectory_length(); i++){
+	  		// get the current position
+	  		traj_q_in.get_pos(i, q_current);
+
+	  		// Set configuration
+  			setCurrentConfig(q_current);
+		    populateCurrentConfigJointMsg();
+
+		    // Do visualization
+			br_robot->sendTransform(tf::StampedTransform(tf_world_pelvis_init, ros::Time::now(), "world",  "val_robot/pelvis"));
+			robot_joint_state_pub.publish(joint_msg_init);
+
+			br_ik->sendTransform(tf::StampedTransform(tf_world_pelvis_current, ros::Time::now(), "world", "val_ik_robot/pelvis"));
+			robot_ik_joint_state_pub.publish(joint_msg_current);
+
+	  		// Spin and SLeep
+		    ros::spinOnce();
+		    loop_rate.sleep();  			
+  		}
+
+  	}  	
 
 	// Visualize the robot on a loop
 

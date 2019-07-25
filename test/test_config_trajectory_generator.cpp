@@ -63,7 +63,7 @@ void test_config_trajectory_generator(){
   // Visualize the robot
   std::shared_ptr<ros::NodeHandle> node(std::make_shared<ros::NodeHandle>());
   RVizVisualizer visualizer(node, valkyrie_model);  
-  visualizer.visualizeConfiguration(q_start, q_end);
+  // visualizer.visualizeConfiguration(q_start, q_end);
 
   // Update Initial
   q_start = q_end;
@@ -72,8 +72,8 @@ void test_config_trajectory_generator(){
   // Create footsteps in place
   Footstep footstep_1; 
   Footstep footstep_2; 
-  valkyrie_model->getFrameWorldPose("leftCOP_Frame", footstep_1.position, footstep_1.orientation);
-  valkyrie_model->getFrameWorldPose("rightCOP_Frame", footstep_2.position, footstep_2.orientation);  
+  valkyrie_model->getFrameWorldPose("leftCOP_Frame", footstep_1.position, footstep_1.orientation);   footstep_1.setLeftSide();
+  valkyrie_model->getFrameWorldPose("rightCOP_Frame", footstep_2.position, footstep_2.orientation);  footstep_2.setRightSide();
 
   // Create Footstep list
   std::vector<Footstep> input_footstep_list = {footstep_1, footstep_2};
@@ -81,6 +81,8 @@ void test_config_trajectory_generator(){
   // Solve for configurations
   ctg.computeConfigurationTrajectory(q_start, input_footstep_list);
 
+  // Visualize Trajectory
+  visualizer.visualizeConfigurationTrajectory(q_start, ctg.traj_q_config);
 
 }
 
