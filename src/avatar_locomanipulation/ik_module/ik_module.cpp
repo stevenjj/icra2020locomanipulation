@@ -121,6 +121,14 @@ void IKModule::setReturnWhenFirstTaskConverges(bool return_when_first_task_conve
   return_when_first_task_converges = return_when_first_task_converges_in;
 }
 
+void IKModule::setVerbosityLevel(int verbosity_level_in){
+  if (verbosity_level_in <= IK_VERBOSITY_LOW){
+    verbosity_level = IK_VERBOSITY_LOW;
+  }else if (verbosity_level_in >= IK_VERBOSITY_HIGH){
+    verbosity_level = IK_VERBOSITY_HIGH;    
+  }
+}
+
 
 double IKModule::getErrorTol(){
   return error_tol;
@@ -179,11 +187,13 @@ void IKModule::computeTaskErrors(){
     dx_norms_[i] = dx_[i].norm();
     total_error_norm += dx_norms_[i];
   }
-  printTaskErrors();
+  if (verbosity_level == IK_VERBOSITY_HIGH){
+    printTaskErrors();
+  }
 }
 
 void IKModule::printTaskErrorsHeader(){
-  std::cout << "||total_error_norm||, " ;
+  std::cout << "Iteration type, ||total_error_norm||, " ;
   for(int i = 0; i < dx_.size(); i++){
       std::cout << "dx[" << i << "], " ;
   }
@@ -279,9 +289,17 @@ bool IKModule::solveIK(int & solve_result, double & total_error_norm_out, Eigen:
     // First pass
     if (i == 0){
       robot_model->updateFullKinematics(q_current);
-      printTaskErrorsHeader();
+      if (verbosity_level == IK_VERBOSITY_HIGH){
+        printTaskErrorsHeader();
+        std::cout << "Major Iter " << i << ": ";        
+      }
       computeTaskErrors();
+    }else{
+      if (verbosity_level == IK_VERBOSITY_HIGH){
+        std::cout << "Major Iter " << i << ": " << std::endl;      
+      } 
     }
+
 
     // Check task convergence in order of priority
     f_q = 0;
@@ -322,6 +340,10 @@ bool IKModule::solveIK(int & solve_result, double & total_error_norm_out, Eigen:
       clampConfig(q_step);
       // Update the robot model
       robot_model->updateFullKinematics(q_step);
+
+      if (verbosity_level == IK_VERBOSITY_HIGH){
+        std::cout << "  Minor Iter " << minor_iter_count << ": ";        
+      } 
       // Compute errors for this configuration change proposal
       computeTaskErrors();
 
