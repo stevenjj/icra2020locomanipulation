@@ -82,9 +82,20 @@ public:
     void setLeftHandTrajectory(const TrajSE3 & traj_SE3_left_hand_in);
     void setRightHandTrajectory(const TrajSE3 & traj_SE3_right_hand_in);    
 
+    // TODO: Populates a constant right and left hand trajectories to be used. 
+    void setConstantRightHandTrajectory(const Eigen::Vector3d & des_pos, const Eigen::Quaterniond & des_quat);
+    void setConstantLeftHandTrajectory(const Eigen::Vector3d & des_pos, const Eigen::Quaterniond & des_quat);
+
     // Print Trajectory Result
     void printIntermediateIKTrajectoryresult(int & index, bool & primary_task_converge_result, double & total_error_norm, std::vector<double> & task_error_norms);
+    // Prints the final trajectory result
     void printIKTrajectoryresult();
+
+	// Set whether to attempt to do a full trajectory IK even with partial divergence during the IK trajectory generation process.
+ 	// If true: attempt to find a configuration for all task trajectories even if some configurations have big errors
+ 	// if false: the ik trajectory solver stops at the latest good configuration and sets that configuration for the remainder of the trajectory
+	// Default = false.
+    void setSolveEvenWithPartialDivergence(bool solve_with_partial_divergence_in);
 
     // Public Member Variables
 	std::shared_ptr<RobotModel> robot_model;
@@ -123,9 +134,7 @@ public:
 
 	int N_size = 100;
 
-	// Set best Effort IK // attempts to do full trajectory IK even with divergence
 	// Store full IK data?
-	// print out final trajectory result
 
 	// Checks whether the latest trajectory converged.
 	// convergence condition:  max_first_task_ik_error < ik_module.error_tol.
@@ -168,6 +177,9 @@ private:
 	int verbosity_level = CONFIG_TRAJECTORY_VERBOSITY_LEVEL_2;
 
 	double max_first_task_ik_error = -1e3;
+
+
+	bool solve_with_partial_divergence = false;
 
 };
 

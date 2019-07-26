@@ -82,19 +82,6 @@ void test_config_trajectory_generator(){
   footstep_4 = footstep_2;
 
   // Walk forward 4 steps
-  // footstep_1.position[0] += 0.15;
-  // footstep_2.position[0] += 0.25;
-
-  // footstep_3.position[0] += 0.35;
-  // footstep_4.position[0] += 0.35;
-
-
-  // footstep_1.position[0] += 0.15;
-  // footstep_2.position[0] += 0.30;
-
-  // footstep_3.position[0] += 0.45;
-  // footstep_4.position[0] += 0.45;
-
   footstep_1.position[0] += 0.20;
   footstep_2.position[0] += 0.40;
 

@@ -92,6 +92,9 @@ void ConfigTrajectoryGenerator::setVerbosityLevel(int verbosity_level_in){
 	}
 }
 
+void ConfigTrajectoryGenerator::setSolveEvenWithPartialDivergence(bool solve_with_partial_divergence_in){
+	solve_with_partial_divergence = solve_with_partial_divergence_in;
+}
 
 void ConfigTrajectoryGenerator::initializeTasks(){
 	pelvis_ori_task = std::shared_ptr<Task>(new Task3DOrientation(robot_model, "pelvis"));
@@ -115,6 +118,18 @@ void ConfigTrajectoryGenerator::initializeTasks(){
 
 }
 
+// TODO:
+// Sets the SE3 trajectories for the left and right hands
+void ConfigTrajectoryGenerator::setLeftHandTrajectory(const TrajSE3 & traj_SE3_left_hand_in){	
+}
+void ConfigTrajectoryGenerator::setRightHandTrajectory(const TrajSE3 & traj_SE3_right_hand_in){	
+}
+
+// TODO: Populates a constant right and left hand trajectories to be used. 
+void ConfigTrajectoryGenerator::setConstantRightHandTrajectory(const Eigen::Vector3d & des_pos, const Eigen::Quaterniond & des_quat){	
+}
+void ConfigTrajectoryGenerator::setConstantLeftHandTrajectory(const Eigen::Vector3d & des_pos, const Eigen::Quaterniond & des_quat){	
+}
 
 void ConfigTrajectoryGenerator::setUseRightHand(bool use_right_hand_in){
 	use_right_hand = use_right_hand_in;	
@@ -347,8 +362,11 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 	// wpg.construct_trajectories(input_footstep_list, initial_left_footstance, initial_right_footsance, initial_com, initial_pelvis_ori)
 	wpg.construct_trajectories(input_footstep_list, tmp_left_foot, tmp_right_foot, tmp_com_pos, tmp_pelvis_ori);
 
-	// Set the dt of the configuration to the dt of the CoM. Which is set by the object wpg.
+	// Set the dt of the configuration and internal trajectory containers to the dt of the CoM. Which is set by the object wpg.
 	traj_q_config.set_dt( wpg.traj_pos_com.get_dt() );
+	traj_SE3_left_hand.set_dt( wpg.traj_pos_com.get_dt() );
+	traj_SE3_right_hand.set_dt( wpg.traj_pos_com.get_dt() );
+
 
 	// Prepare IK solver
     int solve_result;
@@ -358,9 +376,12 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
     bool primary_task_convergence = false;
     int ik_verbosity_level = verbosity_level >= CONFIG_TRAJECTORY_VERBOSITY_LEVEL_3 ? IK_VERBOSITY_HIGH : IK_VERBOSITY_LOW;
 
+    // Set IK Module descent and convergence options
     ik_module.setSequentialDescent(false);
     ik_module.setReturnWhenFirstTaskConverges(true);
     ik_module.setEnableInertiaWeighting(true);
+
+    // Set Verbosity Level
     ik_module.setVerbosityLevel(ik_verbosity_level);
 
     // Reset max_ik_error
@@ -388,8 +409,7 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 		}
 		if (use_left_hand){
 			traj_SE3_left_hand.get_pos(i, tmp_lhand_pos, tmp_lhand_ori);
-			traj_SE3_right_hand.get_pos(i, tmp_lhand_pos, tmp_lhand_ori);
-			rhand_task->setReference(tmp_lhand_pos, tmp_lhand_ori);
+			lhand_task->setReference(tmp_lhand_pos, tmp_lhand_ori);
 		}
 
 		// Get walking trajectory references
@@ -422,8 +442,8 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 			ik_module.printSolutionResults();
 		}
 
-		// If converged
-		if (primary_task_convergence){
+		// If converged or continue solving with partial error divergence
+		if ((primary_task_convergence) || (solve_with_partial_divergence)){
 			q_current = q_sol;
 			traj_q_config.set_pos(i, q_current);
 			continue;
