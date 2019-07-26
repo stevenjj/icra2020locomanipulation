@@ -56,7 +56,8 @@ SET (DATA_TYPES_SOURCES
 
 
 SET (WALKING_SOURCES
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/walking/walking_pattern_generator.cpp)
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/walking/walking_pattern_generator.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/walking/config_trajectory_generator.cpp)
 
 SET (HELPER_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/hermite_curve.cpp
