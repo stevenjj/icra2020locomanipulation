@@ -71,16 +71,20 @@ void test_hand_in_place_config_trajectory_generator(){
   // In place step test with keeping the hand in place
   // Create footsteps in place
   Footstep footstep_1; footstep_1.setLeftSide();
+  Footstep footstep_2; footstep_2.setRightSide();
+
   valkyrie_model->getFrameWorldPose("leftCOP_Frame", footstep_1.position, footstep_1.orientation);  
-  std::vector<Footstep> input_footstep_list = {footstep_1};
+  valkyrie_model->getFrameWorldPose("rightCOP_Frame", footstep_2.position, footstep_2.orientation);  
+  std::vector<Footstep> input_footstep_list = {footstep_1, footstep_2};
 
   // Get current hand pose
   Eigen::Vector3d rhand_pos;
   Eigen::Quaterniond rhand_ori;
   valkyrie_model->getFrameWorldPose("rightPalm", rhand_pos, rhand_ori);  
-  // Set Constant Right Hand trajectory to current
+  // Set Constant Right Hand trajectory to current //To do. set task gain for hand to be small in orientation
   ctg.setConstantRightHandTrajectory(rhand_pos, rhand_ori);
   ctg.setUseRightHand(true);
+  ctg.setUseTorsoJointPosition(false);
   ctg.reinitializeTaskStack();
 
   // Have fast double support times
