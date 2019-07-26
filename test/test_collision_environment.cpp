@@ -67,6 +67,25 @@ int main(int argc, char ** argv){
   cart->q_current = cart_config;
 
   collision->add_new_object(cart, cart_config);
+
+  std::string frame = "rightPalm";
+  collision->build_object_directed_vectors(frame);
+   for(int o=0; o<collision->directed_vectors.size(); ++o){
+    std::cout << "collision->directed_vectors[o].from: " << collision->directed_vectors[o].from << std::endl;
+    std::cout << "collision->directed_vectors[o].to: " << collision->directed_vectors[o].to << std::endl;
+    std::cout << "collision->directed_vectors[o].magnitude: " << collision->directed_vectors[o].magnitude << std::endl;
+    std::cout << "collision->directed_vectors[o].direction: \n" << collision->directed_vectors[o].direction << std::endl;
+  }
+  collision->directed_vectors.clear();
+
+  collision->build_self_directed_vectors(frame);
+
+   for(int p=0; p<collision->directed_vectors.size(); ++p){
+    std::cout << "collision->directed_vectors[p].from: " << collision->directed_vectors[p].from << std::endl;
+    std::cout << "collision->directed_vectors[p].to: " << collision->directed_vectors[p].to << std::endl;
+    std::cout << "collision->directed_vectors[p].magnitude: " << collision->directed_vectors[p].magnitude << std::endl;
+    std::cout << "collision->directed_vectors[p].direction: \n" << collision->directed_vectors[p].direction << std::endl;
+  }
 	
 	// std::cout << "------ Valkyrie Model ------ " << std::endl;
  //  std::cout << valkyrie->model;	
@@ -91,12 +110,7 @@ int main(int argc, char ** argv){
  //  // 
  //  std::string frame = "rightPalm";
  //  collision->build_object_directed_vectors(frame);
- //  for(int o=0; o<collision->directed_vectors.size(); ++o){
- //    std::cout << "collision->directed_vectors[o].from: " << collision->directed_vectors[o].from << std::endl;
- //    std::cout << "collision->directed_vectors[o].to: " << collision->directed_vectors[o].to << std::endl;
- //    std::cout << "collision->directed_vectors[o].magnitude: " << collision->directed_vectors[o].magnitude << std::endl;
- //    std::cout << "collision->directed_vectors[o].direction: \n" << collision->directed_vectors[o].direction << std::endl;
- //  }
+ 
  //  // collision->self_collision_dx();
 
  //  // collision->directed_vectors.clear();

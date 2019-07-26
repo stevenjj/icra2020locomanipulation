@@ -57,11 +57,7 @@ private:
   // Input: name of two collision bodies
   void get_dvector_collision_links(const std::string & from_name, const std::string & to_name);
 
-  // same as the function get_dvector_collision_links, except it is used for instances of collision
-  //  between the robot and the environmental object, hence we must use the appended RobotModel
-  void get_dvector_collision_links_appended(std::shared_ptr<RobotModel> & appended, const std::string & from_name, const std::string & to_name);
-
-
+  
   std::vector<std::string> get_object_links();
 
 public:
@@ -90,14 +86,9 @@ public:
 
   // The vector of directed vectors and related information
   std::vector<DirectedVectors>  directed_vectors;
-  
 
-  // // Constructor fills the local data for valkyrie, object RobotModels
-  // // Inputs: RobotModel valkyrie
-  // //         RobotModel environmental_object
-  // CollisionEnvironment(std::shared_ptr<RobotModel> & val, std::shared_ptr<RobotModel> & obj);
-
-  // Constructor for only valkyrie model
+  // Constructor initializes appended model to be val
+  // Input: - valkyrie RobotModel
   CollisionEnvironment(std::shared_ptr<RobotModel> & val);
 
 
@@ -107,13 +98,13 @@ public:
   // Inputs: - List of collision object names, with the first being used as the "to" object
   //         - (Empty) map from names of "from" collision links to the nearest point on those objects
   //         - (Empty) map from names of "from"collision links to nearest points on the "to" objects
-  void find_self_near_points(std::string & to_link, const std::vector<std::string>  & list, std::map<std::string, Eigen::Vector3d> & from_near_points, std::map<std::string, Eigen::Vector3d> & to_near_points);
+  void find_near_points(std::string & interest_link, const std::vector<std::string>  & list, std::map<std::string, Eigen::Vector3d> & from_near_points, std::map<std::string, Eigen::Vector3d> & to_near_points);
 
 
-  // Inputs: - List of collision object names, with the first being used as the "to" object
-  //         - (Empty) map from names of "from" collision links to the nearest point on those objects
-  //         - (Empty) map from names of "from"collision links to nearest points on the "to" objects
-  void find_object_near_points(std::string & from_link, std::shared_ptr<RobotModel> & appended, std::vector<std::string> & list, std::map<std::string, Eigen::Vector3d> & from_near_points, std::map<std::string, Eigen::Vector3d> & to_near_points);
+  // // Inputs: - List of collision object names, with the first being used as the "to" object
+  // //         - (Empty) map from names of "from" collision links to the nearest point on those objects
+  // //         - (Empty) map from names of "from"collision links to nearest points on the "to" objects
+  // void find_object_near_points(std::string & from_link, std::shared_ptr<RobotModel> & appended, std::vector<std::string> & list, std::map<std::string, Eigen::Vector3d> & from_near_points, std::map<std::string, Eigen::Vector3d> & to_near_points);
 
 
   // Given a frame name from a task it will build the directed vectors to that link
