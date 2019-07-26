@@ -39,7 +39,7 @@ void Footstep::setLeftSide(){
 
 void Footstep::common_initialization(){
 	R_ori = orientation.toRotationMatrix();	
-  std::cout << "[Footstep] Data Object constructed" << std::endl;
+  // std::cout << "[Footstep] Data Object constructed" << std::endl;
 }
 
 void Footstep::printInfo(){

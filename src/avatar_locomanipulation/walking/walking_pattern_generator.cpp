@@ -303,11 +303,11 @@ void WalkingPatternGenerator::compute_trajectory_lists(){
   int N_swing = int(t_ss/dt);
   int N_DS = int(t_ds/dt);
 
-  std::cout << "t_trajectory = " << t_trajectory << std::endl;
-  std::cout << "dt = " << dt << std::endl;
-  std::cout << "N_size = " << N_size << std::endl;
-  std::cout << "N_swing = " << N_swing << std::endl;
-  std::cout << "N_DS = " << N_DS << std::endl;
+  // std::cout << "t_trajectory = " << t_trajectory << std::endl;
+  // std::cout << "dt = " << dt << std::endl;
+  // std::cout << "N_size = " << N_size << std::endl;
+  // std::cout << "N_swing = " << N_swing << std::endl;
+  // std::cout << "N_DS = " << N_DS << std::endl;
 
   for(int i = 0; i < rvrp_type_list.size(); i++){
     // If it's a swing, there is always a double support phase except for the last step
@@ -368,7 +368,7 @@ void WalkingPatternGenerator::compute_com_dcm_trajectory(const Eigen::Vector3d &
       t_step = get_t_step(step_index);        
     }
 
-    std::cout << com_pos.transpose() << std::endl;
+    // std::cout << com_pos.transpose() << std::endl;
     // Store the CoM position
     traj_pos_com.set_pos(i, com_pos);
     traj_dcm_pos.set_pos(i, dcm_pos);
@@ -394,7 +394,7 @@ void WalkingPatternGenerator::compute_pelvis_orientation_trajectory(const Eigen:
   int trajectory_index = 0;
   int step_counter = 0;
 
-  std::cout << "Pelvis Ori Length = " << traj_ori_pelvis.get_trajectory_length() << std::endl;
+  // std::cout << "Pelvis Ori Length = " << traj_ori_pelvis.get_trajectory_length() << std::endl;
 
   // Go through each state and compute pelvis orientation trajectory
   for(int state_index = 0; state_index < state_list.size(); state_index++){

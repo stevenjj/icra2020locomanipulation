@@ -89,7 +89,6 @@ void ConfigTrajectoryGenerator::setVerbosityLevel(int verbosity_level_in){
 		verbosity_level = CONFIG_TRAJECTORY_VERBOSITY_LEVEL_4;
 	}else{
 		verbosity_level = verbosity_level_in;
-		std::cout << "verbosity_level_in" << verbosity_level_in << std::endl;
 	}
 }
 
