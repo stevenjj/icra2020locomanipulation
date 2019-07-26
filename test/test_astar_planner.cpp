@@ -38,7 +38,7 @@ int main(int argc, char **argv){
     // shared_ptr<FootstepNode> goal_test;
 
 
-    //shared_ptr<Node> current (std::make_shared<FootstepNode>(-4.0,5.0,1.0,1.0,0.0,0.0,"RF"));
+    shared_ptr<Node> current (std::make_shared<FootstepNode>(1.0,1.0,1.0,-1.0,-M_PI,M_PI/4,false));
     // current_test = std::static_pointer_cast<FootstepNode>(current);
     // current_test->turn = true;
     // current_test_node = static_pointer_cast<Node>(current_test);
@@ -60,10 +60,23 @@ int main(int argc, char **argv){
     // cout << "node has parameters: " << " xLF: " << test1->xLF << " yLF: " << test1->yLF << " xRF: " << test1->xRF << " yRF: " << test1->yRF << " thetaLF: " << test1->thetaLF << " thetaRF: " << test1->thetaRF << endl;
     // cout << "node has key: " << test1->key << endl;
 
-    //footstepplanner.getNeighbors(current);
+    footstepplanner.getNeighbors(current);
 
-    shared_ptr<Node> begin_footstep (std::make_shared<FootstepNode>(1.0,1.0,1.0,-1.0,M_PI/8,M_PI/8,"LF"));
-    shared_ptr<Node> goal_footstep (std::make_shared<FootstepNode>(10.0,-10.0,10.0,-8.0,-M_PI/4,-M_PI/8,"RF"));
+    // shared_ptr<Node> begin_footstep (std::make_shared<FootstepNode>(1.0,1.0,1.0,-1.0,M_PI/8,M_PI/8,true));
+    // shared_ptr<Node> goal_footstep (std::make_shared<FootstepNode>(7.0,-7.0,7.0,-9.0,-M_PI/4,-M_PI/8,false));
+
+    double lfx_i = 1.0;
+    double lfy_i = 1.0;
+    double rfx_i = 1.0;
+    double rfy_i = -1.0;
+
+    shared_ptr<Node> begin_footstep (std::make_shared<FootstepNode>(lfx_i ,lfy_i, rfx_i, rfy_i, -M_PI/4, -M_PI/4,true));
+    double lfx_g = 20.0;
+    double lfy_g = 20.0;
+    double rfx_g = 20.0;
+    double rfy_g = 18.0;
+    // shared_ptr<Node> goal_footstep (std::make_shared<FootstepNode>(lfx_g, lfy_g, rfx_g, rfy_g, -M_PI/4.0, -M_PI/4.0,false));
+    shared_ptr<Node> goal_footstep (std::make_shared<FootstepNode>(lfx_g, lfy_g, rfx_g, rfy_g, 0.0, 0.0,false));
 
     footstepplanner.setStartNode(begin_footstep);
     footstepplanner.setGoalNode(goal_footstep);

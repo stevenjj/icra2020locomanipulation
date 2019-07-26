@@ -204,7 +204,7 @@ namespace planner{
 	FootstepNode::~FootstepNode(){		
 	}
 
-	FootstepNode::FootstepNode(const double xLF_in,const double yLF_in,const double xRF_in,const double yRF_in,const double thetaLF_in, const double thetaRF_in, string turn_in){
+	FootstepNode::FootstepNode(const double xLF_in,const double yLF_in,const double xRF_in,const double yRF_in,const double thetaLF_in, const double thetaRF_in, bool turn_in){
 		commonInitializationFootstep();
 		xLF = xLF_in;
 		yLF = yLF_in;
@@ -216,7 +216,7 @@ namespace planner{
 
 		turn = turn_in;
 
-		key = (to_string(xLF) + "_" + to_string(yLF) + "_" + to_string(xRF) + "_" + to_string(yRF) + "_" + to_string(thetaLF) + "_" + to_string(thetaRF) + "_" + turn);	
+		key = (to_string(xLF) + "_" + to_string(yLF) + "_" + to_string(xRF) + "_" + to_string(yRF) + "_" + to_string(thetaLF) + "_" + to_string(thetaRF) + "_" + to_string(turn));	
 	}
 
 	void FootstepNode::commonInitializationFootstep(){
@@ -232,7 +232,7 @@ namespace planner{
 		f_score = 100000;
 
 
-		key = (to_string(xLF) + "_" + to_string(yLF) + "_" + to_string(xRF) + "_" + to_string(yRF) + "_" + to_string(thetaLF) + "_" + to_string(thetaRF) + "_" + turn);	
+		key = (to_string(xLF) + "_" + to_string(yLF) + "_" + to_string(xRF) + "_" + to_string(yRF) + "_" + to_string(thetaLF) + "_" + to_string(thetaRF) + "_" + to_string(turn));	
 	}
 
 	FootstepPlanner::FootstepPlanner(){	
@@ -266,7 +266,7 @@ namespace planner{
 		midpt_curr_theta = (current_->thetaLF + current_->thetaRF)/2;
 		midpt_neigh_theta = (neighbor_->thetaLF + neighbor_->thetaRF)/2;
 
-		double theta_err = abs(midpt_neigh_theta - midpt_curr_theta);
+		//double theta_err = abs(midpt_neigh_theta - midpt_curr_theta);
 
 		
 		//distance = sqrt(pow(neighbor_->xLF - goal_->xLF,2) + pow(neighbor_->yLF - goal_->yLF,2));
@@ -276,7 +276,12 @@ namespace planner{
 		// else if (current_->turn == "RF"){
 		// 	distance = sqrt(pow(current_->xLF - neighbor_->xRF,2) + pow(current_->yLF - neighbor_->yRF,2));
 		// }
-		distance = sqrt(pow(midpt_curr_x - midpt_neigh_x,2) + pow(midpt_curr_y - midpt_neigh_y,2)) + theta_err;
+
+		double left_foot_transition_cost = sqrt(pow(current_->xLF - neighbor_->xLF,2) + pow(current_->yLF - neighbor_->yLF,2)); //+ pow(current_->thetaLF - neighbor_->thetaLF,2));
+		double right_foot_transition_cost = sqrt(pow(current_->xRF - neighbor_->xRF,2) + pow(current_->yRF - neighbor_->yRF,2)); //+ pow(current_->thetaRF - neighbor_->thetaRF,2));
+		distance = left_foot_transition_cost + right_foot_transition_cost;
+
+		// distance = sqrt(pow(midpt_curr_x - midpt_neigh_x,2) + pow(midpt_curr_y - midpt_neigh_y,2) + pow(midpt_neigh_theta - midpt_curr_theta,2));
 		return distance;
 	}
 
@@ -304,7 +309,8 @@ namespace planner{
 		midpt_neigh_theta = (neighbor_->thetaLF + neighbor_->thetaRF)/2;
 		midpt_goal_theta = (goal_->thetaLF + goal_->thetaRF)/2;
 
-		double theta_err = abs(midpt_goal_theta - midpt_neigh_theta);
+		double theta_midpt_err = sqrt(pow(midpt_goal_theta - midpt_neigh_theta,2));
+
 
 		
 		//distance = sqrt(pow(neighbor_->xLF - goal_->xLF,2) + pow(neighbor_->yLF - goal_->yLF,2));
@@ -312,7 +318,15 @@ namespace planner{
 		// // else{
 		// distance2 = sqrt(pow(neighbor_->xRF - goal_->xRF,2) + pow(neighbor_->yRF - goal_->yRF,2));
 
-		distance = sqrt(pow(midpt_neigh_x - midpt_goal_x,2) + pow(midpt_neigh_y - midpt_goal_y,2)) + theta_err;
+		//double left_foot_cost = sqrt(pow(goal_->xLF - neighbor_->xLF,2) + pow(goal_->yLF - neighbor_->yLF,2) + 0.01*pow(goal_->thetaLF - neighbor_->thetaLF,2));
+		//double right_foot_cost = sqrt(pow(goal_->xRF - neighbor_->xRF,2) + pow(goal_->yRF - neighbor_->yRF,2) + 0.01*pow(goal_->thetaRF - neighbor_->thetaRF,2));
+		// double thetaLF_err = sqrt(pow(goal_->thetaLF - neighbor_->thetaLF,2));
+		// double thetaRF_err = sqrt(pow(goal_->thetaLF - neighbor_->thetaLF,2));
+		double left_foot_cost = sqrt(pow(goal_->xLF - neighbor_->xLF,2) + pow(goal_->yLF - neighbor_->yLF,2) + pow(goal_->thetaLF - neighbor_->thetaLF,2));
+		double right_foot_cost = sqrt(pow(goal_->xRF - neighbor_->xRF,2) + pow(goal_->yRF - neighbor_->yRF,2) + pow(goal_->thetaRF - neighbor_->thetaRF,2));
+		distance = left_foot_cost + right_foot_cost;
+
+		// distance = sqrt(pow(midpt_neigh_x - midpt_goal_x,2) + pow(midpt_neigh_y - midpt_goal_y,2) + pow(midpt_goal_theta - midpt_neigh_theta,2));
 		// }
 
 		return distance;
@@ -325,27 +339,35 @@ namespace planner{
 
 		double midpt_curr_x;
 		double midpt_curr_y;
+		double midpt_curr_theta;
 		double midpt_goal_x;
 		double midpt_goal_y;
+		double midpt_goal_theta;
+
 		double distance;
 		// double distance1;
 		// double distance2;
 
 		midpt_curr_x = (current_->xRF + current_->xLF)/2;
 		midpt_curr_y = (current_->yRF + current_->yLF)/2;
+		midpt_curr_theta = (current_->thetaLF + current_->thetaRF)/2;	
 
 		midpt_goal_x = (goal_->xRF + goal_->xLF)/2;
 		midpt_goal_y = (goal_->yRF + goal_->yLF)/2;
-
+		midpt_goal_theta = (goal_->thetaLF + goal_->thetaRF)/2;
 		
 		//distance = sqrt(pow(neighbor_->xLF - goal_->xLF,2) + pow(neighbor_->yLF - goal_->yLF,2));
 		// // }
 		// // else{
 		// distance2 = sqrt(pow(neighbor_->xRF - goal_->xRF,2) + pow(neighbor_->yRF - goal_->yRF,2));
 
-		distance = sqrt(pow(midpt_curr_x - midpt_goal_x,2) + pow(midpt_curr_y - midpt_goal_y,2));
+		double left_foot_cost = sqrt(pow(goal_->xLF - current_->xLF,2) + pow(goal_->yLF - current_->yLF,2) + pow(goal_->thetaLF - current_->thetaLF,2));
+		double right_foot_cost = sqrt(pow(goal_->xRF - current_->xRF,2) + pow(goal_->yRF - current_->yRF,2) + pow(goal_->thetaRF - current_->thetaRF,2));
+		//distance = left_foot_cost; //+ right_foot_cost;
 
-		if (distance < 0.1){
+		//distance = sqrt(pow(midpt_curr_x - midpt_goal_x,2) + pow(midpt_curr_y - midpt_goal_y,2) + pow(midpt_curr_theta - midpt_goal_theta,2));
+
+		if (left_foot_cost < 1.0 or right_foot_cost < 1.0){
 		//if (abs(current_->xLF - goal_->xLF) < 1.1 && abs(current_->yLF - goal_->yLF) < 1.1 ){
 			return true;
 		}
@@ -386,9 +408,9 @@ namespace planner{
 		
 
 		//define discritization
-		double x_df = 1.0;
-		double y_df = 1.0;
-		double theta_df = M_PI/8;
+		double x_df = 0.5;
+		double y_df = 0.5;
+		double theta_df = M_PI/4.0; //M_PI/8;
 		//define min and max distances
 		double mindist_y = 1.0;
 		double maxdist_y = 3.0;
@@ -401,18 +423,25 @@ namespace planner{
 
 		// current_->thetaRF = -M_PI/8;
 		//define transform matrix
-		Eigen::Matrix4d transform(4,4);
-		if (current_->turn == "LF"){
-			transform << cos(current_->thetaRF), -sin(current_->thetaRF), 0, current_->xRF,
-						sin(current_->thetaRF), cos(current_->thetaRF), 0, current_->yRF,
-						0, 0, 1, current_->thetaRF,
-						0, 0, 0, 1;
+		Eigen::Matrix3d transform(3,3);
+		if (current_->turn == true){
+			// transform << cos(current_->thetaRF), -sin(current_->thetaRF), 0, current_->xRF,
+			// 			sin(current_->thetaRF), cos(current_->thetaRF), 0, current_->yRF,
+			// 			0, 0, 1, current_->thetaRF,
+			// 			0, 0, 0, 1;
+			transform << cos(current_->thetaRF), -sin(current_->thetaRF), current_->xRF,
+					sin(current_->thetaRF), cos(current_->thetaRF), current_->yRF,
+					0, 0, 1;
 		}
-		else if (current_->turn == "RF"){
-			transform << cos(current_->thetaLF), -sin(current_->thetaLF), 0, current_->xLF,
-						sin(current_->thetaLF), cos(current_->thetaLF), 0, current_->yLF,
-						0, 0, 1, current_->thetaLF,
-						0, 0, 0, 1;
+		else if (current_->turn == false){
+			// transform << cos(current_->thetaLF), -sin(current_->thetaLF), 0, current_->xLF,
+			// 			sin(current_->thetaLF), cos(current_->thetaLF), 0, current_->yLF,
+			// 			0, 0, 1, current_->thetaLF,
+			// 			0, 0, 0, 1;
+			transform << cos(current_->thetaLF), -sin(current_->thetaLF), current_->xLF,
+					sin(current_->thetaLF), cos(current_->thetaLF), current_->yLF,
+			 		0, 0, 1;
+			
 		}
 
 		//number of points in vector
@@ -427,12 +456,12 @@ namespace planner{
 
 		
 
-		if (current_->turn == "LF"){
+		if (current_->turn == true){
 			for (size_t i(0);i < ind_y ;i++){
 				y_vals.push_back(mindist_y + i*y_df);
 			}
 		}
-		else if (current_->turn == "RF"){
+		else if (current_->turn == false){
 			for (size_t i(0);i < ind_y ;i++){
 				y_vals.push_back(-mindist_y - i*y_df);
 			}
@@ -451,30 +480,61 @@ namespace planner{
 		for (size_t m(0);m < x_vals.size();m++){
 			for (size_t n(0);n < y_vals.size();n++){
 				for (size_t l(0);l < theta_vals.size();l++){
-					Eigen::Vector4d coord_Fframe(x_vals[m],y_vals[n],theta_vals[l],1);
+					//Eigen::Vector4d coord_Fframe(x_vals[m],y_vals[n],theta_vals[l],1);
+					Eigen::Vector3d coord_Fframe(x_vals[m],y_vals[n],1);
 					vector<double> x_y_test;
 					x_y_test.push_back(coord_Fframe[0]);
 					x_y_test.push_back(coord_Fframe[1]);
-					x_y_test.push_back(coord_Fframe[2]);
+					//x_y_test.push_back(coord_Fframe[2]);
+					x_y_test.push_back(theta_vals[l]);
 					saveVector(x_y_test,"x_y_test");
 		
-					Eigen::Vector4d coord_Oframe = transform*coord_Fframe;
+					//Eigen::Vector4d coord_Oframe = transform*coord_Fframe;
+					Eigen::Vector3d coord_Oframe = transform*coord_Fframe;
 					vector<double> x_y_theta_coord;
 					x_y_theta_coord.push_back(coord_Oframe[0]);
 					x_y_theta_coord.push_back(coord_Oframe[1]);
-					x_y_theta_coord.push_back(coord_Oframe[2]);
+					//x_y_theta_coord.push_back(coord_Oframe[2]);
+					if (current_->turn == true){
+						x_y_theta_coord.push_back(current_->thetaRF + theta_vals[l]);
+					}
+					else{
+						x_y_theta_coord.push_back(current_->thetaLF + theta_vals[l]);
+					}
 					saveVector(x_y_theta_coord,"test_coords");
 				
-					if (current_->turn == "LF"){
-						shared_ptr<Node> neighbor (std::make_shared<FootstepNode>(coord_Oframe[0],coord_Oframe[1],current_->xRF,current_->yRF,coord_Oframe[2],current_->thetaRF,"RF"));
+					if (current_->turn == true){
+						//shared_ptr<Node> neighbor (std::make_shared<FootstepNode>(coord_Oframe[0],coord_Oframe[1],current_->xRF,current_->yRF,coord_Oframe[2],current_->thetaRF,false));
+						double theta_node;
+						if (current_->thetaRF + theta_vals[l] > M_PI){
+							theta_node = current_->thetaRF + theta_vals[l] - 2*M_PI;
+						}
+						else if (current_->thetaRF + theta_vals[l] < -M_PI){
+							theta_node = current_->thetaRF + theta_vals[l] + 2*M_PI;
+						}
+						else{
+							theta_node = current_->thetaRF + theta_vals[l];
+						}
+						shared_ptr<Node> neighbor (std::make_shared<FootstepNode>(coord_Oframe[0],coord_Oframe[1],current_->xRF,current_->yRF,theta_node,current_->thetaRF,false));
 						shared_ptr<FootstepNode> neighbor_change;
 						neighbor_change = static_pointer_cast<FootstepNode>(neighbor);
 						neighbor_change->parent = current;
 						neighbor = static_pointer_cast<Node>(neighbor_change);
 						neighbors.push_back(neighbor);
 					}
-					else if (current_->turn == "RF"){
-						shared_ptr<Node> neighbor (std::make_shared<FootstepNode>(current_->xLF,current_->yLF,coord_Oframe[0],coord_Oframe[1],current_->thetaLF,coord_Oframe[2],"LF"));
+					else if (current_->turn == false){
+						//shared_ptr<Node> neighbor (std::make_shared<FootstepNode>(current_->xLF,current_->yLF,coord_Oframe[0],coord_Oframe[1],current_->thetaLF,coord_Oframe[2],true));
+						double theta_node;
+						if (current_->thetaLF + theta_vals[l] > M_PI){
+							theta_node = current_->thetaLF + theta_vals[l] - 2*M_PI;
+						}
+						else if (current_->thetaLF + theta_vals[l] < -M_PI){
+							theta_node = current_->thetaLF + theta_vals[l] + 2*M_PI;
+						}
+						else{
+							theta_node = current_->thetaLF + theta_vals[l];
+						}
+						shared_ptr<Node> neighbor (std::make_shared<FootstepNode>(current_->xLF,current_->yLF,coord_Oframe[0],coord_Oframe[1],current_->thetaLF,theta_node,true));
 						shared_ptr<FootstepNode> neighbor_change;
 						neighbor_change = static_pointer_cast<FootstepNode>(neighbor);
 						neighbor_change->parent = current;
@@ -490,14 +550,15 @@ namespace planner{
 		// for (size_t s(0);s < neighbors.size();s++){
 		// 	shared_ptr<FootstepNode> neighbor_test_;
 		// 	neighbor_test_ = static_pointer_cast<FootstepNode>(neighbors[s]);
-		// 	vector<double> debug_coords;
-		// 	debug_coords.push_back(neighbor_test_->xLF);
-		// 	debug_coords.push_back(neighbor_test_->yLF);
-		// 	debug_coords.push_back(neighbor_test_->xRF);
-		// 	debug_coords.push_back(neighbor_test_->yRF);
-		// 	saveVector(debug_coords,"debug_coords"); 
+		// 	// vector<double> debug_coords;
+		// 	// debug_coords.push_back(neighbor_test_->xLF);
+		// 	// debug_coords.push_back(neighbor_test_->yLF);
+		// 	// debug_coords.push_back(neighbor_test_->xRF);
+		// 	// debug_coords.push_back(neighbor_test_->yRF);
+		// 	// saveVector(debug_coords,"debug_coords"); 
+		// 	cout << "node theta vals: " << neighbor_test_->thetaLF << "," << neighbor_test_->thetaRF << endl;
 		// }
-		//cout << "size of neighbors: " << neighbors.size() << endl;
+		// cout << "size of neighbors: " << neighbors.size() << endl;
 		return neighbors;
 	}
 
@@ -586,9 +647,9 @@ namespace planner{
 		
 		OpenSet.push_back(begin); //append starting node to open set
 
-		
+		int f = 0;
 		while (!OpenSet.empty()){
-
+			if (f < 10000){
 				//sort the open set
 				// cout << "size of open set: " << OpenSet.size() << endl;
 				// cout << "size of explored set: " << ExploredSet.size() << endl;
@@ -598,11 +659,14 @@ namespace planner{
 				std::shared_ptr<FootstepNode> current_;
 				current_node = OpenSet[0];
 				current_ = std::static_pointer_cast<FootstepNode>(current_node);
+				cout << "node: " << f << endl;
 				cout << "current node f score: " << current_node->f_score << endl;
-				cout << "current node key: " << current_->key << endl;
-				cout << "xLF: " << current_->xLF << "yLF: " << current_->yLF << "xRF: " << current_->xRF << "yRF: " << current_->yRF << endl;
-				cout << "size of open set: " << OpenSet.size() << endl;
-				cout << "turn of current: " << current_-> turn << endl;
+				//cout << "current node key: " << current_->key << endl;
+				cout << "xLF: " << current_->xLF << " yLF: " << current_->yLF << " xRF: " << current_->xRF << " yRF: " << current_->yRF << " thetaLF: " << current_->thetaLF << " thetaRF: " << current_->thetaRF << endl;
+				//cout << "size of open set: " << OpenSet.size() << endl;
+				cout << endl;
+				cout << endl;
+				//cout << "turn of current: " << current_-> turn << endl;
 
 				//is current node = goal node?
 				if (goalReached(current_node, goal) == true){
@@ -670,7 +734,8 @@ namespace planner{
 						}
 					}
 				}
-			
+				f++;
+			}
 
 		}
 		cout << "did not find a path" << endl;
