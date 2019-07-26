@@ -82,6 +82,16 @@ void ConfigTrajectoryGenerator::setCurrentConfig(const Eigen::VectorXd & q_curre
 	ik_module.setInitialConfig(q_current);
 }
 
+void ConfigTrajectoryGenerator::setVerbosityLevel(int verbosity_level_in){
+	if (verbosity_level_in <= CONFIG_TRAJECTORY_VERBOSITY_LEVEL_0){
+		verbosity_level = CONFIG_TRAJECTORY_VERBOSITY_LEVEL_0;
+	}else if (verbosity_level_in >= CONFIG_TRAJECTORY_VERBOSITY_LEVEL_4){
+		verbosity_level = CONFIG_TRAJECTORY_VERBOSITY_LEVEL_4;
+	}else{
+		verbosity_level = verbosity_level_in;
+		std::cout << "verbosity_level_in" << verbosity_level_in << std::endl;
+	}
+}
 
 
 void ConfigTrajectoryGenerator::initializeTasks(){
@@ -270,6 +280,22 @@ bool ConfigTrajectoryGenerator::computeInitialConfigForFlatGround(const Eigen::V
 
 }
 
+
+void ConfigTrajectoryGenerator::printIntermediateIKTrajectoryresult(int & index, bool & primary_task_converge_result, double & total_error_norm, std::vector<double> & task_error_norms){
+	if (index == 0){
+		std::cout << "Trajectory index | First task convergence result | total error norm | task error norms " << std::endl;	
+	}
+	std::cout << index << " | " << (primary_task_converge_result ? "True" : "False") << " | " << total_error_norm << " | ";
+
+	for(int i = 0; i < task_error_norms.size(); i++){
+		std::cout << task_error_norms[i] << " ";
+	}
+	std::cout << std::endl;
+
+}
+
+
+
 // Given an initial configuration and footstep data list input, compute the task space walking trajectory.
 // Warning: If hand tasks are enabled, they need to have been set already.
 bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::VectorXd & q_init, const std::vector<Footstep> & input_footstep_list){
@@ -302,14 +328,16 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 
 	// Prepare IK solver
     int solve_result;
-    double total_error_norm;
     std::vector<double> task_error_norms;
+    double total_error_norm;
     Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(robot_model->getDimQdot());	
     bool primary_task_convergence = false;
+    int ik_verbosity_level = verbosity_level >= CONFIG_TRAJECTORY_VERBOSITY_LEVEL_3 ? IK_VERBOSITY_HIGH : IK_VERBOSITY_LOW;
 
     ik_module.setSequentialDescent(false);
     ik_module.setReturnWhenFirstTaskConverges(true);
     ik_module.setEnableInertiaWeighting(true);
+    ik_module.setVerbosityLevel(ik_verbosity_level);
 
 	// for loop. set references. check for convergence.
 	for(int i = 0; i < N_size; i++){
@@ -347,7 +375,14 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 
 		// Compute IK
 		primary_task_convergence = ik_module.solveIK(solve_result, task_error_norms, total_error_norm, q_sol);
-		ik_module.printSolutionResults();
+
+		if (verbosity_level >= CONFIG_TRAJECTORY_VERBOSITY_LEVEL_2){
+			printIntermediateIKTrajectoryresult(i, primary_task_convergence, total_error_norm, task_error_norms);	
+		} 
+
+		if (verbosity_level >= CONFIG_TRAJECTORY_VERBOSITY_LEVEL_4){
+			ik_module.printSolutionResults();
+		}
 
 		// If converged
 		if (primary_task_convergence){

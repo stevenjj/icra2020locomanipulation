@@ -291,15 +291,10 @@ bool IKModule::solveIK(int & solve_result, double & total_error_norm_out, Eigen:
       robot_model->updateFullKinematics(q_current);
       if (verbosity_level == IK_VERBOSITY_HIGH){
         printTaskErrorsHeader();
-        std::cout << "Major Iter " << i << ": ";        
+        std::cout << "  Starting Errors " << i << ": ";      
       }
       computeTaskErrors();
-    }else{
-      if (verbosity_level == IK_VERBOSITY_HIGH){
-        std::cout << "Major Iter " << i << ": " << std::endl;      
-      } 
     }
-
 
     // Check task convergence in order of priority
     f_q = 0;
@@ -333,6 +328,11 @@ bool IKModule::solveIK(int & solve_result, double & total_error_norm_out, Eigen:
     // Start Gradient Descent with backtracking
     k_step = 1.0;
     int minor_iter_count = 0;
+
+    if (verbosity_level == IK_VERBOSITY_HIGH){
+      std::cout << "  IK Major Iter " << i << ": ";      
+    } 
+
     while(true){
       // Forward integrate with the computed dq
       robot_model->forwardIntegrate(q_current, k_step*dq_tot, q_step);
@@ -341,8 +341,8 @@ bool IKModule::solveIK(int & solve_result, double & total_error_norm_out, Eigen:
       // Update the robot model
       robot_model->updateFullKinematics(q_step);
 
-      if (verbosity_level == IK_VERBOSITY_HIGH){
-        std::cout << "  Minor Iter " << minor_iter_count << ": ";        
+      if  ((minor_iter_count > 0) && (verbosity_level == IK_VERBOSITY_HIGH)){
+        std::cout << "    IK Minor Iter " << minor_iter_count << ": ";        
       } 
       // Compute errors for this configuration change proposal
       computeTaskErrors();
@@ -354,6 +354,10 @@ bool IKModule::solveIK(int & solve_result, double & total_error_norm_out, Eigen:
         total_error_norm_out = total_error_norm;
         q_sol = q_current;
         q_sol_ = q_current;
+        if (verbosity_level == IK_VERBOSITY_HIGH){
+          std::cout << "  Final Error Norm: ";
+          printTaskErrors();
+        }
         return checkFirstTaskConvergence();
       }
 
@@ -375,6 +379,10 @@ bool IKModule::solveIK(int & solve_result, double & total_error_norm_out, Eigen:
         q_sol = q_current;
         q_sol_ = q_current;
 
+        if (verbosity_level == IK_VERBOSITY_HIGH){
+          std::cout << "  Final Error Norm: ";
+        }
+
         // Recompute errors for the solution
         robot_model->updateFullKinematics(q_sol);
         computeTaskErrors();
@@ -390,6 +398,11 @@ bool IKModule::solveIK(int & solve_result, double & total_error_norm_out, Eigen:
         total_error_norm_out = total_error_norm;
         q_sol = q_current;
         q_sol_ = q_current;
+
+        if (verbosity_level == IK_VERBOSITY_HIGH){
+          std::cout << "  Final Error Norm: ";
+        }
+
         // Recompute errors for the solution
         robot_model->updateFullKinematics(q_sol);
         computeTaskErrors();
@@ -419,6 +432,10 @@ bool IKModule::solveIK(int & solve_result, double & total_error_norm_out, Eigen:
       total_error_norm_out = total_error_norm;
       q_sol = q_current;
       q_sol_ = q_current;
+      if (verbosity_level == IK_VERBOSITY_HIGH){
+        std::cout << "  Final Error Norm: ";
+        printTaskErrors();
+      }
       return checkFirstTaskConvergence();
     }
 
@@ -456,7 +473,8 @@ double IKModule::clampValue(const double & low, double high, const double & valu
 
 void IKModule::printSolutionResults(){
   std::cout << std::endl;
-  std::cout << "[IK Module] First Task Convergence: " << first_task_convergence << std::endl;
+  std::string convergence_result = first_task_convergence ? "True" : "False";
+  std::cout << "[IK Module] First Task Convergence: " << convergence_result << std::endl;
   if (solve_result_ == IK_OPTIMAL_SOL){
     std::cout << "[IK Module] Result: Optimal Solution" << std::endl;
   } else if (solve_result_ == IK_SUBOPTIMAL_SOL){

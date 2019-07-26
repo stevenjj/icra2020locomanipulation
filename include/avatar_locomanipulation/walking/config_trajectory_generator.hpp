@@ -15,6 +15,12 @@
 
 #include <avatar_locomanipulation/helpers/orientation_utils.hpp>
 
+#define CONFIG_TRAJECTORY_VERBOSITY_LEVEL_0 0 // No text output
+#define CONFIG_TRAJECTORY_VERBOSITY_LEVEL_1 1 // Only outputs the result of the complete trajectory
+#define CONFIG_TRAJECTORY_VERBOSITY_LEVEL_2 2 // Outputs the lower levels plus outputs the IK convergence result and error norm of each step of the trajectory
+#define CONFIG_TRAJECTORY_VERBOSITY_LEVEL_3 3 // Outputs the lower levels plus outputs the IK iterations of each step of the trajectory
+#define CONFIG_TRAJECTORY_VERBOSITY_LEVEL_4 4 // Outputs the lower levels plus outputs the final IK result summary of each step of the trajectory
+
 // This class outputs a trajectory of robot configuration q from
 //     - a starting configuration, q, and a sequence of footsteps
 // 	   - a desired hand/s pose/s trajectory, starting config, and a sequence of footsteps
@@ -57,6 +63,9 @@ public:
 	void setUseLeftHand(bool use_left_hand_in);
 	void setUseTorsoJointPosition(bool use_torso_joint_position_in);
 
+	// Sets the verbosity level from 0 to 4.
+	void setVerbosityLevel(int verbosity_level_in);
+
     // Computes an initial configuration that ensures that the robot's feet are flat on the ground.
     // and the CoM is at a height equal to the z dimension of the DCM's virtual repellant point
     // If the feet are already flat on the ground q_out is set to the input q_guess.   
@@ -72,6 +81,10 @@ public:
     // Sets the SE3 trajectories for the left and right hands
     void setLeftHandTrajectory(const TrajSE3 & traj_SE3_left_hand_in);
     void setRightHandTrajectory(const TrajSE3 & traj_SE3_right_hand_in);    
+
+    // Print Trajectory Result
+    void printIntermediateIKTrajectoryresult(int & index, bool & primary_task_converge_result, double & total_error_norm, std::vector<double> & task_error_norms);
+    void printIKTrajectoryresult();
 
     // Public Member Variables
 	std::shared_ptr<RobotModel> robot_model;
@@ -143,6 +156,8 @@ private:
 	Eigen::VectorXd tmp_neck_posture;
 	Eigen::VectorXd tmp_rarm_posture;
 	Eigen::VectorXd tmp_larm_posture;
+
+	int verbosity_level = CONFIG_TRAJECTORY_VERBOSITY_LEVEL_2;
 
 };
 

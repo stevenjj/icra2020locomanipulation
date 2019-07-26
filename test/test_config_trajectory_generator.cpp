@@ -110,6 +110,7 @@ void test_config_trajectory_generator(){
 
 
   // Solve for configurations
+  ctg.setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_2);
   ctg.computeConfigurationTrajectory(q_start, input_footstep_list);
 
   // Visualize Trajectory
