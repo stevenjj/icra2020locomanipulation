@@ -296,6 +296,7 @@ bool ConfigTrajectoryGenerator::computeInitialConfigForFlatGround(const Eigen::V
 
 void ConfigTrajectoryGenerator::printIntermediateIKTrajectoryresult(int & index, bool & primary_task_converge_result, double & total_error_norm, std::vector<double> & task_error_norms){
 	if (index == 0){
+		std::cout << "[ConfigTrajectoryGenerator]" << std::endl;
 		std::cout << "index | 1st task converged? | total error norm | task error norms " << std::endl;	
 	}
 	std::cout << index << " | " << (primary_task_converge_result ? "True" : "False") << " | " << total_error_norm << " | ";
@@ -308,7 +309,7 @@ void ConfigTrajectoryGenerator::printIntermediateIKTrajectoryresult(int & index,
 }
 
 void ConfigTrajectoryGenerator::printIKTrajectoryresult(){
-	std::cout << "Trajectory converged: " << (didTrajectoryConverge() ? "True" : "False") << ", max first task error norm = " << max_first_task_ik_error << std::endl;
+	std::cout << "[ConfigTrajectoryGenerator] Trajectory converged: " << (didTrajectoryConverge() ? "True" : "False") << ", max first task error norm = " << max_first_task_ik_error << std::endl;
 }
 
 
@@ -438,7 +439,7 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 	}
 
 	// Print minimal trajectory result
-	if (verbosity_level > CONFIG_TRAJECTORY_VERBOSITY_LEVEL_1){
+	if (verbosity_level >= CONFIG_TRAJECTORY_VERBOSITY_LEVEL_1){
 		printIKTrajectoryresult();		
 	}
 

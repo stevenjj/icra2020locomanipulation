@@ -101,7 +101,6 @@ void test_config_trajectory_generator(){
   footstep_3.position[0] += 0.60;
   footstep_4.position[0] += 0.60;
 
-
   // Create Footstep list
   std::vector<Footstep> input_footstep_list = {footstep_1, footstep_2, footstep_3, footstep_4};
 
@@ -111,7 +110,7 @@ void test_config_trajectory_generator(){
 
 
   // Solve for configurations
-  ctg.setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_1);
+  ctg.setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_2);
   ctg.computeConfigurationTrajectory(q_start, input_footstep_list);
 
   // Visualize Trajectory
