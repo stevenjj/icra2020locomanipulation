@@ -43,7 +43,59 @@ void initialize_config(Eigen::VectorXd & q_init, std::shared_ptr<RobotModel> & v
   q_init = q_start;
 }
 
-void test_config_trajectory_generator(){
+void test_hand_in_place_config_trajectory_generator(){
+  std::cout << "[Running Config Trajectory Generator Test] In place walking with hand constant" << std::endl;
+
+  std::cout << "[ConfigTrajectoryGenerator] Constructed" << std::endl;
+  std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
+  std::shared_ptr<RobotModel> valkyrie_model(new RobotModel(urdf_filename));
+
+  int N_resolution = 150;
+  ConfigTrajectoryGenerator ctg(valkyrie_model, N_resolution);
+
+  Eigen::VectorXd q_start, q_end;
+  initialize_config(q_start, valkyrie_model);
+
+  // Test initial configuration computation for flat ground
+  ctg.setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_1);
+  ctg.computeInitialConfigForFlatGround(q_start, q_end);
+
+  // Create visualization object
+  std::shared_ptr<ros::NodeHandle> node(std::make_shared<ros::NodeHandle>());
+  RVizVisualizer visualizer(node, valkyrie_model);  
+
+  // Update Initial
+  q_start = q_end;
+  valkyrie_model->updateFullKinematics(q_start);
+
+  // In place step test with keeping the hand in place
+  // Create footsteps in place
+  Footstep footstep_1; footstep_1.setLeftSide();
+  valkyrie_model->getFrameWorldPose("leftCOP_Frame", footstep_1.position, footstep_1.orientation);  
+  std::vector<Footstep> input_footstep_list = {footstep_1};
+
+  // Get current hand pose
+  Eigen::Vector3d rhand_pos;
+  Eigen::Quaterniond rhand_ori;
+  valkyrie_model->getFrameWorldPose("rightPalm", rhand_pos, rhand_ori);  
+  // Set Constant Right Hand trajectory to current
+  ctg.setConstantRightHandTrajectory(rhand_pos, rhand_ori);
+  ctg.setUseRightHand(true);
+  ctg.reinitializeTaskStack();
+
+  // Have fast double support times
+  ctg.wpg.setDoubleSupportTime(0.2);
+  // Set Verbosity
+  ctg.setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_2);
+  // Solve for configurations
+  ctg.computeConfigurationTrajectory(q_start, input_footstep_list);
+  // Visualize Trajectory
+  visualizer.visualizeConfigurationTrajectory(q_start, ctg.traj_q_config);
+
+
+}
+
+void test_walking_config_trajectory_generator(){
   std::cout << "[Running Config Trajectory Generator Test]" << std::endl;
 
   std::cout << "[ConfigTrajectoryGenerator] Constructed" << std::endl;
@@ -70,7 +122,7 @@ void test_config_trajectory_generator(){
   q_start = q_end;
   valkyrie_model->updateFullKinematics(q_start);
 
-  // Create footsteps in place
+  // Create footsteps
   Footstep footstep_1; footstep_1.setLeftSide();
   Footstep footstep_2; footstep_2.setRightSide();
   Footstep footstep_3; footstep_3.setLeftSide();
@@ -84,16 +136,11 @@ void test_config_trajectory_generator(){
   // Walk forward 4 steps
   footstep_1.position[0] += 0.20;
   footstep_2.position[0] += 0.40;
-
   footstep_3.position[0] += 0.60;
   footstep_4.position[0] += 0.60;
 
   // Create Footstep list
   std::vector<Footstep> input_footstep_list = {footstep_1, footstep_2, footstep_3, footstep_4};
-
-  // In place step test
-  // valkyrie_model->getFrameWorldPose("leftCOP_Frame", footstep_1.position, footstep_1.orientation);  
-  // std::vector<Footstep> input_footstep_list = {footstep_1};
 
   // Have fast double support times
   ctg.wpg.setDoubleSupportTime(0.2);
@@ -110,8 +157,8 @@ void test_config_trajectory_generator(){
 
 int main(int argc, char ** argv){   
   ros::init(argc, argv, "test_config_trajectory_generator");
-  test_config_trajectory_generator();
-
+  // test_walking_config_trajectory_generator();
+  test_hand_in_place_config_trajectory_generator();
 
   return 0;
 }

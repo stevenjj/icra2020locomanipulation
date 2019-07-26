@@ -199,7 +199,6 @@ void ConfigTrajectoryGenerator::createTaskStack(){
 	// Stack posture tasks and add it to the hierarchy if it exists
 	if (vec_posture_task_stack.size() > 0){
 		task_stack_posture_config.reset(new TaskStack(robot_model, vec_posture_task_stack));
-		starting_config_ik_module.addTasktoHierarchy(task_stack_posture_config);
 		ik_module.addTasktoHierarchy(task_stack_posture_config);		
 	}
 
