@@ -142,61 +142,6 @@ void CollisionEnvironment::find_near_points(std::string & interest_link, const s
 
 
 
-// void CollisionEnvironment::find_object_near_points(std::string & from_link, std::shared_ptr<RobotModel> & appended, std::vector<std::string> & list, std::map<std::string, Eigen::Vector3d> & from_near_points, std::map<std::string, Eigen::Vector3d> & to_near_points){
-//   // first name in the vector is the link to which we want to get near_point pairs
-//   std::string to_link_name = from_link;
-//   std::string from_link_name;
-
-//   from_near_points.clear();
-//   to_near_points.clear();
-
-//   for(int i=1; i<list.size(); ++i){
-//     // iterating thru rest of list, we get pairs with each of the other links
-//     from_link_name = list[i];
-
-//     // loop thru all of the collision pairs
-//     for(int j=0; j<appended->geomModel.collisionPairs.size(); ++j){
-//       // grab this collision pair
-//       pinocchio::CollisionPair id2 = appended->geomModel.collisionPairs[j];
-
-//       // check if pair.first and pair.second are our pair
-//       if((appended->geomModel.getGeometryName(id2.first) == to_link_name && appended->geomModel.getGeometryName(id2.second) == from_link_name)){
-        
-//         // if this is our pair, computeDistance
-//         appended->dresult = pinocchio::computeDistance(appended->geomModel, *(appended->geomData), appended->geomModel.findCollisionPair(id2));
-        
-//         // fill this map with nearest point on from object 
-//           // (i.e nearest point on link list[i] to link list[0])
-//         from_near_points[from_link_name] = appended->dresult.nearest_points[1];
-        
-//         // fill this map with nearest point on to object 
-//           // (i.e nearest point on link list[0] to link list[i])       
-//         to_near_points[from_link_name] = appended->dresult.nearest_points[0];
-//       } // First if closed
-      
-//       // check if pair.second and pair.first are our pair 
-//       //  (note that we do not know a priori which is pair.first and pair.second respectively)
-//       else if((appended->geomModel.getGeometryName(id2.first) == from_link_name && appended->geomModel.getGeometryName(id2.second) == to_link_name)){
-        
-//         // if this is our pair, computeDistance
-//         appended->dresult = pinocchio::computeDistance(appended->geomModel, *(appended->geomData), appended->geomModel.findCollisionPair(id2));
-        
-//         // fill this map with nearest point on from object 
-//           // (i.e nearest point on link list[i] to link list[0])
-//         from_near_points[from_link_name] = appended->dresult.nearest_points[0];
-        
-//         // fill this map with nearest point on to object 
-//           // (i.e nearest point on link list[0] to link list[i])
-//         to_near_points[from_link_name] = appended->dresult.nearest_points[1];
-      
-//       } // else if closed
-
-//     } // Inner for closed (i.e for this pair we have found the collisionpair and filled our map)
-
-//   } // Outer for closed (i.e we have found nearest_point pairs for every link in our input list)
-
-
-// }
 
 
 void CollisionEnvironment::build_self_directed_vectors(const std::string & frame_name){
@@ -367,6 +312,18 @@ void CollisionEnvironment::set_safety_distance_collision(double safety_dist_coll
 }
 
 
+void CollisionEnvironment::update_appended_model(Eigen::VectorXd & q_update){
+
+  for(int i=0; i<valkyrie->getDimQ(); ++i){
+    appended->q_current[i] = q_update[i];
+  }
+
+  appended->enableUpdateGeomOnKinematicsUpdate(true);
+  appended->updateFullKinematics(appended->q_current);
+}
+
+
+
 
 void CollisionEnvironment::get_dvector_collision_links(const std::string & from_name, const std::string & to_name){
   Eigen::Vector3d cur_pos_to, cur_pos_from, difference; 
@@ -391,6 +348,10 @@ void CollisionEnvironment::map_collision_names_to_frame_names(){
   collision_to_frame["rightKneeNearLink_0"] = "rightKneePitch";
   collision_to_frame["pelvis_0"] = "pelvis";
   collision_to_frame["torso_0"] = "torso";
+  collision_to_frame["torso_1"] = "torso";
+  collision_to_frame["torso_2"] = "torso";
+  collision_to_frame["torso_3"] = "torso";
+  collision_to_frame["torso_4"] = "torso";
   collision_to_frame["rightPalm_0"] = "rightPalm";
   collision_to_frame["leftPalm_0"] = "leftPalm";
   collision_to_frame["head_0"] = "head";
@@ -431,17 +392,17 @@ std::vector<std::string> CollisionEnvironment::get_object_links(){
 }
 
 void CollisionEnvironment::generalize_build_self_directed_vectors(){
-  link_to_collision_names["leftElbowNearLink_0"] = {"rightKneeNearLink_0", "leftKneeNearLink_0", "rightForearmLink_0","rightHipPitchLink_0", "rightHipUpperLink_0", "leftHipPitchLink_0", "leftHipUpperLink_0", "pelvis_0", "torso_0"};
+  link_to_collision_names["leftElbowNearLink_0"] = {"rightKneeNearLink_0", "leftKneeNearLink_0", "rightForearmLink_0","rightHipPitchLink_0", "rightHipUpperLink_0", "leftHipPitchLink_0", "leftHipUpperLink_0", "pelvis_0", "torso_0", "torso_1", "torso_2", "torso_3", "torso_4"};
   
-  link_to_collision_names["rightPalm_0"] = {"leftPalm_0", "leftElbowNearLink_0", "leftShoulderRollLink_0", "leftForearmLink_0", "rightKneeNearLink_0", "leftKneeNearLink_0", "rightHipPitchLink_0", "rightHipUpperLink_0", "leftHipPitchLink_0", "leftHipUpperLink_0", "rightKneePitchLink_0", "leftKneePitchLink_0", "head_0", "pelvis_0", "torso_0"};
+  link_to_collision_names["rightPalm_0"] = {"leftPalm_0", "leftElbowNearLink_0", "leftShoulderRollLink_0", "leftForearmLink_0", "rightKneeNearLink_0", "leftKneeNearLink_0", "rightHipPitchLink_0", "rightHipUpperLink_0", "leftHipPitchLink_0", "leftHipUpperLink_0", "rightKneePitchLink_0", "leftKneePitchLink_0", "head_0", "pelvis_0", "torso_0", "torso_1", "torso_2", "torso_3", "torso_4"};
   
-  link_to_collision_names["rightElbowNearLink_0"] = {"rightKneeNearLink_0", "leftKneeNearLink_0", "leftForearmLink_0", "rightHipPitchLink_0", "rightHipUpperLink_0", "leftHipPitchLink_0", "leftHipUpperLink_0", "pelvis_0", "torso_0"};
+  link_to_collision_names["rightElbowNearLink_0"] = {"rightKneeNearLink_0", "leftKneeNearLink_0", "leftForearmLink_0", "rightHipPitchLink_0", "rightHipUpperLink_0", "leftHipPitchLink_0", "leftHipUpperLink_0", "pelvis_0", "torso_0", "torso_1", "torso_2", "torso_3", "torso_4"};
 
   link_to_collision_names["leftKneeNearLink_0"] = {"rightKneeNearLink_0", "rightHipPitchLink_0", "rightHipUpperLink_0", "rightKneePitchLink_0"};
 
   link_to_collision_names["rightKneeNearLink_0"] = {"leftKneeNearLink_0", "leftHipPitchLink_0", "leftHipUpperLink_0", "leftKneePitchLink_0"};
 
-  link_to_collision_names["head_0"] = {"torso_0"}; 
+  link_to_collision_names["head_0"] = {"torso_0", "torso_1", "torso_2", "torso_3", "torso_4"}; 
 
   link_to_collision_names["leftPalm_0"] = {"rightPalm_0", "rightElbowNearLink_0", "rightShoulderRollLink_0", "rightForearmLink_0", "rightKneeNearLink_0", "leftKneeNearLink_0", "rightHipPitchLink_0", "rightHipUpperLink_0", "leftHipPitchLink_0", "leftHipUpperLink_0", "rightKneePitchLink_0", "leftKneePitchLink_0", "head_0", "pelvis_0", "torso_0"}; 
 }

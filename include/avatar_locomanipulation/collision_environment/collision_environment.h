@@ -95,16 +95,11 @@ public:
   ~CollisionEnvironment();
 
 
+  // Called by build_____directed_vectors, provides that function with pairs of nearest_points
   // Inputs: - List of collision object names, with the first being used as the "to" object
   //         - (Empty) map from names of "from" collision links to the nearest point on those objects
   //         - (Empty) map from names of "from"collision links to nearest points on the "to" objects
   void find_near_points(std::string & interest_link, const std::vector<std::string>  & list, std::map<std::string, Eigen::Vector3d> & from_near_points, std::map<std::string, Eigen::Vector3d> & to_near_points);
-
-
-  // // Inputs: - List of collision object names, with the first being used as the "to" object
-  // //         - (Empty) map from names of "from" collision links to the nearest point on those objects
-  // //         - (Empty) map from names of "from"collision links to nearest points on the "to" objects
-  // void find_object_near_points(std::string & from_link, std::shared_ptr<RobotModel> & appended, std::vector<std::string> & list, std::map<std::string, Eigen::Vector3d> & from_near_points, std::map<std::string, Eigen::Vector3d> & to_near_points);
 
 
   // Given a frame name from a task it will build the directed vectors to that link
@@ -129,6 +124,9 @@ public:
 
   // Sets the safety distance between links when in collision
   void set_safety_distance_collision(double safety_dist_collision_in);
+
+
+  void update_appended_model(Eigen::VectorXd & q_update);
 
 
   // // computes collision and outputs any contacts

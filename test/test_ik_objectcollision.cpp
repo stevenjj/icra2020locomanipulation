@@ -78,7 +78,7 @@ std::shared_ptr<RobotModel> initialize_config(Eigen::VectorXd & q_init, Eigen::V
   // Define the configuration of the cart
   Eigen::VectorXd cart_config;
   cart_config = Eigen::VectorXd::Zero(cart->getDimQ());
-  cart_config[0] = 0.0;  cart_config[1] = 0.0;  cart_config[2] = -0.2;
+  cart_config[0] = 0.0;  cart_config[1] = 0.0;  cart_config[2] = -0.05;
   double theta1 = 0;//M_PI/4.0;	
   Eigen::AngleAxis<double> bb(theta1, Eigen::Vector3d(0.0, 0.0, 1.0)); // yaw pi/4 to the left	
   Eigen::Quaternion<double> quat_init; quat_init =  bb;
@@ -114,8 +114,9 @@ void testIK_module(){
   cart->enableUpdateGeomOnKinematicsUpdate(true);
   cart->updateFullKinematics(cart_init);
 
-  std::shared_ptr<CollisionEnvironment> collision(new CollisionEnvironment(ik_module.robot_model, cart) );
+  std::shared_ptr<CollisionEnvironment> collision(new CollisionEnvironment(ik_module.robot_model) );
 
+  collision->add_new_object(cart, cart_init);
 
   // Create Tasks
   std::shared_ptr<Task> pelvis_task(new Task6DPose(ik_module.robot_model, "pelvis"));
@@ -123,8 +124,11 @@ void testIK_module(){
   std::shared_ptr<Task> rfoot_task(new Task6DPose(ik_module.robot_model, "rightCOP_Frame"));
   std::shared_ptr<Task> rhand_task(new TaskObjectCollision(ik_module.robot_model, "rightPalm", collision, "rhand"));
 
+  rhand_task->setTaskGain(20.0);
+
   // Stack Tasks in order of priority
-  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {pelvis_task, lfoot_task, rfoot_task, rhand_task}));
+  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {pelvis_task, lfoot_task, rfoot_task}));
+  std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {rhand_task}));
 
   // Set desired Pelvis configuration
   Eigen::Vector3d pelvis_des_pos;
@@ -163,13 +167,18 @@ void testIK_module(){
   std::cout << "Right Hand Task Error = " << task_error.transpose() << std::endl;
 
   ik_module.addTasktoHierarchy(task_stack_priority_1);
+  ik_module.addTasktoHierarchy(task_stack_priority_2);
 
   int solve_result;
   double error_norm;
   Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(ik_module.robot_model->getDimQdot());
 
+  double error_tol = 1e-6;
+  ik_module.setErrorTol(error_tol);
+
   ik_module.prepareNewIKDataStrcutures();
   ik_module.solveIK(solve_result, error_norm, q_sol);
+  ik_module.printSolutionResults();
 
   Eigen::VectorXd q_config = Eigen::VectorXd::Zero(q_init.size());
   printVec("q_sol", q_sol);

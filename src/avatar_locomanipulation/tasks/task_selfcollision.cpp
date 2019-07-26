@@ -85,10 +85,6 @@ void TaskSelfCollision::getTaskJacobianDot(Eigen::MatrixXd & Jdot_task){
   		}	
 	} 
 
-
-
-
-
 }
 
 // Set Task References
