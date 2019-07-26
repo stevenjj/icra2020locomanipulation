@@ -21,7 +21,7 @@ int main(int argc, char ** argv){
   // feasibility fiz;
   ParamHandler param_handler;
 
-  int prob_dim = 13;
+  int prob_dim = 19;
   int num_clus = 12;
 
   double fx;
@@ -29,12 +29,19 @@ int main(int argc, char ** argv){
   double fz;
   double frz;
 
-  double hx;
-  double hy;
-  double hz;
-  double hrx;
-  double hry;
-  double hrz;
+  double rhx;
+  double rhy;
+  double rhz;
+  double rhrx;
+  double rhry;
+  double rhrz;
+
+  double lhx;
+  double lhy;
+  double lhz;
+  double lhrx;
+  double lhry;
+  double lhrz;
 
   double comx;
   double comy;
@@ -49,38 +56,52 @@ int main(int argc, char ** argv){
 
   for(int i=0; i<1000; i++){
     char filename[64];
-    snprintf(filename, sizeof(char)*64, "/home/mihir/lMD/1/good/l%d.yaml", i);
+    snprintf(filename, sizeof(char)*64, "/home/mihir/lMD/R/good/l%d.yaml", i);
     param_handler.load_yaml_file(filename);
 
-    param_handler.getNestedValue({"LPalmPos", "x"}, hx);
-    param_handler.getNestedValue({"LPalmPos", "y"}, hy);
-    param_handler.getNestedValue({"LPalmPos", "z"}, hz);
+    param_handler.getNestedValue({"RPalmPos", "x"}, rhx);
+    param_handler.getNestedValue({"RPalmPos", "y"}, rhy);
+    param_handler.getNestedValue({"RPalmPos", "z"}, rhz);
 
-    param_handler.getNestedValue({"LPalmOri", "rx"}, hrx);
-    param_handler.getNestedValue({"LPalmOri", "ry"}, hry);
-    param_handler.getNestedValue({"LPalmOri", "rz"}, hrz);
+    param_handler.getNestedValue({"RPalmOri", "rx"}, rhrx);
+    param_handler.getNestedValue({"RPalmOri", "ry"}, rhry);
+    param_handler.getNestedValue({"RPalmOri", "rz"}, rhrz);
 
-    param_handler.getNestedValue({"LFootPos", "x"}, fx);
-    param_handler.getNestedValue({"LFootPos", "y"}, fy);
-    param_handler.getNestedValue({"LFootPos", "z"}, fz);
-    param_handler.getNestedValue({"LFootOri", "rz"}, frz);
+    param_handler.getNestedValue({"LPalmPos", "x"}, lhx);
+    param_handler.getNestedValue({"LPalmPos", "y"}, lhy);
+    param_handler.getNestedValue({"LPalmPos", "z"}, lhz);
+
+    param_handler.getNestedValue({"LPalmOri", "rx"}, lhrx);
+    param_handler.getNestedValue({"LPalmOri", "ry"}, lhry);
+    param_handler.getNestedValue({"LPalmOri", "rz"}, lhrz);
+
+    param_handler.getNestedValue({"RFootPos", "x"}, fx);
+    param_handler.getNestedValue({"RFootPos", "y"}, fy);
+    param_handler.getNestedValue({"RFootPos", "z"}, fz);
+    param_handler.getNestedValue({"RFootOri", "rz"}, frz);
 
     param_handler.getNestedValue({"CoM", "x"}, comx);
     param_handler.getNestedValue({"CoM", "y"}, comy);
     param_handler.getNestedValue({"PelvisPos", "z"}, pelz);
-    datum[0] = hx;
-    datum[1] = hy;
-    datum[2] = hz;
-    datum[3] = hrx;
-    datum[4] = hry;
-    datum[5] = hrz;
-    datum[6] = fx;
-    datum[7] = fy;
-    datum[8] = fz;
-    datum[9] = frz;
-    datum[10] = comx;
-    datum[11] = comy;
-    datum[12] = pelz;
+    datum[0] = lhx;
+    datum[1] = lhy;
+    datum[2] = lhz;
+    datum[3] = lhrx;
+    datum[4] = lhry;
+    datum[5] = lhrz;
+    datum[6] = rhx;
+    datum[7] = rhy;
+    datum[8] = rhz;
+    datum[9] = rhrx;
+    datum[10] = rhry;
+    datum[11] = rhrz;
+    datum[12] = fx;
+    datum[13] = fy;
+    datum[14] = fz;
+    datum[15] = frz;
+    datum[16] = comx;
+    datum[17] = comy;
+    datum[18] = pelz;
 
 
     gmmfitter.addData(datum);
@@ -95,6 +116,12 @@ int main(int argc, char ** argv){
 
   std::vector<std::string> list_of_vars;
 
+  list_of_vars.push_back("rhx");
+  list_of_vars.push_back("rhy");
+  list_of_vars.push_back("rhz");
+  list_of_vars.push_back("rhrx");
+  list_of_vars.push_back("rhry");
+  list_of_vars.push_back("rhrz");
   list_of_vars.push_back("lhx");
   list_of_vars.push_back("lhy");
   list_of_vars.push_back("lhz");
@@ -114,7 +141,7 @@ int main(int argc, char ** argv){
     data_saver::emit_gmm_normalize(out1, gmmfitter.data_mean, gmmfitter.data_std_dev, list_of_vars);
   out1 << YAML::EndMap;
   char filename1[64];
-  snprintf(filename1, sizeof(char)*64, "/home/mihir/lMD/L/good/lflh/norm.yaml");
+  snprintf(filename1, sizeof(char)*64, "/home/mihir/lMD/R/good/rfbh/norm.yaml");
   std::ofstream file_output_stream1(filename1);
   file_output_stream1 << out1.c_str();
 
@@ -140,7 +167,7 @@ int main(int argc, char ** argv){
   out << YAML::EndMap;
   char filename[64];
   // filename = "file.yaml"
-  snprintf(filename, sizeof(char)*64, "/home/mihir/lMD/L/good/lflh/gmm%d.yaml", i);
+  snprintf(filename, sizeof(char)*64, "/home/mihir/lMD/R/good/rfbh/gmm%d.yaml", i);
   std::ofstream file_output_stream(filename);
   file_output_stream << out.c_str();
   }
@@ -149,6 +176,6 @@ int main(int argc, char ** argv){
     data_saver::emit_joint_configuration(out,"Max",data_max);
     data_saver::emit_joint_configuration(out,"Min",data_min);
   out << YAML::EndMap;
-  std::ofstream file_output_stream("/home/mihir/lMD/L/good/lflh/dataminmax.yaml");
+  std::ofstream file_output_stream("/home/mihir/lMD/R/good/rfbh/dataminmax.yaml");
   file_output_stream << out.c_str();
 }

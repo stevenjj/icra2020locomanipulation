@@ -139,8 +139,11 @@ void feasibility::initialize_configuration_top(){
 }
 
 void feasibility::initialize_desired_top(){
+  double theta = 0.0;
+  std::string foot_data = "right";
   rfoot_des_pos.setZero();
   rfoot_des_quat.setIdentity();
+  lfoot_des_quat.setIdentity();
 
   rfoot_cur_pos.setZero();
   rfoot_cur_ori.setIdentity();
@@ -151,17 +154,29 @@ void feasibility::initialize_desired_top(){
 
   lfoot_des_pos.setZero();
 
-  lfoot_des_pos[0] = rand()/((double) RAND_MAX)*0.5-0.15;
-  lfoot_des_pos[1] = rand()/((double) RAND_MAX)*0.2+0.2;
-  lfoot_des_pos[2] = rand()/((double) RAND_MAX)*.15;
+  if (foot_data == "left"){
+    lfoot_des_pos[0] = generateRandMinMax(for_step_min, for_step_max);
+    lfoot_des_pos[1] = generateRandMinMax(lef_step_min, lef_step_max);
+    lfoot_des_pos[2] = generateRandMinMax(hei_step_min, hei_step_max);
 
+
+    theta = generateRandMinMax(lef_yaw_min, lef_yaw_max);
+    Eigen::AngleAxis<double> aa(theta, Eigen::Vector3d(0.0,0.0,1.0));
+    lfoot_des_quat = aa;
+  } else if (foot_data == "right"){
+    rfoot_des_pos[0] = generateRandMinMax(for_step_min, for_step_max);
+    rfoot_des_pos[1] = generateRandMinMax(rig_step_min, rig_step_max);
+    rfoot_des_pos[2] = generateRandMinMax(hei_step_min, hei_step_max);
+
+    theta = generateRandMinMax(rig_yaw_min, rig_yaw_max);
+    Eigen::AngleAxis<double> aa(theta, Eigen::Vector3d(0.0,0.0,1.0));
+    rfoot_des_quat = aa;
+  } else {
+    std::cout << "Well... if you can't give me good instructions, you probably can't make use of good data anyway." << std::endl;
+  }
   // std::cout << "lfoot_des_pos" << std::endl;
   // std::cout << lfoot_des_pos.transpose() << std::endl;
 
-  lfoot_des_quat.setIdentity();
-  double theta = rand()/((double) RAND_MAX)*0.75-.15;
-  Eigen::AngleAxis<double> aa(theta, Eigen::Vector3d(0.0,0.0,1.0));
-  lfoot_des_quat = aa;
 
   lfoot_cur_pos.setZero();
   lfoot_cur_ori.setIdentity();
@@ -226,7 +241,7 @@ void feasibility::initialize_desired_top(){
 
     pelvis_des_pos[0] = 0.5 * (lfoot_des_pos[0] + rfoot_des_pos[0]);
     pelvis_des_pos[1] = 0.5 * (lfoot_des_pos[1] + rfoot_des_pos[1]);
-    pelvis_des_pos[2] = rand()/((double) RAND_MAX)*.07+1.03;
+    pelvis_des_pos[2] = generateRandMinMax(pel_hei_min, pel_hei_max);
 
     pelvis_cur_pos.setZero();
     pelvis_pos_error.setZero();
@@ -484,6 +499,11 @@ void feasibility::generateRandomLeftArm(){
   valkyrie.updateFullKinematics(q_start);
   valkyrie.getFrameWorldPose("leftPalm", lhand_cur_pos, lhand_cur_ori);
 
+}
+
+double feasibility::generateRandMinMax(const double & min, const double & max){
+  double rand_num =  rand()/((double) RAND_MAX)*(max-min)+min;
+  return rand_num;
 }
 
 // int main(int argc, char ** argv) {

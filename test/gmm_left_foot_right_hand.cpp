@@ -49,16 +49,16 @@ int main(int argc, char ** argv){
 
   for(int i=0; i<1000; i++){
     char filename[64];
-    snprintf(filename, sizeof(char)*64, "/home/mihir/lMD/1/good/l%d.yaml", i);
+    snprintf(filename, sizeof(char)*64, "/home/mihir/lMD/L/good/l%d.yaml", i);
     param_handler.load_yaml_file(filename);
 
-    param_handler.getNestedValue({"LPalmPos", "x"}, hx);
-    param_handler.getNestedValue({"LPalmPos", "y"}, hy);
-    param_handler.getNestedValue({"LPalmPos", "z"}, hz);
+    param_handler.getNestedValue({"RPalmPos", "x"}, hx);
+    param_handler.getNestedValue({"RPalmPos", "y"}, hy);
+    param_handler.getNestedValue({"RPalmPos", "z"}, hz);
 
-    param_handler.getNestedValue({"LPalmOri", "rx"}, hrx);
-    param_handler.getNestedValue({"LPalmOri", "ry"}, hry);
-    param_handler.getNestedValue({"LPalmOri", "rz"}, hrz);
+    param_handler.getNestedValue({"RPalmOri", "rx"}, hrx);
+    param_handler.getNestedValue({"RPalmOri", "ry"}, hry);
+    param_handler.getNestedValue({"RPalmOri", "rz"}, hrz);
 
     param_handler.getNestedValue({"LFootPos", "x"}, fx);
     param_handler.getNestedValue({"LFootPos", "y"}, fy);
@@ -95,12 +95,12 @@ int main(int argc, char ** argv){
 
   std::vector<std::string> list_of_vars;
 
-  list_of_vars.push_back("lhx");
-  list_of_vars.push_back("lhy");
-  list_of_vars.push_back("lhz");
-  list_of_vars.push_back("lhrx");
-  list_of_vars.push_back("lhry");
-  list_of_vars.push_back("lhrz");
+  list_of_vars.push_back("rhx");
+  list_of_vars.push_back("rhy");
+  list_of_vars.push_back("rhz");
+  list_of_vars.push_back("rhrx");
+  list_of_vars.push_back("rhry");
+  list_of_vars.push_back("rhrz");
   list_of_vars.push_back("lfx");
   list_of_vars.push_back("lfy");
   list_of_vars.push_back("lfz");
@@ -114,7 +114,7 @@ int main(int argc, char ** argv){
     data_saver::emit_gmm_normalize(out1, gmmfitter.data_mean, gmmfitter.data_std_dev, list_of_vars);
   out1 << YAML::EndMap;
   char filename1[64];
-  snprintf(filename1, sizeof(char)*64, "/home/mihir/lMD/L/good/lflh/norm.yaml");
+  snprintf(filename1, sizeof(char)*64, "/home/mihir/lMD/L/good/lfrh/norm.yaml");
   std::ofstream file_output_stream1(filename1);
   file_output_stream1 << out1.c_str();
 
@@ -140,7 +140,7 @@ int main(int argc, char ** argv){
   out << YAML::EndMap;
   char filename[64];
   // filename = "file.yaml"
-  snprintf(filename, sizeof(char)*64, "/home/mihir/lMD/L/good/lflh/gmm%d.yaml", i);
+  snprintf(filename, sizeof(char)*64, "/home/mihir/lMD/L/good/lfrh/gmm%d.yaml", i);
   std::ofstream file_output_stream(filename);
   file_output_stream << out.c_str();
   }
@@ -149,6 +149,6 @@ int main(int argc, char ** argv){
     data_saver::emit_joint_configuration(out,"Max",data_max);
     data_saver::emit_joint_configuration(out,"Min",data_min);
   out << YAML::EndMap;
-  std::ofstream file_output_stream("/home/mihir/lMD/L/good/lflh/dataminmax.yaml");
+  std::ofstream file_output_stream("/home/mihir/lMD/L/good/lfrh/dataminmax.yaml");
   file_output_stream << out.c_str();
 }

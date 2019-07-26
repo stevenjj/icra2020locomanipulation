@@ -21,10 +21,10 @@ int main(int argc , char ** argv){
   int num_clus = 12;
   int dim = 13;
 
-  double x_max_raw = 0.9814862262380606;
-  double x_min_raw = -1.091100777982219;
-  double y_max_raw = 1.299264131319151;
-  double y_min_raw = -0.3775383957685604;
+  double x_max_raw = 1.092359838554469;
+  double x_min_raw = -0.9483440087699636;
+  double y_max_raw = 0.8304935882659636;
+  double y_min_raw = -0.7832493855873295;
 
   Eigen::VectorXd data_mean;
   data_mean.setZero(dim);
@@ -32,7 +32,7 @@ int main(int argc , char ** argv){
   data_std_dev.setZero(dim);
 
   char filename[64];
-  snprintf(filename, sizeof(char)*64, "/home/mihir/lMD/L/good/lflh/norm.yaml");
+  snprintf(filename, sizeof(char)*64, "/home/mihir/lMD/R/good/rflh/norm.yaml");
   param_handler.load_yaml_file(filename);
 
   param_handler.getNestedValue({"Normalization Data", "lhx", "Mu"}, data_mean[0]);
@@ -48,14 +48,14 @@ int main(int argc , char ** argv){
   param_handler.getNestedValue({"Normalization Data", "lhrz", "Mu"}, data_mean[5]);
   param_handler.getNestedValue({"Normalization Data", "lhrz", "Sigma"}, data_std_dev[5]);
 
-  param_handler.getNestedValue({"Normalization Data", "lfx", "Mu"}, data_mean[6]);
-  param_handler.getNestedValue({"Normalization Data", "lfx", "Sigma"}, data_std_dev[6]);
-  param_handler.getNestedValue({"Normalization Data", "lfy", "Mu"}, data_mean[7]);
-  param_handler.getNestedValue({"Normalization Data", "lfy", "Sigma"}, data_std_dev[7]);
-  param_handler.getNestedValue({"Normalization Data", "lfz", "Mu"}, data_mean[8]);
-  param_handler.getNestedValue({"Normalization Data", "lfz", "Sigma"}, data_std_dev[8]);
-  param_handler.getNestedValue({"Normalization Data", "lfrz", "Mu"}, data_mean[9]);
-  param_handler.getNestedValue({"Normalization Data", "lfrz", "Sigma"}, data_std_dev[9]);
+  param_handler.getNestedValue({"Normalization Data", "rfx", "Mu"}, data_mean[6]);
+  param_handler.getNestedValue({"Normalization Data", "rfx", "Sigma"}, data_std_dev[6]);
+  param_handler.getNestedValue({"Normalization Data", "rfy", "Mu"}, data_mean[7]);
+  param_handler.getNestedValue({"Normalization Data", "rfy", "Sigma"}, data_std_dev[7]);
+  param_handler.getNestedValue({"Normalization Data", "rfz", "Mu"}, data_mean[8]);
+  param_handler.getNestedValue({"Normalization Data", "rfz", "Sigma"}, data_std_dev[8]);
+  param_handler.getNestedValue({"Normalization Data", "rfrz", "Mu"}, data_mean[9]);
+  param_handler.getNestedValue({"Normalization Data", "rfrz", "Sigma"}, data_std_dev[9]);
 
   param_handler.getNestedValue({"Normalization Data", "comx", "Mu"}, data_mean[10]);
   param_handler.getNestedValue({"Normalization Data", "comx", "Sigma"}, data_std_dev[10]);
@@ -93,7 +93,7 @@ int main(int argc , char ** argv){
   }
 
   for(int i = 0; i<num_clus; i++){
-    param_handler.load_yaml_file(std::string("/home/mihir/lMD/L/good/lflh/gmm") + std::to_string(i) + std::string(".yaml"));
+    param_handler.load_yaml_file(std::string("/home/mihir/lMD/R/good/rflh/gmm") + std::to_string(i) + std::string(".yaml"));
     param_handler.getVector("Mu", mu);
     param_handler.getVector("Sigma", sigma);
     param_handler.getValue("Weight", alphs[i]);

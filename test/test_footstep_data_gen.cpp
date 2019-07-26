@@ -37,6 +37,7 @@ int main(int argc, char **argv){
   Eigen::Vector3d lhand_cur_ori_vec;
   Eigen::Vector3d rhand_cur_ori_vec;
   Eigen::Vector3d lfoot_cur_ori_vec;
+  Eigen::Vector3d rfoot_cur_ori_vec;
 
   Eigen::Vector3d rhand_cur_pos;
   Eigen::Quaternion<double> rhand_cur_ori;
@@ -78,7 +79,7 @@ int main(int argc, char **argv){
 
     math_utils::convert(lhand_cur_ori, lhand_cur_ori_vec);
     math_utils::convert(rhand_cur_ori, rhand_cur_ori_vec);
-    math_utils::convert(lfoot_cur_ori, lfoot_cur_ori_vec);
+    math_utils::convert(rfoot_cur_ori, rfoot_cur_ori_vec);
 
 
     if (error > 1e-6) {
@@ -89,8 +90,8 @@ int main(int argc, char **argv){
         data_saver::emit_position(out,"RPalmPos",rhand_cur_pos);
         data_saver::emit_orientation_vector(out,"RPalmOri",rhand_cur_ori_vec);
 
-        data_saver::emit_position(out,"LFootPos",lfoot_cur_pos);
-        data_saver::emit_orientation_vector(out,"LFootOri",lfoot_cur_ori_vec);
+        data_saver::emit_position(out,"RFootPos",rfoot_cur_pos);
+        data_saver::emit_orientation_vector(out,"RFootOri",rfoot_cur_ori_vec);
         data_saver::emit_position(out, "CoM", com_cur_pos);
         data_saver::emit_position(out, "PelvisPos", pel_cur_pos);
 
@@ -102,7 +103,7 @@ int main(int argc, char **argv){
       out << YAML::EndMap;
       char filename[64];
       // filename = "file.yaml"
-      snprintf(filename, sizeof(char)*64, "/home/mihir/lMD/1/bad/l%d.yaml", bad_data);
+      snprintf(filename, sizeof(char)*64, "/home/mihir/lMD/R/bad/l%d.yaml", bad_data);
       std::ofstream file_output_stream(filename);
       file_output_stream << out.c_str();
       bad_data++;
@@ -114,8 +115,8 @@ int main(int argc, char **argv){
         data_saver::emit_position(out,"RPalmPos",rhand_cur_pos);
         data_saver::emit_orientation_vector(out,"RPalmOri",rhand_cur_ori_vec);
 
-        data_saver::emit_position(out,"LFootPos",lfoot_cur_pos);
-        data_saver::emit_orientation_vector(out,"LFootOri",lfoot_cur_ori_vec);
+        data_saver::emit_position(out,"RFootPos",rfoot_cur_pos);
+        data_saver::emit_orientation_vector(out,"RFootOri",rfoot_cur_ori_vec);
         data_saver::emit_position(out, "CoM", com_cur_pos);
         data_saver::emit_position(out, "PelvisPos", pel_cur_pos);
 
@@ -127,7 +128,7 @@ int main(int argc, char **argv){
       out << YAML::EndMap;
       char filename[64];
       // filename = "file.yaml"
-      snprintf(filename, sizeof(char)*64, "/home/mihir/lMD/1/good/l%d.yaml", good_data);
+      snprintf(filename, sizeof(char)*64, "/home/mihir/lMD/R/good/l%d.yaml", good_data);
       std::ofstream file_output_stream(filename);
       file_output_stream << out.c_str();
       good_data++;

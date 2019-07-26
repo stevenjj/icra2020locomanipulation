@@ -117,6 +117,22 @@ public:
 
   double alph;
 
+  double for_step_max = -.15;
+  double for_step_min = 0.5;
+  double lef_step_max = 0.4;
+  double lef_step_min = 0.2;
+  double rig_step_max = -0.2;
+  double rig_step_min = -0.4;
+  double hei_step_max = 0.15;
+  double hei_step_min = 0.0;
+  double lef_yaw_min = -0.15;
+  double lef_yaw_max = 0.6;
+  double rig_yaw_min = -0.6;
+  double rig_yaw_max = 0.15;
+  double pel_hei_min = 1.03;
+  double pel_hei_max = 1.1;
+
+
   // SVD_SOLVER
   std::unique_ptr< Eigen::SVD_SOLVER<Eigen::MatrixXd> > svd;
   unsigned int svdOptions = Eigen::ComputeThinU | Eigen::ComputeThinV;
@@ -141,6 +157,7 @@ public:
   void CreateData();
   void generateRandomRightArm();
   void generateRandomLeftArm();
+  double generateRandMinMax(const double & min, const double & max);
 
 
 private:

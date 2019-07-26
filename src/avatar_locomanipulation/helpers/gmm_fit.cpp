@@ -104,19 +104,18 @@ double GMMFit::logLike(){
       lh = lh+alphs[k]*multivariateGuassian(list_of_datums[i], list_of_mus[k], list_of_Sigmas[k]);
     }
     llh = llh + log(lh);
-  }  Eigen::VectorXd data_mean = Eigen::VectorXd::Zero(dim);
+  }
   return llh;
 }
 
 void GMMFit::expectationMax(){
-  double error = 1000.0;
-  double tol = 1e-4;
-  double llh = 0;
-  double llh_prev = 0;
+  double error = error_init;
+  double llh = llh_init;
+  double llh_prev = llh_prev_init;
   int iter = 0;
   llh = logLike();
   // std::cout << "1" << std::endl;
-  while (std::norm(error)>tol && iter<100){
+  while (std::norm(error)>tol && iter<num_iter){
     iter++;
     llh_prev = llh;
     expectStep();
@@ -232,4 +231,12 @@ void GMMFit::setDataParams(const Eigen::VectorXd & mean_in, const Eigen::VectorX
 
 void GMMFit::normalizeInputInverse(const Eigen::VectorXd & x_in, Eigen::VectorXd & x_unnormalized) {
   x_unnormalized = (x_in.cwiseProduct(data_std_dev)) + data_mean;
+}
+
+void GMMFit::setIter(const int & num_iter_in){
+  num_iter = num_iter_in;
+}
+
+void GMMFit::setTol(const double & tol_in){
+  tol = tol_in;
 }
