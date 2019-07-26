@@ -34,8 +34,9 @@ private:
 
 
   // appends the models internally
-  // Used in distance/collision computation, which does not require the appended config
-  std::shared_ptr<RobotModel> append_models();
+  // first_time appends valkyrie to appended
+  // subsequently appends object onto end of appended
+  void append_models();
 
 
 
@@ -71,6 +72,9 @@ public:
   double safety_dist_normal = 0.075;
   double safety_dist_collision = 0.2;
 
+  // boolean such that an empty appended robotmodel becomes appended with valkyrie on collision environment init
+  bool first_time = false;
+
   // index of the closest directedvector for calculating potential
   int closest;
 
@@ -82,7 +86,7 @@ public:
 
 
   // The two robot models which we are adding to the environment
-  std::shared_ptr<RobotModel> valkyrie, object;
+  std::shared_ptr<RobotModel> valkyrie, object, appended;
 
   // The vector of directed vectors and related information
   std::vector<DirectedVectors>  directed_vectors;
@@ -111,12 +115,14 @@ public:
   //         - (Empty) map from names of "from"collision links to nearest points on the "to" objects
   void find_object_near_points(std::string & from_link, std::shared_ptr<RobotModel> & appended, std::vector<std::string> & list, std::map<std::string, Eigen::Vector3d> & from_near_points, std::map<std::string, Eigen::Vector3d> & to_near_points);
 
+
   // Given a frame name from a task it will build the directed vectors to that link
+  // Input: - Relevant frame name from the task_selfcollision
   void build_self_directed_vectors(const std::string & frame_name);
 
 
-  // Fills the struct DirectedVector directed_vectors with the relevan vectors from each of the object
-  //  links
+  // Given a frame name from a task it will build directed vectors to that link from all object links
+  // Input: - Relevant frame name from the task_objectcollision
   void build_object_directed_vectors(std::string & frame_name);
 
 
@@ -124,6 +130,7 @@ public:
   // void compute_collision(Eigen::VectorXd & q, Eigen::VectorXd & obj_config);
 
 
+  // Used by self collision and object collision tasks to calculate the potential field
   double get_collision_potential();
   
 
@@ -133,8 +140,6 @@ public:
   // Sets the safety distance between links when in collision
   void set_safety_distance_collision(double safety_dist_collision_in);
 
-  // Sets the max scaling factor for dx
-  void set_max_scaling_distance(double & max_scaling_dist_in);
 };
 
 
