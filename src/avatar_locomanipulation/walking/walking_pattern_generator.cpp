@@ -15,6 +15,32 @@ WalkingPatternGenerator::~WalkingPatternGenerator(){
 
 }
 
+
+// Sets the desired CoM Height
+void WalkingPatternGenerator::setCoMHeight(double z_vrp_in){
+  z_vrp = z_vrp_in;
+} 
+
+// Sets the desired double support time
+void WalkingPatternGenerator::setDoubleSupportTime(double t_ds_in){
+  t_ds = t_ds_in;
+}
+
+// Sets the desired single support swing time
+void WalkingPatternGenerator::setSingleSupportSwingTime(double t_ss_in){
+  t_ss = t_ss_in;
+} 
+
+// Percentage to settle. Default 0.999
+void WalkingPatternGenerator::setSettlingPercentage(double percentage_convergence){
+  t_settle = -b*log(1 - percentage_convergence);
+} 
+
+// Sets the swing height of the robot. Default 0.1m
+void WalkingPatternGenerator::setSwingHeight(double swing_height_in){
+  swing_height = swing_height_in;
+}
+
 void WalkingPatternGenerator::initialize_footsteps_rvrp(const std::vector<Footstep> & input_footstep_list, 
                                                         const Footstep & initial_footstance,
                                                         bool clear_list){

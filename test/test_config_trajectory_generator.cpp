@@ -108,9 +108,12 @@ void test_config_trajectory_generator(){
   // valkyrie_model->getFrameWorldPose("leftCOP_Frame", footstep_1.position, footstep_1.orientation);  
   // std::vector<Footstep> input_footstep_list = {footstep_1};
 
+  // Have fast double support times
+  ctg.wpg.setDoubleSupportTime(0.2);
 
-  // Solve for configurations
+  // Set Verbosity
   ctg.setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_2);
+  // Solve for configurations
   ctg.computeConfigurationTrajectory(q_start, input_footstep_list);
 
   // Visualize Trajectory
