@@ -92,10 +92,10 @@ public:
   std::vector<DirectedVectors>  directed_vectors;
   
 
-  // Constructor fills the local data for valkyrie, object RobotModels
-  // Inputs: RobotModel valkyrie
-  //         RobotModel environmental_object
-  CollisionEnvironment(std::shared_ptr<RobotModel> & val, std::shared_ptr<RobotModel> & obj);
+  // // Constructor fills the local data for valkyrie, object RobotModels
+  // // Inputs: RobotModel valkyrie
+  // //         RobotModel environmental_object
+  // CollisionEnvironment(std::shared_ptr<RobotModel> & val, std::shared_ptr<RobotModel> & obj);
 
   // Constructor for only valkyrie model
   CollisionEnvironment(std::shared_ptr<RobotModel> & val);
@@ -126,12 +126,11 @@ public:
   void build_object_directed_vectors(std::string & frame_name);
 
 
-  // // computes collision and outputs any contacts
-  // void compute_collision(Eigen::VectorXd & q, Eigen::VectorXd & obj_config);
-
-
   // Used by self collision and object collision tasks to calculate the potential field
   double get_collision_potential();
+
+  // Given an object RobotModel and its q_start, appends this and adds it to appended
+  void add_new_object(std::shared_ptr<RobotModel> & obj, const Eigen::VectorXd & q_start);
   
 
   // Sets the safety distance between links when not in collision
@@ -139,6 +138,10 @@ public:
 
   // Sets the safety distance between links when in collision
   void set_safety_distance_collision(double safety_dist_collision_in);
+
+
+  // // computes collision and outputs any contacts
+  // void compute_collision(Eigen::VectorXd & q, Eigen::VectorXd & obj_config);
 
 };
 

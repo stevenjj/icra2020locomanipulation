@@ -2,33 +2,36 @@
 
 
 
-CollisionEnvironment::CollisionEnvironment(std::shared_ptr<RobotModel> & val, std::shared_ptr<RobotModel> & obj){
-	valkyrie = val;
-	object = obj;
-	std::cout << "Collision Environment Created" << std::endl;
-  // Indicates if there is an object
-  object_flag = true;
-  // Indicates that appended will append a valkyrie model
-  first_time = true;
-  // Potential scaling factor
-  eta = 1.0;
-  // create an empty RobotModel apended
-  appended = std::shared_ptr<RobotModel> (new RobotModel() );
-  // Perform the generic intialization
-  appended->appended_initialization();
-  // append empty appended with valkyrie
-  append_models();
-  // Builds a map from collision names (i.e. body_0) to frame names (i.e body)
-  map_collision_names_to_frame_names();
-  // Builds a map from collision body name (i.e. rightPalm_0) to list of valkyrie bodies from which we would want directed vectors
-  generalize_build_self_directed_vectors();
-  // Builds a map from collision body name (i.e. rightPalm_0) to list of object bodies from which we would want directed vectors
-  generalize_build_object_directed_vectors();
-}
+// CollisionEnvironment::CollisionEnvironment(std::shared_ptr<RobotModel> & val, std::shared_ptr<RobotModel> & obj){
+//  valkyrie = val;
+//  object = obj;
+//  std::cout << "Collision Environment Created" << std::endl;
+//   // Indicates if there is an object
+//   object_flag = true;
+//   // Indicates that appended will append a valkyrie model
+//   first_time = true;
+//   // Potential scaling factor
+//   eta = 1.0;
+//   // create an empty RobotModel apended
+//   appended = std::shared_ptr<RobotModel> (new RobotModel() );
+//   // Perform the generic intialization
+//   appended->appended_initialization();
+//   // append empty appended with valkyrie
+//   append_models();
+//   // Builds a map from collision names (i.e. body_0) to frame names (i.e body)
+//   map_collision_names_to_frame_names();
+//   // Builds a map from collision body name (i.e. rightPalm_0) to list of valkyrie bodies from which we would want directed vectors
+//   generalize_build_self_directed_vectors();
+//   // Builds a map from collision body name (i.e. rightPalm_0) to list of object bodies from which we would want directed vectors
+//   generalize_build_object_directed_vectors();
+// }
 
 CollisionEnvironment::CollisionEnvironment(std::shared_ptr<RobotModel> & val){
   valkyrie = val;
-  std::cout << "Collision Environment Created Only Val" << std::endl;
+
+  valkyrie->enableUpdateGeomOnKinematicsUpdate(true);
+
+  std::cout << "Collision Environment Created" << std::endl;
   // Indicates if there is an object
   object_flag = false;
   // Potential scaling factor
@@ -81,15 +84,23 @@ void CollisionEnvironment::append_models(){
     // Prepare object for appending 
     object->geomModel.addAllCollisionPairs();
 
+    std::shared_ptr<RobotModel> app(new RobotModel() );
+
     // Append the object onto the robot, and fill appended RobotModel
-    pinocchio::appendModel(appended->model, object->model, appended->geomModel, object->geomModel, appended->model.frames.size()-1, pinocchio::SE3::Identity(), appended->model, appended->geomModel);
+    pinocchio::appendModel(appended->model, object->model, appended->geomModel, object->geomModel, appended->model.frames.size()-1, pinocchio::SE3::Identity(), app->model, app->geomModel);
+
+    app->appended_initialization();
 
     // Define the appended configuration vector
-    appended->q_current << appended->q_current, object->q_current;
+    app->q_current << appended->q_current, object->q_current;
 
-    // Update the full kinematics 
-    appended->enableUpdateGeomOnKinematicsUpdate(true);
-    appended->updateFullKinematics(appended->q_current);
+    // update full kinematics
+    app->enableUpdateGeomOnKinematicsUpdate(true);
+    app->updateFullKinematics(app->q_current);
+    
+    appended = app;
+
+    std::cout << "Object appended to appended [RobotModel] in [CollisionEnvironment]" << std::endl;
   }
     first_time = false;
 
@@ -251,59 +262,56 @@ void CollisionEnvironment::build_self_directed_vectors(const std::string & frame
   std::cout << "directed_vectors.size(): " << directed_vectors.size() << std::endl;
 
 }
-	
+  
 
 
 
 void CollisionEnvironment::build_object_directed_vectors(std::string & frame_name){
-  // // for clarity on these maps, see control flow in find_self_near_points function
-  // std::map<std::string, Eigen::Vector3d> from_near_points, to_near_points;
+  // for clarity on these maps, see control flow in find_self_near_points function
+  std::map<std::string, Eigen::Vector3d> from_near_points, to_near_points;
 
-  // // initialize two iterators to be used in pushing to DirectedVectors struct
-  // std::map<std::string, Eigen::Vector3d>::iterator it, it2;
+  // initialize two iterators to be used in pushing to DirectedVectors struct
+  std::map<std::string, Eigen::Vector3d>::iterator it, it2;
 
-  // // used to build directed vectors
-  // Eigen::Vector3d difference;
+  // used to build directed vectors
+  Eigen::Vector3d difference;
 
-  // // gives a list of object link names
-  // std::vector<std::string> object_links = get_object_links();
+  // gives a list of object link names
+  std::vector<std::string> object_links = get_object_links();
 
-  // // Need to append the models for computeDistance to work inside find_object_near_points
-  // std::shared_ptr<RobotModel> appended = append_models();
-
-  // // we will build the directed vectors from each of the object links
-  // for(int i=0; i<object_links.size(); ++i){
+  // we will build the directed vectors from each of the object links
+  for(int i=0; i<object_links.size(); ++i){
     
 
-  //   // Notice we reverse to and from near_points, because unlike in the self directed vectors,
-  //   // we want vectors away from the collision_names[0]
-  //   find_object_near_points(object_links[i], appended, link_to_object_collision_names[frame_name], to_near_points, from_near_points);
+    // Notice we reverse to and from near_points, because unlike in the self directed vectors,
+    // we want vectors away from the collision_names[0]
+    find_object_near_points(object_links[i], appended, link_to_object_collision_names[frame_name], to_near_points, from_near_points);
 
-  //   for(it=from_near_points.begin(); it!=from_near_points.end(); ++it){
-  //     // If nearest_point[1] = nearest_point[0], then the two links are in collision
-  //     // and we need a different way to get a dvector
-  //     if( (it->second - to_near_points[it->first]).norm() <= 1e-6 ){
-  //       std::cout << "Collision between " << it->first << " and " << object_links[i] << std::endl;
-  //       get_dvector_collision_links_appended(appended, object_links[i], it->first);
-  //       ++it2;
-  //     } // end if
+    for(it=from_near_points.begin(); it!=from_near_points.end(); ++it){
+      // If nearest_point[1] = nearest_point[0], then the two links are in collision
+      // and we need a different way to get a dvector
+      if( (it->second - to_near_points[it->first]).norm() <= 1e-6 ){
+        std::cout << "Collision between " << it->first << " and " << object_links[i] << std::endl;
+        get_dvector_collision_links_appended(appended, object_links[i], it->first);
+        ++it2;
+      } // end if
 
-  //     // The typical case when two links are not in collision
-  //     else{
-  //     difference = to_near_points[it->first] - it->second;
-  //     // Fill the dvector and push back
-  //     dvector.from = collision_to_frame[object_links[i]]; dvector.to = collision_to_frame.find(it->first)->second;
-  //     dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
-  //     dvector.using_worldFramePose = false;
-  //     directed_vectors.push_back(dvector);
-  //     ++it2;
-  //     } // end else
+      // The typical case when two links are not in collision
+      else{
+      difference = to_near_points[it->first] - it->second;
+      // Fill the dvector and push back
+      dvector.from = collision_to_frame[object_links[i]]; dvector.to = collision_to_frame.find(it->first)->second;
+      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+      dvector.using_worldFramePose = false;
+      directed_vectors.push_back(dvector);
+      ++it2;
+      } // end else
 
-  //   } // end inner for
+    } // end inner for
 
-  // } // end outer for
+  } // end outer for
 
-  // std::cout << "directed_vectors.size(): " << directed_vectors.size() << std::endl;
+  std::cout << "directed_vectors.size(): " << directed_vectors.size() << std::endl;
 
 }
 
@@ -346,6 +354,34 @@ double CollisionEnvironment::get_collision_potential(){
   return Potential;
 
 }
+
+
+
+void CollisionEnvironment::add_new_object(std::shared_ptr<RobotModel> & obj, const Eigen::VectorXd & q_start){
+  // Initialize the RobotModel
+  object = obj;
+
+  object->q_current = obj->q_current;
+
+  object->enableUpdateGeomOnKinematicsUpdate(true);
+  object->updateFullKinematics(object->q_current);
+
+  // Tells append_models to add this to end of appended
+  first_time = false;
+
+  // Appends this to end of appended
+  append_models();
+
+  // Tells the collision to frame names to look through the object
+  object_flag = true;
+  // Adds this objects collision and frame names to collision_to_frame
+  map_collision_names_to_frame_names();
+
+  std::cout << "[RobotModel] Environmental Object Created and appended in [CollisionEnvironment]" << std::endl;
+}
+
+
+
 
 
 
@@ -432,7 +468,7 @@ std::vector<std::string> CollisionEnvironment::get_object_links(){
   // Will fill this vector with names of object collision body names
   std::vector<std::string> names;
 
-  for(int i=0; i<object->geomModel.geometryObjects.size(); ++i){
+  for(int i=valkyrie->geomModel.geometryObjects.size(); i<appended->geomModel.geometryObjects.size(); ++i){
     names.push_back(object->geomModel.getGeometryName(i));
   }
 
