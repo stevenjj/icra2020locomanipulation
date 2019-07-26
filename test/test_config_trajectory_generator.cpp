@@ -10,7 +10,7 @@ void initialize_config(Eigen::VectorXd & q_init, std::shared_ptr<RobotModel> & v
   // X dimensional state vectors
   Eigen::VectorXd q_start;
 
-  std::cout << "valkyrie->getDimQ(): " << valkyrie->getDimQ() << std::endl;
+  // std::cout << "valkyrie->getDimQ(): " << valkyrie->getDimQ() << std::endl;
   // Set origin at 0.0
   q_start = Eigen::VectorXd::Zero(valkyrie->getDimQ());
 
@@ -57,6 +57,7 @@ void test_config_trajectory_generator(){
   initialize_config(q_start, valkyrie_model);
 
   // Test initial configuration computation for flat ground
+  ctg.setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_1);
   ctg.computeInitialConfigForFlatGround(q_start, q_end);
 
 
@@ -110,7 +111,7 @@ void test_config_trajectory_generator(){
 
 
   // Solve for configurations
-  ctg.setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_2);
+  ctg.setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_1);
   ctg.computeConfigurationTrajectory(q_start, input_footstep_list);
 
   // Visualize Trajectory

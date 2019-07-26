@@ -152,7 +152,7 @@ Eigen::Vector3d WalkingPatternGenerator::computeDCM_ini_i(const Eigen::Vector3d 
 }
 
 void WalkingPatternGenerator::computeDCM_states(){ 
-  std::cout << "size of rvrp list = " << rvrp_list.size() << std::endl;
+  // std::cout << "size of rvrp list = " << rvrp_list.size() << std::endl;
 
   // Use backwards recursion to compute the initial and final dcm states
   double t_step = 0.0;

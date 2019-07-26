@@ -265,11 +265,25 @@ bool ConfigTrajectoryGenerator::computeInitialConfigForFlatGround(const Eigen::V
     double total_error_norm;
     std::vector<double> task_error_norms;
     Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(robot_model->getDimQdot());	
+    int ik_verbosity_level = verbosity_level >= CONFIG_TRAJECTORY_VERBOSITY_LEVEL_3 ? IK_VERBOSITY_HIGH : IK_VERBOSITY_LOW;
     bool primary_task_convergence = false;
+
+    // Set Verbosity Level
+    starting_config_ik_module.setVerbosityLevel(ik_verbosity_level);
 
     // Solve IK
 	primary_task_convergence = starting_config_ik_module.solveIK(solve_result, task_error_norms, total_error_norm, q_sol);
-	starting_config_ik_module.printSolutionResults();
+	if (verbosity_level >= CONFIG_TRAJECTORY_VERBOSITY_LEVEL_4){
+		starting_config_ik_module.printSolutionResults();
+	}
+
+	if ((primary_task_convergence) && verbosity_level >= CONFIG_TRAJECTORY_VERBOSITY_LEVEL_1) {
+		std::cout << "[ConfigTrajectoryGenerator] IK for computing configuration for flat ground converged" << std::endl;
+		std::cout << "    first_task_error_norm = " << task_error_norms[0] << std::endl; 
+	}else{
+		std::cout << "[ConfigTrajectoryGenerator] IK for computing configuration for flat ground did not converge" << std::endl;
+		std::cout << "    first_task_error_norm = " << task_error_norms[0] << std::endl;
+	}
 
 	// Set solution
     q_out = q_sol;
@@ -282,7 +296,7 @@ bool ConfigTrajectoryGenerator::computeInitialConfigForFlatGround(const Eigen::V
 
 void ConfigTrajectoryGenerator::printIntermediateIKTrajectoryresult(int & index, bool & primary_task_converge_result, double & total_error_norm, std::vector<double> & task_error_norms){
 	if (index == 0){
-		std::cout << "Trajectory index | First task convergence result | total error norm | task error norms " << std::endl;	
+		std::cout << "index | 1st task converged? | total error norm | task error norms " << std::endl;	
 	}
 	std::cout << index << " | " << (primary_task_converge_result ? "True" : "False") << " | " << total_error_norm << " | ";
 
@@ -293,7 +307,17 @@ void ConfigTrajectoryGenerator::printIntermediateIKTrajectoryresult(int & index,
 
 }
 
+void ConfigTrajectoryGenerator::printIKTrajectoryresult(){
+	std::cout << "Trajectory converged: " << (didTrajectoryConverge() ? "True" : "False") << ", max first task error norm = " << max_first_task_ik_error << std::endl;
+}
 
+
+bool ConfigTrajectoryGenerator::didTrajectoryConverge(){
+	if (max_first_task_ik_error < ik_module.getErrorTol()){
+		return true;
+	}
+	return false;
+}
 
 // Given an initial configuration and footstep data list input, compute the task space walking trajectory.
 // Warning: If hand tasks are enabled, they need to have been set already.
@@ -338,6 +362,13 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
     ik_module.setEnableInertiaWeighting(true);
     ik_module.setVerbosityLevel(ik_verbosity_level);
 
+    // Reset max_ik_error
+    max_first_task_ik_error = -1e3;
+
+    if (verbosity_level >= CONFIG_TRAJECTORY_VERBOSITY_LEVEL_1){
+    	std::cout << "[ConfigTrajectoryGenerator] Computing wholebody configuration trajectory..." << std::endl;
+    }
+
 	// for loop. set references. check for convergence.
 	for(int i = 0; i < N_size; i++){
 		if (i > 0){
@@ -375,10 +406,17 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 		// Compute IK
 		primary_task_convergence = ik_module.solveIK(solve_result, task_error_norms, total_error_norm, q_sol);
 
+		// Update max first task ik error.
+		if (task_error_norms[0] >= max_first_task_ik_error){
+			max_first_task_ik_error = task_error_norms[0];
+		}
+
+		// Print out IK result if verbose level is greater than 2
 		if (verbosity_level >= CONFIG_TRAJECTORY_VERBOSITY_LEVEL_2){
 			printIntermediateIKTrajectoryresult(i, primary_task_convergence, total_error_norm, task_error_norms);	
 		} 
 
+		// Print out complete IK result if verbose level is greater than 4 
 		if (verbosity_level >= CONFIG_TRAJECTORY_VERBOSITY_LEVEL_4){
 			ik_module.printSolutionResults();
 		}
@@ -393,13 +431,18 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 			for(int j = i; j < N_size; j++){
 				traj_q_config.set_pos(j, q_current);								
 			}
-			return false;
+			break;
 		}
 
 
 	}
 
-	return true;
+	// Print minimal trajectory result
+	if (verbosity_level > CONFIG_TRAJECTORY_VERBOSITY_LEVEL_1){
+		printIKTrajectoryresult();		
+	}
+
+	return didTrajectoryConverge();
 
 }
 

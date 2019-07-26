@@ -123,6 +123,14 @@ public:
 
 	int N_size = 100;
 
+	// Set best Effort IK // attempts to do full trajectory IK even with divergence
+	// Store full IK data?
+	// print out final trajectory result
+
+	// Checks whether the latest trajectory converged.
+	// convergence condition:  max_first_task_ik_error < ik_module.error_tol.
+	bool didTrajectoryConverge();
+
 
 private:
 	void createTaskStack();
@@ -158,6 +166,8 @@ private:
 	Eigen::VectorXd tmp_larm_posture;
 
 	int verbosity_level = CONFIG_TRAJECTORY_VERBOSITY_LEVEL_2;
+
+	double max_first_task_ik_error = -1e3;
 
 };
 
