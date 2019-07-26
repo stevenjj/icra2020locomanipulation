@@ -104,6 +104,11 @@ void test_config_trajectory_generator(){
   // Create Footstep list
   std::vector<Footstep> input_footstep_list = {footstep_1, footstep_2, footstep_3, footstep_4};
 
+  // In place step test
+  // valkyrie_model->getFrameWorldPose("leftCOP_Frame", footstep_1.position, footstep_1.orientation);  
+  // std::vector<Footstep> input_footstep_list = {footstep_1};
+
+
   // Solve for configurations
   ctg.computeConfigurationTrajectory(q_start, input_footstep_list);
 

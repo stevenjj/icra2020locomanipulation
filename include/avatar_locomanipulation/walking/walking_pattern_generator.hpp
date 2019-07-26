@@ -44,7 +44,7 @@ public:
   double b = std::sqrt(z_vrp/gravity); // time constant of DCM dynamics  
 
   double t_ds = 0.45; //0.9; // time in double support
-  double t_ss = 1.2; // time in single support
+  double t_ss = 1.0;//1.2; // time in single support
   double t_settle = -b*log(0.001); // settling time at the end of the full walking trajectory 
 
   double alpha = 0.5; // ratio between double initial and final double support time

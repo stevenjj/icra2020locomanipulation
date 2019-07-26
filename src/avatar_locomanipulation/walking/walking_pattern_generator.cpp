@@ -183,7 +183,11 @@ double WalkingPatternGenerator::get_t_step(const int & step_i){
   if ((rvrp_type_list[step_i]) == DOUBLE_SUPPORT_TRANSFER_VRP_TYPE){
     return t_ds;
   }else if (rvrp_type_list[step_i] == SWING_VRP_TYPE){
-    return t_ds + t_ss;
+    if (step_i == (rvrp_type_list.size() - 1)){
+      return t_ss; // If this is the last step, use the swing time
+    }else{
+      return t_ds + t_ss; // Otherwise perform a double support transfer as well
+    }
   }else{
     return t_ds + t_ss;
   }
@@ -306,12 +310,16 @@ void WalkingPatternGenerator::compute_trajectory_lists(){
   std::cout << "N_DS = " << N_DS << std::endl;
 
   for(int i = 0; i < rvrp_type_list.size(); i++){
-    // If it's a swing, there is always a double support phase
+    // If it's a swing, there is always a double support phase except for the last step
     if (rvrp_type_list[i] == SWING_VRP_TYPE){
       // Use single support time in swing phase
       state_list.push_back(STATE_SWING);
       bin_size_list.push_back(N_swing);
       running_bin_size += N_swing;
+      // If this is the last step, don't add a double support phase
+      if (i == (rvrp_type_list.size() - 1)){
+        continue;
+      }
       // Use double support time in double support phase
       state_list.push_back(STATE_DOUBLE_SUPPORT);
       bin_size_list.push_back(N_DS);
