@@ -118,17 +118,26 @@ void ConfigTrajectoryGenerator::initializeTasks(){
 
 }
 
-// TODO:
 // Sets the SE3 trajectories for the left and right hands
-void ConfigTrajectoryGenerator::setLeftHandTrajectory(const TrajSE3 & traj_SE3_left_hand_in){	
+void ConfigTrajectoryGenerator::setLeftHandTrajectory(const TrajSE3 & traj_SE3_left_hand_in){
+	traj_SE3_left_hand = traj_SE3_left_hand_in;	
 }
 void ConfigTrajectoryGenerator::setRightHandTrajectory(const TrajSE3 & traj_SE3_right_hand_in){	
+	traj_SE3_right_hand = traj_SE3_right_hand_in;
 }
 
-// TODO: Populates a constant right and left hand trajectories to be used. 
+// Populates a constant right and left hand trajectories to be used. 
 void ConfigTrajectoryGenerator::setConstantRightHandTrajectory(const Eigen::Vector3d & des_pos, const Eigen::Quaterniond & des_quat){	
+	// Sets the same desired position and quaternion for all time
+	for (int i = 0; i < N_size; i++){
+		traj_SE3_right_hand.set_pos(i, des_pos, des_quat);
+	}
 }
 void ConfigTrajectoryGenerator::setConstantLeftHandTrajectory(const Eigen::Vector3d & des_pos, const Eigen::Quaterniond & des_quat){	
+	// Sets the same desired position and quaternion for all time
+	for (int i = 0; i < N_size; i++){
+		traj_SE3_left_hand.set_pos(i, des_pos, des_quat);
+	}
 }
 
 void ConfigTrajectoryGenerator::setUseRightHand(bool use_right_hand_in){
