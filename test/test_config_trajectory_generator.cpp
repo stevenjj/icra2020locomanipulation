@@ -48,10 +48,10 @@ void test_hand_in_place_config_trajectory_generator(){
   std::cout << "[Running Config Trajectory Generator Test] In place walking with hand constant" << std::endl;
 
   std::cout << "[ConfigTrajectoryGenerator] Constructed" << std::endl;
-  std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
+  std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_no_fingers.urdf";
   std::shared_ptr<RobotModel> valkyrie_model(new RobotModel(urdf_filename));
 
-  int N_resolution = 50;
+  int N_resolution = 60;
   ConfigTrajectoryGenerator ctg(valkyrie_model, N_resolution);
 
   Eigen::VectorXd q_start, q_end;
@@ -111,7 +111,7 @@ void test_walking_config_trajectory_generator(){
   std::cout << "[Running Config Trajectory Generator Test]" << std::endl;
 
   std::cout << "[ConfigTrajectoryGenerator] Constructed" << std::endl;
-  std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
+  std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_no_fingers.urdf";
   std::shared_ptr<RobotModel> valkyrie_model(new RobotModel(urdf_filename));
 
   int N_resolution = 100;
@@ -154,14 +154,19 @@ void test_walking_config_trajectory_generator(){
   // Create Footstep list
   std::vector<Footstep> input_footstep_list = {footstep_1, footstep_2, footstep_3, footstep_4};
 
+    // timer
+  PinocchioTicToc timer = PinocchioTicToc(PinocchioTicToc::MS);
+
   // Have fast double support times
   ctg.wpg.setDoubleSupportTime(0.2);
 
   // Set Verbosity
   ctg.setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_2);
   // Solve for configurations
+  timer.tic();
   ctg.computeConfigurationTrajectory(q_start, input_footstep_list);
-
+  std::cout << "IK Trajectory took: " << timer.toc() << timer.unitName(timer.DEFAULT_UNIT) << std::endl;
+  
   // Visualize Trajectory
   visualizer.visualizeConfigurationTrajectory(q_start, ctg.traj_q_config);
 
