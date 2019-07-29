@@ -104,12 +104,12 @@ public:
 
   // Given a frame name from a task it will build the directed vectors to that link
   // Input: - Relevant frame name from the task_selfcollision
-  void build_self_directed_vectors(const std::string & frame_name);
+  void build_self_directed_vectors(const std::string & frame_name, Eigen::VectorXd & q_current);
 
 
   // Given a frame name from a task it will build directed vectors to that link from all object links
   // Input: - Relevant frame name from the task_objectcollision
-  void build_object_directed_vectors(std::string & frame_name);
+  void build_object_directed_vectors(std::string & frame_name, Eigen::VectorXd & q_current);
 
 
   // Used by self collision and object collision tasks to calculate the potential field

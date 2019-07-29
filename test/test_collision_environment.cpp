@@ -55,7 +55,7 @@ int main(int argc, char ** argv){
    // Define the configuration of the cart
   Eigen::VectorXd cart_config;
   cart_config = Eigen::VectorXd::Zero(cart->getDimQ());
-  cart_config[0] = 0.0;  cart_config[1] = 0.0;  cart_config[2] = -0.2;
+  cart_config[0] = 0.0;  cart_config[1] = 0.0;  cart_config[2] = 0.0;
   double theta1 = 0;//M_PI/4.0; 
   Eigen::AngleAxis<double> bb(theta1, Eigen::Vector3d(0.0, 0.0, 1.0)); // yaw pi/4 to the left  
   Eigen::Quaternion<double> quat_init; quat_init =  bb;
@@ -68,24 +68,27 @@ int main(int argc, char ** argv){
 
   collision->add_new_object(cart, cart_config);
 
+
+  std::cout <<"test collision->appended->q_current: \n" << collision->appended->q_current << std::endl;
+
   std::string frame = "rightPalm";
-  collision->build_object_directed_vectors(frame);
+  collision->build_object_directed_vectors(frame, q_start);
    for(int o=0; o<collision->directed_vectors.size(); ++o){
     std::cout << "collision->directed_vectors[o].from: " << collision->directed_vectors[o].from << std::endl;
     std::cout << "collision->directed_vectors[o].to: " << collision->directed_vectors[o].to << std::endl;
     std::cout << "collision->directed_vectors[o].magnitude: " << collision->directed_vectors[o].magnitude << std::endl;
     std::cout << "collision->directed_vectors[o].direction: \n" << collision->directed_vectors[o].direction << std::endl;
   }
-  collision->directed_vectors.clear();
+  // collision->directed_vectors.clear();
 
-  collision->build_self_directed_vectors(frame);
+  // collision->build_self_directed_vectors(frame);
 
-   for(int p=0; p<collision->directed_vectors.size(); ++p){
-    std::cout << "collision->directed_vectors[p].from: " << collision->directed_vectors[p].from << std::endl;
-    std::cout << "collision->directed_vectors[p].to: " << collision->directed_vectors[p].to << std::endl;
-    std::cout << "collision->directed_vectors[p].magnitude: " << collision->directed_vectors[p].magnitude << std::endl;
-    std::cout << "collision->directed_vectors[p].direction: \n" << collision->directed_vectors[p].direction << std::endl;
-  }
+  //  for(int p=0; p<collision->directed_vectors.size(); ++p){
+  //   std::cout << "collision->directed_vectors[p].from: " << collision->directed_vectors[p].from << std::endl;
+  //   std::cout << "collision->directed_vectors[p].to: " << collision->directed_vectors[p].to << std::endl;
+  //   std::cout << "collision->directed_vectors[p].magnitude: " << collision->directed_vectors[p].magnitude << std::endl;
+  //   std::cout << "collision->directed_vectors[p].direction: \n" << collision->directed_vectors[p].direction << std::endl;
+  // }
 	
 	// std::cout << "------ Valkyrie Model ------ " << std::endl;
  //  std::cout << valkyrie->model;	

@@ -4,7 +4,12 @@
 CollisionEnvironment::CollisionEnvironment(std::shared_ptr<RobotModel> & val){
   valkyrie = val;
 
+  // Prepare valkyrie for appending to appended
+  valkyrie->geomModel.addAllCollisionPairs();
+  pinocchio::srdf::removeCollisionPairs(valkyrie->model, valkyrie->geomModel, valkyrie->srdf_filename, false);
+
   valkyrie->enableUpdateGeomOnKinematicsUpdate(true);
+  valkyrie->updateFullKinematics(valkyrie->q_current);
 
   std::cout << "Collision Environment Created" << std::endl;
   // Indicates if there is an object
@@ -16,7 +21,7 @@ CollisionEnvironment::CollisionEnvironment(std::shared_ptr<RobotModel> & val){
   // create an empty RobotModel apended
   appended = std::shared_ptr<RobotModel> (new RobotModel() );
   // append empty appended with valkyrie
-  append_models();
+  append_models(); 
   // Builds a map from collision names (i.e. body_0) to frame names (i.e body)
   map_collision_names_to_frame_names();
   // Builds a map from collision body name (i.e. rightPalm_0) to list of valkyrie bodies from which we would want directed vectors
@@ -35,18 +40,20 @@ CollisionEnvironment::~CollisionEnvironment(){
 void CollisionEnvironment::append_models(){
 
   if(first_time){
-    // Prepare valkyrie for appending to appended
-    valkyrie->geomModel.addAllCollisionPairs();
-    pinocchio::srdf::removeCollisionPairs(valkyrie->model, valkyrie->geomModel, valkyrie->srdf_filename, false);
 
-    appended = valkyrie;
+    std::shared_ptr<RobotModel> app(new RobotModel() );
+
+    // Append the object onto the robot, and fill appended RobotModel
+    pinocchio::appendModel(appended->model, valkyrie->model, appended->geomModel, valkyrie->geomModel, appended->model.frames.size()-1, pinocchio::SE3::Identity(), app->model, app->geomModel);
+
+    appended = app;
 
     // Like common intialization but for appended objects
     // Difference is the initialization of geomData
     appended->appended_initialization();
 
     // Define the appended configuration vector
-    appended->q_current << valkyrie->q_current;
+    appended->q_current = valkyrie->q_current;
 
     // Update the full kinematics 
     appended->enableUpdateGeomOnKinematicsUpdate(true);
@@ -56,21 +63,38 @@ void CollisionEnvironment::append_models(){
 
   }
   else{
+    Eigen::VectorXd temp;
     // Prepare object for appending 
     object->geomModel.addAllCollisionPairs();
+
+    temp = appended->q_current;
 
     std::shared_ptr<RobotModel> app(new RobotModel() );
 
     // Append the object onto the robot, and fill appended RobotModel
     pinocchio::appendModel(appended->model, object->model, appended->geomModel, object->geomModel, appended->model.frames.size()-1, pinocchio::SE3::Identity(), app->model, app->geomModel);
 
-    app->appended_initialization();
-
-    // Define the appended configuration vector
-    app->q_current << appended->q_current, object->q_current;
-
     appended = app;
 
+    appended->appended_initialization();
+
+    // Define empy vectorXd with new length of appended
+    Eigen::VectorXd temp1;
+    temp1 = Eigen::VectorXd::Zero(appended->getDimQ());
+
+    // Initially fill it with the original appended->q_current
+    for(int j=0; j<temp.size(); ++j){
+      temp1[j] = temp[j];
+    }
+    int p=0;
+    // Then add the new object->q_current to the end
+    for(int k=temp.size(); k<appended->getDimQ(); ++k){
+      temp1[k] = object->q_current[p];
+      ++p;
+    }
+
+    // Define the appended configuration vector
+    appended->q_current = temp1;
     // update full kinematics
     appended->enableUpdateGeomOnKinematicsUpdate(true);
     appended->updateFullKinematics(appended->q_current);
@@ -144,7 +168,7 @@ void CollisionEnvironment::find_near_points(std::string & interest_link, const s
 
 
 
-void CollisionEnvironment::build_self_directed_vectors(const std::string & frame_name){
+void CollisionEnvironment::build_self_directed_vectors(const std::string & frame_name, Eigen::VectorXd & q_current){
   // for clarity on these maps, see control flow in find_self_near_points function
   std::map<std::string, Eigen::Vector3d> from_near_points, to_near_points;
 
@@ -154,6 +178,14 @@ void CollisionEnvironment::build_self_directed_vectors(const std::string & frame
   Eigen::Vector3d difference;
 
   std::string to_link = frame_name + "_0"; // Pinocchio Convention has _0 after collision links
+
+  // Update the robot config for the given step of IK iteration
+  for(int j=0; j<q_current.size(); ++j){
+    appended->q_current[j] = q_current[j];
+  }
+  // Update full kinematics
+  appended->enableUpdateGeomOnKinematicsUpdate(true);
+  appended->updateFullKinematics(appended->q_current);
 
   // fill our two maps
   find_near_points(to_link, link_to_collision_names.find(to_link)->second, from_near_points, to_near_points);
@@ -186,7 +218,7 @@ void CollisionEnvironment::build_self_directed_vectors(const std::string & frame
 
 
 
-void CollisionEnvironment::build_object_directed_vectors(std::string & frame_name){
+void CollisionEnvironment::build_object_directed_vectors(std::string & frame_name, Eigen::VectorXd & q_current){
   // for clarity on these maps, see control flow in find_self_near_points function
   std::map<std::string, Eigen::Vector3d> from_near_points, to_near_points;
 
@@ -195,6 +227,20 @@ void CollisionEnvironment::build_object_directed_vectors(std::string & frame_nam
 
   // used to build directed vectors
   Eigen::Vector3d difference;
+
+  // std::cout << "q_current: \n" << q_current << std::endl;
+  // std::cout << "-----------------------------------------------\n";
+
+  // Update the robot config for the given step of IK iteration
+  for(int j=0; j<q_current.size(); ++j){
+    appended->q_current[j] = q_current[j];
+  }
+  // Update full kinematics
+  appended->enableUpdateGeomOnKinematicsUpdate(true);
+  appended->updateFullKinematics(appended->q_current);
+
+  // std::cout << "After: appended->q_current\n" << appended->q_current << std::endl;
+  // std::cout << "----------------------------------------------------------------------\n";
 
   // gives a list of object link names
   std::vector<std::string> object_links = get_object_links();
@@ -205,6 +251,7 @@ void CollisionEnvironment::build_object_directed_vectors(std::string & frame_nam
     // Notice we reverse to and from near_points, because unlike in the self directed vectors,
     // we want vectors away from the collision_names[0]
     find_near_points(object_links[i], link_to_object_collision_names[frame_name], to_near_points, from_near_points);
+
 
 
     for(it=from_near_points.begin(); it!=from_near_points.end(); ++it){
@@ -231,6 +278,15 @@ void CollisionEnvironment::build_object_directed_vectors(std::string & frame_nam
 
   std::cout << "directed_vectors.size(): " << directed_vectors.size() << std::endl;
 
+  for(int i=0; i<directed_vectors.size(); ++i){
+    std::cout << "directed_vectors[o].from: " << directed_vectors[i].from << std::endl;
+    std::cout << "directed_vectors[o].to: " << directed_vectors[i].to << std::endl;
+    std::cout << "directed_vectors[o].magnitude: " << directed_vectors[i].magnitude << std::endl;
+    std::cout << "directed_vectors[o].direction: \n" << directed_vectors[i].direction << std::endl;
+  }
+
+  
+
 }
 
 
@@ -238,11 +294,11 @@ double CollisionEnvironment::get_collision_potential(){
   double Potential, temp;
   Potential = 0;
   closest = 0;
-  std::vector<double> Potential_closestid;
   double safety_dist;
 
   temp = directed_vectors[0].magnitude;
   
+  // We want to find the index of the directed vector with lowest magnitude
   // Sort thru all of the directed vectors
   for(int j=1; j<directed_vectors.size(); ++j){
     // If in collision, this is the pair we want
@@ -259,12 +315,13 @@ double CollisionEnvironment::get_collision_potential(){
     }
   }
 
+  // Set the local safety distance accordingly and output if there is a collision
   if(directed_vectors[closest].using_worldFramePose){
     safety_dist = safety_dist_collision;
     std::cout << "Collision between these links: (to, from) (" << directed_vectors[closest].to << ", " << directed_vectors[closest].from << ")" << std::endl;
   } else safety_dist = safety_dist_normal;
 
-
+  // Get the potential using the proper safety_distance
   if(directed_vectors[closest].magnitude < safety_dist){
     Potential = (1.0/2.0) * eta * std::pow(( (1/(directed_vectors[closest].magnitude)) - (1/(safety_dist)) ),2);
   }
