@@ -382,36 +382,18 @@ void WalkingPatternGenerator::compute_com_dcm_trajectory(const Eigen::Vector3d &
   double t_prev = 0.0;
   double dt = internal_dt;
 
-
-
-  // for(int i = 0; i < N_size; i++){
-  //   // x_post = dx*dt + x_pre
-  //   t = dt*i;
-  //   com_pos = get_com_vel(com_pos, step_index, t-t_prev)*dt + com_pos;
-  //   dcm_pos = get_desired_DCM(step_index, t-t_prev);
-  //   // Check if t-t_prev exceeded the current t_step and if we can increment the step index
-  //   if ( ((t-t_prev) >= t_step) && (step_index < rvrp_type_list.size()-1) ){
-  //     step_index++;
-  //     t_prev = t;
-  //     t_step = get_t_step(step_index);        
-  //   }
-
-  //     std::cout << com_pos.transpose() << std::endl;
-  //     // Store the CoM position
-  //     traj_pos_com.set_pos(i, com_pos);
-  //     traj_dcm_pos.set_pos(i, dcm_pos);  
-  // }
-
-  // Compute CoM more finely but ensure that we follow the desired discretization
-  double dt_local = 1e-3; // Always use this discretization for integrating CoM
+  // Always try to compute CoM finely. Also, ensure that we follow the desired discretization
+  double dt_local = 1e-3; // Use this discretization for integrating the CoM
   int N_local = int(get_total_trajectory_time()/dt_local);
   int j = 0;
 
-  for(int i = 0; i < N_local; i++){
-    if (j < N_size){
+  // In case N_size is larger than N_local: 
+  if (N_size > N_local){
+    // Compute using N_size as the discretization. This is rarely the case
+    for(int i = 0; i < N_size; i++){
       // x_post = dx*dt + x_pre
-      t = dt_local*i;
-      com_pos = get_com_vel(com_pos, step_index, t-t_prev)*dt_local + com_pos;
+      t = dt*i;
+      com_pos = get_com_vel(com_pos, step_index, t-t_prev)*dt + com_pos;
       dcm_pos = get_desired_DCM(step_index, t-t_prev);
       // Check if t-t_prev exceeded the current t_step and if we can increment the step index
       if ( ((t-t_prev) >= t_step) && (step_index < rvrp_type_list.size()-1) ){
@@ -420,16 +402,37 @@ void WalkingPatternGenerator::compute_com_dcm_trajectory(const Eigen::Vector3d &
         t_step = get_t_step(step_index);        
       }
 
-      if (i % (N_local/N_size) == 0){
-        std::cout << com_pos.transpose() << std::endl;
+        // std::cout << com_pos.transpose() << std::endl;
         // Store the CoM position
-        traj_pos_com.set_pos(j, com_pos);
-        traj_dcm_pos.set_pos(j, dcm_pos);
-        j++;      
-      }
+        traj_pos_com.set_pos(i, com_pos);
+        traj_dcm_pos.set_pos(i, dcm_pos);  
     }
-    else{
-      break;
+  }else{
+    // Compute with a more fine integration of the CoM. This is usually the case
+    for(int i = 0; i < N_local; i++){
+      if (j < N_size){
+        // x_post = dx*dt + x_pre
+        t = dt_local*i;
+        com_pos = get_com_vel(com_pos, step_index, t-t_prev)*dt_local + com_pos;
+        dcm_pos = get_desired_DCM(step_index, t-t_prev);
+        // Check if t-t_prev exceeded the current t_step and if we can increment the step index
+        if ( ((t-t_prev) >= t_step) && (step_index < rvrp_type_list.size()-1) ){
+          step_index++;
+          t_prev = t;
+          t_step = get_t_step(step_index);        
+        }
+
+        if (i % (N_local/N_size) == 0){
+          // std::cout << com_pos.transpose() << std::endl;
+          // Store the CoM position
+          traj_pos_com.set_pos(j, com_pos);
+          traj_dcm_pos.set_pos(j, dcm_pos);
+          j++;      
+        }
+      }
+      else{
+        break;
+      }
     }
   }
 
