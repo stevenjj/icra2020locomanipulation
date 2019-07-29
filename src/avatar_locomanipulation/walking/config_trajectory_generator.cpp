@@ -320,9 +320,9 @@ bool ConfigTrajectoryGenerator::computeInitialConfigForFlatGround(const Eigen::V
 void ConfigTrajectoryGenerator::printIntermediateIKTrajectoryresult(int & index, bool & primary_task_converge_result, double & total_error_norm, std::vector<double> & task_error_norms){
 	if (index == 0){
 		std::cout << "[ConfigTrajectoryGenerator]" << std::endl;
-		std::cout << "index | 1st task converged? | total error norm | task error norms " << std::endl;	
+		std::cout << "index | 1st task converged? | Acceptable? | total error norm | task error norms " << std::endl;	
 	}
-	std::cout << index << " | " << (primary_task_converge_result ? "True" : "False") << " | " << total_error_norm << " | ";
+	std::cout << index << " | " << (primary_task_converge_result ? "True" : "False") << " | " << (didTrajectoryConverge()? "True" : "False") << " | " << total_error_norm << " | ";
 
 	for(int i = 0; i < task_error_norms.size(); i++){
 		std::cout << task_error_norms[i] << " ";
@@ -336,8 +336,13 @@ void ConfigTrajectoryGenerator::printIKTrajectoryresult(){
 }
 
 
+void ConfigTrajectoryGenerator::setTrajErrorTol(double error_tol_in){
+	traj_error_tol = error_tol_in;
+}
+
 bool ConfigTrajectoryGenerator::didTrajectoryConverge(){
-	if (max_first_task_ik_error < ik_module.getErrorTol()){
+//	if (max_first_task_ik_error < ik_module.getErrorTol()){
+	if (max_first_task_ik_error < traj_error_tol){
 		return true;
 	}
 	return false;
@@ -451,7 +456,7 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 		}
 
 		// If converged or continue solving with partial error divergence
-		if ((primary_task_convergence) || (solve_with_partial_divergence)){
+		if ((didTrajectoryConverge()) || (solve_with_partial_divergence)){
 			q_current = q_sol;
 			traj_q_config.set_pos(i, q_current);
 			continue;

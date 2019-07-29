@@ -51,7 +51,7 @@ void test_hand_in_place_config_trajectory_generator(){
   std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_no_fingers.urdf";
   std::shared_ptr<RobotModel> valkyrie_model(new RobotModel(urdf_filename));
 
-  int N_resolution = 60;
+  int N_resolution = 60; //single step = 30. two steps = 60// 30* number of footsteps
   ConfigTrajectoryGenerator ctg(valkyrie_model, N_resolution);
 
   Eigen::VectorXd q_start, q_end;
@@ -76,7 +76,11 @@ void test_hand_in_place_config_trajectory_generator(){
 
   valkyrie_model->getFrameWorldPose("leftCOP_Frame", footstep_1.position, footstep_1.orientation);  
   valkyrie_model->getFrameWorldPose("rightCOP_Frame", footstep_2.position, footstep_2.orientation);  
-  std::vector<Footstep> input_footstep_list = {footstep_1, footstep_2};
+  footstep_2.position[0] -= 0.1;
+  footstep_1.position[0] -= 0.1;
+  std::vector<Footstep> input_footstep_list = {footstep_2, footstep_1};
+  // std::vector<Footstep> input_footstep_list = {footstep_1};
+
 
   // Get current hand pose
   Eigen::Vector3d rhand_pos;
@@ -166,7 +170,7 @@ void test_walking_config_trajectory_generator(){
   timer.tic();
   ctg.computeConfigurationTrajectory(q_start, input_footstep_list);
   std::cout << "IK Trajectory took: " << timer.toc() << timer.unitName(timer.DEFAULT_UNIT) << std::endl;
-  
+
   // Visualize Trajectory
   visualizer.visualizeConfigurationTrajectory(q_start, ctg.traj_q_config);
 

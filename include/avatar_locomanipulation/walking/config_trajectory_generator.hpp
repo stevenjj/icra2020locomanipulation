@@ -140,6 +140,8 @@ public:
 	// convergence condition:  max_first_task_ik_error < ik_module.error_tol.
 	bool didTrajectoryConverge();
 
+	// Trajectory task space error tolerance
+	void setTrajErrorTol(double error_tol_in);
 
 private:
 	void createTaskStack();
@@ -180,6 +182,8 @@ private:
 
 
 	bool solve_with_partial_divergence = false;
+
+	double traj_error_tol = 1e-2;
 
 };
 
