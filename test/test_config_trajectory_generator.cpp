@@ -51,7 +51,7 @@ void test_hand_in_place_config_trajectory_generator(){
   std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
   std::shared_ptr<RobotModel> valkyrie_model(new RobotModel(urdf_filename));
 
-  int N_resolution = 30;
+  int N_resolution = 50;
   ConfigTrajectoryGenerator ctg(valkyrie_model, N_resolution);
 
   Eigen::VectorXd q_start, q_end;
@@ -114,7 +114,7 @@ void test_walking_config_trajectory_generator(){
   std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
   std::shared_ptr<RobotModel> valkyrie_model(new RobotModel(urdf_filename));
 
-  int N_resolution = 150;
+  int N_resolution = 100;
   ConfigTrajectoryGenerator ctg(valkyrie_model, N_resolution);
 
   Eigen::VectorXd q_start, q_end;
