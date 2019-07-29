@@ -422,9 +422,9 @@ void WalkingPatternGenerator::compute_com_dcm_trajectory(const Eigen::Vector3d &
           t_step = get_t_step(step_index);        
         }
 
+        // Store the COM position at the desired discretization
         if (i % (N_local/N_size) == 0){
           // std::cout << com_pos.transpose() << std::endl;
-          // Store the CoM position
           traj_pos_com.set_pos(j, com_pos);
           traj_dcm_pos.set_pos(j, dcm_pos);
           j++;      
