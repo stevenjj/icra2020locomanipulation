@@ -30,8 +30,6 @@ void SixDimVec::evaluate(const double & s_global){
 	// Clamp 0.0 <= s <= 1.0
 	double s_ = clamp(s_global);
 
-	std::cout << "s_global = " << s_global << std::endl;
-
 	for(int i=0; i<(N-2); ++i){
 		// Ensure we use global s to select the proper SixDim to use
 		if( ( i / ((double) (N)) ) <= s_ && s_ < ( ((double) (i+3))/((double) (N-1)) ) ){
@@ -87,6 +85,12 @@ void SixDimVec::convertToQuat(){
 	aa[1] = temp->output[4];
 	aa[2] = temp->output[5];
 
-	quat_out = Eigen::AngleAxisd(aa.norm(), aa.normalized());
+	double angle;
+	Eigen::Vector3d axis;
+
+	angle = atan2(sin(aa.norm()), cos(aa.norm()));
+	axis = aa.normalized();
+
+	quat_out = Eigen::AngleAxisd(angle, axis);
 
 }

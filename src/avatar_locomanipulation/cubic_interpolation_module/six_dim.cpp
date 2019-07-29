@@ -75,8 +75,6 @@ void SixDim::evaluate(const double & s_local){
  	double s_in; 
  	s_in = s_local;
 
- 	std::cout << "s_local = " << s_local << std::endl;
-
  	output.clear();
 
 	output.push_back(fx->evaluate(s_in));
@@ -85,6 +83,4 @@ void SixDim::evaluate(const double & s_local){
 	output.push_back(frx->evaluate(s_in));
 	output.push_back(fry->evaluate(s_in));
 	output.push_back(frz->evaluate(s_in));
-
-	std::cout << "-----------------------------------------\n";
 }

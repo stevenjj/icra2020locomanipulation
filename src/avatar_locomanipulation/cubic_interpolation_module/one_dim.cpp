@@ -58,7 +58,5 @@ void OneDim::interpolate(){
 double OneDim::evaluate(const double & s_in){
 	double s_ = s_in;
 
-	std::cout << "OneDim Output\n" << (a0 + a1*s_ + a2*(std::pow(s_,2)) + a3*(std::pow(s_,3))) << std::endl;
-
 	return (a0 + a1*s_ + a2*(std::pow(s_,2)) + a3*(std::pow(s_,3)));
 }
