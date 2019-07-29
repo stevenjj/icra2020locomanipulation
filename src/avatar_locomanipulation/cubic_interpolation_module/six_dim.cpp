@@ -1,12 +1,12 @@
-#include <avatar_locomanipulation/cubic_interpolation_module/seven_dim.hpp>
+#include <avatar_locomanipulation/cubic_interpolation_module/six_dim.hpp>
 
 
-SevenDim::SevenDim(){
+SixDim::SixDim(){
 
 }
 
 
-SevenDim::SevenDim(const int & first_waypoint, const std::string & yaml_name){
+SixDim::SixDim(const int & first_waypoint, const std::string & yaml_name){
 
 	// Initializa Param Handler
 	ParamHandler param_handler;
@@ -16,7 +16,7 @@ SevenDim::SevenDim(const int & first_waypoint, const std::string & yaml_name){
 	// Holds the waypoint_#
 	char point[12];
 	// Holds the waypoints for each dimension
-	std::vector<double> xs, ys, zs, rxs, rys, rzs, rws;
+	std::vector<double> xs, ys, zs, rxs, rys, rzs;
 	// Temporarily holds waypoints from getNestedValue
 	double x, y, z, rx, ry, rz, rw;
 
@@ -36,46 +36,55 @@ SevenDim::SevenDim(const int & first_waypoint, const std::string & yaml_name){
 		param_handler.getNestedValue({point, "rz"}, rz);
 		param_handler.getNestedValue({point, "rw"}, rw);
 
-		rxs.push_back(rx);
-		rys.push_back(ry);
-		rzs.push_back(rz);
-		rws.push_back(rw);
+		Eigen::Quaterniond quat;
+		Eigen::Vector3d axisangle;
+
+		// Build quaternion from the waypoints
+		quat.x() = rx;
+		quat.y() = ry;
+		quat.z() = rz;
+		quat.w() = rw;
+
+		// convert this to axisangle Vector3d
+		math_utils::convert(quat, axisangle);
+
+		rxs.push_back(axisangle[0]);
+		rys.push_back(axisangle[1]);
+		rzs.push_back(axisangle[2]);
 		
 	}
 
-	// Create our 7 OneDim Interpolations
+	// Create our 6 OneDim Interpolations
 	fx = std::shared_ptr<OneDim>(new OneDim(xs) );
 	fy = std::shared_ptr<OneDim>(new OneDim(ys) );
 	fz = std::shared_ptr<OneDim>(new OneDim(zs) );
 	frx = std::shared_ptr<OneDim>(new OneDim(rxs) );
 	fry = std::shared_ptr<OneDim>(new OneDim(rys) );
 	frz = std::shared_ptr<OneDim>(new OneDim(rzs) );
-	frw = std::shared_ptr<OneDim>(new OneDim(rws) );
 
-	std::cout << "[SevenDim] Created" << std::endl;
+	std::cout << "[SixDim] Created" << std::endl;
 }
 
 
-SevenDim::~SevenDim(){
+SixDim::~SixDim(){
 
 }
 
 
-void SevenDim::evaluate(const double & s_local){
- 	double s_in = s_local;
+void SixDim::evaluate(const double & s_local){
+ 	double s_in; 
+ 	s_in = s_local;
 
- 	std::cout << "\nx_pos: " << std::endl;
-	fx->evaluate(s_in);
-	std::cout << "\ny_pos: " << std::endl;
-	fy->evaluate(s_in);
-	std::cout << "\nz_pos: " << std::endl;
-	fz->evaluate(s_in);
-	std::cout << "\nx_ori: " << std::endl;
-	frx->evaluate(s_in);
-	std::cout << "\ny_ori: " << std::endl;
-	fry->evaluate(s_in);
-	std::cout << "\nz_ori: " << std::endl;
-	frz->evaluate(s_in);
-	std::cout << "\nw_ori: " << std::endl;
-	frw->evaluate(s_in);
+ 	std::cout << "s_local = " << s_local << std::endl;
+
+ 	output.clear();
+
+	output.push_back(fx->evaluate(s_in));
+	output.push_back(fy->evaluate(s_in));
+	output.push_back(fz->evaluate(s_in));
+	output.push_back(frx->evaluate(s_in));
+	output.push_back(fry->evaluate(s_in));
+	output.push_back(frz->evaluate(s_in));
+
+	std::cout << "-----------------------------------------\n";
 }

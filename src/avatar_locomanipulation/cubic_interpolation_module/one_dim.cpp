@@ -47,7 +47,7 @@ void OneDim::interpolate(){
 	a1 = a[1];
 	a2 = a[2];
 	a3 = a[3];
-	std::cout << "(a0, a1, a2, a3) = (" << a0 << ", " << a1 << ", " << a2 << ", " << a3 << ")" << std::endl;
+	// std::cout << "(a0, a1, a2, a3) = (" << a0 << ", " << a1 << ", " << a2 << ", " << a3 << ")" << std::endl;
 }
 
 // In some higher level structure, we would input, say s=1/15
@@ -55,9 +55,10 @@ void OneDim::interpolate(){
 //		Then we would call each of the 7 OneDims, handing them an s_in that corresponds to THIS s_in 
 //		where we would scale the 1/15 to 1 here since 1/15 will be the end of one of these OneDim f's
 //		If it was 1/30, we would have THIS s_in be 0.5
-void OneDim::evaluate(const double & s_in){
+double OneDim::evaluate(const double & s_in){
 	double s_ = s_in;
 
-	std::cout << (a0 + a1*s_ + a2*(std::pow(s_,2)) + a3*(std::pow(s_,3))) << std::endl;
+	std::cout << "OneDim Output\n" << (a0 + a1*s_ + a2*(std::pow(s_,2)) + a3*(std::pow(s_,3))) << std::endl;
 
+	return (a0 + a1*s_ + a2*(std::pow(s_,2)) + a3*(std::pow(s_,3)));
 }

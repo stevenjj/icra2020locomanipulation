@@ -6,6 +6,7 @@
 #include <vector>
 #include <memory>
 #include <Configuration.h>
+#include <avatar_locomanipulation/helpers/orientation_utils.hpp>
 
 
 class OneDim{
@@ -23,7 +24,7 @@ public:
 
 	void interpolate();
 
-	void evaluate(const double & s_in);
+	double evaluate(const double & s_in);
 };
 
 

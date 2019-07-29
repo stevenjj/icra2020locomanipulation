@@ -102,8 +102,8 @@ SET (IK_MODULE_SOURCES
 
 SET (CUBIC_INTERPOLATION_MODULE_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/cubic_interpolation_module/one_dim.cpp
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/cubic_interpolation_module/seven_dim.cpp
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/cubic_interpolation_module/seven_dim_vec.cpp)
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/cubic_interpolation_module/six_dim.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/cubic_interpolation_module/six_dim_vec.cpp)
 
 
 SET(PROJECT_SOURCES
