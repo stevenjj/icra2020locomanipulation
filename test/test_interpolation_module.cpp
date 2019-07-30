@@ -164,6 +164,7 @@ int main(int argc, char ** argv){
 	std::vector<std::vector<double> > outs;
 
 	std::shared_ptr<SixDimVec> example; 
+	example = std::shared_ptr<SixDimVec>(new SixDimVec(N, file));
 
 
 	hand_poses.header.frame_id = "hinge_frame";
@@ -175,7 +176,6 @@ int main(int argc, char ** argv){
 
 		std::cout << "s = " << s << std::endl;
 
-		example = std::shared_ptr<SixDimVec>(new SixDimVec(N, file));
 
 		example->evaluate(s);
 

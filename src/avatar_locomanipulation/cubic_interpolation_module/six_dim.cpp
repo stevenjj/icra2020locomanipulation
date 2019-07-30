@@ -2,7 +2,10 @@
 
 
 SixDim::SixDim(){
-
+	output.clear();
+	for (int i = 0; i < 6; i++){
+		output.push_back(0.0);
+	}
 }
 
 
@@ -62,7 +65,13 @@ SixDim::SixDim(const int & first_waypoint, const std::string & yaml_name){
 	fry = std::shared_ptr<OneDim>(new OneDim(rys) );
 	frz = std::shared_ptr<OneDim>(new OneDim(rzs) );
 
-	std::cout << "[SixDim] Created" << std::endl;
+	// Initialize output vector of doubles
+	output.clear();
+	for (int i = 0; i < 6; i++){
+		output.push_back(0.0);
+	}
+
+	// std::cout << "[SixDim] Created" << std::endl;
 }
 
 
@@ -75,12 +84,12 @@ void SixDim::evaluate(const double & s_local){
  	double s_in; 
  	s_in = s_local;
 
- 	output.clear();
+ 	// Update output vector
+	output[0] = fx->evaluate(s_in);
+	output[1] = fy->evaluate(s_in);
+	output[2] = fz->evaluate(s_in);
+	output[3] = frx->evaluate(s_in);
+	output[4] = fry->evaluate(s_in);
+	output[5] = frz->evaluate(s_in);
 
-	output.push_back(fx->evaluate(s_in));
-	output.push_back(fy->evaluate(s_in));
-	output.push_back(fz->evaluate(s_in));
-	output.push_back(frx->evaluate(s_in));
-	output.push_back(fry->evaluate(s_in));
-	output.push_back(frz->evaluate(s_in));
 }

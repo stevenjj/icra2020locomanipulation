@@ -12,12 +12,11 @@ SixDimVec::SixDimVec(const int & waypoint_length, const std::string & yaml_filen
 
 	for(int i=1; i<(N-2); ++i){
 		temp = std::shared_ptr<SixDim>(new SixDim(i, filename) );
-		seven_dim_vec.push_back(temp);
+		six_dim_vec.push_back(temp);
 	}
 
-	std::cout << "[SixDimVec] Created" << std::endl;
-
-	std::cout << "seven_dim_vec.size() " << seven_dim_vec.size() << std::endl;
+	// std::cout << "[SixDimVec] Created" << std::endl;
+	// std::cout << "six_dim_vec.size() " << six_dim_vec.size() << std::endl;
 }
 
 
@@ -39,24 +38,30 @@ void SixDimVec::evaluate(const double & s_global){
 			double s_local = ( 1 / ( ( ((double) (i+3))/((double) (N-1)) ) - ( i / ((double) (N)) ) )) * ( s_ - ( i / ((double) (N)) ) );
 			
 			// Feed evaluate the local s value
-			seven_dim_vec[i]->evaluate(s_local);
-			temp = seven_dim_vec[i];
+			six_dim_vec[i]->evaluate(s_local);
+			temp = six_dim_vec[i];
 			break;
 		}
 	} 
 	if (s_ >= 1.0){
-		seven_dim_vec[N-3]->evaluate(s_);	
-		temp = seven_dim_vec[N-3];	
+		six_dim_vec[N-3]->evaluate(s_);	
+		temp = six_dim_vec[N-3];	
 	}
 
 	convertToQuat();
 
-	std::cout << "\nx_out:\n" << pos_out[0];
-	std::cout << "\ny_out:\n" << pos_out[1];
-	std::cout << "\nz_out:\n" << pos_out[2];
-	std::cout << "\n rx_out, ry_out, rz_out, rw_out\n(";
-	math_utils::printQuat(quat_out); 
+	// std::cout << "\nx_out:\n" << pos_out[0];
+	// std::cout << "\ny_out:\n" << pos_out[1];
+	// std::cout << "\nz_out:\n" << pos_out[2];
+	// std::cout << "\n rx_out, ry_out, rz_out, rw_out\n(";
+	// math_utils::printQuat(quat_out); 
 
+}
+
+void SixDimVec::getPose(const double & s_global, Eigen::Vector3d & position_out, Eigen::Quaterniond & orientation_out){
+	evaluate(s_global);
+	position_out = pos_out;
+	orientation_out = quat_out;
 }
 
 

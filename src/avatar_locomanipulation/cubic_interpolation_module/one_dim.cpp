@@ -13,7 +13,7 @@ OneDim::OneDim(const std::vector<double> & waypoints){
 	wp3 = waypoints[2];
 	wp4 = waypoints[3];
 	interpolate();
-	std::cout << "One Dimensional Cubic Interpolation Created with Values" << std::endl;
+	// std::cout << "One Dimensional Cubic Interpolation Created with Values" << std::endl;
 }
 
 OneDim::~OneDim(){
@@ -52,7 +52,7 @@ void OneDim::interpolate(){
 
 // In some higher level structure, we would input, say s=1/15
 //	Then using some if structure we would decide okay this is the mid level f
-//		Then we would call each of the 7 OneDims, handing them an s_in that corresponds to THIS s_in 
+//		Then we would call each of the 6 OneDims, handing them an s_in that corresponds to THIS s_in 
 //		where we would scale the 1/15 to 1 here since 1/15 will be the end of one of these OneDim f's
 //		If it was 1/30, we would have THIS s_in be 0.5
 double OneDim::evaluate(const double & s_in){
