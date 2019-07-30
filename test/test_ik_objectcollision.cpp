@@ -78,7 +78,7 @@ std::shared_ptr<RobotModel> initialize_config(Eigen::VectorXd & q_init, Eigen::V
   // Define the configuration of the cart
   Eigen::VectorXd cart_config;
   cart_config = Eigen::VectorXd::Zero(cart->getDimQ());
-  cart_config[0] = -0.05;  cart_config[1] = -0.0065;  cart_config[2] = -0.03;
+  cart_config[0] = 0.85;  cart_config[1] = -0.0065;  cart_config[2] = -0.03;
   // cart_config[0] = -0.06;  cart_config[1] = -0.0085;  cart_config[2] = -0.04;
   double theta1 = 0;//M_PI/4.0;	
   Eigen::AngleAxis<double> bb(theta1, Eigen::Vector3d(0.0, 0.0, 1.0)); // yaw pi/4 to the left	
