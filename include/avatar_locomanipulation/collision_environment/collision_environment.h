@@ -7,6 +7,7 @@
 #include <avatar_locomanipulation/models/robot_model.hpp>
 // Directed Vectors
 #include <avatar_locomanipulation/collision_environment/directed_vectors.hpp>
+#include <math.h>
 
 
 
@@ -20,11 +21,9 @@ private:
   //          double magnitude - magnitude of the vector for use with potential
   DirectedVectors dvector;
 
+
   // a map from collision body names to frame names
   std::map<std::string, std::string> collision_to_frame;
-
-  // The tolerance distance for avoiding self collisions
-  double safety_dist = 0.05;
 
   // The distance for a link to move away from the body if inside the safety distance
   double max_scaling_distance = 0.15;
@@ -35,8 +34,9 @@ private:
 
 
   // appends the models internally
-  // Used in distance/collision computation, which does not require the appended config
-  std::shared_ptr<RobotModel> append_models();
+  // first_time appends valkyrie to appended
+  // subsequently appends object onto end of appended
+  void append_models();
 
 
 
@@ -44,84 +44,94 @@ private:
   // fills the map with key being the collision body names and value being the corresponding frame name
   void map_collision_names_to_frame_names();
 
+  
+  // Create map for self collision to generakize self directed vectors
+  void generalize_build_self_directed_vectors();
+
+  // Create map for object collision to generalize the object directed vectors
+  void generalize_build_object_directed_vectors();
+
 
   // Builds a directed vector using world positions for the case when two bodies are in collision
   // called internally from build_directed_vectors_name
   // Input: name of two collision bodies
   void get_dvector_collision_links(const std::string & from_name, const std::string & to_name);
 
-  // same as the function get_dvector_collision_links, except it is used for instances of collision
-  //  between the robot and the environmental object, hence we must use the appended RobotModel
-  void get_dvector_collision_links_appended(std::shared_ptr<RobotModel> & appended, const std::string & from_name, const std::string & to_name);
-
-
+  
   std::vector<std::string> get_object_links();
 
 public:
+  // Potential function scaling distance
+  double eta;
+
+  // The tolerance distance for avoiding collisions
+  double safety_dist_normal = 0.075;
+  double safety_dist_collision = 0.2;
+
+  // boolean such that an empty appended robotmodel becomes appended with valkyrie on collision environment init
+  bool first_time = false;
+
+  // index of the closest directedvector for calculating potential
+  int closest;
+
+  // Generalizes our build_self_directed_vectors
+  // link_to_collision_names["rightPalm_0"] = {"leftPalm_0", ....}
+  std::map<std::string, std::vector<std::string> > link_to_collision_names;
+
+  std::map<std::string, std::vector<std::string> > link_to_object_collision_names;
+
 
   // The two robot models which we are adding to the environment
-  std::shared_ptr<RobotModel> valkyrie, object;
+  std::shared_ptr<RobotModel> valkyrie, object, appended;
 
   // The vector of directed vectors and related information
   std::vector<DirectedVectors>  directed_vectors;
-  
 
-  // Constructor fills the local data for valkyrie, object RobotModels
-  // Inputs: RobotModel valkyrie
-  //         RobotModel environmental_object
-  CollisionEnvironment(std::shared_ptr<RobotModel> & val, std::shared_ptr<RobotModel> & obj);
-
-  // Constructor for only valkyrie model
+  // Constructor initializes appended model to be val
+  // Input: - valkyrie RobotModel
   CollisionEnvironment(std::shared_ptr<RobotModel> & val);
 
 
   ~CollisionEnvironment();
 
 
+  // Called by build_____directed_vectors, provides that function with pairs of nearest_points
   // Inputs: - List of collision object names, with the first being used as the "to" object
   //         - (Empty) map from names of "from" collision links to the nearest point on those objects
   //         - (Empty) map from names of "from"collision links to nearest points on the "to" objects
-  void find_self_near_points(std::vector<std::string> & list, std::map<std::string, Eigen::Vector3d> & from_near_points, std::map<std::string, Eigen::Vector3d> & to_near_points);
+  void find_near_points(std::string & interest_link, const std::vector<std::string>  & list, std::map<std::string, Eigen::Vector3d> & from_near_points, std::map<std::string, Eigen::Vector3d> & to_near_points);
 
 
-  // Inputs: - List of collision object names, with the first being used as the "to" object
-  //         - (Empty) map from names of "from" collision links to the nearest point on those objects
-  //         - (Empty) map from names of "from"collision links to nearest points on the "to" objects
-  void find_object_near_points(std::shared_ptr<RobotModel> & appended, std::vector<std::string> & list, std::map<std::string, Eigen::Vector3d> & from_near_points, std::map<std::string, Eigen::Vector3d> & to_near_points);
-
-  
-  // Fills struct DirectedVector self_directed_vectors with the relevant vectors
-  //  to the link indicated in the fnc name
-  //    these directed vectors used in self_collision_dx to get the world dx
-  void build_directed_vector_to_rhand();
-  void build_directed_vector_to_lhand();
-  void build_directed_vector_to_head();
-  void build_directed_vector_to_lknee();
-  void build_directed_vector_to_rknee();
-  void build_directed_vector_to_rwrist();
-  void build_directed_vector_to_lwrist();
-  void build_directed_vector_to_relbow();
-  void build_directed_vector_to_lelbow();
+  // Given a frame name from a task it will build the directed vectors to that link
+  // Input: - Relevant frame name from the task_selfcollision
+  void build_self_directed_vectors(const std::string & frame_name);
 
 
-  // Fills the struct DirectedVector directed_vectors with the relevan vectors from each of the object
-  //  links
+  // Given a frame name from a task it will build directed vectors to that link from all object links
+  // Input: - Relevant frame name from the task_objectcollision
   void build_object_directed_vectors(std::string & frame_name);
+
+
+  // Used by self collision and object collision tasks to calculate the potential field
+  double get_collision_potential();
+
+  // Given an object RobotModel and its q_start, appends this and adds it to appended
+  void add_new_object(std::shared_ptr<RobotModel> & obj, const Eigen::VectorXd & q_start);
+  
+
+  // Sets the safety distance between links when not in collision
+  void set_safety_distance_normal(double safety_dist_normal_in);
+
+  // Sets the safety distance between links when in collision
+  void set_safety_distance_collision(double safety_dist_collision_in);
+
+
+  void update_appended_model(Eigen::VectorXd & q_update);
 
 
   // // computes collision and outputs any contacts
   // void compute_collision(Eigen::VectorXd & q, Eigen::VectorXd & obj_config);
 
-
-  // gives us a command for dx to move away from self collision
-  std::vector<Eigen::Vector3d> get_collision_dx();
-  
-
-  // Sets the safety distance between robot links
-  void set_safety_distance(double safety_dist_in);
-
-  // Sets the max scaling factor for dx
-  void set_max_scaling_distance(double & max_scaling_dist_in);
 };
 
 

@@ -83,11 +83,18 @@ void testIK_module(){
 
   // Create IK Module
   IKModule ik_module;
+
+  std::cout << "Test0\n";
+
   ik_module.setInitialConfig(q_init);  
+
+  std::cout << "Test0.5\n";
 
   // Update Robot Kinematics
   ik_module.robot_model->enableUpdateGeomOnKinematicsUpdate(true);
+  std::cout << "Test0.6\n";
   ik_module.robot_model->updateFullKinematics(q_init);
+  std::cout << "Test0.7\n";
 
   // ik_module.robot_model->printFrameNames();
 
@@ -95,8 +102,7 @@ void testIK_module(){
   std::shared_ptr<CollisionEnvironment> collision;
   collision = std::shared_ptr<CollisionEnvironment>(new CollisionEnvironment(ik_module.robot_model) ) ;
 
-  double safety = 0.15;
-  collision->set_safety_distance(safety);
+  std::cout << "Test1\n";
 
   // Create Tasks
   std::shared_ptr<Task> pelvis_task(new Task6DPose(ik_module.robot_model, "pelvis"));
@@ -105,6 +111,7 @@ void testIK_module(){
   std::shared_ptr<Task> rhand_task(new TaskSelfCollision(ik_module.robot_model, "rightPalm", collision, "rhand"));
   std::shared_ptr<Task> rknee_task(new TaskSelfCollision(ik_module.robot_model, "rightKneePitch", collision, "rknee"));
 
+  std::cout << "Test2\n";
 
   // Stack Tasks in order of priority
   std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {pelvis_task, lfoot_task, rfoot_task, rhand_task, rknee_task}));
@@ -139,6 +146,8 @@ void testIK_module(){
   pelvis_task->setReference(pelvis_des_pos, pelvis_des_quat);
   lfoot_task->setReference(lfoot_des_pos, lfoot_des_quat);
   rfoot_task->setReference(rfoot_des_pos, rfoot_des_quat);
+
+  std::cout << "Test3\n";
 
   // Get Errors -----------------------------------------------------------------------------
   Eigen::VectorXd task_error;

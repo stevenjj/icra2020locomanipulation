@@ -102,6 +102,11 @@ SET (COLLISION_ENVIRONMENT_SOURCES
 SET (IK_MODULE_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/ik_module/ik_module.cpp)
 
+SET (CUBIC_INTERPOLATION_MODULE_SOURCES
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/cubic_interpolation_module/one_dim.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/cubic_interpolation_module/six_dim.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/cubic_interpolation_module/six_dim_vec.cpp)
+
 
 SET(PROJECT_SOURCES
 	${MODEL_SOURCES}
@@ -112,7 +117,8 @@ SET(PROJECT_SOURCES
 	${FEASIBILITY_SOURCES}
 	${TASK_SOURCES}
 	${COLLISION_ENVIRONMENT_SOURCES}
-	${IK_MODULE_SOURCES})
+	${IK_MODULE_SOURCES}
+	${CUBIC_INTERPOLATION_MODULE_SOURCES})
 
 # Grab all the libraries
 SET(PROJECT_LIBRARIES
