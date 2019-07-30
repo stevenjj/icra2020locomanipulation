@@ -369,18 +369,6 @@ void CollisionEnvironment::set_safety_distance_collision(double safety_dist_coll
 }
 
 
-// void CollisionEnvironment::update_appended_model(Eigen::VectorXd & q_update){
-
-//   for(int i=0; i<valkyrie->getDimQ(); ++i){
-//     appended->q_current[i] = q_update[i];
-//   }
-
-//   appended->enableUpdateGeomOnKinematicsUpdate(true);
-//   appended->updateFullKinematics(appended->q_current);
-// }
-
-
-
 
 void CollisionEnvironment::get_dvector_collision_links(const std::string & from_name, const std::string & to_name){
   Eigen::Vector3d cur_pos_to, cur_pos_from, difference; 
