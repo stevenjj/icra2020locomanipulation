@@ -101,7 +101,8 @@ SET (COLLISION_ENVIRONMENT_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/collision_environment/collision_environment.cpp)
 
 SET (IK_MODULE_SOURCES
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/ik_module/ik_module.cpp)
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/ik_module/ik_module.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/ik_module/valkyrie_stance_generation.cpp)
 
 SET (CUBIC_INTERPOLATION_MODULE_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/cubic_interpolation_module/cubic_interpolation_one_dim.cpp
