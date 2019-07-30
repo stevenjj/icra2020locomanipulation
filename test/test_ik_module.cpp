@@ -102,28 +102,58 @@ void getSelectedPostureTaskReferences(std::shared_ptr<RobotModel> valkyrie, std:
 
 void test_stance_generation(){
   std::cout << "[Stance Generation Test]" << std::endl;
-  Eigen::VectorXd q_init;
+
+  // Initialize starting and ending configurations
+  Eigen::VectorXd q_init, q_sol;
   initialize_config(q_init);
 
   // Create IK Module
   std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_no_fingers.urdf";
-  std::string srdf_filename = THIS_PACKAGE_PATH"models/valkyrie_disable_collisions.srdf";
-  std::string meshDir_  = THIS_PACKAGE_PATH"../val_model/"; 
-  std::shared_ptr<RobotModel> robot_model(new RobotModel(urdf_filename, meshDir_, srdf_filename));
+  std::shared_ptr<RobotModel> robot_model(new RobotModel(urdf_filename));
 
-  ValkyrieStanceGeneration stance_generator(robot_model);
-
-  // Set the starting configuration
+  // Update the model with the initial configuration
   robot_model->updateFullKinematics(q_init);
+  Eigen::Vector3d rpalm_des_pos;
+  Eigen::Quaternion<double> rpalm_des_quat;
+  // Set Desired right hand position
+  robot_model->getFrameWorldPose("rightPalm", rpalm_des_pos, rpalm_des_quat);
+  rpalm_des_pos[0] += 0.35;//0.4;//0.35;//0.25;
+  rpalm_des_pos[1] += 0.25;//0.3;//0.25; 
+  rpalm_des_pos[2] += 0.3; 
+  // Set desired right hand orientation
+  Eigen::AngleAxis<double> axis_angle;
+  axis_angle.angle() = (M_PI/2.0) + (M_PI/4.0);
+  axis_angle.axis() = Eigen::Vector3d(0, 0, 1.0);
+  rpalm_des_quat = axis_angle;
 
+  // Eigen::Vector3d lpalm_des_pos;
+  // Eigen::Quaternion<double> lpalm_des_quat;
+  // // Set Desired right hand position
+  // robot_model->getFrameWorldPose("leftPalm", lpalm_des_pos, lpalm_des_quat);
+  // lpalm_des_pos[0] += 0.35;//0.4;//0.35;//0.25;
+  // lpalm_des_pos[1] -= 0.25;//0.3;//0.25; 
+  // lpalm_des_pos[2] += 0.3; 
+  // // Set desired right hand orientation
+  // axis_angle.angle() = -((M_PI/2.0) + (M_PI/4.0));
+  // axis_angle.axis() = Eigen::Vector3d(0, 0, 1.0);
+  // lpalm_des_quat = axis_angle;
+
+  // Initialize the stance generation object
+  ValkyrieStanceGeneration stance_generator(robot_model);
+  // Set the starting configuration
   stance_generator.setStartingConfig(q_init);
-    
-  // Set the desired hand configuration
+  // Set desired right hand and enable right hand use
+  stance_generator.setUseRightHand(true);
+  stance_generator.setDesiredRightHandPose(rpalm_des_pos, rpalm_des_quat);
+
+  // Set desired left hand and enable left hand use
+  // stance_generator.setUseLeftHand(false);
+  // stance_generator.setDesiredLeftHandPose(lpalm_des_pos, lpalm_des_quat);
 
   // Compute the stance
-  Eigen::VectorXd q_sol;
-  stance_generator.computeStance(q_sol);
-
+  bool convergence = stance_generator.computeStance(q_sol);
+  stance_generator.stance_ik_module.printSolutionResults();
+  std::cout << "Stance Generation Result " << (convergence ? "true": "false") << std::endl;
   // Visualize Solution:
   std::cout << "Visualizing solution..." << std::endl;
   visualize_robot(q_init, q_sol);

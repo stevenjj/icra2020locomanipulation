@@ -17,14 +17,29 @@ ValkyrieStanceGeneration::~ValkyrieStanceGeneration(){
 void ValkyrieStanceGeneration::setRobotModel(std::shared_ptr<RobotModel> & robot_model_in){
 	robot_model = robot_model_in;
   stance_ik_module.setRobotModel(robot_model_in);
-
-  // Initialize the tasks and task names
-  initializeTasks();
 }
 
 void ValkyrieStanceGeneration::setStartingConfig(const Eigen::VectorXd & q_start_in){
   q_start = q_start_in;
   stance_ik_module.setInitialConfig(q_start);
+}
+
+// Whether or not there is a desired hand pose
+void ValkyrieStanceGeneration::setUseRightHand(bool use_right_hand_in){
+  use_right_hand = use_right_hand_in;
+}
+void ValkyrieStanceGeneration::setUseLeftHand(bool use_left_hand_in){
+  use_left_hand = use_left_hand_in;
+}
+
+// Set Desired Hand Poses
+void ValkyrieStanceGeneration::setDesiredRightHandPose(const Eigen::Vector3d des_pos, const Eigen::Quaterniond des_quat){
+  rpalm_des_pos = des_pos;
+  rpalm_des_quat = des_quat;
+}
+void ValkyrieStanceGeneration::setDesiredLeftHandPose(const Eigen::Vector3d des_pos, const Eigen::Quaterniond des_quat){  
+  lpalm_des_pos = des_pos;
+  lpalm_des_quat = des_quat;
 }
 
 void ValkyrieStanceGeneration::initializeTasks(){
@@ -141,7 +156,7 @@ void ValkyrieStanceGeneration::default_initialization(){
 }
 
 
-void ValkyrieStanceGeneration::computeStance(Eigen::VectorXd & q_out){
+bool ValkyrieStanceGeneration::computeStance(Eigen::VectorXd & q_out){
   // Initialize the tasks
   initializeTasks();
   
@@ -165,16 +180,13 @@ void ValkyrieStanceGeneration::computeStance(Eigen::VectorXd & q_out){
   stance_ik_module.setCheckPrevViolations(true);
   stance_ik_module.setEnableInertiaWeighting(false);
 
-  // q_sol = q_start;
-  std::cout << "q_start = " << q_start.transpose() << std::endl;
-  std::cout << "q_des = " << q_des.transpose() << std::endl;
-
-  stance_ik_module.solveIK(solve_result, task_error_norms, total_error_norm, q_sol);
-
-
+  // Perform the IK:
+  bool primary_task_convergence = stance_ik_module.solveIK(solve_result, task_error_norms, total_error_norm, q_sol);
 
   // Output the solution
   q_out = q_sol;
+
+  return primary_task_convergence;
 
 }
 

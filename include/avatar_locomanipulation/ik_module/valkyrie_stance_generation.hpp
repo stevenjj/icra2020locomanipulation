@@ -43,7 +43,7 @@ public:
   void setDesiredLeftHandPose(const Eigen::Vector3d des_pos, const Eigen::Quaterniond des_quat);
 
   // Computes a stance given the desired references.
-  void computeStance(Eigen::VectorXd & q_out);
+  bool computeStance(Eigen::VectorXd & q_out);
 
 
 	// Member Functions
