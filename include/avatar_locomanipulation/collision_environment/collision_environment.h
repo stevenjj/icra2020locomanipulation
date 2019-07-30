@@ -126,7 +126,7 @@ public:
   void set_safety_distance_collision(double safety_dist_collision_in);
 
 
-  void update_appended_model(Eigen::VectorXd & q_update);
+  // void update_appended_model(Eigen::VectorXd & q_update);
 
 
   // // computes collision and outputs any contacts

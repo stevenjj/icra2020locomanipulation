@@ -278,12 +278,12 @@ void CollisionEnvironment::build_object_directed_vectors(std::string & frame_nam
 
   std::cout << "directed_vectors.size(): " << directed_vectors.size() << std::endl;
 
-  for(int i=0; i<directed_vectors.size(); ++i){
-    std::cout << "directed_vectors[o].from: " << directed_vectors[i].from << std::endl;
-    std::cout << "directed_vectors[o].to: " << directed_vectors[i].to << std::endl;
-    std::cout << "directed_vectors[o].magnitude: " << directed_vectors[i].magnitude << std::endl;
-    std::cout << "directed_vectors[o].direction: \n" << directed_vectors[i].direction << std::endl;
-  }
+  // for(int i=0; i<directed_vectors.size(); ++i){
+  //   std::cout << "directed_vectors[i].from: " << directed_vectors[i].from << std::endl;
+  //   std::cout << "directed_vectors[i].to: " << directed_vectors[i].to << std::endl;
+  //   std::cout << "directed_vectors[i].magnitude: " << directed_vectors[i].magnitude << std::endl;
+  //   std::cout << "directed_vectors[i].direction: \n" << directed_vectors[i].direction << std::endl;
+  // }
 
   
 
@@ -369,15 +369,15 @@ void CollisionEnvironment::set_safety_distance_collision(double safety_dist_coll
 }
 
 
-void CollisionEnvironment::update_appended_model(Eigen::VectorXd & q_update){
+// void CollisionEnvironment::update_appended_model(Eigen::VectorXd & q_update){
 
-  for(int i=0; i<valkyrie->getDimQ(); ++i){
-    appended->q_current[i] = q_update[i];
-  }
+//   for(int i=0; i<valkyrie->getDimQ(); ++i){
+//     appended->q_current[i] = q_update[i];
+//   }
 
-  appended->enableUpdateGeomOnKinematicsUpdate(true);
-  appended->updateFullKinematics(appended->q_current);
-}
+//   appended->enableUpdateGeomOnKinematicsUpdate(true);
+//   appended->updateFullKinematics(appended->q_current);
+// }
 
 
 

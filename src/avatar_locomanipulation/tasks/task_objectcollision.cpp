@@ -103,13 +103,19 @@ void TaskObjectCollision::getReference(Eigen::Quaterniond & quat_ref_out){
 void TaskObjectCollision::computeError(){
 	Eigen::VectorXd q = robot_model->q_current;
 
-	// std::cout << "q = \n" << q << std::endl;
+	std::cout << "\tq.size() = \n" << q.size() << std::endl;
+	std::cout << "q = \n" << q << std::endl;
+	std::cout << "-------------------------------\n";
 
 	// collision_env->update_appended_model(q);
 
  	collision_env->directed_vectors.clear();
 
  	collision_env->build_object_directed_vectors(frame_name, robot_model->q_current);
+
+ 	std::cout << "\tcollision_env->appended->q_current.size() = \n" << collision_env->appended->q_current.size() << std::endl;
+ 	std::cout << "collision_env->appended->q_current = \n" << collision_env->appended->q_current << std::endl;
+	std::cout << "-------------------------------\n";
 	
  	double V = collision_env->get_collision_potential();
 

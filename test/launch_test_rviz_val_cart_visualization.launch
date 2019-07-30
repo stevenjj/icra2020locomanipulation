@@ -1,0 +1,7 @@
+<launch>
+    <node name="test_rviz_cart" pkg="avatar_locomanipulation" type="test_rviz_val_cart" output="screen" /> 
+    
+    <include file="$(find avatar_locomanipulation)/launch/launch_viz_robot_and_ik.launch">
+      <arg name="use_static_transform" value="False"/>
+    </include>      
+</launch>
