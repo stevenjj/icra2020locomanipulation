@@ -14,28 +14,29 @@ CubicInterpolationSixDim::CubicInterpolationSixDim(const int & first_waypoint, c
 	ParamHandler param_handler;
 	// Load the yaml file
 	param_handler.load_yaml_file(filename_input);
-	// Holds the waypoint_#
-	char point[12];
+	// String to hold the waypoint_#
+	std::string waypoint_string("waypoint_");
 	// Holds the waypoints for each dimension
 	std::vector<double> xs, ys, zs, rxs, rys, rzs;
 	// Temporarily holds waypoints from getNestedValue
 	double x, y, z, rx, ry, rz, rw;
 
-	// Grab the waypoint and pose data from the yaml file
+
+	// Grab the waypoint and the following 3 other waypoints' pose data from the yaml file
 	for(int i=first_waypoint; i<(first_waypoint+4); ++i){
-		snprintf(point, sizeof(char)*32, "waypoint_%d", i);
-		param_handler.getNestedValue({point, "x"}, x);
-		param_handler.getNestedValue({point, "y"}, y);
-		param_handler.getNestedValue({point, "z"}, z);
+		waypoint_string = "waypoint_" + std::to_string(i);
+		param_handler.getNestedValue({waypoint_string, "x"}, x);
+		param_handler.getNestedValue({waypoint_string, "y"}, y);
+		param_handler.getNestedValue({waypoint_string, "z"}, z);
 
 		xs.push_back(x);
 		ys.push_back(y);
 		zs.push_back(z);
 
-		param_handler.getNestedValue({point, "rx"}, rx);
-		param_handler.getNestedValue({point, "ry"}, ry);
-		param_handler.getNestedValue({point, "rz"}, rz);
-		param_handler.getNestedValue({point, "rw"}, rw);
+		param_handler.getNestedValue({waypoint_string, "rx"}, rx);
+		param_handler.getNestedValue({waypoint_string, "ry"}, ry);
+		param_handler.getNestedValue({waypoint_string, "rz"}, rz);
+		param_handler.getNestedValue({waypoint_string, "rw"}, rw);
 
 		Eigen::Quaterniond quat;
 		Eigen::Vector3d axisangle;
