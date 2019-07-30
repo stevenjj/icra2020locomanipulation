@@ -6,9 +6,15 @@ SixDimVec::SixDimVec(){
 }
 
 
-SixDimVec::SixDimVec(const int & waypoint_length, const std::string & yaml_filename){
-	N = waypoint_length;
-	filename = yaml_filename;
+SixDimVec::SixDimVec(const std::string & filename_input){
+	filename = filename_input;
+
+	// Initializa Param Handler
+	ParamHandler param_handler;
+	// Load the yaml file
+	param_handler.load_yaml_file(filename);
+	// Get number of waypoitns
+	param_handler.getInteger("num_waypoints", N);
 
 	for(int i=1; i<(N-2); ++i){
 		temp = std::shared_ptr<SixDim>(new SixDim(i, filename) );

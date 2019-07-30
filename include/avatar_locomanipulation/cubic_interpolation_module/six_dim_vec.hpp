@@ -1,5 +1,5 @@
 #include <avatar_locomanipulation/cubic_interpolation_module/six_dim.hpp>
-
+#include <avatar_locomanipulation/helpers/param_handler.hpp>
 
 class SixDimVec{
 private:
@@ -10,7 +10,7 @@ private:
 	std::vector<std::shared_ptr<SixDim> > six_dim_vec;
 public:
 	SixDimVec();
-	SixDimVec(const int & waypoint_length, const std::string & yaml_filename);
+	SixDimVec(const std::string & filename_input);
 
 	~SixDimVec();
 

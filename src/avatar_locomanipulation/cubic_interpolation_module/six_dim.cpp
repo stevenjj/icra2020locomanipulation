@@ -9,13 +9,11 @@ SixDim::SixDim(){
 }
 
 
-SixDim::SixDim(const int & first_waypoint, const std::string & yaml_name){
-
+SixDim::SixDim(const int & first_waypoint, const std::string & filename_input){
 	// Initializa Param Handler
 	ParamHandler param_handler;
-	std::string filename = THIS_PACKAGE_PATH"hand_trajectory/" + yaml_name;
 	// Load the yaml file
-	param_handler.load_yaml_file(filename);
+	param_handler.load_yaml_file(filename_input);
 	// Holds the waypoint_#
 	char point[12];
 	// Holds the waypoints for each dimension

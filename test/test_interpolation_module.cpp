@@ -158,13 +158,12 @@ int main(int argc, char ** argv){
 	door_msg.type = visualization_msgs::Marker::CUBE;
 
 
-	std::string file = "door_trajectory.yaml";
-	int N = 10;
+	std::string file = THIS_PACKAGE_PATH"hand_trajectory/door_trajectory.yaml";
 
 	std::vector<std::vector<double> > outs;
 
 	std::shared_ptr<SixDimVec> example; 
-	example = std::shared_ptr<SixDimVec>(new SixDimVec(N, file));
+	example = std::shared_ptr<SixDimVec>(new SixDimVec(file));
 
 
 	hand_poses.header.frame_id = "hinge_frame";

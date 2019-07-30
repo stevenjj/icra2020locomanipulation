@@ -13,7 +13,7 @@ private:
 
 public:
 	SixDim();
-	SixDim(const int & first_waypoint, const std::string & yaml_name);
+	SixDim(const int & first_waypoint, const std::string & filename_input);
 
 	~SixDim();
 
