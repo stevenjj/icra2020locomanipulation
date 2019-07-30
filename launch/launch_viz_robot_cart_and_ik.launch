@@ -33,7 +33,7 @@
     </group>
 
 
-    <group ns="cart">
+    <group ns="cart_robot">
       <param name="robot_description" textfile="$(find avatar_locomanipulation)/models/test_cart.urdf" />        
       <param name="use_gui" value="$(arg gui)"/>
 
@@ -58,5 +58,6 @@
     </group>
 
     <node name="rviz_ik" pkg="rviz" type="rviz" args="-d $(find val_viz)/launch/val_robot_and_ik.rviz" required="true" /> 
+    <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find avatar_locomanipulation)/launch/rviz/cart_viz.rviz" required="true" /> -->
 
 </launch>
