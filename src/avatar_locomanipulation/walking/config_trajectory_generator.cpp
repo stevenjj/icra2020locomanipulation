@@ -44,6 +44,9 @@ void ConfigTrajectoryGenerator::commonInitialization(){
 	tmp_neck_posture = Eigen::VectorXd::Zero(neck_posture_task->task_dim);
 	tmp_rarm_posture = Eigen::VectorXd::Zero(rarm_posture_task->task_dim);
 	tmp_larm_posture = Eigen::VectorXd::Zero(larm_posture_task->task_dim);
+
+	// Initialize error tolerance
+	traj_error_tol = ik_module.getErrorTol();
 }
 
 void ConfigTrajectoryGenerator::setRobotModel(std::shared_ptr<RobotModel> & robot_model_in){

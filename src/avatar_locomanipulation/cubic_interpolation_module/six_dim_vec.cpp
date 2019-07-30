@@ -33,16 +33,17 @@ SixDimVec::~SixDimVec(){
 
 void SixDimVec::evaluate(const double & s_global){
 	// Clamp 0.0 <= s <= 1.0
-	double s_ = clamp(s_global);
+	s_ = clamp(s_global);
 
 	for(int i=0; i<(N-2); ++i){
+		// Compute smax and smin for the current interpolator. 
+		// Assume that the path length between every waypoints are roughly equal.			
+		smax = static_cast<double>(i+3) / static_cast<double>(N-1);
+		smin = static_cast<double>(i) / static_cast<double>(N);
 		// Ensure we use global s to select the proper SixDim to use
-		if( ( i / ((double) (N)) ) <= s_ && s_ < ( ((double) (i+3))/((double) (N-1)) ) ){
-
+		if( smin <= s_ && s_ < smax){
 			// Use the global s to obtain the local s as used by each OneDim
-			// s_local = (1/(smax - smin))*(sg - smin)
-			double s_local = ( 1 / ( ( ((double) (i+3))/((double) (N-1)) ) - ( i / ((double) (N)) ) )) * ( s_ - ( i / ((double) (N)) ) );
-			
+			s_local = ( 1.0 / (smax - smin)) * (s_ - smin);
 			// Feed evaluate the local s value
 			six_dim_vec[i]->evaluate(s_local);
 			temp = six_dim_vec[i];
@@ -85,9 +86,6 @@ double SixDimVec::clamp(const double & s_in){
 
 
 void SixDimVec::convertToQuat(){
-
-	Eigen::Vector3d aa;
-
 	pos_out[0] = temp->output[0];
 	pos_out[1] = temp->output[1];
 	pos_out[2] = temp->output[2];
@@ -96,8 +94,6 @@ void SixDimVec::convertToQuat(){
 	aa[1] = temp->output[4];
 	aa[2] = temp->output[5];
 
-	double angle;
-	Eigen::Vector3d axis;
 
 	angle = atan2(sin(aa.norm()), cos(aa.norm()));
 	axis = aa.normalized();

@@ -3,11 +3,19 @@
 
 class SixDimVec{
 private:
-	int N;
-	
+	int N; // Number of waypoints extracted from the yaml file
 	std::string filename;
-
 	std::vector<std::shared_ptr<SixDim> > six_dim_vec;
+
+	Eigen::Vector3d aa;
+	Eigen::Vector3d axis;
+
+	double s_ = 0.0;
+	double s_local = 0.0;
+	double smin = 0.0;
+	double smax = 1.0;
+	double angle;
+
 public:
 	SixDimVec();
 	SixDimVec(const std::string & filename_input);

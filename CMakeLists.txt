@@ -52,7 +52,8 @@ SET (DATA_TYPES_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/data_types/footstep.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/data_types/trajectory_euclidean.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/data_types/trajectory_orientation.cpp
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/data_types/trajectory_SE3.cpp)
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/data_types/trajectory_SE3.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/data_types/manipulation_function.cpp)
 
 
 SET (WALKING_SOURCES
