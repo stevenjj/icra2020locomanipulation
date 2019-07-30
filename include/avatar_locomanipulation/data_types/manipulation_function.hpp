@@ -5,7 +5,7 @@
 #include <iostream>
 #include <string>
 
-#include <avatar_locomanipulation/cubic_interpolation_module/six_dim_vec.hpp>
+#include <avatar_locomanipulation/cubic_interpolation_module/cubic_interpolation_six_dim_vec.hpp>
 #include <avatar_locomanipulation/helpers/param_handler.hpp>
 
 // Data container for a manipulation function object
@@ -19,7 +19,7 @@ public:
   void setWaypointsFromYaml(std::string filename);
  
 private:
-  std::shared_ptr<SixDimVec> f_s;
+  std::shared_ptr<CubicInterpolationSixDimVec> f_s;
   std::string waypoint_list_yaml_filename;
   int N_waypoints;
 

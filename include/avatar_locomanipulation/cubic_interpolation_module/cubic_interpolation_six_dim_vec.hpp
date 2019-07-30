@@ -1,11 +1,11 @@
-#include <avatar_locomanipulation/cubic_interpolation_module/six_dim.hpp>
+#include <avatar_locomanipulation/cubic_interpolation_module/cubic_interpolation_six_dim.hpp>
 #include <avatar_locomanipulation/helpers/param_handler.hpp>
 
-class SixDimVec{
+class CubicInterpolationSixDimVec{
 private:
 	int N; // Number of waypoints extracted from the yaml file
 	std::string filename;
-	std::vector<std::shared_ptr<SixDim> > six_dim_vec;
+	std::vector<std::shared_ptr<CubicInterpolationSixDim> > six_dim_vec;
 
 	Eigen::Vector3d aa;
 	Eigen::Vector3d axis;
@@ -17,10 +17,10 @@ private:
 	double angle;
 
 public:
-	SixDimVec();
-	SixDimVec(const std::string & filename_input);
+	CubicInterpolationSixDimVec();
+	CubicInterpolationSixDimVec(const std::string & filename_input);
 
-	~SixDimVec();
+	~CubicInterpolationSixDimVec();
 
 	void evaluate(const double & s_global);
 	void getPose(const double & s_global, Eigen::Vector3d & position_out, Eigen::Quaterniond & orientation_out);
@@ -28,7 +28,7 @@ public:
 
 	double clamp(const double & s_in);
 
-	std::shared_ptr<SixDim> temp;
+	std::shared_ptr<CubicInterpolationSixDim> temp;
 
 	Eigen::Quaterniond quat_out;
 

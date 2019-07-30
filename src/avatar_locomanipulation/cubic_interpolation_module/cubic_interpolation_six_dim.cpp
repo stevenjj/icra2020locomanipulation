@@ -1,7 +1,7 @@
-#include <avatar_locomanipulation/cubic_interpolation_module/six_dim.hpp>
+#include <avatar_locomanipulation/cubic_interpolation_module/cubic_interpolation_six_dim.hpp>
 
 
-SixDim::SixDim(){
+CubicInterpolationSixDim::CubicInterpolationSixDim(){
 	output.clear();
 	for (int i = 0; i < 6; i++){
 		output.push_back(0.0);
@@ -9,7 +9,7 @@ SixDim::SixDim(){
 }
 
 
-SixDim::SixDim(const int & first_waypoint, const std::string & filename_input){
+CubicInterpolationSixDim::CubicInterpolationSixDim(const int & first_waypoint, const std::string & filename_input){
 	// Initializa Param Handler
 	ParamHandler param_handler;
 	// Load the yaml file
@@ -55,13 +55,13 @@ SixDim::SixDim(const int & first_waypoint, const std::string & filename_input){
 		
 	}
 
-	// Create our 6 OneDim Interpolations
-	fx = std::shared_ptr<OneDim>(new OneDim(xs) );
-	fy = std::shared_ptr<OneDim>(new OneDim(ys) );
-	fz = std::shared_ptr<OneDim>(new OneDim(zs) );
-	frx = std::shared_ptr<OneDim>(new OneDim(rxs) );
-	fry = std::shared_ptr<OneDim>(new OneDim(rys) );
-	frz = std::shared_ptr<OneDim>(new OneDim(rzs) );
+	// Create our 6 CubicInterpolationOneDim Interpolations
+	fx = std::shared_ptr<CubicInterpolationOneDim>(new CubicInterpolationOneDim(xs) );
+	fy = std::shared_ptr<CubicInterpolationOneDim>(new CubicInterpolationOneDim(ys) );
+	fz = std::shared_ptr<CubicInterpolationOneDim>(new CubicInterpolationOneDim(zs) );
+	frx = std::shared_ptr<CubicInterpolationOneDim>(new CubicInterpolationOneDim(rxs) );
+	fry = std::shared_ptr<CubicInterpolationOneDim>(new CubicInterpolationOneDim(rys) );
+	frz = std::shared_ptr<CubicInterpolationOneDim>(new CubicInterpolationOneDim(rzs) );
 
 	// Initialize output vector of doubles
 	output.clear();
@@ -69,16 +69,16 @@ SixDim::SixDim(const int & first_waypoint, const std::string & filename_input){
 		output.push_back(0.0);
 	}
 
-	// std::cout << "[SixDim] Created" << std::endl;
+	// std::cout << "[CubicInterpolationSixDim] Created" << std::endl;
 }
 
 
-SixDim::~SixDim(){
+CubicInterpolationSixDim::~CubicInterpolationSixDim(){
 
 }
 
 
-void SixDim::evaluate(const double & s_local){
+void CubicInterpolationSixDim::evaluate(const double & s_local){
  	double s_in; 
  	s_in = s_local;
 

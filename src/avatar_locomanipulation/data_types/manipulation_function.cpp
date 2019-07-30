@@ -12,7 +12,7 @@ ManipulationFunction::ManipulationFunction(std::string filename){
 void ManipulationFunction::setWaypointsFromYaml(std::string filename){
 	waypoint_list_yaml_filename = filename;
 	// Create interpolator from waypoint list
-	f_s.reset(new SixDimVec(filename));
+	f_s.reset(new CubicInterpolationSixDimVec(filename));
 }
 
 void ManipulationFunction::getPose(double & s, Eigen::Vector3d & pos_out, Eigen::Quaterniond & quat_out){

@@ -1,12 +1,12 @@
-#include <avatar_locomanipulation/cubic_interpolation_module/six_dim_vec.hpp>
+#include <avatar_locomanipulation/cubic_interpolation_module/cubic_interpolation_six_dim_vec.hpp>
 
 
-SixDimVec::SixDimVec(){
+CubicInterpolationSixDimVec::CubicInterpolationSixDimVec(){
 
 }
 
 
-SixDimVec::SixDimVec(const std::string & filename_input){
+CubicInterpolationSixDimVec::CubicInterpolationSixDimVec(const std::string & filename_input){
 	filename = filename_input;
 
 	// Initializa Param Handler
@@ -17,21 +17,21 @@ SixDimVec::SixDimVec(const std::string & filename_input){
 	param_handler.getInteger("num_waypoints", N);
 
 	for(int i=1; i<(N-2); ++i){
-		temp = std::shared_ptr<SixDim>(new SixDim(i, filename) );
+		temp = std::shared_ptr<CubicInterpolationSixDim>(new CubicInterpolationSixDim(i, filename) );
 		six_dim_vec.push_back(temp);
 	}
 
-	// std::cout << "[SixDimVec] Created" << std::endl;
+	// std::cout << "[CubicInterpolationSixDimVec] Created" << std::endl;
 	// std::cout << "six_dim_vec.size() " << six_dim_vec.size() << std::endl;
 }
 
 
-SixDimVec::~SixDimVec(){
+CubicInterpolationSixDimVec::~CubicInterpolationSixDimVec(){
 
 }
 
 
-void SixDimVec::evaluate(const double & s_global){
+void CubicInterpolationSixDimVec::evaluate(const double & s_global){
 	// Clamp 0.0 <= s <= 1.0
 	s_ = clamp(s_global);
 
@@ -40,7 +40,7 @@ void SixDimVec::evaluate(const double & s_global){
 		// Assume that the path length between every waypoints are roughly equal.			
 		smax = static_cast<double>(i+3) / static_cast<double>(N-1);
 		smin = static_cast<double>(i) / static_cast<double>(N);
-		// Ensure we use global s to select the proper SixDim to use
+		// Ensure we use global s to select the proper CubicInterpolationSixDim to use
 		if( smin <= s_ && s_ < smax){
 			// Use the global s to obtain the local s as used by each OneDim
 			s_local = ( 1.0 / (smax - smin)) * (s_ - smin);
@@ -65,14 +65,14 @@ void SixDimVec::evaluate(const double & s_global){
 
 }
 
-void SixDimVec::getPose(const double & s_global, Eigen::Vector3d & position_out, Eigen::Quaterniond & orientation_out){
+void CubicInterpolationSixDimVec::getPose(const double & s_global, Eigen::Vector3d & position_out, Eigen::Quaterniond & orientation_out){
 	evaluate(s_global);
 	position_out = pos_out;
 	orientation_out = quat_out;
 }
 
 
-double SixDimVec::clamp(const double & s_in){
+double CubicInterpolationSixDimVec::clamp(const double & s_in){
     if (s_in < 0.0){
         return 0.0;
     }
@@ -85,7 +85,7 @@ double SixDimVec::clamp(const double & s_in){
 }
 
 
-void SixDimVec::convertToQuat(){
+void CubicInterpolationSixDimVec::convertToQuat(){
 	pos_out[0] = temp->output[0];
 	pos_out[1] = temp->output[1];
 	pos_out[2] = temp->output[2];

@@ -1,5 +1,6 @@
 #include <iostream>
-#include <avatar_locomanipulation/cubic_interpolation_module/six_dim_vec.hpp>
+#include <avatar_locomanipulation/cubic_interpolation_module/cubic_interpolation_six_dim_vec.hpp>
+
 #include <vector>
 
 // Import ROS and Rviz visualization
@@ -132,7 +133,7 @@ int main(int argc, char ** argv){
 	hinge_msg.color.g = 0.0f;
 	hinge_msg.color.b = 0.0f;
 	hinge_msg.color.a = 1.0;
-	// hinge_msg.lifetime = ros::Duration();
+	// hinge_msg.lifetime = ros::Duration();SixDim
 	hinge_msg.action = visualization_msgs::Marker::ADD;
 	hinge_msg.type = visualization_msgs::Marker::CUBE;
 
@@ -162,8 +163,8 @@ int main(int argc, char ** argv){
 
 	std::vector<std::vector<double> > outs;
 
-	std::shared_ptr<SixDimVec> example; 
-	example = std::shared_ptr<SixDimVec>(new SixDimVec(file));
+	std::shared_ptr<CubicInterpolationSixDimVec> example; 
+	example = std::shared_ptr<CubicInterpolationSixDimVec>(new CubicInterpolationSixDimVec(file));
 
 
 	hand_poses.header.frame_id = "hinge_frame";
