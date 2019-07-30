@@ -5,7 +5,7 @@ ValkyrieStanceGeneration::ValkyrieStanceGeneration(){
 	default_initialization();	
 }
 
-ValkyrieStanceGeneration::ValkyrieStanceGeneration(std::shared_ptr<RobotModel> & robot_model_in){
+ValkyrieStanceGeneration::ValkyrieStanceGeneration(std::shared_ptr<RobotModel> & robot_model_in):robot_model(robot_model_in){
 	default_initialization();
 	this->setRobotModel(robot_model_in);
 }
@@ -16,15 +16,18 @@ ValkyrieStanceGeneration::~ValkyrieStanceGeneration(){
 
 void ValkyrieStanceGeneration::setRobotModel(std::shared_ptr<RobotModel> & robot_model_in){
 	robot_model = robot_model_in;
-  // Set Posture Task names
+  stance_ik_module.setRobotModel(robot_model_in);
+
+  // Initialize the tasks and task names
   initializeTasks();
 }
 
-void ValkyrieStanceGeneration::initializeTasks(){
-  // Create Task Stack
-  std::vector< std::shared_ptr<Task> > priority_1_task_stack = {pelvis_wrt_mf_task, lfoot_contact_normal_task, rfoot_contact_normal_task, torso_neck_arm_posture_task};
-  std::vector< std::shared_ptr<Task> > priority_2_task_stack = {lfoot_wrt_rfoot_task, overall_posture_task};
+void ValkyrieStanceGeneration::setStartingConfig(const Eigen::VectorXd & q_start_in){
+  q_start = q_start_in;
+  stance_ik_module.setInitialConfig(q_start);
+}
 
+void ValkyrieStanceGeneration::initializeTasks(){
   // Set Pelvis Tasks
   pelvis_wrt_mf_task.reset(new Task6DPosewrtMidFeet(robot_model, "pelvis"));
 
@@ -42,14 +45,12 @@ void ValkyrieStanceGeneration::initializeTasks(){
   for(int i = 0; i < neck_joint_names.size(); i++){
     torso_neck_arm_posture_task_names.push_back(neck_joint_names[i]);
   }
+
   // If not using the right hand, add right arm joints to the posture task
   if (!(use_right_hand)){
     for(int i = 0; i < right_arm_joint_names.size(); i++){
       torso_neck_arm_posture_task_names.push_back(right_arm_joint_names[i]);
     }  
-  }else{
-    // otherwise add a right palm 6d pose task
-    priority_1_task_stack.push_back(rpalm_task);    
   }
 
   // If not using the left hand, add left arm joints to the posture task
@@ -57,14 +58,11 @@ void ValkyrieStanceGeneration::initializeTasks(){
     for(int i = 0; i < left_arm_joint_names.size(); i++){
       torso_neck_arm_posture_task_names.push_back(left_arm_joint_names[i]);
     }  
-  }else{
-    // otherwise add a left palm 6d pose task
-    priority_1_task_stack.push_back(lpalm_task);    
   }
 
   // If both hands are not being used simultaneously, add torso joint tasks.
   if (!(use_left_hand && use_right_hand)){
-    for(int i = 0; i < left_arm_joint_names.size(); i++){
+    for(int i = 0; i < torso_joint_names.size(); i++){
       torso_neck_arm_posture_task_names.push_back(torso_joint_names[i]);
     }  
   }
@@ -79,10 +77,37 @@ void ValkyrieStanceGeneration::initializeTasks(){
   overall_posture_task->setTaskGain(1e-1);
 
   // Set the task stack
+  createTaskStack();
+}
+
+void ValkyrieStanceGeneration::createTaskStack(){
+  // Create Task Stack
+  std::vector< std::shared_ptr<Task> > priority_1_task_stack = {pelvis_wrt_mf_task, lfoot_contact_normal_task, rfoot_contact_normal_task, torso_neck_arm_posture_task};
+  std::vector< std::shared_ptr<Task> > priority_2_task_stack = {lfoot_wrt_rfoot_task, overall_posture_task};
+
+  // If the hand is being used, add it to the task stack
+  if (use_right_hand){
+    priority_1_task_stack.push_back(rpalm_task);    
+  }
+
+  if (use_left_hand){
+    priority_1_task_stack.push_back(lpalm_task);    
+  }
+
+  // Create the task stack
   task_stack_priority_1.reset(new TaskStack(robot_model, priority_1_task_stack));
   task_stack_priority_2.reset(new TaskStack(robot_model, priority_2_task_stack));   
+  // Clear the task hioerarchy and add the tasks to hierarchy
+  stance_ik_module.clearTaskHierarchy();
+  stance_ik_module.addTasktoHierarchy(task_stack_priority_1);
+  stance_ik_module.addTasktoHierarchy(task_stack_priority_2);
+
+  // Prepare the IK data structures
+  stance_ik_module.prepareNewIKDataStrcutures();
 
 }
+
+
 
 
 void ValkyrieStanceGeneration::default_initialization(){
@@ -107,13 +132,61 @@ void ValkyrieStanceGeneration::default_initialization(){
   rpalm_des_pos.setZero();
   rpalm_des_quat.setIdentity();
 
+  // Set Joint names
   left_arm_joint_names = {"leftShoulderPitch", "leftShoulderRoll", "leftShoulderYaw", "leftElbowPitch", "leftForearmYaw", "leftWristRoll", "leftWristPitch"};
   right_arm_joint_names = {"rightShoulderPitch", "rightShoulderRoll", "rightShoulderYaw", "rightElbowPitch", "rightForearmYaw", "rightWristRoll", "rightWristPitch"};
   torso_joint_names = {"torsoYaw", "torsoPitch", "torsoRoll"};
   neck_joint_names = {"lowerNeckPitch", "neckYaw", "upperNeckPitch"};
 
-  // torso_neck_arm_posture_task_names = {"torsoYaw", "torsoPitch", "torsoRoll", 
-  //                                            "leftShoulderPitch", "leftShoulderRoll", "leftShoulderYaw", "leftElbowPitch", "leftForearmYaw", "leftWristRoll", "leftWristPitch", 
-  //                                            "lowerNeckPitch", "neckYaw", "upperNeckPitch"};
+}
 
+
+void ValkyrieStanceGeneration::computeStance(Eigen::VectorXd & q_out){
+  // Initialize the tasks
+  initializeTasks();
+  
+  // Set Remaining task references
+  pelvis_wrt_mf_task->setReference(pelvis_wrt_mf_des_pos, pelvis_wrt_mf_des_quat);
+  lfoot_wrt_rfoot_task->setReference(lf_wrt_rf_des_pos, lf_wrt_rf_des_quat);
+  rpalm_task->setReference(rpalm_des_pos, rpalm_des_quat);
+  lpalm_task->setReference(lpalm_des_pos, lpalm_des_quat);
+
+  // Set Posture references
+  Eigen::VectorXd q_des;
+  getSelectedPostureTaskReferences(torso_neck_arm_posture_task_names, q_start, q_des);
+  torso_neck_arm_posture_task->setReference(q_des);
+
+  getSelectedPostureTaskReferences(overall_posture_task_joint_names, q_start, q_des);
+  overall_posture_task->setReference(q_des);
+
+  // Set Stance IK Descent parameters
+  stance_ik_module.setSequentialDescent(false);
+  stance_ik_module.setBackTrackwithCurrentTaskError(true);
+  stance_ik_module.setCheckPrevViolations(true);
+  stance_ik_module.setEnableInertiaWeighting(false);
+
+  // q_sol = q_start;
+  std::cout << "q_start = " << q_start.transpose() << std::endl;
+  std::cout << "q_des = " << q_des.transpose() << std::endl;
+
+  stance_ik_module.solveIK(solve_result, task_error_norms, total_error_norm, q_sol);
+
+
+
+  // Output the solution
+  q_out = q_sol;
+
+}
+
+
+void ValkyrieStanceGeneration::getSelectedPostureTaskReferences(const std::vector<std::string> & selected_names, const Eigen::VectorXd & q_config, Eigen::VectorXd & q_ref){
+  Eigen::VectorXd q_des;
+  q_des = Eigen::VectorXd::Zero(selected_names.size());
+
+  // Use the initial configuration to find the reference vector for the posture task
+  for(int i = 0; i < selected_names.size(); i++){
+    // std::cout << selected_names[i] << std::endl;
+    q_des[i] = q_config[robot_model->getJointIndex(selected_names[i])];
+  }
+  q_ref = q_des;  
 }

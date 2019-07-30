@@ -32,15 +32,25 @@ public:
   void setRobotModel(std::shared_ptr<RobotModel> & robot_model_in);
   void initializeTasks();
 
-  void setDesiredRightHandPose(const Eigen::Vector3d & des_pos, const Eigen::Quaterniond & des_quat);
-  void setDesiredLeftHandPose(const Eigen::Vector3d & des_pos, const Eigen::Quaterniond & des_quat);
+  void setStartingConfig(const Eigen::VectorXd & q_start_in);
 
-	void setUseRightHand(bool use_right_hand_in);
-	void setUseLeftHand(bool use_left_hand_in);
+  // Whether or not there is a desired hand pose
+  void setUseRightHand(bool use_right_hand_in);
+  void setUseLeftHand(bool use_left_hand_in);
+
+  // Set Desired Tasks
+  void setDesiredRightHandPose(const Eigen::Vector3d des_pos, const Eigen::Quaterniond des_quat);
+  void setDesiredLeftHandPose(const Eigen::Vector3d des_pos, const Eigen::Quaterniond des_quat);
+
+  // Computes a stance given the desired references.
+  void computeStance(Eigen::VectorXd & q_out);
+
 
 	// Member Functions
 	IKModule stance_ik_module;
   std::shared_ptr<RobotModel> robot_model;
+
+  Eigen::VectorXd q_start;
 
 	// Tasks
 	std::shared_ptr<Task> pelvis_wrt_mf_task;	// Pelvis w.r.t midfeet task
@@ -88,7 +98,7 @@ public:
   std::vector<std::string> torso_neck_arm_posture_task_names;
   std::vector<std::string> overall_posture_task_joint_names;
 
-  void getSelectedPostureTaskReferences(const std::vector<std::string> & selected_names, const Eigen::VectorXd & q_start, Eigen::VectorXd & q_ref);
+  void getSelectedPostureTaskReferences(const std::vector<std::string> & selected_names, const Eigen::VectorXd & q_config, Eigen::VectorXd & q_ref);
 
   // IK Solutions
   int solve_result;
@@ -98,6 +108,7 @@ public:
 
 private:
   void default_initialization();
+  void createTaskStack();
 
   bool use_right_hand = false;
   bool use_left_hand = false;
