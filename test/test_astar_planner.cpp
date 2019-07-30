@@ -33,13 +33,20 @@ int main(int argc, char **argv){
     FootstepPlanner footstepplanner;
 
     // std::shared_ptr<FootstepNode> current_test;
-    // std::shared_ptr<Node> current_test_node;
-    // shared_ptr<FootstepNode> neighbor_test;
+    // // std::shared_ptr<Node> current_test_node;
+    // // shared_ptr<FootstepNode> neighbor_test;
     // shared_ptr<FootstepNode> goal_test;
 
 
-    shared_ptr<Node> current (std::make_shared<FootstepNode>(1.0,1.0,1.0,-1.0,-M_PI,M_PI/4,false));
+    shared_ptr<Node> current (std::make_shared<FootstepNode>(5.0,4.0,5.0,3.0,M_PI/4,M_PI/4,false));
+    // shared_ptr<Node> goal (std::make_shared<FootstepNode>(-5.0,-20.0,-5.0,-22.0,0.0,0.0,false));
     // current_test = std::static_pointer_cast<FootstepNode>(current);
+    // goal_test = std::static_pointer_cast<FootstepNode>(goal);
+
+
+
+    // footstepplanner.heuristicCost(current_test,goal_test);
+
     // current_test->turn = true;
     // current_test_node = static_pointer_cast<Node>(current_test);
     // neighbor_test = static_pointer_cast<FootstepNode>(current_test_node);
@@ -62,21 +69,21 @@ int main(int argc, char **argv){
 
     footstepplanner.getNeighbors(current);
 
-    // shared_ptr<Node> begin_footstep (std::make_shared<FootstepNode>(1.0,1.0,1.0,-1.0,M_PI/8,M_PI/8,true));
-    // shared_ptr<Node> goal_footstep (std::make_shared<FootstepNode>(7.0,-7.0,7.0,-9.0,-M_PI/4,-M_PI/8,false));
+    // // shared_ptr<Node> begin_footstep (std::make_shared<FootstepNode>(1.0,1.0,1.0,-1.0,M_PI/8,M_PI/8,true));
+    // // shared_ptr<Node> goal_footstep (std::make_shared<FootstepNode>(7.0,-7.0,7.0,-9.0,-M_PI/4,-M_PI/8,false));
 
     double lfx_i = 1.0;
-    double lfy_i = 1.0;
+    double lfy_i = 3.0;
     double rfx_i = 1.0;
-    double rfy_i = -1.0;
+    double rfy_i = 1.0;
 
-    shared_ptr<Node> begin_footstep (std::make_shared<FootstepNode>(lfx_i ,lfy_i, rfx_i, rfy_i, -M_PI/4, -M_PI/4,true));
-    double lfx_g = 20.0;
-    double lfy_g = 20.0;
-    double rfx_g = 20.0;
-    double rfy_g = 18.0;
+    shared_ptr<Node> begin_footstep (std::make_shared<FootstepNode>(lfx_i ,lfy_i, rfx_i, rfy_i, 0.0, 0.0,false));
+    double lfx_g = -4.0;
+    double lfy_g = -10.0;
+    double rfx_g = -4.0;
+    double rfy_g = -12.0;
     // shared_ptr<Node> goal_footstep (std::make_shared<FootstepNode>(lfx_g, lfy_g, rfx_g, rfy_g, -M_PI/4.0, -M_PI/4.0,false));
-    shared_ptr<Node> goal_footstep (std::make_shared<FootstepNode>(lfx_g, lfy_g, rfx_g, rfy_g, 0.0, 0.0,false));
+    shared_ptr<Node> goal_footstep (std::make_shared<FootstepNode>(lfx_g, lfy_g, rfx_g, rfy_g, M_PI/4, M_PI/4,false));
 
     footstepplanner.setStartNode(begin_footstep);
     footstepplanner.setGoalNode(goal_footstep);
