@@ -134,6 +134,8 @@ namespace planner{
 
 		bool turn; //true = LF, false = RF
 
+		double s;
+
 		void commonInitializationFootstep();
 
 	};
@@ -160,6 +162,23 @@ namespace planner{
 		std::shared_ptr<FootstepNode> goal_;
 		std::shared_ptr<FootstepNode> neighbor_;		
 		std::shared_ptr<FootstepNode> opt_node_;
+
+		//neighbor generation
+		double x_df;
+		double y_df;
+		double theta_df;
+
+		double max_reach;
+		double max_width;
+		double max_angle;
+		double min_angle;
+
+		double mindist_reach;
+		double maxdist_reach;
+		double mindist_width;
+		double maxdist_width;
+		double mindist_theta;
+		double maxdist_theta;
 
 
 	};

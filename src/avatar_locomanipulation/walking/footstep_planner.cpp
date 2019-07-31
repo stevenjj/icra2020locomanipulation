@@ -210,7 +210,7 @@ namespace planner{
 
 		turn = turn_in;
 
-		key = (to_string(xLF) + "_" + to_string(yLF) + "_" + to_string(xRF) + "_" + to_string(yRF) + "_" + to_string(thetaLF) + "_" + to_string(thetaRF) + "_" + to_string(turn));	
+		key = (to_string((int)round(xLF*1000)) + "_" + to_string((int)round(yLF*1000)) + "_" + to_string((int)round(xRF*1000)) + "_" + to_string((int)round(yRF*1000)) + "_" + to_string(thetaLF) + "_" + to_string(thetaRF) + "_" + to_string(turn) + "_" + to_string(s));	
 	}
 
 	void FootstepNode::commonInitializationFootstep(){
@@ -225,8 +225,10 @@ namespace planner{
 		g_score = 100000;
 		f_score = 100000;
 
+		s = 0.0;
 
-		key = (to_string(xLF) + "_" + to_string(yLF) + "_" + to_string(xRF) + "_" + to_string(yRF) + "_" + to_string(thetaLF) + "_" + to_string(thetaRF) + "_" + to_string(turn));	
+		key = (to_string((int)round(xLF*1000)) + "_" + to_string((int)round(yLF*1000)) + "_" + to_string((int)round(xRF*1000)) + "_" + to_string((int)round(yRF*1000)) + "_" + to_string(thetaLF) + "_" + to_string(thetaRF) + "_" + to_string(turn) + "_" + to_string(s));	
+
 	}
 
 	FootstepPlanner::FootstepPlanner(){	
@@ -243,8 +245,8 @@ namespace planner{
 
 		double distance;
 
-		double left_foot_transition_cost = sqrt(pow(current_->xLF - neighbor_->xLF,2) + pow(current_->yLF - neighbor_->yLF,2)); 
-		double right_foot_transition_cost = sqrt(pow(current_->xRF - neighbor_->xRF,2) + pow(current_->yRF - neighbor_->yRF,2)); 
+		double left_foot_transition_cost = sqrt(pow(current_->xLF - neighbor_->xLF,2) + pow(current_->yLF - neighbor_->yLF,2) + 0.0*pow(current_->thetaLF - neighbor_->thetaLF,2)); 
+		double right_foot_transition_cost = sqrt(pow(current_->xRF - neighbor_->xRF,2) + pow(current_->yRF - neighbor_->yRF,2) + 0.0*pow(current_->thetaRF - neighbor_->thetaRF,2)); 
 		distance = left_foot_transition_cost + right_foot_transition_cost;
 
 		
@@ -254,6 +256,9 @@ namespace planner{
 	double FootstepPlanner::heuristicCost(const shared_ptr<Node> neighbor,const shared_ptr<Node> goal){
 		goal_ = std::static_pointer_cast<FootstepNode>(goal);
 		neighbor_ = std::static_pointer_cast<FootstepNode>(neighbor);
+
+		double hyp_LF = sqrt(pow(goal_->xLF - neighbor_->xLF,2) + pow(goal_->yLF - neighbor_->yLF,2));
+		double opp_LF = goal_->yLF - neighbor_->yLF;
 
 		double distance;
 
@@ -273,7 +278,7 @@ namespace planner{
 		double left_foot_cost = sqrt(pow(goal_->xLF - current_->xLF,2) + pow(goal_->yLF - current_->yLF,2) + pow(goal_->thetaLF - current_->thetaLF,2));
 		double right_foot_cost = sqrt(pow(goal_->xRF - current_->xRF,2) + pow(goal_->yRF - current_->yRF,2) + pow(goal_->thetaRF - current_->thetaRF,2));
 	
-		if (left_foot_cost < 1.0 or right_foot_cost < 1.0){
+		if (left_foot_cost < 1.5 or right_foot_cost < 1.5){
 			return true;
 		}
 		else{
@@ -310,41 +315,44 @@ namespace planner{
 		current_ = std::static_pointer_cast<FootstepNode>(current);
 		std::vector< shared_ptr<Node> > neighbors;
 
-		//define discritization
-		double x_df = 0.5;
-		double y_df = 0.5;
-		double theta_df = M_PI/4.0; 
 
-		//define min and max distances for nodes
-		double max_x = 3.0;
-		double max_y = 3.0;
-		double maxtheta = M_PI;
-		double mintheta = -M_PI;
+		x_df = 0.5;
+		y_df = 0.5;
+		theta_df = M_PI/4.0;
 
-		//conditional mins and maxes
-		double mindist_x = -2.0;
-		double maxdist_x = 2.0;
-		double mindist_y = 0.5;
-		double maxdist_y = 3.0;
-		double maxdist_theta = M_PI/2;
+		max_reach = 3.0;
+		max_width = 3.0;
+		max_angle = M_PI;
+		min_angle = -M_PI;
+
+		mindist_reach = -3.0;
+		maxdist_reach = 3.0;
+		mindist_width = 0.5;
+		maxdist_width = 3.0;
+		mindist_theta = -M_PI/2;
+		maxdist_theta = M_PI/2;
+
+		vector<double> s_vals {0.0,0.01,0.05,0.1};
+
 
 		//number of bins
-		int ind_x = int(abs(2*max_x)/x_df) + 1;
-		int ind_y = int(abs(2*max_y)/y_df) + 1;
-		int ind_theta = int(abs(maxtheta - mintheta)/theta_df);
+		int ind_x = int(abs(2*max_reach)/x_df) + 1;
+		int ind_y = int(abs(2*max_width)/y_df) + 1;
+		int ind_theta = int(abs(max_angle - min_angle)/theta_df);
 
 		vector<double> x_vals;
 		vector<double> y_vals;
 		vector<double> theta_vals;
 
+		Eigen::Matrix3d transform(3,3);
+
 		//generate theta vals
 		for (size_t k(0); k < ind_theta; k++){
-			theta_vals.push_back(mintheta + k*theta_df);
+			theta_vals.push_back(min_angle + k*theta_df);
 			
 		}
 		//LF moving
 		if (current_->turn == true){
-			Eigen::Matrix3d transform(3,3);
 
 			transform << cos(current_->thetaRF), -sin(current_->thetaRF), current_->xRF,
 					sin(current_->thetaRF), cos(current_->thetaRF), current_->yRF,
@@ -352,51 +360,14 @@ namespace planner{
 
 
 			for (size_t i(0);i < ind_x; i++){
-				x_vals.push_back(current_->xRF - max_x + i*x_df);
+				x_vals.push_back(current_->xRF - max_reach + i*x_df);
 		
 			}
 			for (size_t j(0);j < ind_y; j++){
-				y_vals.push_back(current_->yRF - max_y + j*y_df);
-				
-			}
-			for (size_t n(0); n < x_vals.size(); n++){
-				for (size_t m(0); m < y_vals.size(); m++){
-					for (size_t k(0); k < theta_vals.size(); k++){
-						vector<double> x_y_coord;
-						x_y_coord.push_back(x_vals[n]);
-						x_y_coord.push_back(y_vals[m]);
-						saveVector(x_y_coord,"x_y_coordsO");
-
-						Eigen::Vector3d coord_Oframe(x_vals[n],y_vals[m],1);
-						Eigen::Vector3d coord_Fframe = transform.inverse()*coord_Oframe;
-						vector<double> x_y_coordF;
-						x_y_coordF.push_back(coord_Fframe[0]);
-						x_y_coordF.push_back(coord_Fframe[1]);
-						saveVector(x_y_coordF,"x_y_coordsF");
-						if (abs(theta_vals[k] - current_->thetaRF) < maxdist_theta){
-							if (coord_Fframe[0] > mindist_x && coord_Fframe[0] < maxdist_x && coord_Fframe[1] > mindist_y && coord_Fframe[1] < maxdist_y){
-								vector<double> acoord;
-								acoord.push_back(coord_Oframe[0]);
-								acoord.push_back(coord_Oframe[1]);
-								acoord.push_back(theta_vals[k]);
-								saveVector(acoord,"coords_used");
-
-								shared_ptr<Node> neighbor (std::make_shared<FootstepNode>(coord_Oframe[0],coord_Oframe[1],current_->xRF,current_->yRF,theta_vals[k],current_->thetaRF,false));
-								shared_ptr<FootstepNode> neighbor_change;
-								neighbor_change = static_pointer_cast<FootstepNode>(neighbor);
-								neighbor_change->parent = current;
-								neighbor = static_pointer_cast<Node>(neighbor_change);
-								neighbors.push_back(neighbor);
-							}
-						}
-					}
-				}
+				y_vals.push_back(current_->yRF - max_width + j*y_df);
 			}
 		}
-
-		//RF moving
 		else if (current_->turn == false){
-			Eigen::Matrix3d transform(3,3);
 
 			transform << cos(current_->thetaLF), -sin(current_->thetaLF), current_->xLF,
 					sin(current_->thetaLF), cos(current_->thetaLF), current_->yLF,
@@ -405,168 +376,57 @@ namespace planner{
 
 
 			for (size_t i(0);i < ind_x; i++){
-				x_vals.push_back(current_->xLF - max_x + i*x_df);
+				x_vals.push_back(current_->xLF - max_reach + i*x_df);
 				
 			}
 			for (size_t j(0);j < ind_y; j++){
-				y_vals.push_back(current_->yLF - max_y + j*y_df);
+				y_vals.push_back(current_->yLF - max_width + j*y_df);
 				
 			}
-			for (size_t n(0); n < x_vals.size(); n++){
-				for (size_t m(0); m < y_vals.size(); m++){
-					for (size_t k(0); k < theta_vals.size(); k++){
-						vector<double> x_y_coord;
-						x_y_coord.push_back(x_vals[n]);
-						x_y_coord.push_back(y_vals[m]);
-						saveVector(x_y_coord,"x_y_coordsO");
+				
+		}
+		for (size_t n(0); n < x_vals.size(); n++){
+			for (size_t m(0); m < y_vals.size(); m++){
+				for (size_t k(0); k < theta_vals.size(); k++){
+					for (size_t l(0); l < s_vals.size(); l++){
+						if (s_vals[l] + current_->s < 1){
+							Eigen::Vector3d coord_Oframe(x_vals[n],y_vals[m],1);
+							Eigen::Vector3d coord_Fframe = transform.inverse()*coord_Oframe;
 
-						Eigen::Vector3d coord_Oframe(x_vals[n],y_vals[m],1);
-						Eigen::Vector3d coord_Fframe = transform.inverse()*coord_Oframe;
-						vector<double> x_y_coordF;
-						x_y_coordF.push_back(coord_Fframe[0]);
-						x_y_coordF.push_back(coord_Fframe[1]);
-						saveVector(x_y_coordF,"x_y_coordsF");
+							if (current_->turn == true){
+								if (abs(theta_vals[k] - current_->thetaRF) < maxdist_theta){
+									if (coord_Fframe[0] > mindist_reach && coord_Fframe[0] < maxdist_reach && coord_Fframe[1] > mindist_width && coord_Fframe[1] < maxdist_width){
+										shared_ptr<Node> neighbor (std::make_shared<FootstepNode>(coord_Oframe[0],coord_Oframe[1],current_->xRF,current_->yRF,theta_vals[k],current_->thetaRF,false));
 
-						if (abs(theta_vals[k] - current_->thetaLF) < maxdist_theta){
-							if (coord_Fframe[0] > mindist_x && coord_Fframe[0] < maxdist_x && coord_Fframe[1] < -mindist_y && coord_Fframe[1] > -maxdist_y){
-								vector<double> acoord;
-								acoord.push_back(coord_Oframe[0]);
-								acoord.push_back(coord_Oframe[1]);
-								acoord.push_back(theta_vals[k]);
-								saveVector(acoord,"coords_used");
+										shared_ptr<FootstepNode> neighbor_change;
+										neighbor_change = static_pointer_cast<FootstepNode>(neighbor);
+										neighbor_change->parent = current;
+										neighbor_change->s = s_vals[l] + current_->s;
+										neighbor = static_pointer_cast<Node>(neighbor_change);
+										neighbors.push_back(neighbor);
+									}
+								}
+							}
 
-								shared_ptr<Node> neighbor (std::make_shared<FootstepNode>(current_->xLF,current_->yLF,coord_Oframe[0],coord_Oframe[1],current_->thetaLF,theta_vals[k],true));
-								shared_ptr<FootstepNode> neighbor_change;
-								neighbor_change = static_pointer_cast<FootstepNode>(neighbor);
-								neighbor_change->parent = current;
-								neighbor = static_pointer_cast<Node>(neighbor_change);
-								neighbors.push_back(neighbor);
+							else if (current_->turn == false){
+								if (abs(theta_vals[k] - current_->thetaLF) < maxdist_theta){
+									if (coord_Fframe[0] > mindist_reach && coord_Fframe[0] < maxdist_reach && coord_Fframe[1] < -mindist_width && coord_Fframe[1] > -maxdist_width){
+										shared_ptr<Node> neighbor (std::make_shared<FootstepNode>(current_->xLF,current_->yLF,coord_Oframe[0],coord_Oframe[1],current_->thetaLF,theta_vals[k],true));
+
+										shared_ptr<FootstepNode> neighbor_change;
+										neighbor_change = static_pointer_cast<FootstepNode>(neighbor);
+										neighbor_change->parent = current;
+										neighbor_change->s = s_vals[l] + current_->s;
+										neighbor = static_pointer_cast<Node>(neighbor_change);
+										neighbors.push_back(neighbor);
+									}
+								}
 							}
 						}
 					}
 				}
 			}
 		}
-
-
-
-
-		// double mindist_y = 1.0;
-		// double maxdist_y = 3.0;
-		// double mindist_x = -2.0;
-		// double maxdist_x = 2.0;
-		// double mintheta = -M_PI/4.0;
-		// double maxtheta = M_PI/4.0;
-
-		// //define transform matrix
-		// Eigen::Matrix3d transform(3,3);
-		// if (current_->turn == true){
-			// transform << cos(current_->thetaRF), -sin(current_->thetaRF), current_->xRF,
-			// 		sin(current_->thetaRF), cos(current_->thetaRF), current_->yRF,
-			// 		0, 0, 1;
-		// }
-		// else if (current_->turn == false){
-		// 	transform << cos(current_->thetaLF), -sin(current_->thetaLF), current_->xLF,
-		// 			sin(current_->thetaLF), cos(current_->thetaLF), current_->yLF,
-		// 	 		0, 0, 1;
-		// }
-
-		// //number of points in vector
-		// int ind_x = int(abs(maxdist_x - mindist_x)/x_df) + 1;
-		// int ind_y = int(abs(maxdist_y - mindist_y)/y_df) + 1;
-		// int ind_theta = int(abs(maxtheta - mintheta)/theta_df) + 1;
-
-		// //create x and y vectors of points
-		// vector<double> x_vals;
-		// vector<double> y_vals;
-		// vector<double> theta_vals;
-
-		
-
-		// if (current_->turn == true){
-		// 	for (size_t i(0);i < ind_y ;i++){
-		// 		y_vals.push_back(mindist_y + i*y_df);
-		// 	}
-		// }
-		// else if (current_->turn == false){
-		// 	for (size_t i(0);i < ind_y ;i++){
-		// 		y_vals.push_back(-mindist_y - i*y_df);
-		// 	}
-		// }
-		// for (size_t j(0);j < ind_x ;j++){
-		// 	x_vals.push_back(mindist_x + j*x_df);
-		// }
-
-
-		// for (size_t k(0);k < ind_theta;k++){
-		// 	theta_vals.push_back(mintheta + k*theta_df);
-		// }
-
-		
-
-		// for (size_t m(0);m < x_vals.size();m++){
-		// 	for (size_t n(0);n < y_vals.size();n++){
-		// 		for (size_t l(0);l < theta_vals.size();l++){
-		// 			Eigen::Vector3d coord_Fframe(x_vals[m],y_vals[n],1);
-		// 			vector<double> x_y_test;
-		// 			x_y_test.push_back(coord_Fframe[0]);
-		// 			x_y_test.push_back(coord_Fframe[1]);
-		// 			x_y_test.push_back(theta_vals[l]);
-		// 			saveVector(x_y_test,"x_y_test");
-		
-		// 			Eigen::Vector3d coord_Oframe = transform*coord_Fframe;
-		// 			vector<double> x_y_theta_coord;
-		// 			x_y_theta_coord.push_back(coord_Oframe[0]);
-		// 			x_y_theta_coord.push_back(coord_Oframe[1]);
-		// 			if (current_->turn == true){
-		// 				x_y_theta_coord.push_back(current_->thetaRF + theta_vals[l]);
-		// 			}
-		// 			else{
-		// 				x_y_theta_coord.push_back(current_->thetaLF + theta_vals[l]);
-		// 			}
-		// 			saveVector(x_y_theta_coord,"test_coords");
-				
-		// 			if (current_->turn == true){
-						
-		// 				double theta_node;
-		// 				if (current_->thetaRF + theta_vals[l] > M_PI){
-		// 					theta_node = current_->thetaRF + theta_vals[l] - 2*M_PI;
-		// 				}
-		// 				else if (current_->thetaRF + theta_vals[l] < -M_PI){
-		// 					theta_node = current_->thetaRF + theta_vals[l] + 2*M_PI;
-		// 				}
-		// 				else{
-		// 					theta_node = current_->thetaRF + theta_vals[l];
-		// 				}
-		// 				shared_ptr<Node> neighbor (std::make_shared<FootstepNode>(round(coord_Oframe[0]*1000.0)/1000.0,round(coord_Oframe[1]*1000.0)/1000.0,current_->xRF,current_->yRF,theta_vals[l],current_->thetaRF,false));
-		// 				shared_ptr<FootstepNode> neighbor_change;
-		// 				neighbor_change = static_pointer_cast<FootstepNode>(neighbor);
-		// 				neighbor_change->parent = current;
-		// 				neighbor = static_pointer_cast<Node>(neighbor_change);
-		// 				neighbors.push_back(neighbor);
-		// 			}
-		// 			else if (current_->turn == false){
-						
-		// 				double theta_node;
-		// 				if (current_->thetaLF + theta_vals[l] > M_PI){
-		// 					theta_node = current_->thetaLF + theta_vals[l] - 2*M_PI;
-		// 				}
-		// 				else if (current_->thetaLF + theta_vals[l] < -M_PI){
-		// 					theta_node = current_->thetaLF + theta_vals[l] + 2*M_PI;
-		// 				}
-		// 				else{
-		// 					theta_node = current_->thetaLF + theta_vals[l];
-		// 				}
-		// 				shared_ptr<Node> neighbor (std::make_shared<FootstepNode>(current_->xLF,current_->yLF,round(coord_Oframe[0]*1000.0)/1000.0,round(coord_Oframe[1]*1000.0)/1000.0,current_->thetaLF,theta_vals[l],true));
-		// 				shared_ptr<FootstepNode> neighbor_change;
-		// 				neighbor_change = static_pointer_cast<FootstepNode>(neighbor);
-		// 				neighbor_change->parent = current;
-		// 				neighbor = static_pointer_cast<Node>(neighbor_change);
-		// 				neighbors.push_back(neighbor);
-		// 			}	
-		// 		}
-		// 	}
-		// }
 
 		return neighbors;
 	}
