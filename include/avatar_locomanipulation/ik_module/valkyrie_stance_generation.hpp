@@ -15,6 +15,7 @@
 #include <avatar_locomanipulation/tasks/task_6dpose_wrt_frame.hpp>
 #include <avatar_locomanipulation/tasks/task_6dpose_wrt_midfeet.hpp>
 #include <avatar_locomanipulation/tasks/task_contact_normal.hpp>
+#include <avatar_locomanipulation/tasks/task_xyrzpose_wrt_frame.hpp>
 
 // Task Stack
 #include <avatar_locomanipulation/tasks/task_stack.hpp>
@@ -53,6 +54,8 @@ public:
   Eigen::VectorXd q_start;
 
 	// Tasks
+  std::shared_ptr<Task> base_pose_task; // Desired Pose of the robot's base
+
 	std::shared_ptr<Task> pelvis_wrt_mf_task;	// Pelvis w.r.t midfeet task
 	std::shared_ptr<Task> lfoot_contact_normal_task; // Left Foot Contact Normal Task
 	std::shared_ptr<Task> rfoot_contact_normal_task; // Right foot Contact Normal Task
@@ -67,6 +70,10 @@ public:
 	// Task Stacks
 	std::shared_ptr<Task> task_stack_priority_1;
 	std::shared_ptr<Task> task_stack_priority_2;
+
+  // Desired Base Configuration to be closed to as much as possible
+  Eigen::Vector3d base_des_pos;
+  Eigen::Quaterniond base_des_quat;  
 
   // Desired Pelvis configuration wrt midfeet
   Eigen::Vector3d pelvis_wrt_mf_des_pos;

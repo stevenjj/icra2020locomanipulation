@@ -133,7 +133,7 @@ void test_initial_hand_location_stance(){
   hinge_orientation.normalize();
   manipulate_door.setWorldTransform(hinge_location, hinge_orientation);
 
-  // q_start[1] = 0.5;
+  q_start[1] = 0.5;
   // q_start[valkyrie_model->getJointIndex("rightShoulderPitch")] = 0.0;
   // q_start[valkyrie_model->getJointIndex("rightShoulderRoll")] = 1.5;
   // q_start[valkyrie_model->getJointIndex("rightElbowPitch")] = 1.5 ; //0.4;

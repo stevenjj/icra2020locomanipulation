@@ -43,13 +43,17 @@ void ValkyrieStanceGeneration::setDesiredLeftHandPose(const Eigen::Vector3d des_
 }
 
 void ValkyrieStanceGeneration::initializeTasks(){
+  // Set Base Task
+  base_pose_task.reset(new Task6DPose(robot_model, "pelvis"));
+  base_pose_task->setTaskGain(1e-1);
+
   // Set Pelvis Tasks
   pelvis_wrt_mf_task.reset(new Task6DPosewrtMidFeet(robot_model, "pelvis"));
 
   // Set Foot Tasks
   lfoot_contact_normal_task.reset(new TaskContactNormalTask(robot_model, "leftCOP_Frame", left_floor_normal, left_floor_center));
   rfoot_contact_normal_task.reset(new TaskContactNormalTask(robot_model, "rightCOP_Frame", right_floor_normal, right_floor_center));
-  lfoot_wrt_rfoot_task.reset(new Task6DPosewrtFrame(robot_model, "leftCOP_Frame", "rightCOP_Frame"));
+  lfoot_wrt_rfoot_task.reset(new TaskXYRZPosewrtFrame(robot_model, "leftCOP_Frame", "rightCOP_Frame"));
 
   rpalm_task.reset(new Task6DPose(robot_model, "rightPalm"));
   lpalm_task.reset(new Task6DPose(robot_model, "leftPalm"));
@@ -75,8 +79,8 @@ void ValkyrieStanceGeneration::initializeTasks(){
     }  
   }
 
-  // If both hands are not being used simultaneously, add torso joint tasks.
-  if (!(use_left_hand && use_right_hand)){
+  // If neither hands are being used, add torso joint tasks.
+  if (!(use_left_hand || use_right_hand)){
     for(int i = 0; i < torso_joint_names.size(); i++){
       torso_neck_arm_posture_task_names.push_back(torso_joint_names[i]);
     }  
@@ -89,7 +93,7 @@ void ValkyrieStanceGeneration::initializeTasks(){
   // Set overall posture task
   overall_posture_task_joint_names = robot_model->joint_names;
   overall_posture_task.reset(new TaskJointConfig(robot_model, overall_posture_task_joint_names));
-  overall_posture_task->setTaskGain(1e-1);
+  // overall_posture_task->setTaskGain(1e-1);
 
   // Set the task stack
   createTaskStack();
@@ -97,8 +101,11 @@ void ValkyrieStanceGeneration::initializeTasks(){
 
 void ValkyrieStanceGeneration::createTaskStack(){
   // Create Task Stack
-  std::vector< std::shared_ptr<Task> > priority_1_task_stack = {pelvis_wrt_mf_task, lfoot_contact_normal_task, rfoot_contact_normal_task, torso_neck_arm_posture_task};
-  std::vector< std::shared_ptr<Task> > priority_2_task_stack = {lfoot_wrt_rfoot_task, overall_posture_task};
+  // std::vector< std::shared_ptr<Task> > priority_1_task_stack = {pelvis_wrt_mf_task, lfoot_contact_normal_task, rfoot_contact_normal_task, torso_neck_arm_posture_task};
+  // std::vector< std::shared_ptr<Task> > priority_2_task_stack = {lfoot_wrt_rfoot_task, overall_posture_task, base_pose_task};
+
+  std::vector< std::shared_ptr<Task> > priority_1_task_stack = {lfoot_wrt_rfoot_task, torso_neck_arm_posture_task, lfoot_contact_normal_task, rfoot_contact_normal_task};
+  std::vector< std::shared_ptr<Task> > priority_2_task_stack = {overall_posture_task, base_pose_task};
 
   // If the hand is being used, add it to the task stack
   if (use_right_hand){
@@ -126,6 +133,9 @@ void ValkyrieStanceGeneration::createTaskStack(){
 
 
 void ValkyrieStanceGeneration::default_initialization(){
+  // Set desired base configuration
+  base_des_pos.setZero(); base_des_quat.setIdentity();
+
   // Set Default Desired Pelvis Location w.r.t midfeet frame
 	pelvis_wrt_mf_des_pos.setZero(); pelvis_wrt_mf_des_pos[2] = 1.0;
 	pelvis_wrt_mf_des_quat.setIdentity();
@@ -161,6 +171,9 @@ bool ValkyrieStanceGeneration::computeStance(Eigen::VectorXd & q_out){
   initializeTasks();
   
   // Set Remaining task references
+  // Set desired base pose to be close to the initial configuration
+  base_pose_task->setReference(Eigen::Vector3d(q_start[0], q_start[1], q_start[2]), Eigen::Quaterniond(q_start[6], q_start[3], q_start[4], q_start[5]));
+
   pelvis_wrt_mf_task->setReference(pelvis_wrt_mf_des_pos, pelvis_wrt_mf_des_quat);
   lfoot_wrt_rfoot_task->setReference(lf_wrt_rf_des_pos, lf_wrt_rf_des_quat);
   rpalm_task->setReference(rpalm_des_pos, rpalm_des_quat);
@@ -175,7 +188,8 @@ bool ValkyrieStanceGeneration::computeStance(Eigen::VectorXd & q_out){
   overall_posture_task->setReference(q_des);
 
   // Set Stance IK Descent parameters
-  stance_ik_module.setSequentialDescent(false);
+  // stance_ik_module.setSequentialDescent(false);
+  stance_ik_module.setSequentialDescent(true);
   stance_ik_module.setBackTrackwithCurrentTaskError(true);
   stance_ik_module.setCheckPrevViolations(true);
   stance_ik_module.setEnableInertiaWeighting(false);
