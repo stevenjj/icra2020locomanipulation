@@ -113,6 +113,7 @@ void test_stance_generation(){
 
   // Update the model with the initial configuration
   robot_model->updateFullKinematics(q_init);
+  // Right Hand Pose -------------------------------------------------------
   Eigen::Vector3d rpalm_des_pos;
   Eigen::Quaternion<double> rpalm_des_quat;
   // Set Desired right hand position
@@ -122,21 +123,22 @@ void test_stance_generation(){
   rpalm_des_pos[2] += 0.3; 
   // Set desired right hand orientation
   Eigen::AngleAxis<double> axis_angle;
-  axis_angle.angle() = (M_PI/2.0) + (M_PI/4.0);
+  axis_angle.angle() = (M_PI/2.0);
   axis_angle.axis() = Eigen::Vector3d(0, 0, 1.0);
   rpalm_des_quat = axis_angle;
 
-  // Eigen::Vector3d lpalm_des_pos;
-  // Eigen::Quaternion<double> lpalm_des_quat;
-  // // Set Desired right hand position
-  // robot_model->getFrameWorldPose("leftPalm", lpalm_des_pos, lpalm_des_quat);
-  // lpalm_des_pos[0] += 0.35;//0.4;//0.35;//0.25;
-  // lpalm_des_pos[1] -= 0.25;//0.3;//0.25; 
-  // lpalm_des_pos[2] += 0.3; 
+  // Left Hand Pose ---------------------------------------------------------
+  Eigen::Vector3d lpalm_des_pos;
+  Eigen::Quaternion<double> lpalm_des_quat;
+  // Set Desired left hand position
+  robot_model->getFrameWorldPose("leftPalm", lpalm_des_pos, lpalm_des_quat);
+  lpalm_des_pos[0] += 0.35;
+  lpalm_des_pos[1] -= 0.25;
+  lpalm_des_pos[2] += 0.3; 
   // // Set desired right hand orientation
-  // axis_angle.angle() = -((M_PI/2.0) + (M_PI/4.0));
-  // axis_angle.axis() = Eigen::Vector3d(0, 0, 1.0);
-  // lpalm_des_quat = axis_angle;
+  axis_angle.angle() = (M_PI/2.0);
+  axis_angle.axis() = Eigen::Vector3d(0, 0, -1.0);
+  lpalm_des_quat = axis_angle;
 
   // Initialize the stance generation object
   ValkyrieStanceGeneration stance_generator(robot_model);
@@ -147,8 +149,8 @@ void test_stance_generation(){
   stance_generator.setDesiredRightHandPose(rpalm_des_pos, rpalm_des_quat);
 
   // Set desired left hand and enable left hand use
-  // stance_generator.setUseLeftHand(false);
-  // stance_generator.setDesiredLeftHandPose(lpalm_des_pos, lpalm_des_quat);
+  stance_generator.setUseLeftHand(false);
+  stance_generator.setDesiredLeftHandPose(lpalm_des_pos, lpalm_des_quat);
 
   // Compute the stance
   bool convergence = stance_generator.computeStance(q_sol);
@@ -408,7 +410,7 @@ void visualize_robot(Eigen::VectorXd & q_start, Eigen::VectorXd & q_end){
 
 int main(int argc, char ** argv){
   ros::init(argc, argv, "test_ik_module");
-  test_stance_generation();
-  // testIK_module();
+  // test_stance_generation();
+  testIK_module();
   return 0;
 }
