@@ -17,6 +17,7 @@
 #include <avatar_locomanipulation/tasks/task_contact_normal.hpp>
 #include <avatar_locomanipulation/tasks/task_xyrzpose_wrt_frame.hpp>
 #include <avatar_locomanipulation/tasks/task_xdpose_wrt_frame.hpp>
+#include <avatar_locomanipulation/tasks/task_6dpose_no_rxry.hpp>
 
 
 // Task Stack
@@ -51,12 +52,15 @@ public:
 
 	// Member Functions
 	IKModule stance_ik_module;
+  IKModule snap_to_floor_ik_module;
+
   std::shared_ptr<RobotModel> robot_model;
 
   Eigen::VectorXd q_start;
 
 	// Tasks
   std::shared_ptr<Task> base_pose_task; // Desired Pose of the robot's base
+  std::shared_ptr<Task> pelvis_wrt_rf_task; // Pelvis w.r.t right foot
 
 	std::shared_ptr<Task> pelvis_wrt_mf_task;	// Pelvis w.r.t midfeet task
 	std::shared_ptr<Task> lfoot_contact_normal_task; // Left Foot Contact Normal Task
@@ -73,9 +77,17 @@ public:
 	std::shared_ptr<Task> task_stack_priority_1;
 	std::shared_ptr<Task> task_stack_priority_2;
 
+
+  std::shared_ptr<Task> task_stack_snap_to_floor_p1; 
+  std::shared_ptr<Task> task_stack_snap_to_floor_p2;   
+
   // Desired Base Configuration to be closed to as much as possible
   Eigen::Vector3d base_des_pos;
   Eigen::Quaterniond base_des_quat;  
+
+  // Desired Pelvis configuration wrt right foot
+  Eigen::Vector3d pelvis_wrt_rfoot_des_pos;
+  Eigen::Quaterniond pelvis_wrt_rfoot_des_quat;  
 
   // Desired Pelvis configuration wrt midfeet
   Eigen::Vector3d pelvis_wrt_mf_des_pos;

@@ -16,11 +16,13 @@ ValkyrieStanceGeneration::~ValkyrieStanceGeneration(){
 
 void ValkyrieStanceGeneration::setRobotModel(std::shared_ptr<RobotModel> & robot_model_in){
 	robot_model = robot_model_in;
+  snap_to_floor_ik_module.setRobotModel(robot_model_in);
   stance_ik_module.setRobotModel(robot_model_in);
 }
 
 void ValkyrieStanceGeneration::setStartingConfig(const Eigen::VectorXd & q_start_in){
   q_start = q_start_in;
+  snap_to_floor_ik_module.setInitialConfig(q_start);
   stance_ik_module.setInitialConfig(q_start);
 }
 
@@ -48,15 +50,15 @@ void ValkyrieStanceGeneration::initializeTasks(){
   base_pose_task->setTaskGain(1e-1);
 
   // Set Pelvis Tasks
+  pelvis_wrt_rf_task.reset(new TaskXDPosewrtFrame(robot_model, {TASK_DIM_X, TASK_DIM_Y, TASK_DIM_Z}, "pelvis", "rightCOP_Frame"));
   pelvis_wrt_mf_task.reset(new Task6DPosewrtMidFeet(robot_model, "pelvis"));
 
   // Set Foot Tasks
   lfoot_contact_normal_task.reset(new TaskContactNormalTask(robot_model, "leftCOP_Frame", left_floor_normal, left_floor_center));
   rfoot_contact_normal_task.reset(new TaskContactNormalTask(robot_model, "rightCOP_Frame", right_floor_normal, right_floor_center));
-  // lfoot_wrt_rfoot_task.reset(new TaskXYRZPosewrtFrame(robot_model, "leftCOP_Frame", "rightCOP_Frame"));
- lfoot_wrt_rfoot_task.reset(new TaskXDPosewrtFrame(robot_model, {TASK_DIM_X, TASK_DIM_Y, TASK_DIM_RZ}, "leftCOP_Frame", "rightCOP_Frame"));
+  lfoot_wrt_rfoot_task.reset(new TaskXDPosewrtFrame(robot_model, {TASK_DIM_X, TASK_DIM_Y, TASK_DIM_RZ}, "leftCOP_Frame", "rightCOP_Frame"));
 
-  rpalm_task.reset(new Task6DPose(robot_model, "rightPalm"));
+  rpalm_task.reset(new Task6DPoseNoRXRY(robot_model, "rightPalm"));
   lpalm_task.reset(new Task6DPose(robot_model, "leftPalm"));
 
   // Clear Torso, neck, and arm Posture Task Names
@@ -94,7 +96,7 @@ void ValkyrieStanceGeneration::initializeTasks(){
   // Set overall posture task
   overall_posture_task_joint_names = robot_model->joint_names;
   overall_posture_task.reset(new TaskJointConfig(robot_model, overall_posture_task_joint_names));
-  // overall_posture_task->setTaskGain(1e-1);
+  overall_posture_task->setTaskGain(1e-1);
 
   // Set the task stack
   createTaskStack();
@@ -105,7 +107,9 @@ void ValkyrieStanceGeneration::createTaskStack(){
   // std::vector< std::shared_ptr<Task> > priority_1_task_stack = {pelvis_wrt_mf_task, lfoot_contact_normal_task, rfoot_contact_normal_task, torso_neck_arm_posture_task};
   // std::vector< std::shared_ptr<Task> > priority_2_task_stack = {lfoot_wrt_rfoot_task, overall_posture_task, base_pose_task};
 
-  std::vector< std::shared_ptr<Task> > priority_1_task_stack = {lfoot_wrt_rfoot_task, torso_neck_arm_posture_task, lfoot_contact_normal_task, rfoot_contact_normal_task};
+  // std::vector< std::shared_ptr<Task> > priority_1_task_stack = {lfoot_wrt_rfoot_task, pelvis_wrt_mf_task, torso_neck_arm_posture_task, lfoot_contact_normal_task, rfoot_contact_normal_task}; //{lfoot_wrt_rfoot_task, torso_neck_arm_posture_task, lfoot_contact_normal_task, rfoot_contact_normal_task};
+
+  std::vector< std::shared_ptr<Task> > priority_1_task_stack = {torso_neck_arm_posture_task, pelvis_wrt_mf_task, lfoot_contact_normal_task, rfoot_contact_normal_task};
   std::vector< std::shared_ptr<Task> > priority_2_task_stack = {overall_posture_task, base_pose_task};
 
   // If the hand is being used, add it to the task stack
@@ -117,15 +121,27 @@ void ValkyrieStanceGeneration::createTaskStack(){
     priority_1_task_stack.push_back(lpalm_task);    
   }
 
+  std::vector< std::shared_ptr<Task> > snap_to_floor_tasks_priority_1 = {pelvis_wrt_mf_task, lfoot_wrt_rfoot_task, torso_neck_arm_posture_task, lfoot_contact_normal_task, rfoot_contact_normal_task};
+  std::vector< std::shared_ptr<Task> > snap_to_floor_tasks_priority_2 = {overall_posture_task, base_pose_task};
+
   // Create the task stack
+  task_stack_snap_to_floor_p1.reset(new TaskStack(robot_model, snap_to_floor_tasks_priority_1));
+  task_stack_snap_to_floor_p2.reset(new TaskStack(robot_model, snap_to_floor_tasks_priority_2));
+
   task_stack_priority_1.reset(new TaskStack(robot_model, priority_1_task_stack));
   task_stack_priority_2.reset(new TaskStack(robot_model, priority_2_task_stack));   
-  // Clear the task hioerarchy and add the tasks to hierarchy
+
+  // Clear the task hierarchy and add the tasks to hierarchy
+  snap_to_floor_ik_module.clearTaskHierarchy();
+  snap_to_floor_ik_module.addTasktoHierarchy(task_stack_snap_to_floor_p1);
+  snap_to_floor_ik_module.addTasktoHierarchy(task_stack_snap_to_floor_p2);
+
   stance_ik_module.clearTaskHierarchy();
   stance_ik_module.addTasktoHierarchy(task_stack_priority_1);
-  stance_ik_module.addTasktoHierarchy(task_stack_priority_2);
+  // stance_ik_module.addTasktoHierarchy(task_stack_priority_2);
 
   // Prepare the IK data structures
+  snap_to_floor_ik_module.prepareNewIKDataStrcutures();
   stance_ik_module.prepareNewIKDataStrcutures();
 
 }
@@ -136,6 +152,11 @@ void ValkyrieStanceGeneration::createTaskStack(){
 void ValkyrieStanceGeneration::default_initialization(){
   // Set desired base configuration
   base_des_pos.setZero(); base_des_quat.setIdentity();
+
+  // Set desired Pelvis configuration wrt right foot
+  pelvis_wrt_rfoot_des_pos.setZero(); pelvis_wrt_rfoot_des_quat.setIdentity();
+  pelvis_wrt_rfoot_des_pos[1] = 0.125;
+  pelvis_wrt_rfoot_des_pos[2] = 1.0;
 
   // Set Default Desired Pelvis Location w.r.t midfeet frame
 	pelvis_wrt_mf_des_pos.setZero(); pelvis_wrt_mf_des_pos[2] = 1.0;
@@ -174,7 +195,7 @@ bool ValkyrieStanceGeneration::computeStance(Eigen::VectorXd & q_out){
   // Set Remaining task references
   // Set desired base pose to be close to the initial configuration
   base_pose_task->setReference(Eigen::Vector3d(q_start[0], q_start[1], q_start[2]), Eigen::Quaterniond(q_start[6], q_start[3], q_start[4], q_start[5]));
-
+  pelvis_wrt_rf_task->setReference(pelvis_wrt_rfoot_des_pos, pelvis_wrt_rfoot_des_quat);
   pelvis_wrt_mf_task->setReference(pelvis_wrt_mf_des_pos, pelvis_wrt_mf_des_quat);
   lfoot_wrt_rfoot_task->setReference(lf_wrt_rf_des_pos, lf_wrt_rf_des_quat);
   rpalm_task->setReference(rpalm_des_pos, rpalm_des_quat);
@@ -188,20 +209,35 @@ bool ValkyrieStanceGeneration::computeStance(Eigen::VectorXd & q_out){
   getSelectedPostureTaskReferences(overall_posture_task_joint_names, q_start, q_des);
   overall_posture_task->setReference(q_des);
 
-  // Set Stance IK Descent parameters
+  // Set IK Descent parameters
+  snap_to_floor_ik_module.setSequentialDescent(false);
+  snap_to_floor_ik_module.setBackTrackwithCurrentTaskError(true);
+  snap_to_floor_ik_module.setCheckPrevViolations(true);
+  snap_to_floor_ik_module.setEnableInertiaWeighting(false);
+
   // stance_ik_module.setSequentialDescent(false);
   stance_ik_module.setSequentialDescent(true);
   stance_ik_module.setBackTrackwithCurrentTaskError(true);
   stance_ik_module.setCheckPrevViolations(true);
   stance_ik_module.setEnableInertiaWeighting(false);
 
-  // Perform the IK:
-  bool primary_task_convergence = stance_ik_module.solveIK(solve_result, task_error_norms, total_error_norm, q_sol);
+  // Perform the sequential IK:
+  bool snap_to_floor_task_convergence = false;
+  bool stance_identification_task_convergence = false;
+
+  // Step 1: snap the robot to the floor
+  snap_to_floor_task_convergence = snap_to_floor_ik_module.solveIK(solve_result, task_error_norms, total_error_norm, q_sol);
+
+  // Step 2: Solve for the end effector pose 
+  if (snap_to_floor_task_convergence){
+    this->setStartingConfig(q_sol);
+    stance_identification_task_convergence = stance_ik_module.solveIK(solve_result, task_error_norms, total_error_norm, q_sol);
+  }
 
   // Output the solution
   q_out = q_sol;
 
-  return primary_task_convergence;
+  return (snap_to_floor_task_convergence && stance_identification_task_convergence);
 
 }
 

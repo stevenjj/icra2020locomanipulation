@@ -37,7 +37,7 @@ TaskXDPosewrtFrame::TaskXDPosewrtFrame(std::shared_ptr<RobotModel> & input_model
 	J_out = Eigen::MatrixXd::Zero(task_dim, robot_model->getDimQdot());
 	Jdot_out = Eigen::MatrixXd::Zero(task_dim, robot_model->getDimQdot());
 
-	std::cout << "[TaskXDPosewrtFrame] for frame " << frame_name << " w.r.t. frame " << wrt_frame_name << " Constructed" << std::endl;
+	// std::cout << "[TaskXDPosewrtFrame] for frame " << frame_name << " w.r.t. frame " << wrt_frame_name << " Constructed" << std::endl;
 }
 
 TaskXDPosewrtFrame::~TaskXDPosewrtFrame(){

@@ -156,6 +156,7 @@ void test_initial_hand_location_stance(){
   // Compute starting stance for the door opening task
   stance_generator.stance_ik_module.setEnableInertiaWeighting(true);
   bool convergence = stance_generator.computeStance(q_end);
+  stance_generator.snap_to_floor_ik_module.printSolutionResults();
   stance_generator.stance_ik_module.printSolutionResults();
   std::cout << "Stance Generation Result " << (convergence ? "true": "false") << std::endl;
 
@@ -235,7 +236,7 @@ void test_walking_config_trajectory_generator(){
 
 int main(int argc, char ** argv){   
   ros::init(argc, argv, "test_config_trajectory_generator");
-  //test_walking_config_trajectory_generator();
+  // test_walking_config_trajectory_generator();
   test_hand_in_place_config_trajectory_generator();
   // test_initial_hand_location_stance();
 
