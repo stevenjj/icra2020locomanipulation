@@ -53,7 +53,8 @@ void ValkyrieStanceGeneration::initializeTasks(){
   // Set Foot Tasks
   lfoot_contact_normal_task.reset(new TaskContactNormalTask(robot_model, "leftCOP_Frame", left_floor_normal, left_floor_center));
   rfoot_contact_normal_task.reset(new TaskContactNormalTask(robot_model, "rightCOP_Frame", right_floor_normal, right_floor_center));
-  lfoot_wrt_rfoot_task.reset(new TaskXYRZPosewrtFrame(robot_model, "leftCOP_Frame", "rightCOP_Frame"));
+  // lfoot_wrt_rfoot_task.reset(new TaskXYRZPosewrtFrame(robot_model, "leftCOP_Frame", "rightCOP_Frame"));
+ lfoot_wrt_rfoot_task.reset(new TaskXDPosewrtFrame(robot_model, {TASK_DIM_X, TASK_DIM_Y, TASK_DIM_RZ}, "leftCOP_Frame", "rightCOP_Frame"));
 
   rpalm_task.reset(new Task6DPose(robot_model, "rightPalm"));
   lpalm_task.reset(new Task6DPose(robot_model, "leftPalm"));

@@ -16,6 +16,8 @@
 #include <avatar_locomanipulation/tasks/task_6dpose_wrt_midfeet.hpp>
 #include <avatar_locomanipulation/tasks/task_contact_normal.hpp>
 #include <avatar_locomanipulation/tasks/task_xyrzpose_wrt_frame.hpp>
+#include <avatar_locomanipulation/tasks/task_xdpose_wrt_frame.hpp>
+
 
 // Task Stack
 #include <avatar_locomanipulation/tasks/task_stack.hpp>
