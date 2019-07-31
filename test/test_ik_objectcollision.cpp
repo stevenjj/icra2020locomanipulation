@@ -109,15 +109,23 @@ void testIK_module(){
   IKModule ik_module(valkyrie);
   ik_module.setInitialConfig(q_init);  
 
+  std::cout << "test1\n";
+
   // Update Robot Kinematics
   ik_module.robot_model->enableUpdateGeomOnKinematicsUpdate(true);
   ik_module.robot_model->updateFullKinematics(q_init);
+  std::cout << "test2\n";
   cart->enableUpdateGeomOnKinematicsUpdate(true);
   cart->updateFullKinematics(cart_init);
+  std::cout << "test3\n";
 
   std::shared_ptr<CollisionEnvironment> collision(new CollisionEnvironment(ik_module.robot_model) );
 
+  std::cout << "test4\n";
+
   collision->add_new_object(cart, cart_init);
+
+  std::cout << "test5\n";
 
   // Create Tasks
   std::shared_ptr<Task> pelvis_task(new Task6DPose(ik_module.robot_model, "pelvis"));

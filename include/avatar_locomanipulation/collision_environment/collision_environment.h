@@ -64,6 +64,9 @@ public:
   // Potential function scaling distance
   double eta;
 
+  // Variable used to keep track of the length of the combined q_currents for every added object
+  double object_q_counter = 0;
+
   // The tolerance distance for avoiding collisions
   double safety_dist_normal = 0.075;
   double safety_dist_collision = 0.2;
@@ -104,12 +107,12 @@ public:
 
   // Given a frame name from a task it will build the directed vectors to that link
   // Input: - Relevant frame name from the task_selfcollision
-  void build_self_directed_vectors(const std::string & frame_name, Eigen::VectorXd & q_current);
+  void build_self_directed_vectors(const std::string & frame_name, Eigen::VectorXd & q_update);
 
 
   // Given a frame name from a task it will build directed vectors to that link from all object links
   // Input: - Relevant frame name from the task_objectcollision
-  void build_object_directed_vectors(std::string & frame_name, Eigen::VectorXd & q_current);
+  void build_object_directed_vectors(std::string & frame_name, Eigen::VectorXd & q_update);
 
 
   // Used by self collision and object collision tasks to calculate the potential field

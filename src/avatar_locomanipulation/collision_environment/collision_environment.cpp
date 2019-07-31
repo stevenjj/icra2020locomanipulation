@@ -16,6 +16,8 @@ CollisionEnvironment::CollisionEnvironment(std::shared_ptr<RobotModel> & val){
   object_flag = false;
   // Potential scaling factor
   eta = 1.0;
+  // Set the object q counter
+  object_q_counter = 0;
   // Indicates that appended will append a valkyrie model
   first_time = true;
   // create an empty RobotModel apended
@@ -63,39 +65,33 @@ void CollisionEnvironment::append_models(){
 
   }
   else{
+    // temporarily holds the original appended->q_current
     Eigen::VectorXd temp;
-    // Prepare object for appending 
-    object->geomModel.addAllCollisionPairs();
-
     temp = appended->q_current;
-
+    // create new temporary appended RobotModel for appendModel output
     std::shared_ptr<RobotModel> app(new RobotModel() );
-
-    // Append the object onto the robot, and fill appended RobotModel
-    pinocchio::appendModel(appended->model, object->model, appended->geomModel, object->geomModel, appended->model.frames.size()-1, pinocchio::SE3::Identity(), app->model, app->geomModel);
-
+    // prepare the object for appending
+    object->geomModel.addAllCollisionPairs();
+    // append the object into appended, such that its parent frame has the parent joint "universe"
+    pinocchio::appendModel(appended->model, object->model, appended->geomModel, object->geomModel, 0, pinocchio::SE3::Identity(), app->model, app->geomModel);
+    // now replace the appended with the appendModel output
     appended = app;
-
+    // initialize this, since it does not yet have data, geomData
+    //  a correctly sized q_current, etc.
     appended->appended_initialization();
-
-    // Define empy vectorXd with new length of appended
-    Eigen::VectorXd temp1;
-    temp1 = Eigen::VectorXd::Zero(appended->getDimQ());
-
-    // Initially fill it with the original appended->q_current
-    for(int j=0; j<temp.size(); ++j){
-      temp1[j] = temp[j];
+    // Fill the objects config inside of the appended model
+    for(int i=0; i<object->q_current.size(); ++i){
+      appended->q_current[i] = object->q_current[i];
     }
-    int p=0;
-    // Then add the new object->q_current to the end
-    for(int k=temp.size(); k<appended->getDimQ(); ++k){
-      temp1[k] = object->q_current[p];
-      ++p;
+    // Fill the remainder of the appended with the original q_current
+    int k=0;
+    for(int j=object->q_current.size(); j<appended->q_current.size(); ++j){
+      appended->q_current[j] = temp[k];
+      ++k;
     }
-
-    // Define the appended configuration vector
-    appended->q_current = temp1;
-    // update full kinematics
+    std::cout << "appended->getDimQ(): " << appended->getDimQ() << std::endl;
+    std::cout << "appended->q_current.size(): " << appended->q_current.size() << std::endl;
+    // Now that appended->q_current is filled update full kinematics
     appended->enableUpdateGeomOnKinematicsUpdate(true);
     appended->updateFullKinematics(appended->q_current);
 
@@ -168,7 +164,7 @@ void CollisionEnvironment::find_near_points(std::string & interest_link, const s
 
 
 
-void CollisionEnvironment::build_self_directed_vectors(const std::string & frame_name, Eigen::VectorXd & q_current){
+void CollisionEnvironment::build_self_directed_vectors(const std::string & frame_name, Eigen::VectorXd & q_update){
   // for clarity on these maps, see control flow in find_self_near_points function
   std::map<std::string, Eigen::Vector3d> from_near_points, to_near_points;
 
@@ -180,8 +176,8 @@ void CollisionEnvironment::build_self_directed_vectors(const std::string & frame
   std::string to_link = frame_name + "_0"; // Pinocchio Convention has _0 after collision links
 
   // Update the robot config for the given step of IK iteration
-  for(int j=0; j<q_current.size(); ++j){
-    appended->q_current[j] = q_current[j];
+  for(int j=object_q_counter; j<appended->q_current.size(); ++j){
+    appended->q_current[j] = q_update[j];
   }
   // Update full kinematics
   appended->enableUpdateGeomOnKinematicsUpdate(true);
@@ -218,7 +214,7 @@ void CollisionEnvironment::build_self_directed_vectors(const std::string & frame
 
 
 
-void CollisionEnvironment::build_object_directed_vectors(std::string & frame_name, Eigen::VectorXd & q_current){
+void CollisionEnvironment::build_object_directed_vectors(std::string & frame_name, Eigen::VectorXd & q_update){
   // for clarity on these maps, see control flow in find_self_near_points function
   std::map<std::string, Eigen::Vector3d> from_near_points, to_near_points;
 
@@ -228,19 +224,13 @@ void CollisionEnvironment::build_object_directed_vectors(std::string & frame_nam
   // used to build directed vectors
   Eigen::Vector3d difference;
 
-  // std::cout << "q_current: \n" << q_current << std::endl;
-  // std::cout << "-----------------------------------------------\n";
-
   // Update the robot config for the given step of IK iteration
-  for(int j=0; j<q_current.size(); ++j){
-    appended->q_current[j] = q_current[j];
+  for(int j=object_q_counter; j<appended->q_current.size(); ++j){
+    appended->q_current[j] = q_update[j];
   }
   // Update full kinematics
   appended->enableUpdateGeomOnKinematicsUpdate(true);
   appended->updateFullKinematics(appended->q_current);
-
-  // std::cout << "After: appended->q_current\n" << appended->q_current << std::endl;
-  // std::cout << "----------------------------------------------------------------------\n";
 
   // gives a list of object link names
   std::vector<std::string> object_links = get_object_links();
@@ -278,11 +268,11 @@ void CollisionEnvironment::build_object_directed_vectors(std::string & frame_nam
 
   std::cout << "directed_vectors.size(): " << directed_vectors.size() << std::endl;
 
-  std::cout << "appended->model:\n" << appended->model << std::endl;
-  std::cout << "appended->geomModel:\n" << appended->geomModel << std::endl;
-  for (int k=0 ; k<appended->model.frames.size() ; ++k){
-    std::cout << "frame:" << k << " " << appended->model.frames[k].name << " : " << appended->data->oMf[k].translation().transpose() << std::endl;
-  }
+  // std::cout << "appended->model:\n" << appended->model << std::endl;
+  // std::cout << "appended->geomModel:\n" << appended->geomModel << std::endl;
+  // for (int k=0 ; k<appended->model.frames.size() ; ++k){
+  //   std::cout << "frame:" << k << " " << appended->model.frames[k].name << " : " << appended->data->oMf[k].translation().transpose() << std::endl;
+  // }
 
   Eigen::Vector3d cur_pos_to, cur_pos_from; 
   Eigen::Quaternion<double> cur_ori;
@@ -351,9 +341,11 @@ double CollisionEnvironment::get_collision_potential(){
 void CollisionEnvironment::add_new_object(std::shared_ptr<RobotModel> & obj, const Eigen::VectorXd & q_start){
   // Initialize the RobotModel
   object = obj;
-
-  object->q_current = obj->q_current;
-
+  // Set the q_current
+  object->q_current = q_start;
+  // Keep track of nq
+  object_q_counter += q_start.size();
+  // Update kinematics and geom placements
   object->enableUpdateGeomOnKinematicsUpdate(true);
   object->updateFullKinematics(object->q_current);
 
