@@ -114,6 +114,9 @@ SET (CUBIC_INTERPOLATION_MODULE_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/cubic_interpolation_module/cubic_interpolation_six_dim_vec.cpp)
 
 
+SET (FOOTSTEP_PLANNER_SOURCES
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/walking/footstep_planner.cpp)
+
 SET(PROJECT_SOURCES
 	${MODEL_SOURCES}
 	${DATA_TYPES_SOURCES}
