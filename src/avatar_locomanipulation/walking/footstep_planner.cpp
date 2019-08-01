@@ -465,7 +465,7 @@ namespace planner{
 
 
 	// The neighbors when we don't take as tep
-	for (size_t l(0); l < s_vals.size(); l++){
+	for (size_t l(1); l < s_vals.size(); l++){
 		shared_ptr<Node> neighbor (std::make_shared<FootstepNode>(current_->xLF,current_->yLF, current_->xRF,current_->yRF,current_->thetaLF,current_->thetaRF, current_->turn, s_vals[l] + current_->s));
 		neighbor_change = static_pointer_cast<FootstepNode>(neighbor);
 		neighbor_change->parent = current;
