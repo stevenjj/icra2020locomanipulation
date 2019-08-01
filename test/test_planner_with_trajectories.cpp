@@ -4,6 +4,8 @@
 
 // Planner
 #include <avatar_locomanipulation/planners/a_star_planner.hpp>
+#include <avatar_locomanipulation/planners/locomanipulation_a_star_planner.hpp>
+
 
 // YAML
 #include <avatar_locomanipulation/helpers/yaml_data_saver.hpp>
@@ -131,6 +133,18 @@ void test_door_open_config_trajectory(){
 
 }
 
+
+void test_LM_planner(){
+    LocomanipulationPlanner lm_planner;
+
+    shared_ptr<Node> starting_vertex (std::make_shared<LMVertex>());    
+    shared_ptr<Node> goal_vertex (std::make_shared<LMVertex>());
+
+    lm_planner.setStartNode(starting_vertex);
+    lm_planner.setGoalNode(goal_vertex);
+    lm_planner.doAstar();
+}
+
 void test_planner(){
     FootstepPlanner footstepplanner;
 
@@ -156,9 +170,11 @@ void test_planner(){
 }
 
 int main(int argc, char ** argv){   
-  test_planner();
-  ros::init(argc, argv, "test_planner_with_trajectories");
-  test_door_open_config_trajectory();
+  test_LM_planner();
+
+  // test_planner();
+  // ros::init(argc, argv, "test_planner_with_trajectories");
+  // test_door_open_config_trajectory();
  
   return 0;
 }

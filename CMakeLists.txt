@@ -115,7 +115,9 @@ SET (CUBIC_INTERPOLATION_MODULE_SOURCES
 
 
 SET (PLANNER_SOURCES
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/planners/a_star_planner.cpp)
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/planners/a_star_planner.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/planners/locomanipulation_a_star_planner.cpp
+	)
 
 SET(PROJECT_SOURCES
 	${MODEL_SOURCES}

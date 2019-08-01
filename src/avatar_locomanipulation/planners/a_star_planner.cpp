@@ -1,13 +1,5 @@
 #include <avatar_locomanipulation/planners/a_star_planner.hpp>
 
-#include <map>
-#include <string>
-#include <utility>
-#include <algorithm>
-#include <fstream>
-#include <ostream>
-#include <list>
-
 // #define THIS_COM "/home/hcappel1/Documents/"
 // FILE * pFileTXT;
 
@@ -537,7 +529,6 @@ namespace planner{
 		
 		OpenSet.push_back(begin); //append starting node to open set
 
-		
 		while (!OpenSet.empty()){
 				//sort the open set
 				std::sort(OpenSet.begin(), OpenSet.end(), node_compare_fcost_obj);
@@ -545,11 +536,11 @@ namespace planner{
 				//choose top value of open set as current node;
 				current_node = OpenSet[0];
 
-				shared_ptr<FootstepNode> current_ = static_pointer_cast<FootstepNode>(current_node);
-				cout << "current node::" << " xLF: " << current_->xLF << " yLF: " << current_->yLF << " xRF: " << current_->xRF << " yRF: " << current_->yRF << " thetaLF: " << current_->thetaLF << " thetaRF: " << current_->thetaRF << " fscore: " << current_->f_score << " left or right: " << current_->turn << " s value: " << current_->s << endl;
-				cout << "current node key: " << current_->key << endl;
-				cout << "step number: " << current_->step_num << endl;
-				cout << endl;
+				// shared_ptr<FootstepNode> current_ = static_pointer_cast<FootstepNode>(current_node);
+				// cout << "current node::" << " xLF: " << current_->xLF << " yLF: " << current_->yLF << " xRF: " << current_->xRF << " yRF: " << current_->yRF << " thetaLF: " << current_->thetaLF << " thetaRF: " << current_->thetaRF << " fscore: " << current_->f_score << " left or right: " << current_->turn << " s value: " << current_->s << endl;
+				// cout << "current node key: " << current_->key << endl;
+				// cout << "step number: " << current_->step_num << endl;
+				// cout << endl;
 
 				//current node = goal node
 				if (goalReached(current_node, goal) == true){

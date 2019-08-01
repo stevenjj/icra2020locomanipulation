@@ -17,6 +17,9 @@
 #include <sstream>
 #include <Eigen/Dense>
 #include <fstream>
+#include <utility>
+#include <ostream>
+#include <list>
 
 
 using namespace std;
