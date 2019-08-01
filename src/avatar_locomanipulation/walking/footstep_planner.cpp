@@ -8,41 +8,41 @@
 #include <ostream>
 #include <list>
 
-#define THIS_COM "/home/hcappel1/Documents/"
-FILE * pFileTXT;
+// #define THIS_COM "/home/hcappel1/Documents/"
+// FILE * pFileTXT;
 
-	void saveVector(const std::vector<double>& _vec, std::string _name, bool b_param = false);
-	void saveValue(double _value, std::string _name, bool b_param = false);
-	void cleaningFile(std::string file_name_, std::string& ret_file_, bool b_param);
-	static std::list<std::string> gs_fileName_string;  // global & static
+// 	void saveVector(const std::vector<double>& _vec, std::string _name, bool b_param = false);
+// 	void saveValue(double _value, std::string _name, bool b_param = false);
+// 	void cleaningFile(std::string file_name_, std::string& ret_file_, bool b_param);
+// 	static std::list<std::string> gs_fileName_string;  // global & static
 
-	void saveVector(const std::vector<double>& _vec, std::string _name, bool b_param) {
-    	std::string file_name;
-    	cleaningFile(_name, file_name, b_param);
-    	std::ofstream savefile(file_name.c_str(), std::ios::app);
-    	for (int i(0); i < _vec.size(); ++i) {
-        	savefile << _vec[i] << "\t";
-    	}
-    	savefile << "\n";
-    	savefile.flush();
-	}
+// 	void saveVector(const std::vector<double>& _vec, std::string _name, bool b_param) {
+//     	std::string file_name;
+//     	cleaningFile(_name, file_name, b_param);
+//     	std::ofstream savefile(file_name.c_str(), std::ios::app);
+//     	for (int i(0); i < _vec.size(); ++i) {
+//         	savefile << _vec[i] << "\t";
+//     	}
+//     	savefile << "\n";
+//     	savefile.flush();
+// 	}
 
-	void cleaningFile(std::string _file_name, std::string& _ret_file, bool b_param) {
-    	if (b_param)
-        	_ret_file += THIS_COM;
-    	else
-        	_ret_file += THIS_COM;
+// 	void cleaningFile(std::string _file_name, std::string& _ret_file, bool b_param) {
+//     	if (b_param)
+//         	_ret_file += THIS_COM;
+//     	else
+//         	_ret_file += THIS_COM;
 
-    	_ret_file += _file_name;
-    	_ret_file += ".txt";
+//     	_ret_file += _file_name;
+//     	_ret_file += ".txt";
 
-    	std::list<std::string>::iterator iter = std::find(
-        	gs_fileName_string.begin(), gs_fileName_string.end(), _file_name);
-    	if (gs_fileName_string.end() == iter) {
-        	gs_fileName_string.push_back(_file_name);
-        	remove(_ret_file.c_str());
-    	}
-	}
+//     	std::list<std::string>::iterator iter = std::find(
+//         	gs_fileName_string.begin(), gs_fileName_string.end(), _file_name);
+//     	if (gs_fileName_string.end() == iter) {
+//         	gs_fileName_string.push_back(_file_name);
+//         	remove(_ret_file.c_str());
+//     	}
+// 	}
 
 
 
@@ -136,7 +136,7 @@ namespace planner{
 			vector<double> optimal_coord;
 			optimal_coord.push_back(opt_node_->x);
 			optimal_coord.push_back(opt_node_->y);
-			saveVector(optimal_coord,"optimal_path");
+			//saveVector(optimal_coord,"optimal_path");
 		}
 	}
 
@@ -180,7 +180,7 @@ namespace planner{
 				vector<double> x_y_coord;
 				x_y_coord.push_back(x_vals[i]);
 				x_y_coord.push_back(y_vals[j]);
-				saveVector(x_y_coord,"foot coordinates");
+				//saveVector(x_y_coord,"foot coordinates");
 				coords.push_back(x_y_coord);
 				shared_ptr<Node> neighbor(std::make_shared<XYNode>(x_vals[i],y_vals[j]));
 				neighbor->parent = current_;
@@ -305,7 +305,7 @@ namespace planner{
 			optimal_coord.push_back(opt_node_->yRF);
 			optimal_coord.push_back(opt_node_->thetaLF);
 			optimal_coord.push_back(opt_node_->thetaRF);
-			saveVector(optimal_coord,"optimal_coordinates_footstep");
+			//saveVector(optimal_coord,"optimal_coordinates_footstep");
 
 		}
 	}
