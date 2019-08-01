@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <avatar_locomanipulation/walking/footstep_planner.hpp>
+#include <avatar_locomanipulation/planners/a_star_planner.hpp>
 
 #include <chrono>
 #include <ctime>

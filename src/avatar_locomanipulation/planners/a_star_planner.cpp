@@ -1,4 +1,4 @@
-#include <avatar_locomanipulation/walking/footstep_planner.hpp>
+#include <avatar_locomanipulation/planners/a_star_planner.hpp>
 
 #include <map>
 #include <string>

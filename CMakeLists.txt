@@ -114,8 +114,8 @@ SET (CUBIC_INTERPOLATION_MODULE_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/cubic_interpolation_module/cubic_interpolation_six_dim_vec.cpp)
 
 
-SET (FOOTSTEP_PLANNER_SOURCES
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/walking/footstep_planner.cpp)
+SET (PLANNER_SOURCES
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/planners/a_star_planner.cpp)
 
 SET(PROJECT_SOURCES
 	${MODEL_SOURCES}
@@ -128,7 +128,7 @@ SET(PROJECT_SOURCES
 	${COLLISION_ENVIRONMENT_SOURCES}
 	${IK_MODULE_SOURCES}
 	${CUBIC_INTERPOLATION_MODULE_SOURCES}
-	${FOOTSTEP_PLANNER_SOURCES})
+	${PLANNER_SOURCES})
 
 # Grab all the libraries
 SET(PROJECT_LIBRARIES

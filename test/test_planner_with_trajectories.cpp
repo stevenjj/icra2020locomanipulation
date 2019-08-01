@@ -3,7 +3,7 @@
 #include "pinocchio/utils/timer.hpp"
 
 // Planner
-#include <avatar_locomanipulation/walking/footstep_planner.hpp>
+#include <avatar_locomanipulation/planners/a_star_planner.hpp>
 
 // YAML
 #include <avatar_locomanipulation/helpers/yaml_data_saver.hpp>
@@ -99,12 +99,8 @@ void test_door_open_config_trajectory(){
     // Try with footsteps
   std::vector<Footstep> input_footstep_list = {footstep_1, footstep_2};
 
-  // Get current hand pose
-  Eigen::Vector3d rhand_pos;
-  Eigen::Quaterniond rhand_ori;
-  valkyrie_model->getFrameWorldPose("rightPalm", rhand_pos, rhand_ori);  
-  // Set Constant Right Hand trajectory to current //To do. set task gain for hand to be small in orientation
-  ctg.setConstantRightHandTrajectory(rhand_pos, rhand_ori);
+
+  // Initialize Trajectory Generation Module
   ctg.setUseRightHand(true);
   ctg.setUseTorsoJointPosition(false);
   ctg.reinitializeTaskStack();
@@ -118,14 +114,16 @@ void test_door_open_config_trajectory(){
   ctg.setManipulationOnlyTime(3.0);
   // Set Verbosity
   ctg.setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_2);
+
   // Solve for configurations
   double s_o = 0.0;
   double delta_s = 0.15;
 
   timer.tic();
-  ctg.computeConfigurationTrajectory(f_s_manipulate_door, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
+  bool convergence = ctg.computeConfigurationTrajectory(f_s_manipulate_door, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
                                      s_o, delta_s, q_start_door, input_footstep_list);
 
+  std::cout << "Converged?" << (convergence ? "True" : "False") << std::endl; 
 
   std::cout << "IK Trajectory took: " << timer.toc() << timer.unitName(timer.DEFAULT_UNIT) << std::endl;
   // Visualize Trajectory

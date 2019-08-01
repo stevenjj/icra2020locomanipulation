@@ -1,5 +1,5 @@
-#ifndef ALM_FOOTSTEP_PLANNER_H
-#define ALM_FOOTSTEP_PLANNER_H
+#ifndef ALM_A_STAR_PLANNER_H
+#define ALM_A_STAR_PLANNER_H
 
 #include <iostream>
 #include <cmath>
