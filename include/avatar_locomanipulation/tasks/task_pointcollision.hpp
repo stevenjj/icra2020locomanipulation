@@ -1,14 +1,14 @@
-#ifndef ALM_OBJECTCOLLISION_TASK_H
-#define ALM_OBJECTCOLLISION_TASK_H
+#ifndef ALM_POINTCOLLISION_TASK_H
+#define ALM_POINTCOLLISION_TASK_H
 
 #include <avatar_locomanipulation/tasks/task.hpp>
 #include <avatar_locomanipulation/collision_environment/collision_environment.h>
 
-class TaskObjectCollision: public Task{
+class TaskPointCollision: public Task{
 public:
-	TaskObjectCollision(std::shared_ptr<RobotModel> & input_model, const std::string & input_frame_name, std::shared_ptr<CollisionEnvironment> & collision, const std::string & link_name_in);
+	TaskPointCollision(const std::string task_name_in, std::shared_ptr<RobotModel> & input_model, std::shared_ptr<CollisionEnvironment> & collision, const std::vector<Eigen::Vector3d> & point_list_in);
 
-	virtual ~TaskObjectCollision();
+	virtual ~TaskPointCollision();
 
 	// Warning: robot_model->updateFullKinematics(q) and 
 	virtual void getTaskJacobian(Eigen::MatrixXd & J_task);
@@ -40,13 +40,15 @@ protected:
 	Eigen::MatrixXd J_tmp;
 	Eigen::MatrixXd Jdot_tmp;
 
+	std::vector<Eigen::Vector3d> points_to_avoid;
+	std::string nearest_robot_frame;
+
 	double eta;
 
 	Eigen::Vector3d cur_pos_;
 	Eigen::Quaterniond quat_current_;
 	Eigen::Vector3d quat_error_;
 	std::shared_ptr<CollisionEnvironment> collision_env;
-	std::string link_name;
 
 
 };

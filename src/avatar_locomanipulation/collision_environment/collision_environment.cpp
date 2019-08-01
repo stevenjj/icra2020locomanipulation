@@ -239,7 +239,6 @@ void CollisionEnvironment::build_point_list_directed_vectors(const std::vector<E
 
   // we will build the directed vectors from each of the points in the list
   for(int i=0; i<point_list_in.size(); ++i){
-    std::cout << "s1" << std::endl;
     cur_pos_from = point_list_in[i];
     sprintf(myString, "%d", i);
     // loop thru all of the links of interest
