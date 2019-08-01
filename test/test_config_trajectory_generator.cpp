@@ -219,7 +219,7 @@ void load_robot_door_configuration(Eigen::VectorXd & q_out, Eigen::Vector3d & hi
 }
 
 
-void test_load_initial_hand_config(){
+void test_door_open_config_trajectory(){
   // Initialize the robot
   std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_no_fingers.urdf";
   std::shared_ptr<RobotModel> valkyrie_model(new RobotModel(urdf_filename));
@@ -261,6 +261,9 @@ void test_load_initial_hand_config(){
   footstep_2.position[0] -= 0.1;
   footstep_2.position[1] -= 0.1;
 
+  // Try no footsteps
+  // std::vector<Footstep> input_footstep_list;
+    // Try with footsteps
   std::vector<Footstep> input_footstep_list = {footstep_1, footstep_2};
 
 
@@ -279,6 +282,8 @@ void test_load_initial_hand_config(){
 
   // Have fast double support times
   ctg.wpg.setDoubleSupportTime(0.2);
+  // Set Manipulation Only time to 3 seconds
+  ctg.setManipulationOnlyTime(3.0);
   // Set Verbosity
   ctg.setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_2);
   // Solve for configurations
@@ -286,9 +291,6 @@ void test_load_initial_hand_config(){
   double delta_s = 0.15;
 
   timer.tic();
-  //ctg.computeConfigurationTrajectory(q_start_door, input_footstep_list);
-
-
   ctg.computeConfigurationTrajectory(f_s_manipulate_door, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
                                  s_o, delta_s, q_start_door, input_footstep_list);
 
@@ -370,7 +372,7 @@ int main(int argc, char ** argv){
   // test_walking_config_trajectory_generator();
   // test_hand_in_place_config_trajectory_generator();
   // test_initial_hand_location_stance();
-  test_load_initial_hand_config();
+  test_door_open_config_trajectory();
 
   return 0;
 }

@@ -111,8 +111,13 @@ public:
 
     // Public Member Variables
 	std::shared_ptr<RobotModel> robot_model;
-    IKModule starting_config_ik_module; // IK module to use for computing the starting configuration
-    IKModule ik_module; 
+
+    std::shared_ptr<IKModule> ik_starting_config_module;
+    std::shared_ptr<IKModule> ik_locomanipulation_module; 
+    std::shared_ptr<IKModule> ik_manipulation_only_module; 
+
+    std::shared_ptr<IKModule> ik_to_use_module;
+
 	WalkingPatternGenerator wpg;
 
 
@@ -132,6 +137,9 @@ public:
 	std::shared_ptr<Task> larm_posture_task;
 
 	std::shared_ptr<Task> task_stack;
+	std::shared_ptr<Task> task_stack_manip_1;
+	std::shared_ptr<Task> task_stack_manip_2;
+
 	std::shared_ptr<Task> task_stack_posture_config;
 	std::shared_ptr<Task> task_stack_starting_config;
 
@@ -155,7 +163,11 @@ public:
 	// Trajectory task space error tolerance
 	void setTrajErrorTol(double error_tol_in);
 
+	// Set Manipulation Time when there are no footsteps being created
+	void setManipulationOnlyTime(double manipulation_only_time_in);
+
 private:
+	void initializeIKModules();
 	void createTaskStack();
 
 	// Set the task reference using the input configuration q_config. Note that q_config contains the configuration of the entire robot.
@@ -192,10 +204,11 @@ private:
 
 	double max_first_task_ik_error = -1e3;
 
-
 	bool solve_with_partial_divergence = false;
 
 	double traj_error_tol = 1e-2;
+
+	double manipulation_only_time = 3.0;
 
 };
 

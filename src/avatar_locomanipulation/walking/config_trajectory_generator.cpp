@@ -2,14 +2,17 @@
 
 // Constructor
 ConfigTrajectoryGenerator::ConfigTrajectoryGenerator(){	
+	initializeIKModules();
 }
 
 ConfigTrajectoryGenerator::ConfigTrajectoryGenerator(std::shared_ptr<RobotModel> & robot_model_in){
+	initializeIKModules();
 	this->setRobotModel(robot_model_in);
 	commonInitialization();
 }
 
 ConfigTrajectoryGenerator::ConfigTrajectoryGenerator(std::shared_ptr<RobotModel> & robot_model_in, const int & N_size_in){
+	initializeIKModules();
 	N_size = N_size_in;
 	this->setRobotModel(robot_model_in);
 	commonInitialization();
@@ -20,6 +23,13 @@ ConfigTrajectoryGenerator::~ConfigTrajectoryGenerator(){
 	std::cout << "[ConfigTrajectoryGenerator] Destroyed" << std::endl;
 }
 
+void ConfigTrajectoryGenerator::initializeIKModules(){
+	ik_starting_config_module.reset(new IKModule());
+	ik_locomanipulation_module.reset(new IKModule());
+	ik_manipulation_only_module.reset(new IKModule());
+
+	ik_to_use_module = ik_locomanipulation_module;
+}
 
 void ConfigTrajectoryGenerator::commonInitialization(){
 	initializeDiscretization(N_size);
@@ -46,13 +56,15 @@ void ConfigTrajectoryGenerator::commonInitialization(){
 	tmp_larm_posture = Eigen::VectorXd::Zero(larm_posture_task->task_dim);
 
 	// Initialize error tolerance
-	traj_error_tol = ik_module.getErrorTol();
+	traj_error_tol = ik_locomanipulation_module->getErrorTol();
 }
 
 void ConfigTrajectoryGenerator::setRobotModel(std::shared_ptr<RobotModel> & robot_model_in){
 	robot_model = robot_model_in;
-	starting_config_ik_module.setRobotModel(robot_model_in);
-	ik_module.setRobotModel(robot_model_in);
+	ik_starting_config_module->setRobotModel(robot_model_in);
+	ik_locomanipulation_module->setRobotModel(robot_model_in);
+	ik_manipulation_only_module->setRobotModel(robot_model_in);
+
 	q_start = Eigen::VectorXd::Zero(robot_model->getDimQ());
 	q_current = Eigen::VectorXd::Zero(robot_model->getDimQ());
 }
@@ -75,14 +87,16 @@ void ConfigTrajectoryGenerator::initializeDiscretization(const int & N_size_in){
 void ConfigTrajectoryGenerator::setStartingConfig(const Eigen::VectorXd & q_start_in){
 	q_start = q_start_in;
 	traj_q_config.set_pos(0, q_start);
-	starting_config_ik_module.setInitialConfig(q_start);
-	ik_module.setInitialConfig(q_start);
+	ik_starting_config_module->setInitialConfig(q_start);
+	ik_locomanipulation_module->setInitialConfig(q_start);
+	ik_manipulation_only_module->setInitialConfig(q_start);
 }
 
 void ConfigTrajectoryGenerator::setCurrentConfig(const Eigen::VectorXd & q_current_in){
 	q_current = q_current_in;
-	starting_config_ik_module.setInitialConfig(q_current);
-	ik_module.setInitialConfig(q_current);
+	ik_starting_config_module->setInitialConfig(q_current);
+	ik_locomanipulation_module->setInitialConfig(q_current);
+	ik_manipulation_only_module->setInitialConfig(q_current);
 }
 
 void ConfigTrajectoryGenerator::setVerbosityLevel(int verbosity_level_in){
@@ -165,12 +179,17 @@ void ConfigTrajectoryGenerator::createTaskStack(){
 
 	std::vector< std::shared_ptr<Task> > vec_task_stack = {pelvis_ori_task, com_task, lfoot_task, rfoot_task, neck_posture_task};
 
+	std::vector< std::shared_ptr<Task> > vec_manip_stack_1 = {pelvis_ori_task, lfoot_task, rfoot_task, neck_posture_task};
+	std::vector< std::shared_ptr<Task> > vec_manip_stack_2 = {com_task};
+
+
 	// The task stack for configuration only
 	std::vector< std::shared_ptr<Task> > vec_posture_task_stack;
 
 	// Check whether to use a right hand SE(3) task or a right arm joint position task
 	if (use_right_hand){
 		vec_task_stack.push_back(rhand_task);
+		vec_manip_stack_1.push_back(rhand_task);
 	}else{
 		vec_posture_task_stack.push_back(rarm_posture_task);
 	}
@@ -178,6 +197,7 @@ void ConfigTrajectoryGenerator::createTaskStack(){
 	// Check whether to use a left hand SE(3) task or a left arm joint position task
 	if (use_left_hand){
 		vec_task_stack.push_back(lhand_task);
+		vec_manip_stack_1.push_back(lhand_task);
 	}else{
 		vec_posture_task_stack.push_back(larm_posture_task);
 	}
@@ -188,27 +208,34 @@ void ConfigTrajectoryGenerator::createTaskStack(){
 	}
 
 	// Clear the task hierarchy in the IK module
-	starting_config_ik_module.clearTaskHierarchy();
-	ik_module.clearTaskHierarchy();
+	ik_starting_config_module->clearTaskHierarchy();
+	ik_locomanipulation_module->clearTaskHierarchy();
+	ik_manipulation_only_module->clearTaskHierarchy();
 
 	// Stack the tasks. Use reset to deallocate old value
 	task_stack_starting_config.reset(new TaskStack(robot_model, vec_task_stack_start_config));
 	task_stack.reset(new TaskStack(robot_model, vec_task_stack));
 
+	task_stack_manip_1.reset(new TaskStack(robot_model, vec_manip_stack_1));
+	task_stack_manip_2.reset(new TaskStack(robot_model, vec_manip_stack_2));
+
 	// Add the tasks to the task hierarchy in the ik module
-	starting_config_ik_module.addTasktoHierarchy(task_stack_starting_config);
-	ik_module.addTasktoHierarchy(task_stack);
+	ik_starting_config_module->addTasktoHierarchy(task_stack_starting_config);
+	ik_locomanipulation_module->addTasktoHierarchy(task_stack);
+	ik_manipulation_only_module->addTasktoHierarchy(task_stack_manip_1);
+	ik_manipulation_only_module->addTasktoHierarchy(task_stack_manip_2);
 
 	// Stack posture tasks and add it to the hierarchy if it exists
 	if (vec_posture_task_stack.size() > 0){
 		task_stack_posture_config.reset(new TaskStack(robot_model, vec_posture_task_stack));
-		ik_module.addTasktoHierarchy(task_stack_posture_config);		
+		ik_locomanipulation_module->addTasktoHierarchy(task_stack_posture_config);	
+		ik_manipulation_only_module->addTasktoHierarchy(task_stack_posture_config);	
 	}
 
 	// Prepare the ik modules
-	starting_config_ik_module.prepareNewIKDataStrcutures();
-	ik_module.prepareNewIKDataStrcutures();
-
+	ik_starting_config_module->prepareNewIKDataStrcutures();
+	ik_locomanipulation_module->prepareNewIKDataStrcutures();
+	ik_manipulation_only_module->prepareNewIKDataStrcutures();
 }
 
 int ConfigTrajectoryGenerator::getDiscretizationSize(){
@@ -295,12 +322,12 @@ bool ConfigTrajectoryGenerator::computeInitialConfigForFlatGround(const Eigen::V
     bool primary_task_convergence = false;
 
     // Set Verbosity Level
-    starting_config_ik_module.setVerbosityLevel(ik_verbosity_level);
+    ik_starting_config_module->setVerbosityLevel(ik_verbosity_level);
 
     // Solve IK
-	primary_task_convergence = starting_config_ik_module.solveIK(solve_result, task_error_norms, total_error_norm, q_sol);
+	primary_task_convergence = ik_starting_config_module->solveIK(solve_result, task_error_norms, total_error_norm, q_sol);
 	if (verbosity_level >= CONFIG_TRAJECTORY_VERBOSITY_LEVEL_4){
-		starting_config_ik_module.printSolutionResults();
+		ik_starting_config_module->printSolutionResults();
 	}
 
 	if ((primary_task_convergence) && verbosity_level >= CONFIG_TRAJECTORY_VERBOSITY_LEVEL_1) {
@@ -343,8 +370,12 @@ void ConfigTrajectoryGenerator::setTrajErrorTol(double error_tol_in){
 	traj_error_tol = error_tol_in;
 }
 
+void ConfigTrajectoryGenerator::setManipulationOnlyTime(double manipulation_only_time_in){
+	manipulation_only_time = manipulation_only_time_in;
+}
+
 bool ConfigTrajectoryGenerator::didTrajectoryConverge(){
-//	if (max_first_task_ik_error < ik_module.getErrorTol()){
+//	if (max_first_task_ik_error < ik_locomanipulation_module->getErrorTol()){
 	if (max_first_task_ik_error < traj_error_tol){
 		return true;
 	}
@@ -399,8 +430,7 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 	setPostureTaskReference(rarm_posture_task, q_start);
 	setPostureTaskReference(larm_posture_task, q_start);
 
-	// Construct the task space trajectories.
-	// wpg.construct_trajectories(input_footstep_list, initial_left_footstance, initial_right_footsance, initial_com, initial_pelvis_ori)
+	// If there are footsteps in the list construct the task space trajectories.
 	if (input_footstep_list.size() > 0){
 		wpg.construct_trajectories(input_footstep_list, tmp_left_foot, tmp_right_foot, tmp_com_pos, tmp_pelvis_ori);
 
@@ -408,11 +438,17 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 		traj_q_config.set_dt( wpg.traj_pos_com.get_dt() );
 		traj_SE3_left_hand.set_dt( wpg.traj_pos_com.get_dt() );
 		traj_SE3_right_hand.set_dt( wpg.traj_pos_com.get_dt() );
+
+		// Set ik to use to be the locomanipulation IKModule:
+		ik_to_use_module = ik_locomanipulation_module;
+
 	}else{
-		double total_manipulation_time = 3.0;
-		traj_q_config.set_dt( (total_manipulation_time/N_size) );
-		traj_SE3_left_hand.set_dt( (total_manipulation_time/N_size) );
-		traj_SE3_right_hand.set_dt( (total_manipulation_time/N_size) );
+		traj_q_config.set_dt( (manipulation_only_time/N_size) );
+		traj_SE3_left_hand.set_dt( (manipulation_only_time/N_size) );
+		traj_SE3_right_hand.set_dt( (manipulation_only_time/N_size) );
+
+		// Set ik to use to be the manipulation only IKModule:
+		ik_to_use_module = ik_manipulation_only_module;
 	}
 
 	// Prepare IK solver
@@ -424,12 +460,12 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
     int ik_verbosity_level = verbosity_level >= CONFIG_TRAJECTORY_VERBOSITY_LEVEL_3 ? IK_VERBOSITY_HIGH : IK_VERBOSITY_LOW;
 
     // Set IK Module descent and convergence options
-    ik_module.setSequentialDescent(false);
-    ik_module.setReturnWhenFirstTaskConverges(true);
-    ik_module.setEnableInertiaWeighting(true);
+    ik_to_use_module->setSequentialDescent(false);
+    ik_to_use_module->setReturnWhenFirstTaskConverges(true);
+    ik_to_use_module->setEnableInertiaWeighting(true);
 
     // Set Verbosity Level
-    ik_module.setVerbosityLevel(ik_verbosity_level);
+    ik_to_use_module->setVerbosityLevel(ik_verbosity_level);
 
     // Reset max_ik_error
     max_first_task_ik_error = -1e3;
@@ -474,7 +510,7 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 		lfoot_task->setReference(tmp_left_foot.position, tmp_left_foot.orientation);
 
 		// Compute IK
-		primary_task_convergence = ik_module.solveIK(solve_result, task_error_norms, total_error_norm, q_sol);
+		primary_task_convergence = ik_to_use_module->solveIK(solve_result, task_error_norms, total_error_norm, q_sol);
 
 		// Update max first task ik error.
 		if (task_error_norms[0] >= max_first_task_ik_error){
@@ -488,7 +524,7 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 
 		// Print out complete IK result if verbose level is greater than 4 
 		if (verbosity_level >= CONFIG_TRAJECTORY_VERBOSITY_LEVEL_4){
-			ik_module.printSolutionResults();
+			ik_to_use_module->printSolutionResults();
 		}
 
 		// If converged or continue solving with partial error divergence
