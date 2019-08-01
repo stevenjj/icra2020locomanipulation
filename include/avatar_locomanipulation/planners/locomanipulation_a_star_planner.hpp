@@ -21,6 +21,7 @@ namespace planner{
 		Footstep left_foot;
 		Footstep right_foot;
 	
+		void set_robot_config(const Eigen::VectorXd & q_input);
 		void common_initialization();
 
 	};
@@ -45,14 +46,19 @@ namespace planner{
 		std::shared_ptr<LMVertex> opt_node_;
 
 		// Locomanipulation specific member variables and functions.
+
 		void initializeLocomanipulationVariables(std::shared_ptr<RobotModel> robot_model_in, std::shared_ptr<ManipulationFunction> f_s_in, std::shared_ptr<ConfigTrajectoryGenerator> ctg_in);
 		
 		std::shared_ptr<RobotModel> robot_model;
 		std::shared_ptr<ManipulationFunction> f_s;
 		std::shared_ptr<ConfigTrajectoryGenerator> ctg;
+ 	  	std::vector<Footstep> input_footstep_list;
 
+ 	  	double delta_s = 0.0;
+ 	  	bool first_pass = false;
+		std::vector < std::shared_ptr<Node> > neighbors;
 
-
+		std::shared_ptr<LMVertex> parent_;
 
 	};
 

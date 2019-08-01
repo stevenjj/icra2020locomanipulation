@@ -42,7 +42,23 @@ namespace planner{
 	}
 
 	std::vector< std::shared_ptr<Node> > LocomanipulationPlanner::getNeighbors(shared_ptr<Node> & current){
-		std::vector < std::shared_ptr<Node> > neighbors;
+		current_ = static_pointer_cast<LMVertex>(current);	
+    neighbors.clear();
+
+    if (first_pass){
+      parent_ = static_pointer_cast<LMVertex>(current_->parent);
+      delta_s =  (current_->s - parent_->s);
+      bool convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
+                                                                  parent_->s, delta_s, 
+                                                                  parent_->q_init, 
+                                                                  input_footstep_list);
+      std::cout << "Converged?" << (convergence ? "True" : "False") << std::endl;       
+    }else{  
+      // first_pass = true;      
+    }
+
+    // neighbors.push_back()
+
 
 
 		return neighbors;
