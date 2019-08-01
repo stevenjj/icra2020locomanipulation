@@ -43,139 +43,35 @@ int main(int argc, char ** argv){
   valkyrie->enableUpdateGeomOnKinematicsUpdate(true);
   valkyrie->updateFullKinematics(q_start);
 
-   std::shared_ptr<CollisionEnvironment> collision(new CollisionEnvironment(valkyrie) );
+  std::shared_ptr<CollisionEnvironment> collision(new CollisionEnvironment(valkyrie) );
 
 
-  filename = THIS_PACKAGE_PATH"models/test_cart.urdf";
-  meshDir  = THIS_PACKAGE_PATH"models/cart/";
+  std::vector<Eigen::Vector3d> point_list;
+  Eigen::Vector3d point;
+  point << 1., 1., 1.;
+  point_list.push_back(point);
+  point[0] = 0.0; point[1] = -0.4; point[2] = 1.2; 
+  point_list.push_back(point);
+  point[0] = 0.0; point[1] = 0.4; point[2] = 1.2; 
+  point_list.push_back(point);
 
-  // Initialize Cart RobotModel
-  std::shared_ptr<RobotModel> cart(new RobotModel(filename, meshDir) );
-
-   // Define the configuration of the cart
-  Eigen::VectorXd cart_config;
-  cart_config = Eigen::VectorXd::Zero(cart->getDimQ());
-  cart_config[0] = 0.0;  cart_config[1] = 0.0;  cart_config[2] = 0.0;
-  double theta1 = 0;//M_PI/4.0; 
-  Eigen::AngleAxis<double> bb(theta1, Eigen::Vector3d(0.0, 0.0, 1.0)); // yaw pi/4 to the left  
-  Eigen::Quaternion<double> quat_init; quat_init =  bb;
-  cart_config[3] = quat_init.x();// 0.0;  
-  cart_config[4] = quat_init.y(); //0.0;
-  cart_config[5] = quat_init.z(); //sin(theta/2.0);
-  cart_config[6] = quat_init.w(); //cos(theta/2.0);
-
-  cart->q_current = cart_config;
-
-  collision->add_new_object(cart, cart_config);
-
-
-  std::cout <<"test collision->appended->q_current: \n" << collision->appended->q_current << std::endl;
-
-  std::string frame = "rightPalm";
-  collision->build_object_directed_vectors(frame, q_start);
-   for(int o=0; o<collision->directed_vectors.size(); ++o){
-    std::cout << "collision->directed_vectors[o].from: " << collision->directed_vectors[o].from << std::endl;
-    std::cout << "collision->directed_vectors[o].to: " << collision->directed_vectors[o].to << std::endl;
-    std::cout << "collision->directed_vectors[o].magnitude: " << collision->directed_vectors[o].magnitude << std::endl;
-    std::cout << "collision->directed_vectors[o].direction: \n" << collision->directed_vectors[o].direction << std::endl;
-  }
-  // collision->directed_vectors.clear();
-
-  // collision->build_self_directed_vectors(frame);
-
-  //  for(int p=0; p<collision->directed_vectors.size(); ++p){
-  //   std::cout << "collision->directed_vectors[p].from: " << collision->directed_vectors[p].from << std::endl;
-  //   std::cout << "collision->directed_vectors[p].to: " << collision->directed_vectors[p].to << std::endl;
-  //   std::cout << "collision->directed_vectors[p].magnitude: " << collision->directed_vectors[p].magnitude << std::endl;
-  //   std::cout << "collision->directed_vectors[p].direction: \n" << collision->directed_vectors[p].direction << std::endl;
+  collision->build_point_list_directed_vectors(point_list, q_start);
+  std::cout << "collision->directed_vectors.size(): " << collision->directed_vectors.size() << std::endl;;
+  //   for(int i=0; i<collision->directed_vectors.size(); ++i){
+  //   std::cout << "collision->directed_vectors[i].from: " << collision->directed_vectors[i].from << std::endl;
+  //   std::cout << "collision->directed_vectors[i].to: " << collision->directed_vectors[i].to << std::endl;
+  //   std::cout << "collision->directed_vectors[i].magnitude: " << collision->directed_vectors[i].magnitude << std::endl;
+  //   std::cout << "collision->directed_vectors[i].direction: \n" << collision->directed_vectors[i].direction << std::endl;
   // }
-	
-	// std::cout << "------ Valkyrie Model ------ " << std::endl;
- //  std::cout << valkyrie->model;	
- //  // std::cout << "------ Valkyrie GeometryModel ------ " << std::endl;
- //  // std::cout << valkyrie->geomModel; 
- //  std::cout << "------ Cart Model ------ " << std::endl;
- //  std::cout << cart->model;	
- //  std::cout << "------ Cart GeometryModel ------ " << std::endl;
- //  std::cout << cart->geomModel;
 
- //  std::cout << "valkyrie->getDimQ(): " << valkyrie->getDimQ() << std::endl;
+  collision->set_safety_distance_normal(0.2);
 
- 
-
- 
-
-  
-
- 
- //  collision->directed_vectors.clear();
- //  // collision->build_directed_vector_to_rhand();
- //  // 
- //  std::string frame = "rightPalm";
- //  collision->build_object_directed_vectors(frame);
- 
- //  // collision->self_collision_dx();
-
- //  // collision->directed_vectors.clear();
- //  // collision->build_directed_vector_to_lhand();
- //  // collision->self_collision_dx();
- //  // for(int o=0; o<collision->directed_vectors.size(); ++o){
- //  //   std::cout << "collision->directed_vectors[o].from: " << collision->directed_vectors[o].from << std::endl;
- //  //   std::cout << "collision->directed_vectors[o].to: " << collision->directed_vectors[o].to << std::endl;
- //  //   std::cout << "collision->directed_vectors[o].magnitude: " << collision->directed_vectors[o].magnitude << std::endl;
- //  //   std::cout << "collision->directed_vectors[o].direction: \n" << collision->directed_vectors[o].direction << std::endl;
- //  // }
-
- //  // collision->directed_vectors.clear();
- //  // collision->build_directed_vector_to_head();
- //  // collision->self_collision_dx();
- //  // for(int o=0; o<collision->directed_vectors.size(); ++o){
- //  //   std::cout << "collision->directed_vectors[o].from: " << collision->directed_vectors[o].from << std::endl;
- //  //   std::cout << "collision->directed_vectors[o].to: " << collision->directed_vectors[o].to << std::endl;
- //  //   std::cout << "collision->directed_vectors[o].magnitude: " << collision->directed_vectors[o].magnitude << std::endl;
- //  //   std::cout << "collision->directed_vectors[o].direction: \n" << collision->directed_vectors[o].direction << std::endl;
- //  // }
-
- //  // collision->directed_vectors.clear();
- //  // collision->build_directed_vector_to_rknee();
- //  // collision->self_collision_dx();
- //  // for(int o=0; o<collision->directed_vectors.size(); ++o){
- //  //   std::cout << "collision->directed_vectors[o].from: " << collision->directed_vectors[o].from << std::endl;
- //  //   std::cout << "collision->directed_vectors[o].to: " << collision->directed_vectors[o].to << std::endl;
- //  //   std::cout << "collision->directed_vectors[o].magnitude: " << collision->directed_vectors[o].magnitude << std::endl;
- //  //   std::cout << "collision->directed_vectors[o].direction: \n" << collision->directed_vectors[o].direction << std::endl;
- //  // }
-
- //  // collision->directed_vectors.clear();
- //  // collision->build_directed_vector_to_lknee();
- //  // collision->self_collision_dx();
- //  // for(int o=0; o<collision->directed_vectors.size(); ++o){
- //  //   std::cout << "collision->directed_vectors[o].from: " << collision->directed_vectors[o].from << std::endl;
- //  //   std::cout << "collision->directed_vectors[o].to: " << collision->directed_vectors[o].to << std::endl;
- //  //   std::cout << "collision->directed_vectors[o].magnitude: " << collision->directed_vectors[o].magnitude << std::endl;
- //  //   std::cout << "collision->directed_vectors[o].direction: \n" << collision->directed_vectors[o].direction << std::endl;
- //  // }
-
- //  // collision->directed_vectors.clear();
- //  // collision->build_directed_vector_to_relbow();
- //  // collision->self_collision_dx();
- //  // for(int o=0; o<collision->directed_vectors.size(); ++o){
- //  //   std::cout << "collision->directed_vectors[o].from: " << collision->directed_vectors[o].from << std::endl;
- //  //   std::cout << "collision->directed_vectors[o].to: " << collision->directed_vectors[o].to << std::endl;
- //  //   std::cout << "collision->directed_vectors[o].magnitude: " << collision->directed_vectors[o].magnitude << std::endl;
- //  //   std::cout << "collision->directed_vectors[o].direction: \n" << collision->directed_vectors[o].direction << std::endl;
- //  // }
-
- //  // collision->directed_vectors.clear();
- //  // collision->build_directed_vector_to_lelbow();
- //  // collision->self_collision_dx();
- //  // for(int o=0; o<collision->directed_vectors.size(); ++o){
- //  //   std::cout << "collision->directed_vectors[o].from: " << collision->directed_vectors[o].from << std::endl;
- //  //   std::cout << "collision->directed_vectors[o].to: " << collision->directed_vectors[o].to << std::endl;
- //  //   std::cout << "collision->directed_vectors[o].magnitude: " << collision->directed_vectors[o].magnitude << std::endl;
- //  //   std::cout << "collision->directed_vectors[o].direction: \n" << collision->directed_vectors[o].direction << std::endl;
- //  // }
-
-  
-
+  double dx;
+  dx = collision->get_collision_potential();
+  std::cout << "collision->directed_vectors[collision->closest].magnitude: " << collision->directed_vectors[collision->closest].magnitude << std::endl;
+  std::cout << "collision->directed_vectors[collision->closest].from: " << collision->directed_vectors[collision->closest].from << std::endl;
+  std::cout << "collision->directed_vectors[collision->closest].to: " << collision->directed_vectors[collision->closest].to << std::endl;
+  std::cout << "dx = " << dx << std::endl;
 }
+
+
