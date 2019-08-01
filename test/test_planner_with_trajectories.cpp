@@ -135,14 +135,53 @@ void test_door_open_config_trajectory(){
 
 
 void test_LM_planner(){
-    LocomanipulationPlanner lm_planner;
+  // Initialize the robot ---------------------------------------------------------------------------------------
+  std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_no_fingers.urdf";
+  std::shared_ptr<RobotModel> valkyrie_model(new RobotModel(urdf_filename));
+  // Get the Initial Robot and Door Configuration
+  Eigen::VectorXd q_start_door;
+  Eigen::Vector3d hinge_position;
+  Eigen::Quaterniond hinge_orientation;
+  load_robot_door_configuration(q_start_door, hinge_position, hinge_orientation);
 
-    shared_ptr<Node> starting_vertex (std::make_shared<LMVertex>());    
-    shared_ptr<Node> goal_vertex (std::make_shared<LMVertex>());
+  // Initialize the manipulation function for manipulating the door ----------------------------------
+  std::string door_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/door_trajectory.yaml";
+  std::shared_ptr<ManipulationFunction> f_s_manipulate_door(new ManipulationFunction(door_yaml_file));
+  // Set hinge location as waypoints are with respect to the hinge
+  hinge_orientation.normalize();
+  f_s_manipulate_door->setWorldTransform(hinge_position, hinge_orientation);
 
-    lm_planner.setStartNode(starting_vertex);
-    lm_planner.setGoalNode(goal_vertex);
-    lm_planner.doAstar();
+  // Initialize Config Trajectory Generator
+  int N_resolution = 60; //single step = 30. two steps = 60// 30* number of footsteps
+  std::shared_ptr<ConfigTrajectoryGenerator> ctg(new ConfigTrajectoryGenerator(valkyrie_model, N_resolution));
+  valkyrie_model->updateFullKinematics(q_start_door);
+
+  // Initialize Trajectory Generation Module
+  ctg->setUseRightHand(true);
+  ctg->setUseTorsoJointPosition(false);
+  ctg->reinitializeTaskStack();
+  // timer
+  //PinocchioTicToc timer = PinocchioTicToc(PinocchioTicToc::MS);
+
+  // Have fast double support times
+  ctg->wpg.setDoubleSupportTime(0.2);
+  // Set Manipulation Only time to 3 seconds
+  ctg->setManipulationOnlyTime(3.0);
+  // Set Verbosity
+  ctg->setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_2);
+
+  // End of initialization ---------------------------------------------------------------------------------------
+
+  LocomanipulationPlanner lm_planner;
+  // Initialize
+  lm_planner.initializeLocomanipulationVariables(valkyrie_model, f_s_manipulate_door, ctg);
+
+  shared_ptr<Node> starting_vertex (std::make_shared<LMVertex>());    
+  shared_ptr<Node> goal_vertex (std::make_shared<LMVertex>());
+
+  lm_planner.setStartNode(starting_vertex);
+  lm_planner.setGoalNode(goal_vertex);
+  lm_planner.doAstar();
 }
 
 void test_planner(){

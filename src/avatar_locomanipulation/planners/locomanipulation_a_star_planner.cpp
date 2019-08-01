@@ -18,6 +18,12 @@ namespace planner{
 
 	// Constructor
 	LocomanipulationPlanner::LocomanipulationPlanner(){}
+	void LocomanipulationPlanner::initializeLocomanipulationVariables(std::shared_ptr<RobotModel> robot_model_in, std::shared_ptr<ManipulationFunction> f_s_in, std::shared_ptr<ConfigTrajectoryGenerator> ctg_in){
+		std::cout << "[LocomanipulationPlanner] Initialized robot model, f_s, and trajectory generation module" << std::endl;
+		robot_model = robot_model_in;
+		f_s = f_s_in;
+		ctg = ctg_in;
+	}
 
 	// Destructor
 	LocomanipulationPlanner::~LocomanipulationPlanner(){}

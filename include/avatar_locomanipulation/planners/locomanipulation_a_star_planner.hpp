@@ -2,6 +2,9 @@
 #define ALM_LOCOMANIPULATION_A_STAR_PLANNER_H
 
 #include <avatar_locomanipulation/planners/a_star_planner.hpp>
+#include <avatar_locomanipulation/walking/config_trajectory_generator.hpp>
+#include <avatar_locomanipulation/data_types/manipulation_function.hpp>
+#include <avatar_locomanipulation/data_types/footstep.hpp>
 
 namespace planner{
 
@@ -12,7 +15,11 @@ namespace planner{
 
 		// Problem specific:
 		LMVertex(double s_in); // Constructor
+
 		double s = 0.0;
+		Eigen::VectorXd q_init;
+		Footstep left_foot;
+		Footstep right_foot;
 	
 		void common_initialization();
 
@@ -36,6 +43,17 @@ namespace planner{
 		std::shared_ptr<LMVertex> goal_;
 		std::shared_ptr<LMVertex> neighbor_;		
 		std::shared_ptr<LMVertex> opt_node_;
+
+		// Locomanipulation specific member variables and functions.
+		void initializeLocomanipulationVariables(std::shared_ptr<RobotModel> robot_model_in, std::shared_ptr<ManipulationFunction> f_s_in, std::shared_ptr<ConfigTrajectoryGenerator> ctg_in);
+		
+		std::shared_ptr<RobotModel> robot_model;
+		std::shared_ptr<ManipulationFunction> f_s;
+		std::shared_ptr<ConfigTrajectoryGenerator> ctg;
+
+
+
+
 	};
 
 
