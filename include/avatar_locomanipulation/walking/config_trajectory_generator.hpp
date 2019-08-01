@@ -7,6 +7,8 @@
 #include <avatar_locomanipulation/ik_module/ik_module.hpp>
 #include <avatar_locomanipulation/data_types/trajectory_SE3.hpp>
 
+#include <avatar_locomanipulation/data_types/manipulation_function.hpp>
+
 #include <avatar_locomanipulation/tasks/task_6dpose.hpp>
 #include <avatar_locomanipulation/tasks/task_3dorientation.hpp>
 #include <avatar_locomanipulation/tasks/task_com.hpp>
@@ -14,6 +16,9 @@
 #include <avatar_locomanipulation/tasks/task_stack.hpp>
 
 #include <avatar_locomanipulation/helpers/orientation_utils.hpp>
+
+#define CONFIG_TRAJECTORY_ROBOT_LEFT_SIDE 0
+#define CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE 1
 
 #define CONFIG_TRAJECTORY_VERBOSITY_LEVEL_0 0 // No text output
 #define CONFIG_TRAJECTORY_VERBOSITY_LEVEL_1 1 // Only outputs the result of the complete trajectory
@@ -74,6 +79,13 @@ public:
     // Given an initial configuration and footstep data list input, compute the task space walking trajectory.
     // Warning: If hand tasks are enabled, they need to have been set already.
     bool computeConfigurationTrajectory(const Eigen::VectorXd & q_init, const std::vector<Footstep> & input_footstep_list);
+
+    // Single hand manipulation only
+    bool computeConfigurationTrajectory(std::shared_ptr<ManipulationFunction> f_s, int robot_manipulation_side, 
+    									double s_o, double delta_s, 
+    									const Eigen::VectorXd & q_init, const std::vector<Footstep> & input_footstep_list);
+
+
 
     // returns N_size
     int getDiscretizationSize();

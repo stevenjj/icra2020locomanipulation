@@ -351,6 +351,31 @@ bool ConfigTrajectoryGenerator::didTrajectoryConverge(){
 	return false;
 }
 
+bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(std::shared_ptr<ManipulationFunction> f_s, int robot_manipulation_side, 
+															   double s_o, double delta_s, 
+															   const Eigen::VectorXd & q_init, const std::vector<Footstep> & input_footstep_list){
+
+	Eigen::Vector3d s_des_pos(0,0,0);
+	Eigen::Quaterniond s_des_pos_ori(1, 0, 0, 0);
+	double s_g = 0.0;
+
+	for (int i = 0; i < N_size; i++){
+		// Compute current s
+		s_g = s_o + (delta_s / static_cast<double>(N_size))*i;
+		// Get the desired pose
+		f_s->getPose(s_g, s_des_pos, s_des_pos_ori);
+		// Set the desired trajectory
+		if (robot_manipulation_side == CONFIG_TRAJECTORY_ROBOT_LEFT_SIDE){
+			traj_SE3_left_hand.set_pos(i, s_des_pos, s_des_pos_ori);
+		}else if (robot_manipulation_side == CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE){
+			traj_SE3_right_hand.set_pos(i, s_des_pos, s_des_pos_ori);			
+		}
+	}
+
+	return computeConfigurationTrajectory(q_init, input_footstep_list);
+
+}
+
 // Given an initial configuration and footstep data list input, compute the task space walking trajectory.
 // Warning: If hand tasks are enabled, they need to have been set already.
 bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::VectorXd & q_init, const std::vector<Footstep> & input_footstep_list){
@@ -376,13 +401,19 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 
 	// Construct the task space trajectories.
 	// wpg.construct_trajectories(input_footstep_list, initial_left_footstance, initial_right_footsance, initial_com, initial_pelvis_ori)
-	wpg.construct_trajectories(input_footstep_list, tmp_left_foot, tmp_right_foot, tmp_com_pos, tmp_pelvis_ori);
+	if (input_footstep_list.size() > 0){
+		wpg.construct_trajectories(input_footstep_list, tmp_left_foot, tmp_right_foot, tmp_com_pos, tmp_pelvis_ori);
 
-	// Set the dt of the configuration and internal trajectory containers to the dt of the CoM. Which is set by the object wpg.
-	traj_q_config.set_dt( wpg.traj_pos_com.get_dt() );
-	traj_SE3_left_hand.set_dt( wpg.traj_pos_com.get_dt() );
-	traj_SE3_right_hand.set_dt( wpg.traj_pos_com.get_dt() );
-
+		// Set the dt of the configuration and internal trajectory containers to the dt of the CoM. Which is set by the object wpg.
+		traj_q_config.set_dt( wpg.traj_pos_com.get_dt() );
+		traj_SE3_left_hand.set_dt( wpg.traj_pos_com.get_dt() );
+		traj_SE3_right_hand.set_dt( wpg.traj_pos_com.get_dt() );
+	}else{
+		double total_manipulation_time = 3.0;
+		traj_q_config.set_dt( (total_manipulation_time/N_size) );
+		traj_SE3_left_hand.set_dt( (total_manipulation_time/N_size) );
+		traj_SE3_right_hand.set_dt( (total_manipulation_time/N_size) );
+	}
 
 	// Prepare IK solver
     int solve_result;
@@ -429,10 +460,12 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 		}
 
 		// Get walking trajectory references
-		wpg.traj_ori_pelvis.get_quat(i, tmp_pelvis_ori);
-		wpg.traj_pos_com.get_pos(i, tmp_com_pos);
-		wpg.traj_SE3_right_foot.get_pos(i, tmp_right_foot.position, tmp_right_foot.orientation);
-		wpg.traj_SE3_left_foot.get_pos(i, tmp_left_foot.position, tmp_left_foot.orientation);
+		if (input_footstep_list.size() > 0){
+			wpg.traj_ori_pelvis.get_quat(i, tmp_pelvis_ori);
+			wpg.traj_pos_com.get_pos(i, tmp_com_pos);
+			wpg.traj_SE3_right_foot.get_pos(i, tmp_right_foot.position, tmp_right_foot.orientation);
+			wpg.traj_SE3_left_foot.get_pos(i, tmp_left_foot.position, tmp_left_foot.orientation);
+		}
 
 		// Set walking trajectory references
 		pelvis_ori_task->setReference(tmp_pelvis_ori);

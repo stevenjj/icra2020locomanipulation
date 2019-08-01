@@ -234,10 +234,10 @@ void test_load_initial_hand_config(){
 
   // Initialize the manipulation function for manipulating the door
   std::string door_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/door_trajectory.yaml";
-  ManipulationFunction manipulate_door(door_yaml_file);
+  std::shared_ptr<ManipulationFunction> f_s_manipulate_door(new ManipulationFunction(door_yaml_file));
   // Set hinge location as waypoints are with respect to the hinge
   hinge_orientation.normalize();
-  manipulate_door.setWorldTransform(hinge_position, hinge_orientation);
+  f_s_manipulate_door->setWorldTransform(hinge_position, hinge_orientation);
 
   // Visualize the loaded configuration
   std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
@@ -256,8 +256,11 @@ void test_load_initial_hand_config(){
 
   valkyrie_model->getFrameWorldPose("leftCOP_Frame", footstep_1.position, footstep_1.orientation);  
   valkyrie_model->getFrameWorldPose("rightCOP_Frame", footstep_2.position, footstep_2.orientation);  
-  footstep_2.position[0] -= 0.1;
   footstep_1.position[0] -= 0.1;
+
+  footstep_2.position[0] -= 0.1;
+  footstep_2.position[1] -= 0.1;
+
   std::vector<Footstep> input_footstep_list = {footstep_1, footstep_2};
 
 
@@ -279,8 +282,17 @@ void test_load_initial_hand_config(){
   // Set Verbosity
   ctg.setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_2);
   // Solve for configurations
+  double s_o = 0.0;
+  double delta_s = 0.15;
+
   timer.tic();
-  ctg.computeConfigurationTrajectory(q_start_door, input_footstep_list);
+  //ctg.computeConfigurationTrajectory(q_start_door, input_footstep_list);
+
+
+  ctg.computeConfigurationTrajectory(f_s_manipulate_door, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
+                                 s_o, delta_s, q_start_door, input_footstep_list);
+
+
   std::cout << "IK Trajectory took: " << timer.toc() << timer.unitName(timer.DEFAULT_UNIT) << std::endl;
   // Visualize Trajectory
   visualizer.visualizeConfigurationTrajectory(q_start_door, ctg.traj_q_config);
