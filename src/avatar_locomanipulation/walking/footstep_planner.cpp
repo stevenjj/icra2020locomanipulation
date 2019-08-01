@@ -251,8 +251,8 @@ namespace planner{
 		double left_foot_transition_cost = sqrt(pow(current_->xLF - neighbor_->xLF,2) + pow(current_->yLF - neighbor_->yLF,2) + pow(current_->thetaLF - neighbor_->thetaLF,2)); 
 		double right_foot_transition_cost = sqrt(pow(current_->xRF - neighbor_->xRF,2) + pow(current_->yRF - neighbor_->yRF,2) + pow(current_->thetaRF - neighbor_->thetaRF,2)); 
 
-		if ((left_foot_transition_cost > 0.01) || (right_foot_transition_cost > 0.01)){
-			distance = 100 + (neighbor_->s -  current_->s);// ; // left_foot_transition_cost + right_foot_transition_cost + (1 - neighbor_->s);			
+		if ((left_foot_transition_cost > 1e-12) || (right_foot_transition_cost > 1e-12)){
+			distance = 10 + (1 -  neighbor_->s);// ; // left_foot_transition_cost + right_foot_transition_cost + (1 - neighbor_->s);			
 		}else{
 			distance = (1 - neighbor_->s);// ; // left_foot_transition_cost + right_foot_transition_cost + (1 - neighbor_->s);
 		}
@@ -272,7 +272,7 @@ namespace planner{
 
 		double left_foot_cost = sqrt(pow(goal_->xLF - neighbor_->xLF,2) + pow(goal_->yLF - neighbor_->yLF,2) + pow(goal_->thetaLF - neighbor_->thetaLF,2));
 		double right_foot_cost = sqrt(pow(goal_->xRF - neighbor_->xRF,2) + pow(goal_->yRF - neighbor_->yRF,2) + pow(goal_->thetaRF - neighbor_->thetaRF,2));
-		distance =  (1.0 -  neighbor_->s); //left_foot_cost + right_foot_cost;
+		distance =  200*(1.0 -  neighbor_->s); //left_foot_cost + right_foot_cost;
 
 
 
@@ -331,21 +331,40 @@ namespace planner{
 		std::vector< shared_ptr<Node> > neighbors;
 
 
-		x_df = 0.5;
-		y_df = 0.5;
-		theta_df = M_PI/4.0;
+		x_df = 0.05;
+		y_df = 0.05;
+		theta_df = 10.0*M_PI/180.0;
 
-		max_reach = 3.0;
-		max_width = 3.0;
-		max_angle = M_PI;
-		min_angle = -M_PI;
+		maxdist_reach = 0.4;
+		mindist_reach =  -0.2;
 
-		mindist_reach = -3.0;
-		maxdist_reach = 3.0;
-		mindist_width = 0.5;
-		maxdist_width = 3.0;
-		mindist_theta = -M_PI/2;
-		maxdist_theta = M_PI/2;
+		maxdist_width = 0.4;  //0.4;
+		mindist_width = 0.2; //0.2;
+
+		maxdist_theta = 0.6;
+		mindist_theta = -0.15;
+
+
+		max_reach = maxdist_reach; //2.0;
+		max_width = maxdist_width; //2.0;
+		max_angle = maxdist_theta; //M_PI/4.0;
+		min_angle = mindist_theta; //-M_PI/4.0;
+
+		// x_df = 0.5;
+		// y_df = 0.5;
+		// theta_df = M_PI/8.0;
+
+		// max_reach = 3.0;
+		// max_width = 3.0;
+		// max_angle = M_PI/4.0;
+		// min_angle = -M_PI/4.0;
+
+		// mindist_reach = -3.0;
+		// maxdist_reach = 3.0;
+		// mindist_width = 0.5;
+		// maxdist_width = 3.0;
+		// mindist_theta = -M_PI/2;
+		// maxdist_theta = M_PI/2;
 
 		vector<double> s_vals;
 		s_vals.push_back(0.0);
@@ -368,8 +387,8 @@ namespace planner{
 		//generate theta vals
 		for (size_t k(0); k < ind_theta; k++){
 			theta_vals.push_back(min_angle + k*theta_df);
-			
 		}
+
 		//LF moving
 		if (current_->turn == true){
 
@@ -404,6 +423,7 @@ namespace planner{
 			}
 				
 		}
+		shared_ptr<FootstepNode> neighbor_change;
 		for (size_t n(0); n < x_vals.size(); n++){
 			for (size_t m(0); m < y_vals.size(); m++){
 				for (size_t k(0); k < theta_vals.size(); k++){
@@ -416,8 +436,6 @@ namespace planner{
 								if (abs(theta_vals[k] - current_->thetaRF) < maxdist_theta){
 									if (coord_Fframe[0] > mindist_reach && coord_Fframe[0] < maxdist_reach && coord_Fframe[1] > mindist_width && coord_Fframe[1] < maxdist_width){
 										shared_ptr<Node> neighbor (std::make_shared<FootstepNode>(coord_Oframe[0],coord_Oframe[1],current_->xRF,current_->yRF,theta_vals[k],current_->thetaRF,false,s_vals[l] + current_->s));
-
-										shared_ptr<FootstepNode> neighbor_change;
 										neighbor_change = static_pointer_cast<FootstepNode>(neighbor);
 										neighbor_change->parent = current;
 										//neighbor_change->s = s_vals[l] + current_->s;
@@ -431,8 +449,6 @@ namespace planner{
 								if (abs(theta_vals[k] - current_->thetaLF) < maxdist_theta){
 									if (coord_Fframe[0] > mindist_reach && coord_Fframe[0] < maxdist_reach && coord_Fframe[1] < -mindist_width && coord_Fframe[1] > -maxdist_width){
 										shared_ptr<Node> neighbor (std::make_shared<FootstepNode>(current_->xLF,current_->yLF,coord_Oframe[0],coord_Oframe[1],current_->thetaLF,theta_vals[k],true,s_vals[l] + current_->s));
-
-										shared_ptr<FootstepNode> neighbor_change;
 										neighbor_change = static_pointer_cast<FootstepNode>(neighbor);
 										neighbor_change->parent = current;
 										//neighbor_change->s = s_vals[l] + current_->s;
@@ -446,6 +462,17 @@ namespace planner{
 				}
 			}
 		}
+
+
+	// The neighbors when we don't take as tep
+	for (size_t l(0); l < s_vals.size(); l++){
+		shared_ptr<Node> neighbor (std::make_shared<FootstepNode>(current_->xLF,current_->yLF, current_->xRF,current_->yRF,current_->thetaLF,current_->thetaRF, current_->turn, s_vals[l] + current_->s));
+		neighbor_change = static_pointer_cast<FootstepNode>(neighbor);
+		neighbor_change->parent = current;
+		neighbor = static_pointer_cast<Node>(neighbor_change);
+		neighbors.push_back(neighbor);
+	}
+
 
 		return neighbors;
 	}
@@ -570,6 +597,7 @@ namespace planner{
 					//create new neighbor nodes
 					std::vector< shared_ptr<Node> > neighbors;
 					neighbors = getNeighbors(current_node);
+					std::cout << "size of neighbors" << neighbors.size() << std::endl;
 
 					//iterate through all neighbors
 					for (size_t i(0);i < neighbors.size(); i++){
@@ -605,8 +633,8 @@ namespace planner{
 								ExploredSet.insert(neighbors[i]);
 							}		
 						}
-						//current_ = static_pointer_cast<FootstepNode>(neighbors[i]);
- 						//cout << "    neighbor node::" << f << " xLF: " << current_->xLF << " yLF: " << current_->yLF << " xRF: " << current_->xRF << " yRF: " << current_->yRF << " thetaLF: " << current_->thetaLF << " thetaRF: " << current_->thetaRF << " fscore: " << current_->f_score << " left or right: " << current_->turn << endl;
+						current_ = static_pointer_cast<FootstepNode>(neighbors[i]);
+ 						cout << "    neighbor node::" << f << " xLF: " << current_->xLF << " yLF: " << current_->yLF << " xRF: " << current_->xRF << " yRF: " << current_->yRF << " thetaLF: " << current_->thetaLF << " thetaRF: " << current_->thetaRF << " s = " << current_-> s << " fscore: " << current_->f_score << " left or right: " << current_->turn << endl;
 
 					}
 				}
