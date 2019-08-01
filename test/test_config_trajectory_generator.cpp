@@ -133,6 +133,7 @@ void test_initial_hand_location_stance(){
   hinge_orientation.normalize();
   manipulate_door.setWorldTransform(hinge_location, hinge_orientation);
 
+  // q_start[0] = 0.5;
   q_start[1] = 0.5;
   // q_start[valkyrie_model->getJointIndex("rightShoulderPitch")] = 0.0;
   // q_start[valkyrie_model->getJointIndex("rightShoulderRoll")] = 1.5;
@@ -154,7 +155,6 @@ void test_initial_hand_location_stance(){
   stance_generator.setDesiredRightHandPose(rpalm_des_pos, rpalm_des_quat);
 
   // Compute starting stance for the door opening task
-  stance_generator.stance_ik_module.setEnableInertiaWeighting(true);
   bool convergence = stance_generator.computeStance(q_end);
   stance_generator.snap_to_floor_ik_module.printSolutionResults();
   stance_generator.stance_ik_module.printSolutionResults();

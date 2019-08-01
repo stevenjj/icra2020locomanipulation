@@ -104,11 +104,7 @@ void ValkyrieStanceGeneration::initializeTasks(){
 
 void ValkyrieStanceGeneration::createTaskStack(){
   // Create Task Stack
-  // std::vector< std::shared_ptr<Task> > priority_1_task_stack = {pelvis_wrt_mf_task, lfoot_contact_normal_task, rfoot_contact_normal_task, torso_neck_arm_posture_task};
-  // std::vector< std::shared_ptr<Task> > priority_2_task_stack = {lfoot_wrt_rfoot_task, overall_posture_task, base_pose_task};
-
-  // std::vector< std::shared_ptr<Task> > priority_1_task_stack = {lfoot_wrt_rfoot_task, pelvis_wrt_mf_task, torso_neck_arm_posture_task, lfoot_contact_normal_task, rfoot_contact_normal_task}; //{lfoot_wrt_rfoot_task, torso_neck_arm_posture_task, lfoot_contact_normal_task, rfoot_contact_normal_task};
-
+  //  std::vector< std::shared_ptr<Task> > priority_1_task_stack = {torso_neck_arm_posture_task, lfoot_wrt_rfoot_task, lfoot_contact_normal_task, rfoot_contact_normal_task};
   std::vector< std::shared_ptr<Task> > priority_1_task_stack = {torso_neck_arm_posture_task, pelvis_wrt_mf_task, lfoot_contact_normal_task, rfoot_contact_normal_task};
   std::vector< std::shared_ptr<Task> > priority_2_task_stack = {overall_posture_task, base_pose_task};
 
@@ -138,7 +134,7 @@ void ValkyrieStanceGeneration::createTaskStack(){
 
   stance_ik_module.clearTaskHierarchy();
   stance_ik_module.addTasktoHierarchy(task_stack_priority_1);
-  // stance_ik_module.addTasktoHierarchy(task_stack_priority_2);
+  stance_ik_module.addTasktoHierarchy(task_stack_priority_2);
 
   // Prepare the IK data structures
   snap_to_floor_ik_module.prepareNewIKDataStrcutures();
@@ -159,7 +155,7 @@ void ValkyrieStanceGeneration::default_initialization(){
   pelvis_wrt_rfoot_des_pos[2] = 1.0;
 
   // Set Default Desired Pelvis Location w.r.t midfeet frame
-	pelvis_wrt_mf_des_pos.setZero(); pelvis_wrt_mf_des_pos[2] = 1.0;
+	pelvis_wrt_mf_des_pos.setZero(); pelvis_wrt_mf_des_pos[2] = 1.1;
 	pelvis_wrt_mf_des_quat.setIdentity();
 
   // Set Default Contact normals of the feet

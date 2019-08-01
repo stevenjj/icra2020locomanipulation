@@ -18,6 +18,7 @@
 #include <avatar_locomanipulation/tasks/task_xyrzpose_wrt_frame.hpp>
 #include <avatar_locomanipulation/tasks/task_xdpose_wrt_frame.hpp>
 #include <avatar_locomanipulation/tasks/task_6dpose_no_rxry.hpp>
+#include <avatar_locomanipulation/tasks/task_xdpose.hpp>
 
 
 // Task Stack

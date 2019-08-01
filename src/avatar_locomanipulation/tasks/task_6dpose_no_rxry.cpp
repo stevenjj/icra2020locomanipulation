@@ -10,7 +10,7 @@ Task6DPoseNoRXRY::Task6DPoseNoRXRY(std::shared_ptr<RobotModel> & input_model, co
 	vec_ref_ = Eigen::VectorXd::Zero(3);
 	quat_ref_.setIdentity();
 
-	std::cout << "[Task 6D Pose] for frame " << frame_name << " Constructed" << std::endl;
+	// std::cout << "[Task 6D Pose] for frame " << frame_name << " Constructed" << std::endl;
 }
 
 Task6DPoseNoRXRY::~Task6DPoseNoRXRY(){
@@ -19,15 +19,16 @@ Task6DPoseNoRXRY::~Task6DPoseNoRXRY(){
 
 void Task6DPoseNoRXRY::getTaskJacobian(Eigen::MatrixXd & J_task){
 	robot_model->get6DTaskJacobian(frame_name, J_task);
-	// Remove z, rx, ry contributions of the floating base
+	// Remove rx, ry contributions of the floating base
 	// J_task.col(2) = Eigen::VectorXd::Zero(6) ;
 	J_task.col(3) = Eigen::VectorXd::Zero(6) ;
 	J_task.col(4) = Eigen::VectorXd::Zero(6) ;
 
 }
+
 void Task6DPoseNoRXRY::getTaskJacobianDot(Eigen::MatrixXd & Jdot_task){
 	robot_model->get6DTaskJacobianDot(frame_name, Jdot_task);
-	// Remove z, rx, ry contributions of the floating base
+	// Remove rx, ry contributions of the floating base
 	// Jdot_task.col(2) = Eigen::VectorXd::Zero(6);
 	Jdot_task.col(3) = Eigen::VectorXd::Zero(6);
 	Jdot_task.col(4) = Eigen::VectorXd::Zero(6);
