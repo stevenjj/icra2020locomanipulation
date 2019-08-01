@@ -634,7 +634,7 @@ namespace planner{
 							}		
 						}
 						current_ = static_pointer_cast<FootstepNode>(neighbors[i]);
- 						cout << "    neighbor node::" << f << " xLF: " << current_->xLF << " yLF: " << current_->yLF << " xRF: " << current_->xRF << " yRF: " << current_->yRF << " thetaLF: " << current_->thetaLF << " thetaRF: " << current_->thetaRF << " s = " << current_-> s << " fscore: " << current_->f_score << " left or right: " << current_->turn << endl;
+ 						// cout << "    neighbor node::" << f << " xLF: " << current_->xLF << " yLF: " << current_->yLF << " xRF: " << current_->xRF << " yRF: " << current_->yRF << " thetaLF: " << current_->thetaLF << " thetaRF: " << current_->thetaRF << " s = " << current_-> s << " fscore: " << current_->f_score << " left or right: " << current_->turn << endl;
 
 					}
 				}
