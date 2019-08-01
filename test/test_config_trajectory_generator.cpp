@@ -2,6 +2,12 @@
 #include <avatar_locomanipulation/bridge/rviz_visualizer.hpp>
 #include "pinocchio/utils/timer.hpp"
 
+
+// YAML
+#include <avatar_locomanipulation/helpers/yaml_data_saver.hpp>
+#include <avatar_locomanipulation/helpers/param_handler.hpp>
+
+
 // Stance Generation
 #include <avatar_locomanipulation/ik_module/valkyrie_stance_generation.hpp>
 #include <avatar_locomanipulation/data_types/manipulation_function.hpp>
@@ -67,8 +73,8 @@ void test_hand_in_place_config_trajectory_generator(){
   ctg.computeInitialConfigForFlatGround(q_start, q_end);
 
   // Create visualization object
-  std::shared_ptr<ros::NodeHandle> node(std::make_shared<ros::NodeHandle>());
-  RVizVisualizer visualizer(node, valkyrie_model);  
+  std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
+  RVizVisualizer visualizer(ros_node, valkyrie_model);  
 
   // Update Initial
   q_start = q_end;
@@ -113,7 +119,6 @@ void test_hand_in_place_config_trajectory_generator(){
   // Visualize Trajectory
   visualizer.visualizeConfigurationTrajectory(q_start, ctg.traj_q_config);
 
-
 }
 
 void test_initial_hand_location_stance(){
@@ -128,10 +133,10 @@ void test_initial_hand_location_stance(){
   std::string door_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/door_trajectory.yaml";
   ManipulationFunction manipulate_door(door_yaml_file);
   // Set hinge location as waypoints are with respect to the hinge
-  Eigen::Vector3d hinge_location(1.5, -0.5, 1.125);
+  Eigen::Vector3d hinge_position(1.5, -0.5, 1.125);
   Eigen::Quaterniond hinge_orientation(0.707, 0, 0, 0.707);
   hinge_orientation.normalize();
-  manipulate_door.setWorldTransform(hinge_location, hinge_orientation);
+  manipulate_door.setWorldTransform(hinge_position, hinge_orientation);
 
   // q_start[0] = 0.5;
   q_start[1] = 0.5;
@@ -160,11 +165,84 @@ void test_initial_hand_location_stance(){
   stance_generator.stance_ik_module.printSolutionResults();
   std::cout << "Stance Generation Result " << (convergence ? "true": "false") << std::endl;
 
+  // Store the data
+  YAML::Emitter out;
+  out << YAML::BeginMap;
+    data_saver::emit_joint_configuration(out, "robot_starting_configuration", q_end);
+    data_saver::emit_position(out, "hinge_position", hinge_position);
+    data_saver::emit_orientation(out, "hinge_orientation", hinge_orientation);
+  out << YAML::EndMap;  
+  std::cout << "Here's the output YAML:\n" << out.c_str() << "\n" << std::endl;
+  std::ofstream file_output_stream("robot_door_initial_configuration.yaml");
+  file_output_stream << out.c_str();
+  // End of Storing the data
+
+
   // Create visualization object
-  std::shared_ptr<ros::NodeHandle> node(std::make_shared<ros::NodeHandle>());
-  RVizVisualizer visualizer(node, valkyrie_model);  
+  std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
+  RVizVisualizer visualizer(ros_node, valkyrie_model);  
   visualizer.visualizeConfiguration(q_start, q_end);
 
+
+}
+
+void load_robot_door_configuration(Eigen::VectorXd & q_out, Eigen::Vector3d & hinge_pos_out, Eigen::Quaterniond & hinge_ori_out){
+  ParamHandler param_handler;
+  param_handler.load_yaml_file(THIS_PACKAGE_PATH"stored_configurations/robot_door_initial_configuration.yaml");  
+
+  // Get the robot configuration vector
+  std::vector<double> robot_q;
+  param_handler.getVector("robot_starting_configuration", robot_q);
+  
+  // Get hinge location and orientation
+  double hinge_x, hinge_y, hinge_z, hinge_rx, hinge_ry, hinge_rz, hinge_rw;
+  param_handler.getNestedValue({"hinge_position", "x"}, hinge_x);
+  param_handler.getNestedValue({"hinge_position", "y"}, hinge_y);
+  param_handler.getNestedValue({"hinge_position", "z"}, hinge_z);
+  param_handler.getNestedValue({"hinge_orientation", "x"}, hinge_rx);
+  param_handler.getNestedValue({"hinge_orientation", "y"}, hinge_ry);
+  param_handler.getNestedValue({"hinge_orientation", "z"}, hinge_rz);
+  param_handler.getNestedValue({"hinge_orientation", "w"}, hinge_rw);
+
+  // Convert to Eigen data types
+  Eigen::VectorXd q = Eigen::VectorXd::Zero(robot_q.size());
+  for(int i = 0; i < robot_q.size(); i++){
+    q[i] = robot_q[i];
+  }
+  Eigen::Vector3d hinge_position(hinge_x, hinge_y, hinge_z);
+  Eigen::Quaterniond hinge_orientation(hinge_rw, hinge_rx, hinge_ry, hinge_rz);
+
+  // Set outputs
+  q_out = q;
+  hinge_pos_out = hinge_position;
+  hinge_ori_out = hinge_orientation;
+}
+
+
+void test_load_initial_hand_config(){
+  // Initialize the robot
+  std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_no_fingers.urdf";
+  std::shared_ptr<RobotModel> valkyrie_model(new RobotModel(urdf_filename));
+
+  Eigen::VectorXd q_start, q_end;
+  initialize_config(q_start, valkyrie_model);
+
+  // Get the Initial Robot and Door Configuration
+  Eigen::Vector3d hinge_position;
+  Eigen::Quaterniond hinge_orientation;
+  load_robot_door_configuration(q_end, hinge_position, hinge_orientation);
+
+  // Initialize the manipulation function for manipulating the door
+  std::string door_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/door_trajectory.yaml";
+  ManipulationFunction manipulate_door(door_yaml_file);
+  // Set hinge location as waypoints are with respect to the hinge
+  hinge_orientation.normalize();
+  manipulate_door.setWorldTransform(hinge_position, hinge_orientation);
+
+  // Visualize the loaded configuration
+  std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
+  RVizVisualizer visualizer(ros_node, valkyrie_model);  
+  visualizer.visualizeConfiguration(q_start, q_end);
 
 }
 
@@ -188,8 +266,8 @@ void test_walking_config_trajectory_generator(){
 
 
   // Visualize the robot
-  std::shared_ptr<ros::NodeHandle> node(std::make_shared<ros::NodeHandle>());
-  RVizVisualizer visualizer(node, valkyrie_model);  
+  std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
+  RVizVisualizer visualizer(ros_node, valkyrie_model);  
   // visualizer.visualizeConfiguration(q_start, q_end);
 
   // Update Initial
@@ -239,8 +317,7 @@ int main(int argc, char ** argv){
   // test_walking_config_trajectory_generator();
   test_hand_in_place_config_trajectory_generator();
   // test_initial_hand_location_stance();
-
-
+  // test_load_initial_hand_config();
 
   return 0;
 }
