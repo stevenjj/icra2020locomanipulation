@@ -198,7 +198,7 @@ namespace planner{
 	FootstepNode::~FootstepNode(){		
 	}
 
-	FootstepNode::FootstepNode(const double xLF_in,const double yLF_in,const double xRF_in,const double yRF_in,const double thetaLF_in, const double thetaRF_in, bool turn_in){
+	FootstepNode::FootstepNode(const double xLF_in,const double yLF_in,const double xRF_in,const double yRF_in,const double thetaLF_in, const double thetaRF_in, bool turn_in, double s_in){
 		commonInitializationFootstep();
 		xLF = xLF_in;
 		yLF = yLF_in;
@@ -209,6 +209,9 @@ namespace planner{
 		thetaRF = thetaRF_in;
 
 		turn = turn_in;
+
+		s = s_in;
+		
 
 		key = (to_string((int)round(xLF*1000)) + "_" + to_string((int)round(yLF*1000)) + "_" + to_string((int)round(xRF*1000)) + "_" + to_string((int)round(yRF*1000)) + "_" + to_string(thetaLF) + "_" + to_string(thetaRF) + "_" + to_string(turn) + "_" + to_string(s));	
 	}
@@ -247,7 +250,12 @@ namespace planner{
 
 		double left_foot_transition_cost = sqrt(pow(current_->xLF - neighbor_->xLF,2) + pow(current_->yLF - neighbor_->yLF,2) + 0.0*pow(current_->thetaLF - neighbor_->thetaLF,2)); 
 		double right_foot_transition_cost = sqrt(pow(current_->xRF - neighbor_->xRF,2) + pow(current_->yRF - neighbor_->yRF,2) + 0.0*pow(current_->thetaRF - neighbor_->thetaRF,2)); 
-		distance = left_foot_transition_cost + right_foot_transition_cost;
+
+		if ((left_foot_transition_cost > 0.01) || (right_foot_transition_cost > 0.01)){
+			distance = 100 + (neighbor_->s -  current_->s);// ; // left_foot_transition_cost + right_foot_transition_cost + (1 - neighbor_->s);			
+		}else{
+			distance = (neighbor_->s -  current_->s);// ; // left_foot_transition_cost + right_foot_transition_cost + (1 - neighbor_->s);
+		}
 
 		
 		return distance;
@@ -264,7 +272,7 @@ namespace planner{
 
 		double left_foot_cost = sqrt(pow(goal_->xLF - neighbor_->xLF,2) + pow(goal_->yLF - neighbor_->yLF,2) + pow(goal_->thetaLF - neighbor_->thetaLF,2));
 		double right_foot_cost = sqrt(pow(goal_->xRF - neighbor_->xRF,2) + pow(goal_->yRF - neighbor_->yRF,2) + pow(goal_->thetaRF - neighbor_->thetaRF,2));
-		distance = left_foot_cost + right_foot_cost;
+		distance =  (1.0 -  neighbor_->s); //left_foot_cost + right_foot_cost;
 
 
 
@@ -277,8 +285,15 @@ namespace planner{
 
 		double left_foot_cost = sqrt(pow(goal_->xLF - current_->xLF,2) + pow(goal_->yLF - current_->yLF,2) + pow(goal_->thetaLF - current_->thetaLF,2));
 		double right_foot_cost = sqrt(pow(goal_->xRF - current_->xRF,2) + pow(goal_->yRF - current_->yRF,2) + pow(goal_->thetaRF - current_->thetaRF,2));
+
+		// if (left_foot_cost < 1.5 or right_foot_cost < 1.5){
+		// 	return true;
+		// }
+		// else{
+		// 	return false;
+		// }
 	
-		if (left_foot_cost < 1.5 or right_foot_cost < 1.5){
+		if (fabs(1.0 - current_->s) < 0.1){
 			return true;
 		}
 		else{
@@ -306,7 +321,7 @@ namespace planner{
 	void FootstepPlanner::printPath(){
 		for (size_t i(0); i < optimal_path.size(); i++){
 			opt_node_ = std::static_pointer_cast<FootstepNode>(optimal_path[i]);
-			cout << "optimal path:: " << " xLF: " << opt_node_->xLF << " yLF: " << opt_node_->yLF << " xRF: " << opt_node_->xRF << " yRF: " << opt_node_->yRF << " thetaLF: " << opt_node_->thetaLF << " thetaRF: " << opt_node_->thetaRF << endl;
+			cout << "optimal path:: " << " xLF: " << opt_node_->xLF << " yLF: " << opt_node_->yLF << " xRF: " << opt_node_->xRF << " yRF: " << opt_node_->yRF << " thetaLF: " << opt_node_->thetaLF << " thetaRF: " << opt_node_->thetaRF << " s value: " << opt_node_->s << endl;
 		}		
 	}
 
@@ -332,7 +347,11 @@ namespace planner{
 		mindist_theta = -M_PI/2;
 		maxdist_theta = M_PI/2;
 
-		vector<double> s_vals {0.0,0.01,0.05,0.1};
+		vector<double> s_vals;
+		s_vals.push_back(0.0);
+		s_vals.push_back(0.01);
+		s_vals.push_back(0.05);
+		s_vals.push_back(0.1);
 
 
 		//number of bins
@@ -396,12 +415,12 @@ namespace planner{
 							if (current_->turn == true){
 								if (abs(theta_vals[k] - current_->thetaRF) < maxdist_theta){
 									if (coord_Fframe[0] > mindist_reach && coord_Fframe[0] < maxdist_reach && coord_Fframe[1] > mindist_width && coord_Fframe[1] < maxdist_width){
-										shared_ptr<Node> neighbor (std::make_shared<FootstepNode>(coord_Oframe[0],coord_Oframe[1],current_->xRF,current_->yRF,theta_vals[k],current_->thetaRF,false));
+										shared_ptr<Node> neighbor (std::make_shared<FootstepNode>(coord_Oframe[0],coord_Oframe[1],current_->xRF,current_->yRF,theta_vals[k],current_->thetaRF,false,s_vals[l] + current_->s));
 
 										shared_ptr<FootstepNode> neighbor_change;
 										neighbor_change = static_pointer_cast<FootstepNode>(neighbor);
 										neighbor_change->parent = current;
-										neighbor_change->s = s_vals[l] + current_->s;
+										//neighbor_change->s = s_vals[l] + current_->s;
 										neighbor = static_pointer_cast<Node>(neighbor_change);
 										neighbors.push_back(neighbor);
 									}
@@ -411,12 +430,12 @@ namespace planner{
 							else if (current_->turn == false){
 								if (abs(theta_vals[k] - current_->thetaLF) < maxdist_theta){
 									if (coord_Fframe[0] > mindist_reach && coord_Fframe[0] < maxdist_reach && coord_Fframe[1] < -mindist_width && coord_Fframe[1] > -maxdist_width){
-										shared_ptr<Node> neighbor (std::make_shared<FootstepNode>(current_->xLF,current_->yLF,coord_Oframe[0],coord_Oframe[1],current_->thetaLF,theta_vals[k],true));
+										shared_ptr<Node> neighbor (std::make_shared<FootstepNode>(current_->xLF,current_->yLF,coord_Oframe[0],coord_Oframe[1],current_->thetaLF,theta_vals[k],true,s_vals[l] + current_->s));
 
 										shared_ptr<FootstepNode> neighbor_change;
 										neighbor_change = static_pointer_cast<FootstepNode>(neighbor);
 										neighbor_change->parent = current;
-										neighbor_change->s = s_vals[l] + current_->s;
+										//neighbor_change->s = s_vals[l] + current_->s;
 										neighbor = static_pointer_cast<Node>(neighbor_change);
 										neighbors.push_back(neighbor);
 									}
@@ -521,7 +540,7 @@ namespace planner{
 				//choose top value of open set as current node;
 				current_node = OpenSet[0];
 				shared_ptr<FootstepNode> current_ = static_pointer_cast<FootstepNode>(current_node);
-				cout << "current node::" << f << " xLF: " << current_->xLF << " yLF: " << current_->yLF << " xRF: " << current_->xRF << " yRF: " << current_->yRF << " thetaLF: " << current_->thetaLF << " thetaRF: " << current_->thetaRF << " fscore: " << current_->f_score << " left or right: " << current_->turn << endl;
+				cout << "current node::" << f << " xLF: " << current_->xLF << " yLF: " << current_->yLF << " xRF: " << current_->xRF << " yRF: " << current_->yRF << " thetaLF: " << current_->thetaLF << " thetaRF: " << current_->thetaRF << " fscore: " << current_->f_score << " left or right: " << current_->turn << " s value: " << current_->s << endl;
 				cout << "current node key: " << current_->key << endl;
 				cout << endl;
 				//current node = goal node

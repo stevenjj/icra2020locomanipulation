@@ -123,7 +123,7 @@ namespace planner{
 
 
 	// Problem specific:
-		FootstepNode(const double xLF_in, const double yLF_in, const double xRF_in, const double yRF_in, const double thetaLF_in, const double thetaRF_in, bool turn_in); // Constructor
+		FootstepNode(const double xLF_in, const double yLF_in, const double xRF_in, const double yRF_in, const double thetaLF_in, const double thetaRF_in, bool turn_in, double s_in); // Constructor
 		double xLF;
 		double yLF;
 		double xRF;
@@ -135,6 +135,7 @@ namespace planner{
 		bool turn; //true = LF, false = RF
 
 		double s;
+		
 
 		void commonInitializationFootstep();
 

@@ -77,13 +77,13 @@ int main(int argc, char **argv){
     double rfx_i = -1.0;
     double rfy_i = -1.0;
 
-    shared_ptr<Node> begin_footstep (std::make_shared<FootstepNode>(lfx_i ,lfy_i, rfx_i, rfy_i, 0.0, 0.0,false));
+    shared_ptr<Node> begin_footstep (std::make_shared<FootstepNode>(lfx_i ,lfy_i, rfx_i, rfy_i, 0.0, 0.0,false,0.0));
     double lfx_g = 15.0;
     double lfy_g = 9.0;
     double rfx_g = 15.0;
     double rfy_g = 7.0;
     // shared_ptr<Node> goal_footstep (std::make_shared<FootstepNode>(lfx_g, lfy_g, rfx_g, rfy_g, -M_PI/4.0, -M_PI/4.0,false));
-    shared_ptr<Node> goal_footstep (std::make_shared<FootstepNode>(lfx_g, lfy_g, rfx_g, rfy_g, -3*M_PI/4, -3*M_PI/4,false));
+    shared_ptr<Node> goal_footstep (std::make_shared<FootstepNode>(lfx_g, lfy_g, rfx_g, rfy_g, M_PI/4, M_PI/4,false,0.0));
 
     footstepplanner.setStartNode(begin_footstep);
     footstepplanner.setGoalNode(goal_footstep);
