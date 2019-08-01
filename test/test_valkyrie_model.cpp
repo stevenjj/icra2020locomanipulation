@@ -2,15 +2,25 @@
 #include <math.h>       
 #include <iostream>
 
-#include <avatar_locomanipulation/models/valkyrie_model.hpp>
+#include <avatar_locomanipulation/models/robot_model.hpp>
 
 int main(int argc, char ** argv){
   std::cout << "Initialize Valkyrie Model" << std::endl;
-  ValkyrieModel valkyrie;
+  std::string filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
+  RobotModel valkyrie(filename);
 
   // Test Dimensions
   std::cout << "joint dimension: " << valkyrie.getDimQ() << std::endl;
   std::cout << "joint velocity dimension: " << valkyrie.getDimQdot() << std::endl;
+
+
+  std::cout << "model position limits. Starting with floating base joints" << std::endl;
+  for(int i = 0; i < valkyrie.model.lowerPositionLimit.size(); i++){
+    std::cout << "i:" << i <<  std::endl; 
+    std::cout << "  lower = " << valkyrie.model.lowerPositionLimit[i] << std::endl;
+    std::cout << "  upper = " << valkyrie.model.upperPositionLimit[i] << std::endl;
+  }
+
 
   // Print out joint names and frames
   valkyrie.printJointNames();

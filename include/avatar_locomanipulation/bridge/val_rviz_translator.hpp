@@ -1,5 +1,5 @@
-#ifndef ALM_RVIZ_TRANSLATOR_H
-#define ALM_RVIZ_TRANSLATOR_H
+#ifndef ALM_VAL_RVIZ_TRANSLATOR_H
+#define ALM_VAL_RVIZ_TRANSLATOR_H
 
 #include <Eigen/Dense>
 #include "pinocchio/multibody/model.hpp"

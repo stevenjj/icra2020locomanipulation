@@ -1,6 +1,6 @@
 #include <Configuration.h>
 #include <avatar_locomanipulation/helpers/gmm_fit.hpp>
-#include <avatar_locomanipulation/models/valkyrie_model.hpp>
+#include <avatar_locomanipulation/models/robot_model.hpp>
 #include <avatar_locomanipulation/feasibility/feasibility.hpp>
 #include <ros/ros.h>
 #include <avatar_locomanipulation/bridge/val_rviz_translator.hpp>
@@ -12,7 +12,9 @@
 #include <fstream>
 
 int main(int argc, char ** argv){
-  ValkyrieModel valkyrie;
+  std::string filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
+  RobotModel valkyrie(filename);
+
   GMMFit gmmfitter;
   feasibility fiz;
   ParamHandler param_handler;

@@ -5,7 +5,7 @@
 
 class TaskCOM: public Task{
 public:
-	TaskCOM(std::shared_ptr<ValkyrieModel> & input_model);
+	TaskCOM(std::shared_ptr<RobotModel> & input_model);
 
 	virtual ~TaskCOM();
 
@@ -24,7 +24,7 @@ public:
 	virtual void setReference(const Eigen::VectorXd & vec_ref_in);
 
 	// Gets the currently set References
-	virtual void getRef(Eigen::VectorXd & vec_ref_out);
+	virtual void getReference(Eigen::VectorXd & vec_ref_out);
 
 	// Computes the error for a given reference
 	virtual void computeError();

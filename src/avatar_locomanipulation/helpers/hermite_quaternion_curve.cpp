@@ -16,7 +16,7 @@ HermiteQuaternionCurve::HermiteQuaternionCurve(const Eigen::Quaterniond & quat_s
 
   s_ = 0.0;
   initialize_data_structures();
-  std::cout << "[Hermite Quaternion Curve] Initialized" << std::endl;
+  // std::cout << "[Hermite Quaternion Curve] Initialized" << std::endl;
 }
 
 HermiteQuaternionCurve::~HermiteQuaternionCurve(){}

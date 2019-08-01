@@ -1,6 +1,6 @@
 #include <avatar_locomanipulation/tasks/task_6dpose.hpp>
 
-Task6DPose::Task6DPose(std::shared_ptr<ValkyrieModel> & input_model, const std::string & input_frame_name){
+Task6DPose::Task6DPose(std::shared_ptr<RobotModel> & input_model, const std::string & input_frame_name){
 	robot_model = input_model;
 	task_dim = 6;
 	task_name = input_frame_name;
@@ -14,7 +14,7 @@ Task6DPose::Task6DPose(std::shared_ptr<ValkyrieModel> & input_model, const std::
 }
 
 Task6DPose::~Task6DPose(){
-	std::cout << "[Task 6D Pose] for frame " << frame_name << " Destroyed" << std::endl;
+	// std::cout << "[Task 6D Pose] for frame " << frame_name << " Destroyed" << std::endl;
 }
 
 void Task6DPose::getTaskJacobian(Eigen::MatrixXd & J_task){
@@ -43,26 +43,26 @@ void Task6DPose::setReference(const Eigen::VectorXd & vec_ref_in, const Eigen::Q
 
 
 // Get Task References
-void Task6DPose::getRef(Eigen::VectorXd & vec_ref_out){
+void Task6DPose::getReference(Eigen::VectorXd & vec_ref_out){
 	vec_ref_out = vec_ref_;
 }
 
-void Task6DPose::getRef(Eigen::VectorXd & vec_ref_out, Eigen::Quaterniond & quat_ref_out){
+void Task6DPose::getReference(Eigen::VectorXd & vec_ref_out, Eigen::Quaterniond & quat_ref_out){
 	vec_ref_out = vec_ref_;
 	quat_ref_out = quat_ref_;
 }
 
-void Task6DPose::getRef(Eigen::Quaterniond & quat_ref_out){
+void Task6DPose::getReference(Eigen::Quaterniond & quat_ref_out){
 	quat_ref_out = quat_ref_;
 }
 
 void Task6DPose::computeError(){
 	robot_model->getFrameWorldPose(frame_name, cur_pos_, quat_current_);
 	// Compute Linear Error
-	error_.head(3) = vec_ref_ - cur_pos_;
+	error_.head(3) = kp_task_gain_*(vec_ref_ - cur_pos_);
 	// Compute Quaternion Error
 	math_utils::compute_quat_error(quat_ref_, quat_current_, quat_error_);
-	error_.tail(3) = quat_error_;	
+	error_.tail(3) = kp_task_gain_*(quat_error_);	
 }
 
 // Computes the error for a given reference

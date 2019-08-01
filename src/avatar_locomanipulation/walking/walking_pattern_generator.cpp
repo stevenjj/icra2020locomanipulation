@@ -15,6 +15,32 @@ WalkingPatternGenerator::~WalkingPatternGenerator(){
 
 }
 
+
+// Sets the desired CoM Height
+void WalkingPatternGenerator::setCoMHeight(double z_vrp_in){
+  z_vrp = z_vrp_in;
+} 
+
+// Sets the desired double support time
+void WalkingPatternGenerator::setDoubleSupportTime(double t_ds_in){
+  t_ds = t_ds_in;
+}
+
+// Sets the desired single support swing time
+void WalkingPatternGenerator::setSingleSupportSwingTime(double t_ss_in){
+  t_ss = t_ss_in;
+} 
+
+// Percentage to settle. Default 0.999
+void WalkingPatternGenerator::setSettlingPercentage(double percentage_convergence){
+  t_settle = -b*log(1 - percentage_convergence);
+} 
+
+// Sets the swing height of the robot. Default 0.1m
+void WalkingPatternGenerator::setSwingHeight(double swing_height_in){
+  swing_height = swing_height_in;
+}
+
 void WalkingPatternGenerator::initialize_footsteps_rvrp(const std::vector<Footstep> & input_footstep_list, 
                                                         const Footstep & initial_footstance,
                                                         bool clear_list){
@@ -152,7 +178,7 @@ Eigen::Vector3d WalkingPatternGenerator::computeDCM_ini_i(const Eigen::Vector3d 
 }
 
 void WalkingPatternGenerator::computeDCM_states(){ 
-  std::cout << "size of rvrp list = " << rvrp_list.size() << std::endl;
+  // std::cout << "size of rvrp list = " << rvrp_list.size() << std::endl;
 
   // Use backwards recursion to compute the initial and final dcm states
   double t_step = 0.0;
@@ -183,7 +209,11 @@ double WalkingPatternGenerator::get_t_step(const int & step_i){
   if ((rvrp_type_list[step_i]) == DOUBLE_SUPPORT_TRANSFER_VRP_TYPE){
     return t_ds;
   }else if (rvrp_type_list[step_i] == SWING_VRP_TYPE){
-    return t_ds + t_ss;
+    if (step_i == (rvrp_type_list.size() - 1)){
+      return t_ss; // If this is the last step, use the swing time
+    }else{
+      return t_ds + t_ss; // Otherwise perform a double support transfer as well
+    }
   }else{
     return t_ds + t_ss;
   }
@@ -299,19 +329,23 @@ void WalkingPatternGenerator::compute_trajectory_lists(){
   int N_swing = int(t_ss/dt);
   int N_DS = int(t_ds/dt);
 
-  std::cout << "t_trajectory = " << t_trajectory << std::endl;
-  std::cout << "dt = " << dt << std::endl;
-  std::cout << "N_size = " << N_size << std::endl;
-  std::cout << "N_swing = " << N_swing << std::endl;
-  std::cout << "N_DS = " << N_DS << std::endl;
+  // std::cout << "t_trajectory = " << t_trajectory << std::endl;
+  // std::cout << "dt = " << dt << std::endl;
+  // std::cout << "N_size = " << N_size << std::endl;
+  // std::cout << "N_swing = " << N_swing << std::endl;
+  // std::cout << "N_DS = " << N_DS << std::endl;
 
   for(int i = 0; i < rvrp_type_list.size(); i++){
-    // If it's a swing, there is always a double support phase
+    // If it's a swing, there is always a double support phase except for the last step
     if (rvrp_type_list[i] == SWING_VRP_TYPE){
       // Use single support time in swing phase
       state_list.push_back(STATE_SWING);
       bin_size_list.push_back(N_swing);
       running_bin_size += N_swing;
+      // If this is the last step, don't add a double support phase
+      if (i == (rvrp_type_list.size() - 1)){
+        continue;
+      }
       // Use double support time in double support phase
       state_list.push_back(STATE_DOUBLE_SUPPORT);
       bin_size_list.push_back(N_DS);
@@ -348,25 +382,59 @@ void WalkingPatternGenerator::compute_com_dcm_trajectory(const Eigen::Vector3d &
   double t_prev = 0.0;
   double dt = internal_dt;
 
-  for(int i = 0; i < N_size; i++){
-    // x_post = dx*dt + x_pre
-    t = dt*i;
-    com_pos = get_com_vel(com_pos, step_index, t-t_prev)*dt + com_pos;
-    dcm_pos = get_desired_DCM(step_index, t-t_prev);
-    // Check if t-t_prev exceeded the current t_step and if we can increment the step index
-    if ( ((t-t_prev) >= t_step) && (step_index < rvrp_type_list.size()-1) ){
-      step_index++;
-      t_prev = t;
-      t_step = get_t_step(step_index);        
+  // Always try to compute CoM finely. Also, ensure that we follow the desired discretization
+  double dt_local = 1e-3; // Use this discretization for integrating the CoM
+  int N_local = int(get_total_trajectory_time()/dt_local);
+  int j = 0;
+
+  // In case N_size is larger than N_local: 
+  if (N_size > N_local){
+    // Compute using N_size as the discretization. This is rarely the case
+    for(int i = 0; i < N_size; i++){
+      // x_post = dx*dt + x_pre
+      t = dt*i;
+      com_pos = get_com_vel(com_pos, step_index, t-t_prev)*dt + com_pos;
+      dcm_pos = get_desired_DCM(step_index, t-t_prev);
+      // Check if t-t_prev exceeded the current t_step and if we can increment the step index
+      if ( ((t-t_prev) >= t_step) && (step_index < rvrp_type_list.size()-1) ){
+        step_index++;
+        t_prev = t;
+        t_step = get_t_step(step_index);        
+      }
+
+        // std::cout << com_pos.transpose() << std::endl;
+        // Store the CoM position
+        traj_pos_com.set_pos(i, com_pos);
+        traj_dcm_pos.set_pos(i, dcm_pos);  
     }
+  }else{
+    // Compute with a more fine integration of the CoM. This is usually the case
+    for(int i = 0; i < N_local; i++){
+      if (j < N_size){
+        // x_post = dx*dt + x_pre
+        t = dt_local*i;
+        com_pos = get_com_vel(com_pos, step_index, t-t_prev)*dt_local + com_pos;
+        dcm_pos = get_desired_DCM(step_index, t-t_prev);
+        // Check if t-t_prev exceeded the current t_step and if we can increment the step index
+        if ( ((t-t_prev) >= t_step) && (step_index < rvrp_type_list.size()-1) ){
+          step_index++;
+          t_prev = t;
+          t_step = get_t_step(step_index);        
+        }
 
-    std::cout << com_pos.transpose() << std::endl;
-    // Store the CoM position
-    traj_pos_com.set_pos(i, com_pos);
-    traj_dcm_pos.set_pos(i, dcm_pos);
-
+        // Store the COM position at the desired discretization
+        if (i % (N_local/N_size) == 0){
+          // std::cout << com_pos.transpose() << std::endl;
+          traj_pos_com.set_pos(j, com_pos);
+          traj_dcm_pos.set_pos(j, dcm_pos);
+          j++;      
+        }
+      }
+      else{
+        break;
+      }
+    }
   }
-
 
 
 }
@@ -386,7 +454,7 @@ void WalkingPatternGenerator::compute_pelvis_orientation_trajectory(const Eigen:
   int trajectory_index = 0;
   int step_counter = 0;
 
-  std::cout << "Pelvis Ori Length = " << traj_ori_pelvis.get_trajectory_length() << std::endl;
+  // std::cout << "Pelvis Ori Length = " << traj_ori_pelvis.get_trajectory_length() << std::endl;
 
   // Go through each state and compute pelvis orientation trajectory
   for(int state_index = 0; state_index < state_list.size(); state_index++){

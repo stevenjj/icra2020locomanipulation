@@ -1,13 +1,13 @@
 #include <avatar_locomanipulation/tasks/task.hpp>
 
 Task::Task(){}
-Task::Task(std::shared_ptr<ValkyrieModel> & input_model){
+Task::Task(std::shared_ptr<RobotModel> & input_model){
 	robot_model = input_model;
 	std::cout << "[Task] Constructed" << std::endl;
 }
 
 Task::~Task(){
-	std::cout << "[Task] " << task_name << " Destroyed" << std::endl;
+	// std::cout << "[Task] " << task_name << " Destroyed" << std::endl;
 }
 
 // Get Task Jacobians
@@ -33,18 +33,17 @@ void Task::setReference(const Eigen::VectorXd & vec_ref_in, const Eigen::Quatern
 
 
 // Get Task References
-void Task::getRef(Eigen::VectorXd & vec_ref_out){
-	std::cout << "Warning! Task " << task_name << " has no getRef(vec_ref_out)" << " implementation" << std::endl;
+void Task::getReference(Eigen::VectorXd & vec_ref_out){
+	std::cout << "Warning! Task " << task_name << " has no getReference(vec_ref_out)" << " implementation" << std::endl;
 }
 
-void Task::getRef(Eigen::VectorXd & vec_ref_out, Eigen::Quaterniond & quat_ref_out){
-	std::cout << "Warning! Task " << task_name << " has no getRef(vec_ref_out, quat_ref_out)" << " implementation" << std::endl;
+void Task::getReference(Eigen::VectorXd & vec_ref_out, Eigen::Quaterniond & quat_ref_out){
+	std::cout << "Warning! Task " << task_name << " has no getReference(vec_ref_out, quat_ref_out)" << " implementation" << std::endl;
 }
 
-void Task::getRef(Eigen::Quaterniond & quat_ref_out){
-	std::cout << "Warning! Task " << task_name << " has no getRef(quat_ref_out)" << " implementation" << std::endl;
+void Task::getReference(Eigen::Quaterniond & quat_ref_out){
+	std::cout << "Warning! Task " << task_name << " has no getReference(quat_ref_out)" << " implementation" << std::endl;
 }
-
 
 
 // Computes the error for a given reference
@@ -60,4 +59,9 @@ void Task::getError(Eigen::VectorXd & error_out, bool compute){
 // Sets the task error manually
 void Task::setError(const Eigen::VectorXd & error_in){
 	std::cout << "Warning! Task " << task_name << " has no setError(error)" << " implementation" << std::endl;
+}
+
+// Set the Task's kp gain value. Default = 1.0;
+void Task::setTaskGain(const double & kp_task_gain_in){
+	kp_task_gain_ = kp_task_gain_in;
 }

@@ -5,7 +5,7 @@
 
 class TaskStack: public Task{
 public:
-	TaskStack(std::shared_ptr<ValkyrieModel> & input_model, const std::vector< std::shared_ptr<Task> > & task_list_input);
+	TaskStack(std::shared_ptr<RobotModel> & input_model, const std::vector< std::shared_ptr<Task> > & task_list_input);
 
 	virtual ~TaskStack();
 
@@ -19,6 +19,11 @@ public:
 	//  		robot_model->computeCoMJacobianDot(q, qdot);
 	//			must have been called first	
 	virtual void getTaskJacobianDot(Eigen::MatrixXd & Jdot_task);
+
+	// Computes the error for a given reference
+	virtual void computeError();
+	// Gets the current error
+	virtual void getError(Eigen::VectorXd & error_out, bool compute=true);
 
 	std::vector< std::shared_ptr<Task> > task_list;
 	std::vector< Eigen::MatrixXd > vec_Jtmp;

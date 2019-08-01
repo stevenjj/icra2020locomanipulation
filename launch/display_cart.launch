@@ -3,12 +3,12 @@
   <arg name="gui" default="true" />
 
 
- <param name="robot_description" textfile="$(find avatar_locomanipulation)/models/test_cart.urdf" /> 
+  <param name="robot_description" textfile="$(find avatar_locomanipulation)/models/test_cart.urdf" /> 
   <param name="use_gui" value="$(arg gui)"/>
 
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
-  
+
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find avatar_locomanipulation)/launch/rviz/cart_viz.rviz" required="true" /> 
 
 

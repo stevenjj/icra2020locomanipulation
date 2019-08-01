@@ -6,7 +6,7 @@
     <arg name="use_static_transform" default="True" />  
 
     <group ns="val_ik_robot">
-      <param name="robot_description" textfile="$(find avatar_locomanipulation)/models/valkyrie_simplified.urdf" />        
+      <param name="robot_description" textfile="$(find avatar_locomanipulation)/models/valkyrie_simplified_collisions.urdf" />        
       <param name="use_gui" value="$(arg gui)"/>
 
       <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
@@ -20,7 +20,7 @@
 
 
     <group ns="val_robot">
-      <param name="robot_description" textfile="$(find avatar_locomanipulation)/models/valkyrie_simplified.urdf" />        
+      <param name="robot_description" textfile="$(find avatar_locomanipulation)/models/valkyrie_simplified_collisions.urdf" />        
       <param name="use_gui" value="$(arg gui)"/>
 
       <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">

@@ -4,7 +4,7 @@
 // Import ROS and Rviz visualization
 #include <ros/ros.h>
 #include <avatar_locomanipulation/bridge/val_rviz_translator.hpp>
-#include <avatar_locomanipulation/models/valkyrie_model.hpp>
+#include <avatar_locomanipulation/models/robot_model.hpp>
 #include "visualization_msgs/Marker.h"
 #include "geometry_msgs/PoseStamped.h"
 #include <tf/transform_listener.h>
@@ -37,8 +37,12 @@ int main(int argc, char **argv){
 	sensor_msgs::JointState joint_msg_end; 
 	visualization_msgs::Marker box_msg;
 
-	// Initialize Robot Model
-	ValkyrieModel valkyrie;
+	std::cout << "Initialize Valkyrie Model" << std::endl;
+	std::string filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
+	std::string srdf_filename = THIS_PACKAGE_PATH"models/valkyrie_disable_collisions.srdf";
+	std::string meshDir  = THIS_PACKAGE_PATH"../val_model/";
+
+ 	RobotModel valkyrie(filename, meshDir, srdf_filename);
 	Eigen::VectorXd  q_start(valkyrie.getDimQ()); q_start.setZero();
 	Eigen::VectorXd  q_end(valkyrie.getDimQ()); q_end.setZero();
 

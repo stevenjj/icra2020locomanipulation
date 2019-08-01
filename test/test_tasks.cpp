@@ -1,14 +1,17 @@
-#include <avatar_locomanipulation/models/valkyrie_model.hpp>
+#include <avatar_locomanipulation/models/robot_model.hpp>
 #include <avatar_locomanipulation/tasks/task.hpp>
 #include <avatar_locomanipulation/tasks/task_com.hpp>
 #include <avatar_locomanipulation/tasks/task_6dpose.hpp>
 #include <avatar_locomanipulation/tasks/task_3dorientation.hpp>
 #include <avatar_locomanipulation/tasks/task_joint_config.hpp>
 #include <avatar_locomanipulation/tasks/task_stack.hpp>
+#include <avatar_locomanipulation/tasks/task_6dcontact_normal.hpp>
+#include <avatar_locomanipulation/tasks/task_4dcontact_normal.hpp>
+#include <avatar_locomanipulation/tasks/task_contact_normal.hpp>
 
 #include <iostream>
 
-void get_initial_configuration(const std::shared_ptr<ValkyrieModel> & valkyrie, Eigen::VectorXd & q_start){
+void get_initial_configuration(const std::shared_ptr<RobotModel> & valkyrie, Eigen::VectorXd & q_start){
   q_start = Eigen::VectorXd::Zero(valkyrie->getDimQ());
 
   double theta = 0.0; //M_PI/4.0;
@@ -25,7 +28,7 @@ void get_initial_configuration(const std::shared_ptr<ValkyrieModel> & valkyrie, 
   q_start[valkyrie->getJointIndex("leftKneePitch")] = 0.6;
   q_start[valkyrie->getJointIndex("rightKneePitch")] = 0.6;
   q_start[valkyrie->getJointIndex("leftAnklePitch")] = -0.3;
-  q_start[valkyrie->getJointIndex("rightAnklePitch")] = -0.3;
+  q_start[valkyrie->getJointIndex("rightAnklePitch")] = 0.0;//-0.3;
 
   q_start[valkyrie->getJointIndex("rightShoulderPitch")] = -0.2;
   q_start[valkyrie->getJointIndex("rightShoulderRoll")] = 1.1;
@@ -42,7 +45,10 @@ void get_initial_configuration(const std::shared_ptr<ValkyrieModel> & valkyrie, 
 }
 
 int main(int argc, char ** argv){
-	std::shared_ptr<ValkyrieModel> valkyrie_model(new ValkyrieModel());
+
+  std::string filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf"; 
+	std::shared_ptr<RobotModel> valkyrie_model(new RobotModel(filename));
+
   Eigen::VectorXd q_start;
   Eigen::VectorXd qdot_start = Eigen::VectorXd::Zero(valkyrie_model->getDimQdot());
   Eigen::VectorXd qddot_start = Eigen::VectorXd::Zero(valkyrie_model->getDimQdot());
@@ -53,6 +59,13 @@ int main(int argc, char ** argv){
   std::shared_ptr<Task> lfoot_task(new Task6DPose(valkyrie_model, "leftCOP_Frame"));
   std::shared_ptr<Task> pelvis_ori_task(new Task3DOrientation(valkyrie_model, "pelvis"));
   std::shared_ptr<Task> joint_config_task(new TaskJointConfig(valkyrie_model, {"leftHipYaw", "leftHipRoll"}));
+
+  Eigen::Vector3d plane_normal(0,0,10);
+  Eigen::Vector3d plane_center(5,0,0);  
+  std::shared_ptr<Task> rfoot_planar_contact_task(new Task6DContactNormalTask(valkyrie_model, "rightCOP_Frame", plane_normal, plane_center));
+  std::shared_ptr<Task> rfoot_planar_4dcontact_task(new Task4DContactNormalTask(valkyrie_model, "rightCOP_Frame", plane_normal, plane_center));
+  std::shared_ptr<Task> rfoot_planar_contact_normal_task(new TaskContactNormalTask(valkyrie_model, "rightCOP_Frame", plane_normal, plane_center));
+
 
   std::shared_ptr<Task> task_stack(new TaskStack(valkyrie_model, {com_task, lfoot_task, pelvis_ori_task, joint_config_task}));
 
@@ -74,7 +87,12 @@ int main(int argc, char ** argv){
   Eigen::MatrixXd J_pelvis_ori = Eigen::MatrixXd::Zero(pelvis_ori_task->task_dim, valkyrie_model->getDimQdot());
   Eigen::MatrixXd J_joint_config = Eigen::MatrixXd::Zero(joint_config_task->task_dim, valkyrie_model->getDimQdot());
   Eigen::MatrixXd J_stack = Eigen::MatrixXd::Zero(task_stack->task_dim, valkyrie_model->getDimQdot());
+  Eigen::MatrixXd J_4dcontact = Eigen::MatrixXd::Zero(rfoot_planar_4dcontact_task->task_dim, valkyrie_model->getDimQdot());
+  Eigen::MatrixXd J_normal_contact = Eigen::MatrixXd::Zero(rfoot_planar_contact_normal_task->task_dim, valkyrie_model->getDimQdot());
 
+  rfoot_planar_contact_task->computeError();
+  rfoot_planar_4dcontact_task->computeError();
+  rfoot_planar_contact_normal_task->computeError();
 
   com_task->getTaskJacobian(J_com);
   std::cout << "COM Jacobian" << std::endl;
@@ -95,6 +113,15 @@ int main(int argc, char ** argv){
   task_stack->getTaskJacobian(J_stack);
   std::cout << "Stacked Jacobian" << std::endl;
   std::cout << J_stack << std::endl;  
+
+  rfoot_planar_4dcontact_task->getTaskJacobian(J_4dcontact);
+  std::cout << "4D contact Jacobian" << std::endl;
+  std::cout << J_4dcontact << std::endl;  
+
+  rfoot_planar_contact_normal_task->getTaskJacobian(J_normal_contact);
+  std::cout << "Contact Normal Jacobian" << std::endl;
+  std::cout << J_normal_contact << std::endl;  
+
 
 	// Compute Derivatives
 	valkyrie_model->updateKinematicsDerivatives(q_start, qdot_start, qddot_start);
