@@ -248,13 +248,13 @@ namespace planner{
 
 		double distance;
 
-		double left_foot_transition_cost = sqrt(pow(current_->xLF - neighbor_->xLF,2) + pow(current_->yLF - neighbor_->yLF,2) + 0.0*pow(current_->thetaLF - neighbor_->thetaLF,2)); 
-		double right_foot_transition_cost = sqrt(pow(current_->xRF - neighbor_->xRF,2) + pow(current_->yRF - neighbor_->yRF,2) + 0.0*pow(current_->thetaRF - neighbor_->thetaRF,2)); 
+		double left_foot_transition_cost = sqrt(pow(current_->xLF - neighbor_->xLF,2) + pow(current_->yLF - neighbor_->yLF,2) + pow(current_->thetaLF - neighbor_->thetaLF,2)); 
+		double right_foot_transition_cost = sqrt(pow(current_->xRF - neighbor_->xRF,2) + pow(current_->yRF - neighbor_->yRF,2) + pow(current_->thetaRF - neighbor_->thetaRF,2)); 
 
 		if ((left_foot_transition_cost > 0.01) || (right_foot_transition_cost > 0.01)){
 			distance = 100 + (neighbor_->s -  current_->s);// ; // left_foot_transition_cost + right_foot_transition_cost + (1 - neighbor_->s);			
 		}else{
-			distance = (neighbor_->s -  current_->s);// ; // left_foot_transition_cost + right_foot_transition_cost + (1 - neighbor_->s);
+			distance = (1 - neighbor_->s);// ; // left_foot_transition_cost + right_foot_transition_cost + (1 - neighbor_->s);
 		}
 
 		
