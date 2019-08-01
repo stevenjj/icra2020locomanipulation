@@ -224,13 +224,13 @@ void test_load_initial_hand_config(){
   std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_no_fingers.urdf";
   std::shared_ptr<RobotModel> valkyrie_model(new RobotModel(urdf_filename));
 
-  Eigen::VectorXd q_start, q_end;
+  Eigen::VectorXd q_start, q_start_door;
   initialize_config(q_start, valkyrie_model);
 
   // Get the Initial Robot and Door Configuration
   Eigen::Vector3d hinge_position;
   Eigen::Quaterniond hinge_orientation;
-  load_robot_door_configuration(q_end, hinge_position, hinge_orientation);
+  load_robot_door_configuration(q_start_door, hinge_position, hinge_orientation);
 
   // Initialize the manipulation function for manipulating the door
   std::string door_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/door_trajectory.yaml";
@@ -242,7 +242,48 @@ void test_load_initial_hand_config(){
   // Visualize the loaded configuration
   std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
   RVizVisualizer visualizer(ros_node, valkyrie_model);  
-  visualizer.visualizeConfiguration(q_start, q_end);
+  // visualizer.visualizeConfiguration(q_start, q_start_door);
+
+  // Attempt to take a footstep with this configuration
+  // Create the config trajectory object
+  int N_resolution = 60; //single step = 30. two steps = 60// 30* number of footsteps
+  ConfigTrajectoryGenerator ctg(valkyrie_model, N_resolution);
+  valkyrie_model->updateFullKinematics(q_start_door);
+
+  // Create footsteps
+  Footstep footstep_1; footstep_1.setLeftSide();
+  Footstep footstep_2; footstep_2.setRightSide();
+
+  valkyrie_model->getFrameWorldPose("leftCOP_Frame", footstep_1.position, footstep_1.orientation);  
+  valkyrie_model->getFrameWorldPose("rightCOP_Frame", footstep_2.position, footstep_2.orientation);  
+  footstep_2.position[0] -= 0.1;
+  footstep_1.position[0] -= 0.1;
+  std::vector<Footstep> input_footstep_list = {footstep_1, footstep_2};
+
+
+  // Get current hand pose
+  Eigen::Vector3d rhand_pos;
+  Eigen::Quaterniond rhand_ori;
+  valkyrie_model->getFrameWorldPose("rightPalm", rhand_pos, rhand_ori);  
+  // Set Constant Right Hand trajectory to current //To do. set task gain for hand to be small in orientation
+  ctg.setConstantRightHandTrajectory(rhand_pos, rhand_ori);
+  ctg.setUseRightHand(true);
+  ctg.setUseTorsoJointPosition(false);
+  ctg.reinitializeTaskStack();
+
+    // timer
+  PinocchioTicToc timer = PinocchioTicToc(PinocchioTicToc::MS);
+
+  // Have fast double support times
+  ctg.wpg.setDoubleSupportTime(0.2);
+  // Set Verbosity
+  ctg.setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_2);
+  // Solve for configurations
+  timer.tic();
+  ctg.computeConfigurationTrajectory(q_start_door, input_footstep_list);
+  std::cout << "IK Trajectory took: " << timer.toc() << timer.unitName(timer.DEFAULT_UNIT) << std::endl;
+  // Visualize Trajectory
+  visualizer.visualizeConfigurationTrajectory(q_start_door, ctg.traj_q_config);
 
 }
 
@@ -315,9 +356,9 @@ void test_walking_config_trajectory_generator(){
 int main(int argc, char ** argv){   
   ros::init(argc, argv, "test_config_trajectory_generator");
   // test_walking_config_trajectory_generator();
-  test_hand_in_place_config_trajectory_generator();
+  // test_hand_in_place_config_trajectory_generator();
   // test_initial_hand_location_stance();
-  // test_load_initial_hand_config();
+  test_load_initial_hand_config();
 
   return 0;
 }
