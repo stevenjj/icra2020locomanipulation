@@ -3,8 +3,9 @@
 
 CubicInterpolationSixDim::CubicInterpolationSixDim(){
 	output.clear();
+	output.reserve(6);
 	for (int i = 0; i < 6; i++){
-		output.push_back(0.0);
+		output[i] = 0.0;
 	}
 }
 
@@ -18,8 +19,12 @@ CubicInterpolationSixDim::CubicInterpolationSixDim(const int & first_waypoint, c
 	std::string waypoint_string("waypoint_");
 	// Holds the waypoints for each dimension
 	std::vector<double> xs, ys, zs, rxs, rys, rzs;
+	xs.reserve(4); ys.reserve(4); zs.reserve(4); 
+	rxs.reserve(4); rys.reserve(4); rzs.reserve(4); 
 	// Temporarily holds waypoints from getNestedValue
 	double x, y, z, rx, ry, rz, rw;
+	// Allows us to index into xs, ys, etc
+	int j=0;
 
 
 	// Grab the waypoint and the following 3 other waypoints' pose data from the yaml file
@@ -29,9 +34,9 @@ CubicInterpolationSixDim::CubicInterpolationSixDim(const int & first_waypoint, c
 		param_handler.getNestedValue({waypoint_string, "y"}, y);
 		param_handler.getNestedValue({waypoint_string, "z"}, z);
 
-		xs.push_back(x);
-		ys.push_back(y);
-		zs.push_back(z);
+		xs[j] = x;
+		ys[j] = y;
+		zs[j] = z;
 
 		param_handler.getNestedValue({waypoint_string, "rx"}, rx);
 		param_handler.getNestedValue({waypoint_string, "ry"}, ry);
@@ -50,10 +55,11 @@ CubicInterpolationSixDim::CubicInterpolationSixDim(const int & first_waypoint, c
 		// convert this to axisangle Vector3d
 		math_utils::convert(quat, axisangle);
 
-		rxs.push_back(axisangle[0]);
-		rys.push_back(axisangle[1]);
-		rzs.push_back(axisangle[2]);
+		rxs[j] = axisangle[0];
+		rys[j] = axisangle[1];
+		rzs[j] = axisangle[2];
 		
+		++j;
 	}
 
 	// Create our 6 CubicInterpolationOneDim Interpolations
@@ -66,8 +72,9 @@ CubicInterpolationSixDim::CubicInterpolationSixDim(const int & first_waypoint, c
 
 	// Initialize output vector of doubles
 	output.clear();
+	output.reserve(6);
 	for (int i = 0; i < 6; i++){
-		output.push_back(0.0);
+		output[i] = 0.0;
 	}
 
 	// std::cout << "[CubicInterpolationSixDim] Created" << std::endl;

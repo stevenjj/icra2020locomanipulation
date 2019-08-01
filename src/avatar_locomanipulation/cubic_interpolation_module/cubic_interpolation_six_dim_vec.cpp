@@ -21,8 +21,7 @@ CubicInterpolationSixDimVec::CubicInterpolationSixDimVec(const std::string & fil
 		six_dim_vec.push_back(temp);
 	}
 
-	// std::cout << "[CubicInterpolationSixDimVec] Created" << std::endl;
-	// std::cout << "six_dim_vec.size() " << six_dim_vec.size() << std::endl;
+	std::cout << "[CubicInterpolationSixDimVec] Created" << std::endl;
 }
 
 
@@ -56,12 +55,6 @@ void CubicInterpolationSixDimVec::evaluate(const double & s_global){
 	}
 
 	convertToQuat();
-
-	// std::cout << "\nx_out:\n" << pos_out[0];
-	// std::cout << "\ny_out:\n" << pos_out[1];
-	// std::cout << "\nz_out:\n" << pos_out[2];
-	// std::cout << "\n rx_out, ry_out, rz_out, rw_out\n(";
-	// math_utils::printQuat(quat_out); 
 
 }
 
