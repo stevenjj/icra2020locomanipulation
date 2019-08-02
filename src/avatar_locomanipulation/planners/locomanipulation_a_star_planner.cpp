@@ -5,6 +5,12 @@ namespace planner{
 	LMVertex::LMVertex(){
 		common_initialization();
 	}
+
+  LMVertex::LMVertex(double s_in){
+    s = s_in;
+    common_initialization();
+  }
+
 	// Destructor
 	LMVertex::~LMVertex(){}
 
@@ -16,8 +22,14 @@ namespace planner{
 		key = (to_string(s) + "-" + to_string(s));	
 	}
 
+  void LMVertex::setRobotConfig(const Eigen::VectorXd & q_input){
+    q_init = q_input;
+  }
+
 	// Constructor
-	LocomanipulationPlanner::LocomanipulationPlanner(){}
+	LocomanipulationPlanner::LocomanipulationPlanner(){
+    generateDiscretization();    
+  }
 	void LocomanipulationPlanner::initializeLocomanipulationVariables(std::shared_ptr<RobotModel> robot_model_in, std::shared_ptr<ManipulationFunction> f_s_in, std::shared_ptr<ConfigTrajectoryGenerator> ctg_in){
 		std::cout << "[LocomanipulationPlanner] Initialized robot model, f_s, and trajectory generation module" << std::endl;
 		robot_model = robot_model_in;
@@ -41,24 +53,45 @@ namespace planner{
 		return true;
 	}
 
+  void LocomanipulationPlanner::generateDiscretization(){
+    delta_s_vals = {0.1};
+    neighbors.reserve(delta_s_vals.size());
+  }
+
 	std::vector< std::shared_ptr<Node> > LocomanipulationPlanner::getNeighbors(shared_ptr<Node> & current){
 		current_ = static_pointer_cast<LMVertex>(current);	
     neighbors.clear();
 
-    if (first_pass){
+    // Check if this is the first time get Neighbors is being evaluated. 
+    bool convergence = false;
+    if (first_node_evaluated){
       parent_ = static_pointer_cast<LMVertex>(current_->parent);
       delta_s =  (current_->s - parent_->s);
-      bool convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
+      convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
                                                                   parent_->s, delta_s, 
                                                                   parent_->q_init, 
                                                                   input_footstep_list);
       std::cout << "Converged?" << (convergence ? "True" : "False") << std::endl;       
+      // If it does not converge, return an empty neighbor list
+      if (!convergence){
+        return neighbors;
+      }
     }else{  
-      // first_pass = true;      
+      first_node_evaluated = true;      
     }
 
-    // neighbors.push_back()
+    // Generate neighbors with lazy evaluation
+    for(int i = 0; i < delta_s_vals.size(); i++){
+      // Create the neighbor
+      shared_ptr<Node> neighbor (std::make_shared<LMVertex>(current_->s + delta_s_vals[i]));
+      // Update the neighbor (probably make this a function to call)
+      neighbor_change = static_pointer_cast<LMVertex>(neighbor);
+      neighbor_change->parent = current;
+      neighbor = static_pointer_cast<Node>(neighbor_change);
 
+      neighbors.push_back(neighbor);
+
+    }
 
 
 		return neighbors;
