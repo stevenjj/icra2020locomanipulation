@@ -19,8 +19,8 @@ namespace planner{
 
 		double s = 0.0;
 		Eigen::VectorXd q_init;
-		Footstep left_foot;
-		Footstep right_foot;
+		bool take_a_step = false;
+		Footstep footstep;
 	
 		void setRobotConfig(const Eigen::VectorXd & q_input);
 		void common_initialization();
@@ -39,6 +39,7 @@ namespace planner{
 
 		virtual std::vector< shared_ptr<Node> > getNeighbors(shared_ptr<Node> & current);
 
+		bool reconstructConfigurationTrajectory();
 		void printPath();
 
 		std::shared_ptr<LMVertex> current_;
@@ -72,8 +73,14 @@ namespace planner{
 		double goal_tol = 0.01;
 		double w_heuristic = 20;
 
-		// robot_config temp
-		Eigen::VectorXd q_tmp;
+		// robot_config temp 
+ 		Eigen::VectorXd q_tmp;
+
+
+ 		// Full path configuration trajectory
+		std::vector< shared_ptr<Node> > forward_order_optimal_path;	
+		TrajEuclidean   path_traj_q_config; 	// Trajectory of configurations q
+
 
 	};
 

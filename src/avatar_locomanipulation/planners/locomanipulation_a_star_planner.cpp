@@ -42,13 +42,79 @@ namespace planner{
 
     // To Do: check that we don't have to run updateFullKinematics before calling getDimQ()
     q_tmp = Eigen::VectorXd::Zero(robot_model->getDimQ());
-
 		f_s = f_s_in;
 		ctg = ctg_in;
+
+    // Initialize rajectory sizes 
+    // double dt_dummy = 1e-3;
+    // path_traj_q_config.set_dim_N_dt(robot_model->getDimQ(), ctg->getDiscretizationSize(), dt_dummy);
 	}
 
 	// Destructor
 	LocomanipulationPlanner::~LocomanipulationPlanner(){}
+
+
+  bool LocomanipulationPlanner::reconstructConfigurationTrajectory(){
+    // Iterate through optimal path backwards. to construct the forward path
+    forward_order_optimal_path.clear();
+    for(int i = (optimal_path.size() - 1); i >= 0; i--){
+      forward_order_optimal_path.push_back( optimal_path[i] );
+    }
+
+    // Reconstruct the configuration trajectory
+    Eigen::VectorXd q_begin = Eigen::VectorXd::Zero(robot_model->getDimQ());
+    Eigen::VectorXd q_end = Eigen::VectorXd::Zero(robot_model->getDimQ());
+    int N_size = ctg->getDiscretizationSize();
+
+    int i_run = 0;
+
+    for(int i = 1; i < forward_order_optimal_path.size(); i++){
+      std::cout << "reconstructing path. i = " << i << std::endl;
+      // Cast Pointers
+      current_ = static_pointer_cast<LMVertex>(optimal_path[i]);
+      parent_ = static_pointer_cast<LMVertex>(current_->parent);
+
+      // Update the input footstep list
+      input_footstep_list.clear();
+      if (current_->take_a_step){
+        input_footstep_list.push_back(current_->footstep);
+      }
+      // Set initial configuration
+      delta_s =  (current_->s - parent_->s);
+
+      bool convergence = false;
+      convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
+                                                                  parent_->s, delta_s, 
+                                                                  parent_->q_init, 
+                                                                 input_footstep_list);
+      // Get the final configuration
+      std::cout << "getting the final configuration" << std::endl;
+      ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_end);
+
+      // Check for convergence. This should work however.
+
+/*
+      if (convergence){
+        std::cout << "constructing the full path" << std::endl;
+        for(int j = 0; j < N_size; j++){
+          // Get the configuration at this local trajectory
+          ctg->traj_q_config.get_pos(j, q_tmp);
+          // Store the trajectory to the global path
+          path_traj_q_config.set_pos(i_run + j, q_tmp);        
+        }
+        // Update i_run
+        i_run += N_size;        
+      }else{
+        return false;
+      }
+*/
+    }
+
+    std::cout << "Configuration Path Reconstruction success " << std::endl;
+    return true;
+
+  }
+
 
 	// Locomanipulation gscore
 	double LocomanipulationPlanner::gScore(const shared_ptr<Node> current, const shared_ptr<Node> neighbor){
@@ -79,10 +145,22 @@ namespace planner{
       std::cout << "within goal tolerance checking for convergence" << std::endl;
       parent_ = static_pointer_cast<LMVertex>(current_->parent);
       delta_s =  (current_->s - parent_->s);
+      // Update the input footstep list
+      input_footstep_list.clear();
+      if (current_->take_a_step){
+        input_footstep_list.push_back(current_->footstep);
+      }
       convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
                                                                   parent_->s, delta_s, 
                                                                   parent_->q_init, 
                                                                  input_footstep_list);
+
+      if (convergence){
+        ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_tmp);
+        std::cout << "goal q_tmp = " << q_tmp.transpose() << std::endl;
+        current_->setRobotConfig(q_tmp);       
+      }
+
     }
 
     std::cout << "goal reached? " << (s_satisfaction && convergence) << std::endl;
@@ -90,7 +168,7 @@ namespace planner{
 	}
 
   void LocomanipulationPlanner::generateDiscretization(){
-    delta_s_vals = {0.04};
+    delta_s_vals = {0.0, 0.04};
     neighbors.reserve(delta_s_vals.size());
   }
 
@@ -106,6 +184,11 @@ namespace planner{
 
       parent_ = static_pointer_cast<LMVertex>(current_->parent);
       delta_s =  (current_->s - parent_->s);
+      // Update the input footstep list
+      input_footstep_list.clear();
+      if (current_->take_a_step){
+        input_footstep_list.push_back(current_->footstep);
+      }
       convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
                                                                   parent_->s, delta_s, 
                                                                   parent_->q_init, 
