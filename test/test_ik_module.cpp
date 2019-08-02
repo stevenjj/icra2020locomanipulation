@@ -15,6 +15,9 @@
 #include <avatar_locomanipulation/tasks/task_6dpose_wrt_frame.hpp>
 
 
+// Test the stance generation
+#include <avatar_locomanipulation/ik_module/valkyrie_stance_generation.hpp>
+
 // Import ROS and Rviz visualization
 #include <ros/ros.h>
 #include <avatar_locomanipulation/bridge/val_rviz_translator.hpp>
@@ -38,14 +41,11 @@ void initialize_config(Eigen::VectorXd & q_init){
   std::string meshDir_  = THIS_PACKAGE_PATH"../val_model/"; 
   RobotModel valkyrie(urdf_filename, meshDir_, srdf_filename);
 
-  std::cout << "test_ik s1" << std::endl;
   // X dimensional state vectors
   Eigen::VectorXd q_start;
 
-  std::cout << "valkyrie.getDimQ(): " << valkyrie.getDimQ() << std::endl;
   // Set origin at 0.0
   q_start = Eigen::VectorXd::Zero(valkyrie.getDimQ());
-  std::cout << "test_ik s2" << std::endl;
   double theta = 0.0;
   Eigen::AngleAxis<double> aa(theta, Eigen::Vector3d(0.0, 0.0, 1.0));
 
@@ -55,7 +55,6 @@ void initialize_config(Eigen::VectorXd & q_init){
   q_start[3] = init_quat.x(); q_start[4] = init_quat.y(); q_start[5] = init_quat.z(); q_start[6] = init_quat.w(); // Set up the quaternion in q
 
   q_start[2] = 1.0; // set z value to 1.0, this is the pelvis location
-  std::cout << "test_ik s3" << std::endl;
 
   q_start[valkyrie.getJointIndex("leftHipPitch")] = -0.3;
   q_start[valkyrie.getJointIndex("rightHipPitch")] = -0.3;
@@ -101,6 +100,67 @@ void getSelectedPostureTaskReferences(std::shared_ptr<RobotModel> valkyrie, std:
   q_ref = q_des;
 }
 
+void test_stance_generation(){
+  std::cout << "[Stance Generation Test]" << std::endl;
+
+  // Initialize starting and ending configurations
+  Eigen::VectorXd q_init, q_sol;
+  initialize_config(q_init);
+
+  // Create IK Module
+  std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_no_fingers.urdf";
+  std::shared_ptr<RobotModel> robot_model(new RobotModel(urdf_filename));
+
+  // Update the model with the initial configuration
+  robot_model->updateFullKinematics(q_init);
+  // Right Hand Pose -------------------------------------------------------
+  Eigen::Vector3d rpalm_des_pos;
+  Eigen::Quaternion<double> rpalm_des_quat;
+  // Set Desired right hand position
+  robot_model->getFrameWorldPose("rightPalm", rpalm_des_pos, rpalm_des_quat);
+  rpalm_des_pos[0] += 0.35;//0.4;//0.35;//0.25;
+  rpalm_des_pos[1] += 0.25;//0.3;//0.25; 
+  rpalm_des_pos[2] += 0.3; 
+  // Set desired right hand orientation
+  Eigen::AngleAxis<double> axis_angle;
+  axis_angle.angle() = (M_PI/2.0);
+  axis_angle.axis() = Eigen::Vector3d(0, 0, 1.0);
+  rpalm_des_quat = axis_angle;
+
+  // Left Hand Pose ---------------------------------------------------------
+  Eigen::Vector3d lpalm_des_pos;
+  Eigen::Quaternion<double> lpalm_des_quat;
+  // Set Desired left hand position
+  robot_model->getFrameWorldPose("leftPalm", lpalm_des_pos, lpalm_des_quat);
+  lpalm_des_pos[0] += 0.35;
+  lpalm_des_pos[1] -= 0.25;
+  lpalm_des_pos[2] += 0.3; 
+  // // Set desired right hand orientation
+  axis_angle.angle() = (M_PI/2.0);
+  axis_angle.axis() = Eigen::Vector3d(0, 0, -1.0);
+  lpalm_des_quat = axis_angle;
+
+  // Initialize the stance generation object
+  ValkyrieStanceGeneration stance_generator(robot_model);
+  // Set the starting configuration
+  stance_generator.setStartingConfig(q_init);
+  // Set desired right hand and enable right hand use
+  stance_generator.setUseRightHand(true);
+  stance_generator.setDesiredRightHandPose(rpalm_des_pos, rpalm_des_quat);
+
+  // Set desired left hand and enable left hand use
+  stance_generator.setUseLeftHand(false);
+  stance_generator.setDesiredLeftHandPose(lpalm_des_pos, lpalm_des_quat);
+
+  // Compute the stance
+  bool convergence = stance_generator.computeStance(q_sol);
+  stance_generator.stance_ik_module.printSolutionResults();
+  std::cout << "Stance Generation Result " << (convergence ? "true": "false") << std::endl;
+  // Visualize Solution:
+  std::cout << "Visualizing solution..." << std::endl;
+  visualize_robot(q_init, q_sol);
+}
+
 
 void testIK_module(){
   std::cout << "[IK Module Test]" << std::endl;
@@ -108,7 +168,12 @@ void testIK_module(){
   initialize_config(q_init);
 
   // Create IK Module
-  IKModule ik_module;
+  std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
+  std::string srdf_filename = THIS_PACKAGE_PATH"models/valkyrie_disable_collisions.srdf";
+  std::string meshDir_  = THIS_PACKAGE_PATH"../val_model/"; 
+  std::shared_ptr<RobotModel> robot_model(new RobotModel(urdf_filename, meshDir_, srdf_filename));
+
+  IKModule ik_module(robot_model);
   ik_module.setInitialConfig(q_init);  
   // Update Robot Kinematics
   ik_module.robot_model->updateFullKinematics(q_init);
@@ -279,6 +344,8 @@ void testIK_module(){
   ik_module.setCheckPrevViolations(true);
 
 
+  ik_module.setEnableInertiaWeighting(false);
+
   // Perform IK  
   int solve_result;
   double total_error_norm;
@@ -290,6 +357,7 @@ void testIK_module(){
   ik_module.printSolutionResults();
 
   // Visualize Solution:
+  std::cout << "Visualizing solution..." << std::endl;
   visualize_robot(q_init, q_sol);
   
 }
@@ -342,6 +410,7 @@ void visualize_robot(Eigen::VectorXd & q_start, Eigen::VectorXd & q_end){
 
 int main(int argc, char ** argv){
   ros::init(argc, argv, "test_ik_module");
+  // test_stance_generation();
   testIK_module();
   return 0;
 }

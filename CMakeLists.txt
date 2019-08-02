@@ -52,11 +52,13 @@ SET (DATA_TYPES_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/data_types/footstep.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/data_types/trajectory_euclidean.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/data_types/trajectory_orientation.cpp
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/data_types/trajectory_SE3.cpp)
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/data_types/trajectory_SE3.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/data_types/manipulation_function.cpp)
 
 
 SET (WALKING_SOURCES
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/walking/walking_pattern_generator.cpp)
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/walking/walking_pattern_generator.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/walking/config_trajectory_generator.cpp)
 
 SET (HELPER_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/hermite_curve.cpp
@@ -72,7 +74,9 @@ SET (HELPER_SOURCES
 )
 
 SET (ROS_BRIDGE_SOURCES
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/bridge/val_rviz_translator.cpp)
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/bridge/val_rviz_translator.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/bridge/rviz_translator.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/bridge/rviz_visualizer.cpp)
 
 SET (FEASIBILITY_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/feasibility/feasibility.cpp)
@@ -81,8 +85,12 @@ SET (TASK_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_com.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_6dpose.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_xdpose.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_6dpose_wrt_midfoot.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_6dpose_wrt_frame.cpp	
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_6dpose_no_rxry.cpp	
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_xyrzpose_wrt_frame.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_xdpose_wrt_frame.cpp		
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_6dcontact_normal.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_4dcontact_normal.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_contact_normal.cpp	
@@ -97,8 +105,19 @@ SET (COLLISION_ENVIRONMENT_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/collision_environment/collision_environment.cpp)
 
 SET (IK_MODULE_SOURCES
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/ik_module/ik_module.cpp)
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/ik_module/ik_module.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/ik_module/valkyrie_stance_generation.cpp)
 
+SET (CUBIC_INTERPOLATION_MODULE_SOURCES
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/cubic_interpolation_module/cubic_interpolation_one_dim.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/cubic_interpolation_module/cubic_interpolation_six_dim.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/cubic_interpolation_module/cubic_interpolation_six_dim_vec.cpp)
+
+
+SET (PLANNER_SOURCES
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/planners/a_star_planner.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/planners/locomanipulation_a_star_planner.cpp
+	)
 
 SET(PROJECT_SOURCES
 	${MODEL_SOURCES}
@@ -109,7 +128,9 @@ SET(PROJECT_SOURCES
 	${FEASIBILITY_SOURCES}
 	${TASK_SOURCES}
 	${COLLISION_ENVIRONMENT_SOURCES}
-	${IK_MODULE_SOURCES})
+	${IK_MODULE_SOURCES}
+	${CUBIC_INTERPOLATION_MODULE_SOURCES}
+	${PLANNER_SOURCES})
 
 # Grab all the libraries
 SET(PROJECT_LIBRARIES

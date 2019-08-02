@@ -63,12 +63,12 @@
 	<disable_collisions link1="rightKneeNearLink" link2="leftHipPitchLink" reason="Never"/>
 	<disable_collisions link1="rightKneeNearLink" link2="rightFoot" reason="Never"/>
 	<disable_collisions link1="rightKneeNearLink" link2="leftFoot" reason="Never"/>
-
-<!-- 	<disable_collisions link1="" link2="" reason="Never"/>
+	<disable_collisions link1="leftHipUpperLink" link2="leftHipPitchLink" reason="Never"/>
+	<disable_collisions link1="leftHipUpperLink" link2="pelvis" reason="Never"/>
+	<disable_collisions link1="rightHipUpperLink" link2="rightHipPitchLink" reason="Never"/>
+	<disable_collisions link1="rightHipUpperLink" link2="pelvis" reason="Never"/>
 	<disable_collisions link1="" link2="" reason="Never"/>
-	<disable_collisions link1="" link2="" reason="Never"/>
-	<disable_collisions link1="" link2="" reason="Never"/>
-	<disable_collisions link1="" link2="" reason="Never"/>
+	<!-- 
 	<disable_collisions link1="" link2="" reason="Never"/>
 	<disable_collisions link1="" link2="" reason="Never"/>
 	<disable_collisions link1="" link2="" reason="Never"/> -->
