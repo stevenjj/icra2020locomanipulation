@@ -297,7 +297,7 @@ void test_door_open_config_trajectory(){
 
   std::cout << "IK Trajectory took: " << timer.toc() << timer.unitName(timer.DEFAULT_UNIT) << std::endl;
   // Visualize Trajectory
-  visualizer.visualizeConfigurationTrajectory(q_start_door, ctg.traj_q_config);
+  visualizer.visualizeConfigurationTrajectory(f_s_manipulate_door, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, q_start_door, ctg.traj_q_config);
 
 }
 
