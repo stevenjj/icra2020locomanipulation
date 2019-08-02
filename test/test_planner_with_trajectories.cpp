@@ -176,8 +176,11 @@ void test_LM_planner(){
   // Initialize
   lm_planner.initializeLocomanipulationVariables(valkyrie_model, f_s_manipulate_door, ctg);
 
-  shared_ptr<Node> starting_vertex (std::make_shared<LMVertex>());    
-  shared_ptr<Node> goal_vertex (std::make_shared<LMVertex>());
+  // 
+  double s_init = 0.0;
+  double s_goal = 0.08;
+  shared_ptr<Node> starting_vertex (std::make_shared<LMVertex>(s_init, q_start_door));    
+  shared_ptr<Node> goal_vertex (std::make_shared<LMVertex>(s_goal));
 
   lm_planner.setStartNode(starting_vertex);
   lm_planner.setGoalNode(goal_vertex);

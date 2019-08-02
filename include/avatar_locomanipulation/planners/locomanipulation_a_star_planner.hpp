@@ -14,6 +14,7 @@ namespace planner{
 		virtual ~LMVertex(); // Destructor
 
 		// Problem specific:
+		LMVertex(double s_in, Eigen::VectorXd & q_init_in); // Constructor
 		LMVertex(double s_in); // Constructor
 
 		double s = 0.0;
@@ -67,6 +68,12 @@ namespace planner{
 		std::shared_ptr<LMVertex> parent_;
 		std::shared_ptr<LMVertex> neighbor_change;
 
+		//goal reached member variables
+		double goal_tol = 0.01;
+		double w_heuristic = 20;
+
+		// robot_config temp
+		Eigen::VectorXd q_tmp;
 
 	};
 
