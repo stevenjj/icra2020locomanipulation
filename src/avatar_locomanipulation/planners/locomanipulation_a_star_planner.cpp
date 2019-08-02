@@ -45,9 +45,7 @@ namespace planner{
 		f_s = f_s_in;
 		ctg = ctg_in;
 
-    // Initialize rajectory sizes 
-    // double dt_dummy = 1e-3;
-    // path_traj_q_config.set_dim_N_dt(robot_model->getDimQ(), ctg->getDiscretizationSize(), dt_dummy);
+
 	}
 
 	// Destructor
@@ -66,12 +64,16 @@ namespace planner{
     Eigen::VectorXd q_end = Eigen::VectorXd::Zero(robot_model->getDimQ());
     int N_size = ctg->getDiscretizationSize();
 
-    int i_run = 0;
 
+    // Initialize the full trajectory size
+    double dt_dummy = 1e-3;
+    path_traj_q_config.set_dim_N_dt(robot_model->getDimQ(), N_size*(optimal_path.size()-1), dt_dummy);
+
+    int i_run = 0;
     for(int i = 1; i < forward_order_optimal_path.size(); i++){
       std::cout << "reconstructing path. i = " << i << std::endl;
       // Cast Pointers
-      current_ = static_pointer_cast<LMVertex>(optimal_path[i]);
+      current_ = static_pointer_cast<LMVertex>(forward_order_optimal_path[i]);
       parent_ = static_pointer_cast<LMVertex>(current_->parent);
 
       // Update the input footstep list
@@ -92,8 +94,6 @@ namespace planner{
       ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_end);
 
       // Check for convergence. This should work however.
-
-/*
       if (convergence){
         std::cout << "constructing the full path" << std::endl;
         for(int j = 0; j < N_size; j++){
@@ -107,8 +107,12 @@ namespace planner{
       }else{
         return false;
       }
-*/
+
     }
+
+    // To do: update the dt properly for each segment of the trajectory. For now  set a desired dt for visualization
+    path_traj_q_config.set_dt(0.05);  // seconds   
+
 
     std::cout << "Configuration Path Reconstruction success " << std::endl;
     return true;

@@ -192,13 +192,12 @@ void test_LM_planner(){
     lm_planner.constructPath();
     std::cout << "Path has size: " << lm_planner.optimal_path.size() << std::endl;
     std::cout << "reconstructing the total trajectory" << std::endl;
-    // lm_planner.reconstructConfigurationTrajectory();
+    lm_planner.reconstructConfigurationTrajectory();
 
     // Visualize the trajectory:
-    // std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
-    // RVizVisualizer visualizer(ros_node, valkyrie_model);  
-    // visualizer.visualizeConfigurationTrajectory(q_start_door, lm_planner.path_traj_q_config);
-
+    std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
+    RVizVisualizer visualizer(ros_node, valkyrie_model);  
+    visualizer.visualizeConfigurationTrajectory(q_start_door, lm_planner.path_traj_q_config);
 
   }
 
@@ -230,10 +229,10 @@ void test_planner(){
 }
 
 int main(int argc, char ** argv){   
+  ros::init(argc, argv, "test_planner_with_trajectories");
   test_LM_planner();
 
   // test_planner();
-  // ros::init(argc, argv, "test_planner_with_trajectories");
   // test_door_open_config_trajectory();
  
   return 0;
