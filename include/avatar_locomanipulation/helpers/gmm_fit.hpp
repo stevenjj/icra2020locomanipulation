@@ -6,6 +6,8 @@
 #include <time.h>
 #include <stdlib.h>
 #include <iostream>
+#include <avatar_locomanipulation/helpers/pseudo_inverse.hpp>
+
 
 class GMMFit{
 public:
@@ -44,6 +46,7 @@ public:
   double llh_init = 0;
   double llh_prev_init = 0;
   double num_iter = 100;
+  double svd_tol = 1e-4;// Tolerance for the SVD when finding the pseudoinverse and the determinant
 
   GMMFit();
   GMMFit(const std::vector<Eigen::VectorXd> & data_in, const int & num_clus_in);
@@ -55,10 +58,11 @@ public:
   void setData(const std::vector<Eigen::VectorXd> & data_in); // This function lets you input a list of datums yourself, it does not work with the normalization routine (so don't use this one if you can avoid it)
   double multivariateGuassian(Eigen::VectorXd & x, Eigen::VectorXd & mu, Eigen::MatrixXd & Sigma); //This function is just the multivariate gaussian calc.
   double multivariateGuassian(Eigen::VectorXd & x, int cluster_index);
-  
+
   void expectStep(); // expect step of the EM alg
   void setIter(const int & iter_in);
   void setTol(const double & tol_in);
+  void setSVDTol(const double & svd_tol_in); // Sets the singular value threshold to use when computing the pseudo inverse and determinant
   void maxStep(); // maximization step of the EM alg
   double logLike(); // calculates the log likelihood for the EM alg
   void expectationMax(); // runs the full EM alg after being given data

@@ -107,8 +107,23 @@ void GMMFit::maxStep(){
     }
     list_of_Sigmas[k] = sig_sum/n[k];
     // Take Sigma Inverse and store its determinant
-    list_of_Sigma_inverses[k] = list_of_Sigmas[k].inverse();
-    list_of_Sigma_determinants[k] = list_of_Sigmas[k].determinant();
+    // list_of_Sigma_inverses[k] = list_of_Sigmas[k].inverse();
+    // list_of_Sigma_determinants[k] = list_of_Sigmas[k].determinant();
+
+    // Find the pseudo inverse and its singular values:
+    std::vector<double> singular_values;
+    math_utils::pseudoInverse(list_of_Sigmas[k], list_of_Sigma_inverses[k], singular_values, svd_tol);
+    //Compute the pseudo determinant using the singular values. Pseudo determinant is the product of non-zero singular values:
+    double detSig = 1.0;
+    for(int j = 0; j < singular_values.size(); j++){
+      if (singular_values[j] > svd_tol){
+        detSig *= singular_values[j];
+      }
+    }
+    list_of_Sigma_determinants[k] = detSig;
+    // Done Update
+
+
   }
 }
 
@@ -265,3 +280,7 @@ void GMMFit::setIter(const int & num_iter_in){
 void GMMFit::setTol(const double & tol_in){
   tol = tol_in;
 }
+
+void GMMFit::setSVDTol(const double & svd_tol_in){
+  svd_tol = svd_tol_in;
+} 

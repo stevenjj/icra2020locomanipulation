@@ -11,6 +11,27 @@ namespace math_utils{
     pseudoInverse(A, svdDecomposition, Apinv, tolerance, computationOptions);
   }
   
+
+
+
+  void pseudoInverse(const Eigen::MatrixXd & A,
+                     Eigen::MatrixXd & Apinv,
+                     std::vector<double> & singular_values,
+                     double tolerance,
+                     unsigned int computationOptions){
+    Eigen::JacobiSVD<Eigen::MatrixXd> svdDecomposition(A.rows(), A.cols());
+    pseudoInverse(A, svdDecomposition, Apinv, tolerance, computationOptions);    
+    // Also return the truncated singular values:
+    using namespace Eigen;
+    JacobiSVD<MatrixXd>::SingularValuesType singularValues = svdDecomposition.singularValues();
+    long int singularValuesSize = singularValues.size();
+    singular_values.clear(); // also store singular values
+    for (long int idx = 0; idx < singularValuesSize; idx++) {
+      singular_values.push_back(singularValues(idx));
+    }
+
+  }
+
   void pseudoInverse(const Eigen::MatrixXd & A,
                      Eigen::JacobiSVD<Eigen::MatrixXd> & svdDecomposition,
                      Eigen::MatrixXd & Apinv,
