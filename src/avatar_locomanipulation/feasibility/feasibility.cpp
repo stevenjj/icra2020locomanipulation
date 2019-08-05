@@ -15,6 +15,7 @@ void feasibility::InverseKinematicsTop(const int & maxsteps){
     ComputeTransError(lfoot_des_pos, lfoot_cur_pos, lfoot_pos_error);
     ComputeQuatError(lfoot_des_quat, lfoot_cur_ori, lfoot_ori_error);
     ComputeTransError(com_des_pos, valkyrie.x_com, com_pos_error);
+    ComputeTransError(pelvis_des_pos, pelvis_cur_pos, pelvis_pos_error);
     ComputeQuatError(pelvis_des_quat, pelvis_cur_ori, pelvis_ori_error);
 
 
@@ -24,12 +25,17 @@ void feasibility::InverseKinematicsTop(const int & maxsteps){
     task_error.segment<3>(3) = rfoot_ori_error;
     task_error.segment<3>(6) = lfoot_pos_error;
     task_error.segment<3>(9) = lfoot_ori_error;
-    task_error.segment<3>(12) = com_pos_error;
+    task_error[12] = com_pos_error[0];
+    task_error[13] = com_pos_error[1];
+    task_error[14] = pelvis_pos_error[2];
     task_error.segment<3>(15) = pelvis_ori_error;
 
     // std::cout << task_error.transpose() << std::endl;
 
     ik_error_norm = task_error.norm();
+    if (ik_error_norm < 1e-6){
+      break;
+    }
 
     valkyrie.get6DTaskJacobian("rightCOP_Frame", J_rfoot);
     valkyrie.get6DTaskJacobian("leftCOP_Frame", J_lfoot);
@@ -47,14 +53,17 @@ void feasibility::InverseKinematicsTop(const int & maxsteps){
     J_task.row(11) = J_lfoot.row(5);
     J_task.row(12) = valkyrie.J_com.row(0);
     J_task.row(13) = valkyrie.J_com.row(1);
-    J_task.row(14) = valkyrie.J_com.row(2);
+    // J_task.row(14) = valkyrie.J_com.row(2);
+    // J_task.row(12) = J_pelvis.row(0);
+    // J_task.row(13) = J_pelvis.row(1);
+    J_task.row(14) = J_pelvis.row(2);
     J_task.row(15) = J_pelvis.row(3);
     J_task.row(16) = J_pelvis.row(4);
     J_task.row(17) = J_pelvis.row(5);
 
     dq_change = svd->compute(J_task).solve(task_error);
 
-    valkyrie.forwardIntegrate(q_end, 0.1*dq_change, q_end);
+    valkyrie.forwardIntegrate(q_end, dq_change, q_end);
 
     for (int jj=0; jj<valkyrie.getDimQ(); jj++){
       q_end[jj] = clamp(q_end[jj], lower_lim[jj], upper_lim[jj]);
@@ -62,6 +71,10 @@ void feasibility::InverseKinematicsTop(const int & maxsteps){
 
     // std::cout << ii << " error norm = " << ik_error_norm << std::endl;
   }
+  std::cout << "error norm = " << ik_error_norm << std::endl;
+  // std::cout << "Des Lfoot: " << lfoot_des_pos[0] << " " << lfoot_des_pos[1] << " " << lfoot_des_pos[2] << std::endl;
+  // std::cout << "Des Pel: " << pelvis_des_pos[0] << " " << pelvis_des_pos[1] << " " << pelvis_des_pos[2] << std::endl;
+
   CreateData();
 }
 
@@ -86,7 +99,6 @@ void feasibility::initialize_configuration_top(){
   q_start[valkyrie.getJointIndex("rightKneePitch")] = 0.6;
   q_start[valkyrie.getJointIndex("rightAnklePitch")] = -0.3;
 
-  srand(time(0));
   Eigen::VectorXd q_rand(pinocchio::randomConfiguration(valkyrie.model, lower_lim, upper_lim ));
 
   q_start[valkyrie.getJointIndex("leftAnklePitch")] = q_rand[valkyrie.getJointIndex("leftAnklePitch")];
@@ -127,9 +139,11 @@ void feasibility::initialize_configuration_top(){
 }
 
 void feasibility::initialize_desired_top(){
-  srand(time(0));
+  double theta = 0.0;
+  std::string foot_data = "right";
   rfoot_des_pos.setZero();
   rfoot_des_quat.setIdentity();
+  lfoot_des_quat.setIdentity();
 
   rfoot_cur_pos.setZero();
   rfoot_cur_ori.setIdentity();
@@ -140,16 +154,29 @@ void feasibility::initialize_desired_top(){
 
   lfoot_des_pos.setZero();
 
-  lfoot_des_pos[0] = rand()/((double) RAND_MAX)*0.5-0.15;
-  lfoot_des_pos[1] = rand()/((double) RAND_MAX)*0.2+0.2;
+  if (foot_data == "left"){
+    lfoot_des_pos[0] = generateRandMinMax(for_step_min, for_step_max);
+    lfoot_des_pos[1] = generateRandMinMax(lef_step_min, lef_step_max);
+    lfoot_des_pos[2] = generateRandMinMax(hei_step_min, hei_step_max);
 
+
+    theta = generateRandMinMax(lef_yaw_min, lef_yaw_max);
+    Eigen::AngleAxis<double> aa(theta, Eigen::Vector3d(0.0,0.0,1.0));
+    lfoot_des_quat = aa;
+  } else if (foot_data == "right"){
+    rfoot_des_pos[0] = generateRandMinMax(for_step_min, for_step_max);
+    rfoot_des_pos[1] = generateRandMinMax(rig_step_min, rig_step_max);
+    rfoot_des_pos[2] = generateRandMinMax(hei_step_min, hei_step_max);
+
+    theta = generateRandMinMax(rig_yaw_min, rig_yaw_max);
+    Eigen::AngleAxis<double> aa(theta, Eigen::Vector3d(0.0,0.0,1.0));
+    rfoot_des_quat = aa;
+  } else {
+    std::cout << "Well... if you can't give me good instructions, you probably can't make use of good data anyway." << std::endl;
+  }
   // std::cout << "lfoot_des_pos" << std::endl;
   // std::cout << lfoot_des_pos.transpose() << std::endl;
 
-  lfoot_des_quat.setIdentity();
-  double theta = rand()/((double) RAND_MAX)*0.75-.15;
-  Eigen::AngleAxis<double> aa(theta, Eigen::Vector3d(0.0,0.0,1.0));
-  lfoot_des_quat = aa;
 
   lfoot_cur_pos.setZero();
   lfoot_cur_ori.setIdentity();
@@ -166,7 +193,6 @@ void feasibility::initialize_desired_top(){
 
   // com_des_pos[0] = 0.0;
   // com_des_pos[1] = 0.0;
-  com_des_pos[2] = 1.0;
 
   feasibility::initialize_foot_frames();
   feasibility::PointTrans(lfoot_des_pos, LFOF, LFOF_loc);
@@ -204,9 +230,21 @@ void feasibility::initialize_desired_top(){
 
     // std::cout << "CoM desired Position: " << rand_pt_x << " " << rand_pt_y << std::endl;
 
+    // Too general for our case. :(
     com_des_pos[0] = rand_pt_x;
     com_des_pos[1] = rand_pt_y;
+    com_des_pos[2] = 0;
 
+    // com_des_pos[0] = 0.5 * (lfoot_des_pos[0] + rfoot_des_pos[0]);
+    // com_des_pos[1] = 0.5 * (lfoot_des_pos[1] + rfoot_des_pos[1]);
+    // com_des_pos[2] = rand()/((double) RAND_MAX)*.07+1.03;
+
+    pelvis_des_pos[0] = 0.5 * (lfoot_des_pos[0] + rfoot_des_pos[0]);
+    pelvis_des_pos[1] = 0.5 * (lfoot_des_pos[1] + rfoot_des_pos[1]);
+    pelvis_des_pos[2] = generateRandMinMax(pel_hei_min, pel_hei_max);
+
+    pelvis_cur_pos.setZero();
+    pelvis_pos_error.setZero();
   com_pos_error.setZero();
 
   int task_dim = 18;
@@ -219,6 +257,7 @@ void feasibility::initialize_desired_top(){
   }
 
 feasibility::feasibility(){
+  srand(time(0));
   initialize_lower_limits();
   initialize_upper_limits();
   initialize_configuration_top();
@@ -381,9 +420,12 @@ void feasibility::CreateData() {
   q_data[valkyrie.getJointIndex("lowerNeckPitch")] = 0.0;
   q_data[valkyrie.getJointIndex("neckYaw")] = 0.0;
   q_data[valkyrie.getJointIndex("upperNeckPitch")] = -0.0;
+  valkyrie.updateFullKinematics(q_data);
+  valkyrie.computeCoMPos(q_data);
+  com_cur_pos = valkyrie.x_com;
 }
 
-void feasibility::generateRandomArm(){
+void feasibility::generateRandomRightArm(){
   double theta = M_PI/4.0;
   Eigen::AngleAxis<double> aa(theta, Eigen::Vector3d(0.0, 0.0, 0.0));
 
@@ -419,6 +461,49 @@ void feasibility::generateRandomArm(){
   valkyrie.updateFullKinematics(q_start);
   valkyrie.getFrameWorldPose("rightPalm", rhand_cur_pos, rhand_cur_ori);
 
+}
+
+void feasibility::generateRandomLeftArm(){
+  double theta = M_PI/4.0;
+  Eigen::AngleAxis<double> aa(theta, Eigen::Vector3d(0.0, 0.0, 0.0));
+
+  Eigen::Quaternion<double> init_quat(1.0, 0.0, 0.0, 0.0); //Initialized to remember the w component comes first
+  init_quat = aa;
+
+  q_start = Eigen::VectorXd::Zero(valkyrie.getDimQ());
+
+  q_start[3] = init_quat.x(); q_start[4] = init_quat.y(); q_start[5] = init_quat.z(); q_start[6] = init_quat.w(); // Set up the quaternion in q
+
+  q_start[2] = 1.0; // set z value to 1.0, this is the pelvis location
+
+  q_start[valkyrie.getJointIndex("leftHipPitch")] = -0.3;
+  q_start[valkyrie.getJointIndex("rightHipPitch")] = -0.3;
+  q_start[valkyrie.getJointIndex("leftKneePitch")] = 0.6;
+  q_start[valkyrie.getJointIndex("rightKneePitch")] = 0.6;
+  q_start[valkyrie.getJointIndex("leftAnklePitch")] = -0.3;
+  q_start[valkyrie.getJointIndex("rightAnklePitch")] = -0.3;
+
+  q_start[valkyrie.getJointIndex("leftShoulderPitch")] = -0.2;
+  q_start[valkyrie.getJointIndex("leftShoulderRoll")] = -1.1;
+  q_start[valkyrie.getJointIndex("leftElbowPitch")] = -0.4;
+  q_start[valkyrie.getJointIndex("leftForearmYaw")] = 1.5;
+
+  Eigen::VectorXd q_rand(pinocchio::randomConfiguration(valkyrie.model, lower_lim, upper_lim ));
+  q_start[valkyrie.getJointIndex("leftShoulderPitch")] = q_rand[valkyrie.getJointIndex("leftShoulderPitch")];
+  q_start[valkyrie.getJointIndex("leftShoulderRoll")] = q_rand[valkyrie.getJointIndex("leftShoulderRoll")];
+  q_start[valkyrie.getJointIndex("leftShoulderYaw")] = q_rand[valkyrie.getJointIndex("leftShoulderYaw")];
+  q_start[valkyrie.getJointIndex("leftElbowPitch")] = q_rand[valkyrie.getJointIndex("leftElbowPitch")];
+  q_start[valkyrie.getJointIndex("leftForearmYaw")] = q_rand[valkyrie.getJointIndex("leftForearmYaw")];
+  q_start[valkyrie.getJointIndex("leftWristRoll")] = q_rand[valkyrie.getJointIndex("leftWristRoll")];
+  q_start[valkyrie.getJointIndex("leftWristPitch")] = q_rand[valkyrie.getJointIndex("leftWristPitch")];
+  valkyrie.updateFullKinematics(q_start);
+  valkyrie.getFrameWorldPose("leftPalm", lhand_cur_pos, lhand_cur_ori);
+
+}
+
+double feasibility::generateRandMinMax(const double & min, const double & max){
+  double rand_num =  rand()/((double) RAND_MAX)*(max-min)+min;
+  return rand_num;
 }
 
 // int main(int argc, char ** argv) {
