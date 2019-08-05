@@ -33,7 +33,8 @@ int main(int argc, char ** argv){
   double ry;
   double rz;
 
-  for(int i=1; i<1000; i++){
+  std::string filename;
+  for(int i=0; i<1000; i++){
     fiz.generateRandomLeftArm();
     lhand_cur_pos=fiz.lhand_cur_pos;
     lhand_cur_ori=fiz.lhand_cur_ori;
@@ -45,9 +46,7 @@ int main(int argc, char ** argv){
       data_saver::emit_position(out,"LPalmPos",lhand_cur_pos);
       data_saver::emit_orientation_vector(out,"LPalmOri",lhand_cur_ori_vec);
     out << YAML::EndMap;
-    char filename[64];
-    // filename = "file.yaml"
-    snprintf(filename, sizeof(char)*32, "/home/mihir/lMD/l%d.yaml", i);
+    filename =  std::string(THIS_PACKAGE_PATH) + "../lMD/h" + std::to_string(i) + ".yaml";
     std::ofstream file_output_stream(filename);
     file_output_stream << out.c_str();
   }

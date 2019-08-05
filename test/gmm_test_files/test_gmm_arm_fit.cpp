@@ -33,22 +33,24 @@ int main(int argc, char ** argv){
   gmmfitter.setDim(6);
   gmmfitter.initializeNormalization();
 
+  std::string filename;
+
+  std::cout << "about to read" << std::endl;
   for(int i=0; i<1000; i++){
-    char filename[64];
-    // std::cout << "hello 1" << std::endl;
-    snprintf(filename, sizeof(char)*32, "/home/mihir/lMD/h%d.yaml", i);
-    // std::cout << "hello 2" << std::endl;
+    filename =  std::string(THIS_PACKAGE_PATH) + "../lMD/h" + std::to_string(i) + ".yaml";
+    std::cout << filename << std::endl;
     param_handler.load_yaml_file(filename);
 
+    std::cout << "reading file i = "  << i << std::endl;
     // std::cout << "hello 3" << std::endl;
 
-    param_handler.getNestedValue({"RPalmPos", "x"}, x);
-    param_handler.getNestedValue({"RPalmPos", "y"}, y);
-    param_handler.getNestedValue({"RPalmPos", "z"}, z);
+    param_handler.getNestedValue({"LPalmPos", "x"}, x);
+    param_handler.getNestedValue({"LPalmPos", "y"}, y);
+    param_handler.getNestedValue({"LPalmPos", "z"}, z);
 
-    param_handler.getNestedValue({"RPalmOri", "rx"}, rx);
-    param_handler.getNestedValue({"RPalmOri", "ry"}, ry);
-    param_handler.getNestedValue({"RPalmOri", "rz"}, rz);
+    param_handler.getNestedValue({"LPalmOri", "rx"}, rx);
+    param_handler.getNestedValue({"LPalmOri", "ry"}, ry);
+    param_handler.getNestedValue({"LPalmOri", "rz"}, rz);
 
     datum[0] = x;
     datum[1] = y;
@@ -81,9 +83,9 @@ int main(int argc, char ** argv){
   out1 << YAML::BeginMap;
     data_saver::emit_gmm_normalize(out1, gmmfitter.data_mean, gmmfitter.data_std_dev, list_of_vars);
   out1 << YAML::EndMap;
-  char filename1[64];
-  snprintf(filename1, sizeof(char)*32, "/home/mihir/lMD/norm.yaml");
-  std::ofstream file_output_stream1(filename1);
+  filename =  std::string(THIS_PACKAGE_PATH) + "../lMD/norm.yaml";
+
+  std::ofstream file_output_stream1(filename);
   file_output_stream1 << out1.c_str();
 
   std::vector<Eigen::VectorXd> list_of_mus;
@@ -106,9 +108,8 @@ int main(int argc, char ** argv){
     data_saver::emit_gmm_sigma(out,"Sigma",list_of_Sigmas[i]);
     out << YAML::Key << "Weight" << YAML::Value << alphas[i];
   out << YAML::EndMap;
-  char filename[64];
-  // filename = "file.yaml"
-  snprintf(filename, sizeof(char)*32, "/home/mihir/lMD/gmmR%d.yaml", i);
+
+  filename =  std::string(THIS_PACKAGE_PATH) + "../lMD/gmmL" + std::to_string(i) + ".yaml";
   std::ofstream file_output_stream(filename);
   file_output_stream << out.c_str();
   }
@@ -117,6 +118,6 @@ int main(int argc, char ** argv){
     data_saver::emit_joint_configuration(out,"Max",data_max);
     data_saver::emit_joint_configuration(out,"Min",data_min);
   out << YAML::EndMap;
-  std::ofstream file_output_stream("/home/mihir/lMD/dataminmaxR.yaml");
+  std::ofstream file_output_stream(THIS_PACKAGE_PATH"../lMD/dataminmaxL.yaml");
   file_output_stream << out.c_str();
 }
