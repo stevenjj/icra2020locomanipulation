@@ -18,6 +18,11 @@ public:
   std::vector<Eigen::VectorXd> list_of_datums;
   std::vector<Eigen::VectorXd> list_of_mus;
   std::vector<Eigen::MatrixXd> list_of_Sigmas;
+
+  std::vector<Eigen::MatrixXd> list_of_Sigma_inverses;
+  std::vector<double> list_of_Sigma_determinants;
+
+
   Eigen::VectorXd alphs;
   Eigen::MatrixXd gam;
   Eigen::VectorXd n;
@@ -49,6 +54,8 @@ public:
 
   void setData(const std::vector<Eigen::VectorXd> & data_in); // This function lets you input a list of datums yourself, it does not work with the normalization routine (so don't use this one if you can avoid it)
   double multivariateGuassian(Eigen::VectorXd & x, Eigen::VectorXd & mu, Eigen::MatrixXd & Sigma); //This function is just the multivariate gaussian calc.
+  double multivariateGuassian(Eigen::VectorXd & x, int cluster_index);
+  
   void expectStep(); // expect step of the EM alg
   void setIter(const int & iter_in);
   void setTol(const double & tol_in);

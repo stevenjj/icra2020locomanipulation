@@ -54,19 +54,33 @@ double GMMFit::multivariateGuassian(Eigen::VectorXd & x, Eigen::VectorXd & mu, E
   return p;
 }
 
+double GMMFit::multivariateGuassian(Eigen::VectorXd & x, int cluster_index){
+  double p;
+  double den;
+  double detSig;
+  Eigen::VectorXd x_mu;
+
+  x_mu = x-list_of_mus[cluster_index];
+  detSig = list_of_Sigma_determinants[cluster_index];
+  den = pow(2.0*pi,dim/2.0)*pow(detSig,0.5);
+  p = exp(-0.5*x_mu.transpose() * list_of_Sigma_inverses[cluster_index] * x_mu)/den;
+  return p;
+}
+
+
 void GMMFit::expectStep(){
   double den;
   for(std::size_t i=0; i<num_data; i++) {
     den = 0.0;
     // std::cout << "2" << std::endl;
     for(std::size_t k=0; k<num_clus; k++){
-      den = den+alphs[k]*multivariateGuassian(list_of_datums[i], list_of_mus[k], list_of_Sigmas[k]);
+      den = den+alphs[k]*multivariateGuassian(list_of_datums[i], k);
     }
     // std::cout << "3: " << den << std::endl;
     for(std::size_t k=0; k<num_clus; k++){
-      // std::cout << "p: " << multivariateGuassian(list_of_datums[i], list_of_mus[k], list_of_Sigmas[k]) << std::endl;
+      // std::cout << "p: " << multivariateGuassian(list_of_datums[i], k) << std::endl;
       // std::cout << "alpha: " << alphs[k] << std::endl;
-      gam(i,k) = alphs[k]*multivariateGuassian(list_of_datums[i], list_of_mus[k], list_of_Sigmas[k])/den;
+      gam(i,k) = alphs[k]*multivariateGuassian(list_of_datums[i], k)/den;
       // std::cout << "4" << std::endl;
     }
   }
@@ -92,6 +106,9 @@ void GMMFit::maxStep(){
       sig_sum = sig_sum + gam(i,k) * (list_of_datums[i]-list_of_mus[k])*((list_of_datums[i]-list_of_mus[k]).transpose());
     }
     list_of_Sigmas[k] = sig_sum/n[k];
+    // Take Sigma Inverse and store its determinant
+    list_of_Sigma_inverses[k] = list_of_Sigmas[k].inverse();
+    list_of_Sigma_determinants[k] = list_of_Sigmas[k].determinant();
   }
 }
 
@@ -101,7 +118,7 @@ double GMMFit::logLike(){
   for(std::size_t i=0; i<num_data; i++){
     lh = 0.0;
     for(std::size_t k=0; k<num_clus; k++){
-      lh = lh+alphs[k]*multivariateGuassian(list_of_datums[i], list_of_mus[k], list_of_Sigmas[k]);
+      lh = lh+alphs[k]*multivariateGuassian(list_of_datums[i], k);
     }
     llh = llh + log(lh);
   }
@@ -156,9 +173,17 @@ void GMMFit::randInitialGuess(){
   mu_sum = Eigen::VectorXd::Zero(dim);
   sig_sum = Eigen::MatrixXd::Zero(dim, dim);
   alphs = Eigen::VectorXd::Constant(num_clus, 1.0/num_clus);
+
+  list_of_mus.clear();
+  list_of_Sigmas.clear();
+  list_of_Sigma_inverses.clear();
+  list_of_Sigma_determinants.clear();
+
   for(std::size_t k=0; k<num_clus; k++){
     list_of_mus.push_back(Eigen::VectorXd::Random(dim));
     list_of_Sigmas.push_back(Eigen::MatrixXd::Identity(dim, dim));
+    list_of_Sigma_inverses.push_back(Eigen::MatrixXd::Identity(dim, dim));
+    list_of_Sigma_determinants.push_back(1.0);
   }
 }
 
@@ -209,7 +234,7 @@ void GMMFit::useRawData(){
 double GMMFit::mixtureModelProb(Eigen::VectorXd & x_in){
   double p = 0;
   for(int i=0; i<num_clus; i++){
-    p += alphs[i]*multivariateGuassian(x_in, list_of_mus[i], list_of_Sigmas[i]);
+    p += alphs[i]*multivariateGuassian(x_in, i);
     // std::cout << "x: " << x_in << std::endl;
     // std::cout << "mu: " << list_of_mus[i] << std::endl;
     // std::cout << "sigma: " << list_of_Sigmas[i] << std::endl;
