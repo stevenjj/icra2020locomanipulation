@@ -1,0 +1,9 @@
+# add_executable(test_load_and_viz test_load_and_viz.cpp ${PROJECT_SOURCES})
+# add_executable(test_load_urdf_model test_load_urdf_model.cpp)
+# add_executable(test_rviz_valkyrie test_rviz_valkyrie.cpp ${PROJECT_SOURCES})
+# add_executable(test_valkyrie_model test_valkyrie_model.cpp ${PROJECT_SOURCES})
+
+# target_link_libraries(test_load_and_viz ${PROJECT_LIBRARIES})
+# target_link_libraries(test_load_urdf_model ${PROJECT_LIBRARIES})
+# target_link_libraries(test_rviz_valkyrie ${PROJECT_LIBRARIES})
+# target_link_libraries(test_valkyrie_model  ${PROJECT_LIBRARIES})
