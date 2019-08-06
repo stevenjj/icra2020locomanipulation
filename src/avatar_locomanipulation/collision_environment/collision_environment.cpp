@@ -68,6 +68,10 @@ void CollisionEnvironment::append_models(){
     // temporarily holds the original appended->q_current
     Eigen::VectorXd temp;
     temp = appended->q_current;
+//-----------------------------------------------
+    object->geomModel.addAllCollisionPairs();
+//-----------------------------------------------
+
     // create new temporary appended RobotModel for appendModel output
     std::shared_ptr<RobotModel> app(new RobotModel() );
     // prepare the object for appending
@@ -385,7 +389,8 @@ double CollisionEnvironment::get_collision_potential(){
 
 
 
-void CollisionEnvironment::add_new_object(std::shared_ptr<RobotModel> & obj, const Eigen::VectorXd & q_start){
+void CollisionEnvironment::add_new_object(std::shared_ptr<RobotModel> & obj, const Eigen::VectorXd & q_start,
+                                          const std::string & filename, const std::string & meshDir){
   // Initialize the RobotModel
   object = obj;
   // Set the q_current
@@ -395,6 +400,9 @@ void CollisionEnvironment::add_new_object(std::shared_ptr<RobotModel> & obj, con
   // Update kinematics and geom placements
   object->enableUpdateGeomOnKinematicsUpdate(true);
   object->updateFullKinematics(object->q_current);
+
+  object_filename = filename;
+  object_meshDir = meshDir;
 
   // Tells append_models to add this to end of appended
   first_time = false;

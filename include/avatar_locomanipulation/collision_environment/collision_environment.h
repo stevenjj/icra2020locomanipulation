@@ -21,6 +21,14 @@ private:
   //          double magnitude - magnitude of the vector for use with potential
   DirectedVectors dvector;
 
+  // Set in add_new_object, used in append_models
+  // Allows us to locally store the urdf of the new object for using buildModel
+  // to append the appended->model
+  std::string object_filename;
+  // Set in add_new_object, used in append_models
+  // Allows us to locally store the mesh directory for the object
+  std::string object_meshDir;
+
 
   // a map from collision body names to frame names
   std::map<std::string, std::string> collision_to_frame;
@@ -135,7 +143,8 @@ public:
   // void build_object_directed_vectors(std::string & frame_name, Eigen::VectorXd & q_update);
 
   // Given an object RobotModel and its q_start, appends this and adds it to appended
-  void add_new_object(std::shared_ptr<RobotModel> & obj, const Eigen::VectorXd & q_start);
+  void add_new_object(std::shared_ptr<RobotModel> & obj, const Eigen::VectorXd & q_start,
+                      const std::string & filename, const std::string & meshDir);
 
 
   // // computes collision and outputs any contacts
