@@ -17,7 +17,7 @@ int main(int argc, char ** argv){
   feasibility fiz;
   ParamHandler param_handler;
 
-  int num_clus = 3;
+  int num_clus = 1;
 
   double x;
   double y;
@@ -27,10 +27,10 @@ int main(int argc, char ** argv){
   double rz;
 
   Eigen::VectorXd datum;
-  datum = Eigen::VectorXd::Zero(6);
+  datum = Eigen::VectorXd::Zero(1);
 
   gmmfitter.setNumClusters(num_clus);
-  gmmfitter.setDim(6);
+  gmmfitter.setDim(1);
   gmmfitter.initializeNormalization();
 
   std::string filename;
@@ -46,18 +46,18 @@ int main(int argc, char ** argv){
 
     param_handler.getNestedValue({"LPalmPos", "x"}, x);
     param_handler.getNestedValue({"LPalmPos", "y"}, y);
-    param_handler.getNestedValue({"LPalmPos", "z"}, z);
+    // param_handler.getNestedValue({"LPalmPos", "z"}, z);
 
-    param_handler.getNestedValue({"LPalmOri", "rx"}, rx);
-    param_handler.getNestedValue({"LPalmOri", "ry"}, ry);
-    param_handler.getNestedValue({"LPalmOri", "rz"}, rz);
+    // param_handler.getNestedValue({"LPalmOri", "rx"}, rx);
+    // param_handler.getNestedValue({"LPalmOri", "ry"}, ry);
+    // param_handler.getNestedValue({"LPalmOri", "rz"}, rz);
 
     datum[0] = x;
-    datum[1] = y;
-    datum[2] = z;
-    datum[3] = rx;
-    datum[4] = ry;
-    datum[5] = rz;
+    // datum[1] = y;
+    // datum[2] = z;
+    // datum[3] = rx;
+    // datum[4] = ry;
+    // datum[5] = rz;
 
     gmmfitter.addData(datum);
   }
@@ -76,24 +76,25 @@ int main(int argc, char ** argv){
   double datum_log_cost = 0.0;
   for(int i = 0; i < 1000; i++){
     filename =  std::string(THIS_PACKAGE_PATH) + "../lMD/h" + std::to_string(i) + ".yaml";
+    // std::cout << filename << std::endl;
     param_handler.load_yaml_file(filename);
 
     // std::cout << "reading file i = "  << i << std::endl;
 
     param_handler.getNestedValue({"LPalmPos", "x"}, x);
-    param_handler.getNestedValue({"LPalmPos", "y"}, y);
-    param_handler.getNestedValue({"LPalmPos", "z"}, z);
+    // param_handler.getNestedValue({"LPalmPos", "y"}, y);
+    // param_handler.getNestedValue({"LPalmPos", "z"}, z);
 
-    param_handler.getNestedValue({"LPalmOri", "rx"}, rx);
-    param_handler.getNestedValue({"LPalmOri", "ry"}, ry);
-    param_handler.getNestedValue({"LPalmOri", "rz"}, rz);
+    // param_handler.getNestedValue({"LPalmOri", "rx"}, rx);
+    // param_handler.getNestedValue({"LPalmOri", "ry"}, ry);
+    // param_handler.getNestedValue({"LPalmOri", "rz"}, rz);
 
     datum[0] = x;
-    datum[1] = y;
-    datum[2] = z;
-    datum[3] = rx;
-    datum[4] = ry;
-    datum[5] = rz;
+    // datum[1] = y;
+    // datum[2] = z;
+    // datum[3] = rx;
+    // datum[4] = ry;
+    // datum[5] = rz;
 
     gmmfitter.normalizeInputCalculate(datum, datum_normalized);
 
@@ -105,11 +106,11 @@ int main(int argc, char ** argv){
   std::vector<std::string> list_of_vars;
 
   list_of_vars.push_back("x");
-  list_of_vars.push_back("y");
-  list_of_vars.push_back("z");
-  list_of_vars.push_back("rx");
-  list_of_vars.push_back("ry");
-  list_of_vars.push_back("rz");
+  // list_of_vars.push_back("y");
+  // list_of_vars.push_back("z");
+  // list_of_vars.push_back("rx");
+  // list_of_vars.push_back("ry");
+  // list_of_vars.push_back("rz");
 
   YAML::Emitter out1;
   out1 << YAML::BeginMap;
