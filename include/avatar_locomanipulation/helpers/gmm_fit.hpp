@@ -48,6 +48,8 @@ public:
   double num_iter = 100;
   double svd_tol = 1e-4;// Tolerance for the SVD when finding the pseudoinverse and the determinant
 
+  double gmm_scaling_factor_sum = 0.0;
+
   GMMFit();
   GMMFit(const std::vector<Eigen::VectorXd> & data_in, const int & num_clus_in);
 
@@ -56,8 +58,8 @@ public:
 
 
   void setData(const std::vector<Eigen::VectorXd> & data_in); // This function lets you input a list of datums yourself, it does not work with the normalization routine (so don't use this one if you can avoid it)
-  double multivariateGuassian(Eigen::VectorXd & x, Eigen::VectorXd & mu, Eigen::MatrixXd & Sigma); //This function is just the multivariate gaussian calc.
-  double multivariateGuassian(Eigen::VectorXd & x, int cluster_index);
+  double multivariateGuassian(const Eigen::VectorXd & x, const Eigen::VectorXd & mu, const Eigen::MatrixXd & Sigma); //This function is just the multivariate gaussian calc.
+  double multivariateGuassian(const Eigen::VectorXd & x, const int cluster_index);
 
   void expectStep(); // expect step of the EM alg
   void setIter(const int & iter_in);
@@ -72,15 +74,23 @@ public:
   void setSigma(const std::vector<Eigen::MatrixXd> & list_of_Sigmas_in); // allows you to input a list of sigmas if you already have a trained model
   void setAlpha(const Eigen::VectorXd & alphs_in); // allows you to input an eigen vector of weights if you already have a trained model
   void randInitialGuess(); // initializes the random guess for the initial means of the clusters between -1 and 1
-  void addData(Eigen::VectorXd & datum); // adds one single datum and adds it to the normalization variables
+  void addData(const Eigen::VectorXd & datum); // adds one single datum and adds it to the normalization variables
   void prepData(); // calculates the norm and the standard deviation of the data
   void initializeNormalization(); //Initializes normalization variables. Run after setting dimension
   void normalizeData(); // normalizes the data after it has been added using addData and you have run prepData
   void useRawData(); // lets you use the data without normalization
-  double mixtureModelProb(Eigen::VectorXd & x_in); // given a particular state vector, outputs its "probability" given a mixture model.
+  double mixtureModelProb(const Eigen::VectorXd & x_in); // given a particular state vector, outputs its "probability" given a mixture model.
   void normalizeInputCalculate(const Eigen::VectorXd & x_in, Eigen::VectorXd & x_normalized); // lets you input an unnormalized vector and you get a normalized vector
   void setDataParams(const Eigen::VectorXd & mean_in, const Eigen::VectorXd & std_dev_in); // allows you to input the data norm and standard deviation
   void normalizeInputInverse(const Eigen::VectorXd & x_in, Eigen::VectorXd & x_unnormalized); // allows you to input a normalized datum and it returns the unnormalized vector
+
+
+  double mixtureDenominator(const int & cluster_index); // returns the denominator value of the specified cluster index
+  void computeScalingFactorSum(); // computes the sum of the scaling factors of the GMM
+  double getScalingFactorSum(); // returns the sum of the scaling factors of the GMM
+
+  double logCost(const Eigen::VectorXd & x_in); // computes and returns the logCost (AKA feasibility cost) defined as f(x) = log(gmm_scaling_factor_sum) -log(p(x)) which is always non-zero
+
 };
 
 #endif
