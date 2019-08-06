@@ -298,7 +298,7 @@ double GMMFit::mixtureDenominator(const int & cluster_index){
 void GMMFit::computeScalingFactorSum(){
   gmm_scaling_factor_sum = 0.0;
   for(int i=0; i<num_clus; i++){
-    gmm_scaling_factor_sum += alphs[i]*mixtureDenominator(i);
+    gmm_scaling_factor_sum += (alphs[i]/mixtureDenominator(i));
   }
 } 
 

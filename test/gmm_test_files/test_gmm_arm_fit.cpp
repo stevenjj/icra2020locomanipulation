@@ -62,12 +62,45 @@ int main(int argc, char ** argv){
     gmmfitter.addData(datum);
   }
 
+  // Perform a GMM Fit
   gmmfitter.prepData();
-
   gmmfitter.normalizeData();
-
   gmmfitter.randInitialGuess();
   gmmfitter.expectationMax();
+
+  // Post GMM Fit:
+  // test logCost for all the data:
+  std::cout << "Testing the log cost for all the data" << std::endl;
+  std::cout << "  scaling factor sum = " << gmmfitter.getScalingFactorSum() << std::endl;
+  Eigen::VectorXd datum_normalized;
+  double datum_log_cost = 0.0;
+  for(int i = 0; i < 1000; i++){
+    filename =  std::string(THIS_PACKAGE_PATH) + "../lMD/h" + std::to_string(i) + ".yaml";
+    std::cout << filename << std::endl;
+    param_handler.load_yaml_file(filename);
+
+    // std::cout << "reading file i = "  << i << std::endl;
+
+    param_handler.getNestedValue({"LPalmPos", "x"}, x);
+    param_handler.getNestedValue({"LPalmPos", "y"}, y);
+    param_handler.getNestedValue({"LPalmPos", "z"}, z);
+
+    param_handler.getNestedValue({"LPalmOri", "rx"}, rx);
+    param_handler.getNestedValue({"LPalmOri", "ry"}, ry);
+    param_handler.getNestedValue({"LPalmOri", "rz"}, rz);
+
+    datum[0] = x;
+    datum[1] = y;
+    datum[2] = z;
+    datum[3] = rx;
+    datum[4] = ry;
+    datum[5] = rz;
+
+    gmmfitter.normalizeInputCalculate(datum, datum_normalized);
+
+    double datum_log_cost = gmmfitter.logCost(datum_normalized); 
+    std::cout << "i:" << i << " log cost = " << datum_log_cost << " Is non-zero: " << (datum_log_cost >= 0 ? "True" : "False") << std::endl;
+  }
 
 
   std::vector<std::string> list_of_vars;
