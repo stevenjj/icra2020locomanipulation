@@ -66,9 +66,12 @@ public:
   Eigen::Vector3d pelvis_ori_error;
   Eigen::Quaternion<double> pelvis_cur_ori;
   Eigen::Vector3d pelvis_cur_pos;
+  Eigen::Vector3d pelvis_des_pos;
+  Eigen::Vector3d pelvis_pos_error;
   Eigen::MatrixXd J_pelvis;
 
   // CoM in support region and specified height
+  Eigen::Vector3d com_cur_pos;
   Eigen::Vector3d com_des_pos;
   Eigen::Vector3d com_pos_error;
 
@@ -103,11 +106,32 @@ public:
 
   Eigen::VectorXd rhand_data;
 
+  Eigen::Vector3d lhand_cur_pos;
+  Eigen::Quaternion<double> lhand_cur_ori;
+
+  Eigen::VectorXd lhand_data;
+
   double rand_pt_x;
   double rand_pt_y;
   double ik_error_norm = 1000.0;
 
   double alph;
+
+  double for_step_max = -.15;
+  double for_step_min = 0.5;
+  double lef_step_max = 0.4;
+  double lef_step_min = 0.2;
+  double rig_step_max = -0.2;
+  double rig_step_min = -0.4;
+  double hei_step_max = 0.15;
+  double hei_step_min = 0.0;
+  double lef_yaw_min = -0.15;
+  double lef_yaw_max = 0.6;
+  double rig_yaw_min = -0.6;
+  double rig_yaw_max = 0.15;
+  double pel_hei_min = 1.03;
+  double pel_hei_max = 1.1;
+
 
   // SVD_SOLVER
   std::unique_ptr< Eigen::SVD_SOLVER<Eigen::MatrixXd> > svd;
@@ -131,7 +155,9 @@ public:
   void PointTrans(Eigen::Vector3d & eig_trans, math_utils::Point & pt_init_loc, math_utils::Point & pt_final_loc);
   void initialize_foot_frames();
   void CreateData();
-  void generateRandomArm();
+  void generateRandomRightArm();
+  void generateRandomLeftArm();
+  double generateRandMinMax(const double & min, const double & max);
 
 
 private:

@@ -8,8 +8,11 @@
 
 #define IK_OPTIMAL_SOL 1	// SUCCESS ||f(x)|| <= error_tol
 #define IK_SUBOPTIMAL_SOL 2 // SUCCESS ||grad(f(x))|| <= grad_tol
-#define IK_MAX_ITERATIONS_HIT 3 // FAILURE iter >= MAX_ITERS 
-#define IK_MAX_MINOR_ITER_HIT 4  // FAILURE k_step <= k_step_min
+#define IK_MAX_ITERATIONS_HIT 3 // iter >= MAX_ITERS 
+#define IK_MAX_MINOR_ITER_HIT 4  // k_step <= k_step_min
+
+#define IK_VERBOSITY_LOW 0 // No printouts
+#define IK_VERBOSITY_HIGH 1 // Printout task errors each iterations
 
 class IKModule{
 public:
@@ -26,8 +29,8 @@ public:
 	void setInitialConfig(const Eigen::VectorXd & q_init);
 
 	// Outputs:
-	//  return: true if optimal or suboptimal solutions were found. 
-	//			false if maximum iterations were hit 
+	//  return: true if at least the first task in the hierarchy converged
+	//			false if the first task in the hierarchy did not converge
 	//  params:
 	//		solve_result - true if at least the first task converges
 	//  	error_norm - the sum of all the task error norms.
@@ -35,6 +38,9 @@ public:
 	bool solveIK(int & solve_result, double & total_error_norm_out, Eigen::VectorXd & q_sol);
 	bool solveIK(int & solve_result, std::vector<double> & task_error_norms, double & total_error_norm_out, Eigen::VectorXd & q_sol);
 
+	// Set verbosity to either IK_VERBOSITY_LOW or IK_VERBOSITY_HIGH.
+	// if input <= IK_VERBOSITY_LOW: IK_VERBOSITY_LOW  else if input >= IK_VERBOSITY_HIGH: IK_VERBOSITY_HIGH
+	void setVerbosityLevel(int verbosity_level_in);
 
 	// This adds a lower priority task to the hierarchy. 
 	void addTasktoHierarchy(std::shared_ptr<Task> & task_input);
@@ -77,6 +83,12 @@ public:
 	// Default: true
 	void setCheckPrevViolations(bool check_prev_violations_in);
 
+	// if true: returns when the first task converges
+	// if false : continues to satisfy lower priority tasks
+	void setReturnWhenFirstTaskConverges(bool return_when_first_task_converges_in);
+
+	// returns the error tolerance for the problem
+	double getErrorTol();
 
 	// Print the latest solution results
 	void printSolutionResults();
@@ -157,6 +169,10 @@ private:
 	// if false: assumes that the overall error norm will eventually descend 
 	bool check_prev_violations = false; 
 
+	// if true: the solver immediately returns as soon as the first task converges.
+	// if false: the solver tries to satisfy lower priority tasks further
+	bool return_when_first_task_converges = false;
+
 	// Errors and Error gradient values:
 	double total_error_norm = 0.0;
 	double f_q = 0.0;
@@ -167,6 +183,9 @@ private:
 	bool first_task_convergence = false;
 	int solve_result_ = 0;
 	Eigen::VectorXd q_sol_;	
+
+
+	int verbosity_level = IK_VERBOSITY_HIGH;
 
 
 };

@@ -3,6 +3,7 @@
 # z = 0.0 since the origin is at the table surface
 # x = horizontal distance across the table, same direction as world y
 # y = depth distance away from front of table, same as world x
+num_waypoints: 18
 waypoint_1:
   x: 0.1
   y: 0.1

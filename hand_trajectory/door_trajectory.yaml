@@ -4,6 +4,7 @@
 # z = 0.0 since the origin is at the hinge
 # x = positive distance from hinge->handle when door is closed fully
 # y = positive distance from hinge->handle when door is 90 degreed opened
+num_waypoints: 10
 waypoint_1:
   x: 1.0
   y: 0.0

@@ -2,6 +2,16 @@
 
 namespace data_saver{
 
+  void emit_value(YAML::Emitter & out, const std::string & key, const double & value) {
+    out << YAML::Key << key;
+    out << YAML::Value << value;
+  }
+
+  void emit_string(YAML::Emitter & out, const std::string & key, const std::string & value) {
+    out << YAML::Key << key;
+    out << YAML::Value << value;
+  }
+
   void emit_position(YAML::Emitter & out, const std::string & key, const Eigen::Vector3d & pos){
     out << YAML::Key << key;
     out << YAML::Value;
@@ -57,6 +67,29 @@ namespace data_saver{
     }
       out << YAML::EndSeq;
 
+  }
+
+  void emit_gmm_normalize(YAML::Emitter & out, const Eigen::VectorXd & mu, const Eigen::VectorXd & sigma, const std::vector<std::string> & vars){
+    if (mu.size() == sigma.size() && mu.size() == vars.size()) {
+      // std::cout << mu << std::endl;
+      // std::cout << sigma << std::endl;
+      out << YAML::Key << "Normalization Data";
+      out << YAML::Value;
+        out << YAML::BeginMap;
+        for (size_t i = 0; i < mu.size(); i++){
+          out << YAML::Key << vars[i];
+          out << YAML::Value;
+            out << YAML::BeginMap;
+            out << YAML::Key << "Mu";
+                out << YAML::Value << mu[i];
+            out << YAML::Key << "Sigma";
+                out << YAML::Value << sigma[i];
+            out << YAML::EndMap;
+        }
+        out << YAML::EndMap;
+      } else {
+        std::cout << "How do you expect me to work if you don't give me proper directions?" << std::endl;
+      }
   }
 
 }

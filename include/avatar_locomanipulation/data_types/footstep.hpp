@@ -10,7 +10,7 @@
 #define MID_FOOTSTEP 2
 
 // Data container for a footstep object
-
+ 
 
 class Footstep{
 public:
@@ -24,6 +24,12 @@ public:
   Eigen::Quaternion<double>  orientation;
 
   Eigen::Matrix3d R_ori;
+
+  // Setters
+  void setPosOriSide(const Eigen::Vector3d & pos_in, const Eigen::Quaterniond & quat_in, const int & robot_side_in);
+  void setPosOri(const Eigen::Vector3d & pos_in, const Eigen::Quaterniond & quat_in);
+  void setRightSide();
+  void setLeftSide();
 
   // Left or right side
   int robot_side;

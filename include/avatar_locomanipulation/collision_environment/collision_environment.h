@@ -134,8 +134,8 @@ public:
   // // Input: - Relevant frame name from the task_objectcollision
   // void build_object_directed_vectors(std::string & frame_name, Eigen::VectorXd & q_update);
 
-  // // Given an object RobotModel and its q_start, appends this and adds it to appended
-  // void add_new_object(std::shared_ptr<RobotModel> & obj, const Eigen::VectorXd & q_start);
+  // Given an object RobotModel and its q_start, appends this and adds it to appended
+  void add_new_object(std::shared_ptr<RobotModel> & obj, const Eigen::VectorXd & q_start);
 
 
   // // computes collision and outputs any contacts

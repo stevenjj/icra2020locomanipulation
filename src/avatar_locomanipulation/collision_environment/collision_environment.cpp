@@ -257,86 +257,6 @@ void CollisionEnvironment::build_point_list_directed_vectors(const std::vector<E
   }
 }
 
-// void CollisionEnvironment::build_object_directed_vectors(std::string & frame_name, Eigen::VectorXd & q_update){
-//   // for clarity on these maps, see control flow in find_self_near_points function
-//   std::map<std::string, Eigen::Vector3d> from_near_points, to_near_points;
-
-//   // initialize two iterators to be used in pushing to DirectedVectors struct
-//   std::map<std::string, Eigen::Vector3d>::iterator it;
-
-  // // used to build directed vectors
-  // Eigen::Vector3d difference;
-
-  // // Update the robot config for the given step of IK iteration
-  // for(int j=object_q_counter; j<appended->q_current.size(); ++j){
-  //   appended->q_current[j] = q_update[j];
-  // }
-  // // Update full kinematics
-  // appended->enableUpdateGeomOnKinematicsUpdate(true);
-  // appended->updateFullKinematics(appended->q_current);
-
-//   // gives a list of object link names
-//   std::vector<std::string> object_links = get_object_links();
-
-  // // we will build the directed vectors from each of the object links
-  // for(int i=0; i<object_links.size(); ++i){
-    
-  //   // Notice we reverse to and from near_points, because unlike in the self directed vectors,
-  //   // we want vectors away from the collision_names[0]
-  //   find_near_points(object_links[i], link_to_object_collision_names[frame_name], to_near_points, from_near_points);
-
-
-
-  //   for(it=from_near_points.begin(); it!=from_near_points.end(); ++it){
-  //     // If nearest_point[1] = nearest_point[0], then the two links are in collision
-  //     // and we need a different way to get a dvector
-  //     if( (it->second - to_near_points[it->first]).norm() <= 1e-6 ){
-  //       std::cout << "Collision between " << it->first << " and " << object_links[i] << std::endl;
-  //       get_dvector_collision_links(object_links[i], it->first);
-  //     } // end if
-
-  //     // The typical case when two links are not in collision
-  //     else{
-  //     difference = to_near_points[it->first] - it->second;
-  //     // Fill the dvector and push back
-  //     dvector.from = collision_to_frame[object_links[i]]; dvector.to = collision_to_frame.find(it->first)->second;
-  //     dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
-  //     dvector.using_worldFramePose = false;
-  //     directed_vectors.push_back(dvector);
-  //     } // end else
-
-  //   } // end inner for
-
-  // } // end outer for
-
-//   std::cout << "directed_vectors.size(): " << directed_vectors.size() << std::endl;
-
-//   // std::cout << "appended->model:\n" << appended->model << std::endl;
-//   // std::cout << "appended->geomModel:\n" << appended->geomModel << std::endl;
-//   // for (int k=0 ; k<appended->model.frames.size() ; ++k){
-//   //   std::cout << "frame:" << k << " " << appended->model.frames[k].name << " : " << appended->data->oMf[k].translation().transpose() << std::endl;
-//   // }
-
-//   Eigen::Vector3d cur_pos_to, cur_pos_from; 
-//   Eigen::Quaternion<double> cur_ori;
-  
-//   appended->getFrameWorldPose(collision_to_frame.find("base_link_0")->second, cur_pos_to, cur_ori);
-//   std::cout << "current pose base_link_0:\n" << cur_pos_to << std::endl;
-//   appended->getFrameWorldPose("rightThumbPitch3Link", cur_pos_to, cur_ori);
-//   std::cout << "current pose rightThumbPitch3Link:\n" << cur_pos_to << std::endl;
-//   appended->getFrameWorldPose(collision_to_frame.find("rightPalm_0")->second, cur_pos_to, cur_ori);
-//   std::cout << "current pose rightPalm_0:\n" << cur_pos_to << std::endl;
-
-//   for(int i=0; i<directed_vectors.size(); ++i){
-//     std::cout << "directed_vectors[i].from: " << directed_vectors[i].from << std::endl;
-//     std::cout << "directed_vectors[i].to: " << directed_vectors[i].to << std::endl;
-//     std::cout << "directed_vectors[i].magnitude: " << directed_vectors[i].magnitude << std::endl;
-//     std::cout << "directed_vectors[i].direction: \n" << directed_vectors[i].direction << std::endl;
-//   }
-
-  
-
-// }
 
 
 double CollisionEnvironment::get_collision_potential(){
@@ -381,30 +301,114 @@ double CollisionEnvironment::get_collision_potential(){
 
 
 
-// void CollisionEnvironment::add_new_object(std::shared_ptr<RobotModel> & obj, const Eigen::VectorXd & q_start){
-//   // Initialize the RobotModel
-//   object = obj;
-//   // Set the q_current
-//   object->q_current = q_start;
-//   // Keep track of nq
-//   object_q_counter += q_start.size();
-//   // Update kinematics and geom placements
-//   object->enableUpdateGeomOnKinematicsUpdate(true);
-//   object->updateFullKinematics(object->q_current);
+// void CollisionEnvironment::build_object_directed_vectors(std::string & frame_name, Eigen::VectorXd & q_update){
+//   // for clarity on these maps, see control flow in find_self_near_points function
+//   std::map<std::string, Eigen::Vector3d> from_near_points, to_near_points;
 
-//   // Tells append_models to add this to end of appended
-//   first_time = false;
+//   // initialize two iterators to be used in pushing to DirectedVectors struct
+//   std::map<std::string, Eigen::Vector3d>::iterator it;
 
-//   // Appends this to end of appended
-//   append_models();
+//   // used to build directed vectors
+//   Eigen::Vector3d difference;
 
-//   // Tells the collision to frame names to look through the object
-//   object_flag = true;
-//   // Adds this objects collision and frame names to collision_to_frame
-//   map_collision_names_to_frame_names();
+//   // Update the robot config for the given step of IK iteration
+//   for(int j=object_q_counter; j<appended->q_current.size(); ++j){
+//     appended->q_current[j] = q_update[j];
+//   }
+//   // Update full kinematics
+//   appended->enableUpdateGeomOnKinematicsUpdate(true);
+//   appended->updateFullKinematics(appended->q_current);
 
-//   std::cout << "[RobotModel] Environmental Object Created and appended in [CollisionEnvironment]" << std::endl;
+//   // gives a list of object link names
+//   std::vector<std::string> object_links = get_object_links();
+
+//   // we will build the directed vectors from each of the object links
+//   for(int i=0; i<object_links.size(); ++i){
+    
+//     // Notice we reverse to and from near_points, because unlike in the self directed vectors,
+//     // we want vectors away from the collision_names[0]
+//     find_near_points(object_links[i], link_to_object_collision_names[frame_name], to_near_points, from_near_points);
+
+
+
+//     for(it=from_near_points.begin(); it!=from_near_points.end(); ++it){
+//       // If nearest_point[1] = nearest_point[0], then the two links are in collision
+//       // and we need a different way to get a dvector
+//       if( (it->second - to_near_points[it->first]).norm() <= 1e-6 ){
+//         std::cout << "Collision between " << it->first << " and " << object_links[i] << std::endl;
+//         get_dvector_collision_links(object_links[i], it->first);
+//       } // end if
+
+//       // The typical case when two links are not in collision
+//       else{
+//       difference = to_near_points[it->first] - it->second;
+//       // Fill the dvector and push back
+//       dvector.from = collision_to_frame[object_links[i]]; dvector.to = collision_to_frame.find(it->first)->second;
+//       dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+//       dvector.using_worldFramePose = false;
+//       directed_vectors.push_back(dvector);
+//       } // end else
+
+//     } // end inner for
+
+//   } // end outer for
+
+//   std::cout << "directed_vectors.size(): " << directed_vectors.size() << std::endl;
+
+//   std::cout << "appended->model:\n" << appended->model << std::endl;
+//   std::cout << "appended->geomModel:\n" << appended->geomModel << std::endl;
+//   for (int k=0 ; k<appended->model.frames.size() ; ++k){
+//     std::cout << "frame:" << k << " " << appended->model.frames[k].name << " : " << appended->data->oMf[k].translation().transpose() << std::endl;
+//   }
+
+//   Eigen::Vector3d cur_pos_to, cur_pos_from; 
+//   Eigen::Quaternion<double> cur_ori;
+  
+//   appended->getFrameWorldPose(collision_to_frame.find("base_link_0")->second, cur_pos_to, cur_ori);
+//   std::cout << "current pose base_link_0:\n" << cur_pos_to << std::endl;
+//   appended->getFrameWorldPose("rightThumbPitch3Link", cur_pos_to, cur_ori);
+//   std::cout << "current pose rightThumbPitch3Link:\n" << cur_pos_to << std::endl;
+//   appended->getFrameWorldPose(collision_to_frame.find("rightPalm_0")->second, cur_pos_to, cur_ori);
+//   std::cout << "current pose rightPalm_0:\n" << cur_pos_to << std::endl;
+
+//   for(int i=0; i<directed_vectors.size(); ++i){
+//     std::cout << "directed_vectors[i].from: " << directed_vectors[i].from << std::endl;
+//     std::cout << "directed_vectors[i].to: " << directed_vectors[i].to << std::endl;
+//     std::cout << "directed_vectors[i].magnitude: " << directed_vectors[i].magnitude << std::endl;
+//     std::cout << "directed_vectors[i].direction: \n" << directed_vectors[i].direction << std::endl;
+//   }
+
+  
+
 // }
+
+
+
+
+void CollisionEnvironment::add_new_object(std::shared_ptr<RobotModel> & obj, const Eigen::VectorXd & q_start){
+  // Initialize the RobotModel
+  object = obj;
+  // Set the q_current
+  object->q_current = q_start;
+  // Keep track of nq
+  object_q_counter += q_start.size();
+  // Update kinematics and geom placements
+  object->enableUpdateGeomOnKinematicsUpdate(true);
+  object->updateFullKinematics(object->q_current);
+
+  // Tells append_models to add this to end of appended
+  first_time = false;
+
+  // Appends this to end of appended
+  append_models();
+
+  // Tells the collision to frame names to look through the object
+  object_flag = true;
+  // Adds this objects collision and frame names to collision_to_frame
+  map_collision_names_to_frame_names();
+
+  std::cout << "[RobotModel] Environmental Object Created and appended in [CollisionEnvironment]" << std::endl;
+}
 
 
 

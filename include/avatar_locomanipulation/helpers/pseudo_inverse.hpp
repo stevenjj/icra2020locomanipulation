@@ -3,10 +3,17 @@
 
 #include <Eigen/Dense>
 #include <Eigen/SVD>
+#include <vector>
 
 namespace math_utils{ 
   void pseudoInverse(const Eigen::MatrixXd & A,
                      Eigen::MatrixXd & Apinv,
+                     double tolerance,
+                     unsigned int computationOptions = Eigen::ComputeThinU | Eigen::ComputeThinV);
+
+  void pseudoInverse(const Eigen::MatrixXd & A,
+                     Eigen::MatrixXd & Apinv,
+                     std::vector<double> & singular_values,
                      double tolerance,
                      unsigned int computationOptions = Eigen::ComputeThinU | Eigen::ComputeThinV);
 

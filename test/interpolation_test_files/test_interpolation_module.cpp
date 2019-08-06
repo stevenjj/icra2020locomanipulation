@@ -1,6 +1,11 @@
 #include <iostream>
-#include <avatar_locomanipulation/cubic_interpolation_module/six_dim_vec.hpp>
+#include <avatar_locomanipulation/cubic_interpolation_module/cubic_interpolation_six_dim_vec.hpp>
+
 #include <vector>
+
+// YAML
+#include <avatar_locomanipulation/helpers/yaml_data_saver.hpp>
+#include <avatar_locomanipulation/helpers/param_handler.hpp>
 
 // Import ROS and Rviz visualization
 #include <ros/ros.h>
@@ -85,13 +90,36 @@ int main(int argc, char ** argv){
 	q_end[valkyrie.getJointIndex("leftForearmYaw")] = 1.5;  
  
 
+	// Load the robot config and hinge position
+	ParamHandler param_handler;
+	param_handler.load_yaml_file(THIS_PACKAGE_PATH"stored_configurations/robot_door_initial_configuration.yaml");  
+
+	std::vector<double> robot_q;
+	param_handler.getVector("robot_starting_configuration", robot_q);
+
+	for(int i = 0; i < robot_q.size(); i++){
+		q_end[i] = robot_q[i];
+	}
+
+	double hinge_x, hinge_y, hinge_z, hinge_rx, hinge_ry, hinge_rz, hinge_rw;
+	param_handler.getNestedValue({"hinge_position", "x"}, hinge_x);
+	param_handler.getNestedValue({"hinge_position", "y"}, hinge_y);
+	param_handler.getNestedValue({"hinge_position", "z"}, hinge_z);
+	param_handler.getNestedValue({"hinge_orientation", "x"}, hinge_rx);
+	param_handler.getNestedValue({"hinge_orientation", "y"}, hinge_ry);
+	param_handler.getNestedValue({"hinge_orientation", "z"}, hinge_rz);
+	param_handler.getNestedValue({"hinge_orientation", "w"}, hinge_rw);
+	
+	Eigen::Vector3d hinge_position(hinge_x, hinge_y, hinge_z);
+	Eigen::Quaterniond hinge_orientation(hinge_rw, hinge_rx, hinge_ry, hinge_rz);
+
 	// Visualize q_start and q_end in RVIZ
 	rviz_translator.populate_joint_state_msg(valkyrie.model, q_start, tf_world_pelvis_init, joint_msg_init);
 	rviz_translator.populate_joint_state_msg(valkyrie.model, q_end, tf_world_pelvis_end, joint_msg_end);
 
 	// Add the Hinge frame
-	tf_world_hinge.setOrigin(tf::Vector3(1.5, -0.5, 1.125));
-	tf_world_hinge.setRotation(tf::Quaternion(0, 0, 0.707, 0.707));
+	tf_world_hinge.setOrigin(tf::Vector3(hinge_position[0], hinge_position[1], hinge_position[2]));
+	tf_world_hinge.setRotation(tf::Quaternion(hinge_orientation.x(), hinge_orientation.y(), hinge_orientation.z(), hinge_orientation.w()));
 
 
 	// Fill the Handle marker msg
@@ -132,7 +160,7 @@ int main(int argc, char ** argv){
 	hinge_msg.color.g = 0.0f;
 	hinge_msg.color.b = 0.0f;
 	hinge_msg.color.a = 1.0;
-	// hinge_msg.lifetime = ros::Duration();
+	// hinge_msg.lifetime = ros::Duration();SixDim
 	hinge_msg.action = visualization_msgs::Marker::ADD;
 	hinge_msg.type = visualization_msgs::Marker::CUBE;
 
@@ -158,24 +186,23 @@ int main(int argc, char ** argv){
 	door_msg.type = visualization_msgs::Marker::CUBE;
 
 
-	std::string file = "door_trajectory.yaml";
-	int N = 10;
+	std::string file = THIS_PACKAGE_PATH"hand_trajectory/door_trajectory.yaml";
 
 	std::vector<std::vector<double> > outs;
 
-	std::shared_ptr<SixDimVec> example; 
+	std::shared_ptr<CubicInterpolationSixDimVec> example; 
+	example = std::shared_ptr<CubicInterpolationSixDimVec>(new CubicInterpolationSixDimVec(file));
 
 
 	hand_poses.header.frame_id = "hinge_frame";
 	double s;
-	double radius = 0.9;
+	double radius = 1.0;
 
 	for(int i=0; i<100; ++i){
 		s = ((double) (i))/100.0;
 
 		std::cout << "s = " << s << std::endl;
 
-		example = std::shared_ptr<SixDimVec>(new SixDimVec(N, file));
 
 		example->evaluate(s);
 

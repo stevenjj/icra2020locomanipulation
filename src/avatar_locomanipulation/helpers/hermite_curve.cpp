@@ -6,13 +6,13 @@ HermiteCurve::HermiteCurve(){
   p1 = 0; v1 = 0;
   p2 = 0; v2 = 0;
   s_ = 0;
-  std::cout << "[Hermite Curve] constructed" << std::endl;
+  // std::cout << "[Hermite Curve] constructed" << std::endl;
 }
 
 HermiteCurve::HermiteCurve(const double & start_pos, const double & start_vel, 
                            const double & end_pos, const double & end_vel): p1(start_pos), v1(start_vel), p2(end_pos), v2(end_vel){
   s_ = 0;
-  std::cout << "[Hermite Curve] constructed with values" << std::endl;
+  // std::cout << "[Hermite Curve] constructed with values" << std::endl;
 }
 
 // Destructor

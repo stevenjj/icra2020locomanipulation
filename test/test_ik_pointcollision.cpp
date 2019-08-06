@@ -4,12 +4,15 @@
 #include <avatar_locomanipulation/tasks/task.hpp>
 #include <avatar_locomanipulation/tasks/task_stack.hpp>
 #include <avatar_locomanipulation/tasks/task_pointcollision.hpp>
+#include <avatar_locomanipulation/tasks/task_4dcontact_normal.hpp>
 #include <avatar_locomanipulation/tasks/task_6dpose.hpp>
 #include <avatar_locomanipulation/tasks/task_6dpose_wrt_midfeet.hpp>
 #include <avatar_locomanipulation/tasks/task_3dorientation.hpp>
 #include <avatar_locomanipulation/tasks/task_joint_config.hpp>
 #include <avatar_locomanipulation/tasks/task_stack.hpp>
 #include <avatar_locomanipulation/tasks/task_com.hpp>
+#include <avatar_locomanipulation/tasks/task_contact_normal.hpp>
+
 
 // Import ROS and Rviz visualization
 #include <ros/ros.h>
@@ -99,29 +102,36 @@ void testIK_module(){
 
   // Eigen::Vector3d cur_pos;
   // Eigen::Quaternion<double> cur_ori;
-  // ik_module.robot_model->getFrameWorldPose("rightPalm", cur_pos, cur_ori);
-  // std::cout << "right palm cur pos:\n" << cur_pos << std::endl;
-  // ik_module.robot_model->getFrameWorldPose("leftPalm", cur_pos, cur_ori);
+  // ik_module.robot_model->getFrameWorldPose("pelvis", cur_pos, cur_ori);
+  // std::cout << "pwlvis cur pos:\n" << cur_pos << std::endl;
+  // ik_module.robot_model->getFrameWorldPose("rightElbowPitch", cur_pos, cur_ori);
   // std::cout << "left palm cur pos:\n" << cur_pos << std::endl;
 
   std::shared_ptr<CollisionEnvironment> collision(new CollisionEnvironment(ik_module.robot_model) );
 
-  collision->set_safety_distance_normal(0.15);
+  collision->set_safety_distance_normal(0.3);
 
   // Define list of points for the pointcollision task
   std::vector<Eigen::Vector3d> point_list;
   Eigen::Vector3d point;
-  point << 1., 1., 1.;
+  point << 0.275, 0.0, 1.;
   point_list.push_back(point);
-  point[0] = 0.2; point[1] = -0.5; point[2] = 0.8; 
+  point[0] = 0.275; point[1] = 0.0; point[2] = 0.8; 
   point_list.push_back(point);
-  point[0] = 0.21; point[1] = 0.51; point[2] = 0.8; 
+  point[0] = 0.275; point[1] = 0.0; point[2] = 0.6; 
   point_list.push_back(point);
+  point[0] = 0.275; point[1] = 0.0; point[2] = 0.4; 
+  point_list.push_back(point);
+  point[0] = 0.275; point[1] = 0.0; point[2] = 0.2; 
+  point_list.push_back(point);
+  
+  Eigen::Vector3d floor_normal(0,0,1);
+  Eigen::Vector3d floor_center(0,0,0); 
 
   // Create Tasks
   std::shared_ptr<Task> pelvis_task(new Task6DPose(ik_module.robot_model, "pelvis"));
-  std::shared_ptr<Task> lfoot_task(new Task6DPose(ik_module.robot_model, "leftCOP_Frame"));
-  std::shared_ptr<Task> rfoot_task(new Task6DPose(ik_module.robot_model, "rightCOP_Frame"));
+  std::shared_ptr<Task> lfoot_task(new TaskContactNormalTask(ik_module.robot_model, "leftCOP_Frame", floor_normal, floor_center));
+  std::shared_ptr<Task> rfoot_task(new TaskContactNormalTask(ik_module.robot_model, "rightCOP_Frame", floor_normal, floor_center));
   std::shared_ptr<Task> pointlist_task(new TaskPointCollision("pointlist_task", ik_module.robot_model, collision, point_list));
 
 
@@ -129,17 +139,15 @@ void testIK_module(){
   std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {pelvis_task, lfoot_task, rfoot_task}));
   std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {pointlist_task}));
 
-  pointlist_task->setTaskGain(50.0);
+  pointlist_task->setTaskGain(75.0);
 
   // Set desired Pelvis configuration
   Eigen::Vector3d pelvis_des_pos;
   Eigen::Quaternion<double> pelvis_des_quat;  
 
    // Set desired Foot configuration
-  Eigen::Vector3d rfoot_des_pos;
   Eigen::Quaternion<double> rfoot_des_quat;
 
-  Eigen::Vector3d lfoot_des_pos;
   Eigen::Quaternion<double> lfoot_des_quat;
 
   // Pelvis should be 1m above the ground and the orientation must be identity
@@ -147,20 +155,15 @@ void testIK_module(){
   pelvis_des_pos[2] = 1.05;
   pelvis_des_quat.setIdentity();
 
-  // Foot should be flat on the ground and spaced out by 0.25m
-  rfoot_des_pos.setZero();
-  rfoot_des_pos[0] = 0.125;
-  rfoot_des_pos[1] = -0.125;
+  // Foot should be flat on the ground
   rfoot_des_quat.setIdentity();
 
-  lfoot_des_pos.setZero();
-  lfoot_des_pos[1] = 0.125;
   lfoot_des_quat.setIdentity();
 
   // Set Tsak references
   pelvis_task->setReference(pelvis_des_pos, pelvis_des_quat);
-  lfoot_task->setReference(lfoot_des_pos, lfoot_des_quat);
-  rfoot_task->setReference(rfoot_des_pos, rfoot_des_quat);
+  lfoot_task->setReference(lfoot_des_quat);
+  rfoot_task->setReference(rfoot_des_quat);
 
   // Get Errors -----------------------------------------------------------------------------
   Eigen::VectorXd task_error;
@@ -176,7 +179,11 @@ void testIK_module(){
 
   double error_tol = 1e-6;
   ik_module.setErrorTol(error_tol);
-
+ 
+  int N = 500;
+  int mN = 400;
+  ik_module.setMaxIters(N);
+  ik_module.setMaxMinorIters(mN);
   ik_module.prepareNewIKDataStrcutures();
   ik_module.solveIK(solve_result, error_norm, q_sol);
   ik_module.printSolutionResults();

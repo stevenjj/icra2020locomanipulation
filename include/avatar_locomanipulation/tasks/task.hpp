@@ -9,6 +9,13 @@
 #include <string>
 #include <iostream>
 
+#define TASK_DIM_X 0
+#define TASK_DIM_Y 1
+#define TASK_DIM_Z 2
+#define TASK_DIM_RX 3
+#define TASK_DIM_RY 4
+#define TASK_DIM_RZ 5
+
 class Task{
 public:
 	Task();

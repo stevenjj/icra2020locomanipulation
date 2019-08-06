@@ -10,7 +10,7 @@
 
 int main(int argc, char **argv){
 	// Initialize ROS node for publishing joint messages
-	ros::init(argc, argv, "test_rviz");
+	ros::init(argc, argv, "test_viz_feasibility");
 	ros::NodeHandle n;
 	ros::Rate loop_rate(20);
 

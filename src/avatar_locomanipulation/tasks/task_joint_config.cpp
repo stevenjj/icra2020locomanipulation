@@ -30,7 +30,9 @@ void TaskJointConfig::getTaskJacobianDot(Eigen::MatrixXd & Jdot_task){
 	Jdot_task = Jdot_config;
 }
 
-
+std::vector<std::string> TaskJointConfig::getJointNames(){
+	return joint_names_;
+}
 
 void TaskJointConfig::setReference(const Eigen::VectorXd & vec_ref_in){
 	vec_ref_ = vec_ref_in;
