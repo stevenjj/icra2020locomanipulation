@@ -79,7 +79,9 @@ SET (ROS_BRIDGE_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/bridge/rviz_visualizer.cpp)
 
 SET (FEASIBILITY_SOURCES
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/feasibility/feasibility.cpp)
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/feasibility/feasibility.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/feasibility/feasibility_data_generator.cpp
+	)
 
 SET (TASK_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task.cpp
