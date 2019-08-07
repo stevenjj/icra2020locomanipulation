@@ -21,12 +21,20 @@
 
 #include <avatar_locomanipulation/helpers/orientation_utils.hpp>
 
+
+// Parameter Loader and Saver
+#include <avatar_locomanipulation/helpers/yaml_data_saver.hpp>
+#include <avatar_locomanipulation/helpers/param_handler.hpp>
+
 class FeasibilityDataGenerator{
 public:
 	FeasibilityDataGenerator();
 	~FeasibilityDataGenerator();
 
     void setRobotModel(std::shared_ptr<RobotModel> & robot_model_in);
+
+    // Parameter Handler
+    ParamHandler param_handler;
 
     // Public Member Variables
 	std::shared_ptr<RobotModel> robot_model;
@@ -39,6 +47,31 @@ public:
 	std::shared_ptr<Task> com_task;
 
 	void initialize_modules();
+
+
+	// data generation parameters
+	double max_reach = 0.4;
+	double min_reach = -0.2;
+	double max_width = 0.4;
+	double min_width = 0.2;
+	double max_theta = 0.6;
+	double min_theta = -0.15;
+
+	double com_height_min = 0.9;
+	double com_height_max = 1.0;
+
+	double walking_com_height = 0.95;
+	double walking_double_support_time = 0.45; // AKA transfer time
+	double walking_single_support_time = 1.0; // AKA swing time	
+	double walking_swing_height = 0.1;
+
+	// robot configuration data types
+	Eigen::VectorXd q_min;
+	Eigen::VectorXd q_max;	
+	Eigen::VectorXd q_start;	
+
+	// Trajectory configuration
+	TrajEuclidean   traj_q_config;
 
 };
 
