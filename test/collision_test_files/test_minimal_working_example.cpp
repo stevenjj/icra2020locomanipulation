@@ -80,6 +80,18 @@ int main(int argc, char ** argv){
   // build model and geomModel
   pinocchio::urdf::buildModel(filename, pinocchio::JointModelFreeFlyer(),cart_model);
   pinocchio::urdf::buildGeom(cart_model, filename, pinocchio::COLLISION, cart_geomModel, meshDir );
+
+  //------ Suggested Fix
+  // Apply a prefix
+  std::string prefix ("cart/");
+  for (pinocchio::JointIndex i = 1; i < cart_model.joints.size(); ++i) {
+    cart_model.names[i] = prefix + cart_model.names[i];
+  }
+  for (pinocchio::FrameIndex i = 0; i < cart_model.frames.size(); ++i) {
+    ::pinocchio::Frame& f = cart_model.frames[i];
+    f.name = prefix + f.name;
+  }
+  //----------------------
   // Add and remove collision pairs
   cart_geomModel.addAllCollisionPairs();
   // Define the data and geomData

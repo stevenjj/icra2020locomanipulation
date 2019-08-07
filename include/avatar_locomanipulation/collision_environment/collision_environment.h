@@ -21,14 +21,8 @@ private:
   //          double magnitude - magnitude of the vector for use with potential
   DirectedVectors dvector;
 
-  // Set in add_new_object, used in append_models
-  // Allows us to locally store the urdf of the new object for using buildModel
-  // to append the appended->model
-  std::string object_filename;
-  // Set in add_new_object, used in append_models
-  // Allows us to locally store the mesh directory for the object
-  std::string object_meshDir;
-
+  // Vector containing the names of all object collision links
+  std::vector<std::string> object_links;
 
   // a map from collision body names to frame names
   std::map<std::string, std::string> collision_to_frame;
@@ -39,6 +33,10 @@ private:
   // If we input an object RobotModel into the environment, then this is true and 
   //  map_collision_names_to_frame_names also includes the object frame names
   bool object_flag = false;
+
+  // String holding the prefix given to frame names
+  // Used in creating map from collision to frame names
+  std::string prefix_;
 
 
   // appends the models internally
@@ -69,7 +67,7 @@ private:
   void get_dvector_collision_links(const std::string & from_name, const std::string & to_name);
 
   
-  std::vector<std::string> get_object_links();
+  void get_object_links();
 
 public:
   // Potential function scaling distance
@@ -138,13 +136,12 @@ public:
   // Sets the safety distance between links when in collision
   void set_safety_distance_collision(double safety_dist_collision_in);
 
-  // // Given a frame name from a task it will build directed vectors to that link from all object links
-  // // Input: - Relevant frame name from the task_objectcollision
-  // void build_object_directed_vectors(std::string & frame_name, Eigen::VectorXd & q_update);
+  // Given a frame name from a task it will build directed vectors to that link from all object links
+  // Input: - Relevant frame name from the task_objectcollision
+  void build_object_directed_vectors(std::string & frame_name, Eigen::VectorXd & q_update);
 
   // Given an object RobotModel and its q_start, appends this and adds it to appended
-  void add_new_object(std::shared_ptr<RobotModel> & obj, const Eigen::VectorXd & q_start,
-                      const std::string & filename, const std::string & meshDir);
+  void add_new_object(std::shared_ptr<RobotModel> & obj, const Eigen::VectorXd & q_start, std::string & prefix);
 
 
   // // computes collision and outputs any contacts
