@@ -1,0 +1,2 @@
+add_executable(test_feasibility_data_generation test_feasibility_data_generation.cpp ${PROJECT_SOURCES})
+target_link_libraries(test_feasibility_data_generation ${PROJECT_LIBRARIES})

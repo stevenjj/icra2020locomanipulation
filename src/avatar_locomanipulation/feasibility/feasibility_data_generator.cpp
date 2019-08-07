@@ -1,11 +1,11 @@
 #include <avatar_locomanipulation/feasibility/feasibility_data_generator.hpp>
 
 FeasibilityDataGenerator::FeasibilityDataGenerator(){
+	initialize_modules();
 }
 
 FeasibilityDataGenerator::~FeasibilityDataGenerator(){
 }
-
 
 void FeasibilityDataGenerator::initialize_modules(){
 	ik_start_config_module.reset(new IKModule());
