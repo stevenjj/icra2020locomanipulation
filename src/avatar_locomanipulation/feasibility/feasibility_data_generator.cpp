@@ -19,6 +19,35 @@ void FeasibilityDataGenerator::setRobotModel(std::shared_ptr<RobotModel> & robot
 	ctg->commonInitialization();
 }
 
+void FeasibilityDataGenerator::initializeSeed(unsigned int seed_number){
+	srand(seed_number);
+}
+
+void FeasibilityDataGenerator::initializeStartingIKTasks(){
+	// Initialize IK tasks
+	upper_body_joint_names.clear();
+	upper_body_joint_names = {"torsoYaw", "torsoPitch", "torsoRoll", 
+		                                               "leftShoulderPitch", "leftShoulderRoll", "leftShoulderYaw", "leftElbowPitch", "leftForearmYaw", "leftWristRoll", "leftWristPitch",
+                                                       "rightShoulderPitch", "rightShoulderRoll", "rightShoulderYaw", "rightElbowPitch", "rightForearmYaw", "rightWristRoll", "rightWristPitch", 
+                                                       "lowerNeckPitch", "neckYaw", "upperNeckPitch"};
+	upper_body_config_task.reset(new TaskJointConfig(robot_model, upper_body_joint_names));
+	left_foot_task.reset(new Task6DPose(robot_model, "leftCOP_Frame"));
+	right_foot_task.reset(new Task6DPose(robot_model, "rightCOP_Frame") );
+	pelvis_task.reset(new Task6DPose(robot_model, "pelvis"));	
+
+	// Create Task Stack Vector
+	vec_task_stack.clear();
+	vec_task_stack = {upper_body_config_task, left_foot_task, right_foot_task, pelvis_task};
+	ik_task_stack.reset(new TaskStack(robot_model, vec_task_stack));
+
+	// Clear the task hierarchy in the IK module
+	ik_start_config_module->clearTaskHierarchy();
+	// Add the tasks to the task hierarchy in the ik module
+	ik_start_config_module->addTasktoHierarchy(ik_task_stack);
+	// Prepare the ik module data structure
+	ik_start_config_module->prepareNewIKDataStrcutures();
+}
+
 /*
 initializeStartingIKTasks();
 

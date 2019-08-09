@@ -9,5 +9,14 @@ int main(int argc, char ** argv){
   FeasibilityDataGenerator feas_data_gen;
   feas_data_gen.setRobotModel(robot_model);
 
+  unsigned int seed_number = 1;
+  feas_data_gen.initializeSeed(seed_number);
+
+  for(size_t i = 0; i < 10; i++){
+    std::cout << static_cast<double>(rand()) / static_cast<double>(RAND_MAX)  << std::endl;
+  }
+
+  feas_data_gen.initializeStartingIKTasks();
+
   return 0;
 }

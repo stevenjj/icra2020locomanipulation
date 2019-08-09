@@ -33,6 +33,12 @@ public:
 
     void setRobotModel(std::shared_ptr<RobotModel> & robot_model_in);
 
+    // Initialize the seed number to be used:
+    void initializeSeed(unsigned int seed_number);
+    // Initialize the starting IK tasks
+    void initializeStartingIKTasks();
+
+
     // Parameter Handler
     ParamHandler param_handler;
 
@@ -41,10 +47,18 @@ public:
 	std::shared_ptr<IKModule> ik_start_config_module;
 	std::shared_ptr<ConfigTrajectoryGenerator> ctg;
 
+	std::vector<std::string> upper_body_joint_names;
+	std::shared_ptr<Task> upper_body_config_task;
+
 	std::shared_ptr<Task> left_foot_task;
 	std::shared_ptr<Task> right_foot_task;
-	std::shared_ptr<Task> pelvis_ori;
-	std::shared_ptr<Task> com_task;
+	std::shared_ptr<Task> pelvis_task;
+
+	std::vector< std::shared_ptr<Task> > vec_task_stack;
+	std::shared_ptr<Task> ik_task_stack;
+
+	// std::shared_ptr<Task> pelvis_ori;
+	// std::shared_ptr<Task> com_task;
 
 	void initialize_modules();
 
@@ -55,6 +69,9 @@ public:
 	double min_width = 0.2;
 	double max_theta = 0.6;
 	double min_theta = -0.15;
+
+	double pelvis_height_min = 0.9;
+	double pelvis_height_max = 1.1;
 
 	double com_height_min = 0.9;
 	double com_height_max = 1.0;
