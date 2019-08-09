@@ -16,11 +16,8 @@ void FeasibilityDataGenerator::common_initialization(){
   data_gen_stance_case = CASE_STANCE_LEFT_FOOT;
 
 	// Initialize task references
-	left_foot_pos.setZero();
-	left_foot_ori.setIdentity();
-
-	right_foot_pos.setZero();
-	right_foot_ori.setIdentity();	
+  left_footstep.setLeftSide();
+  right_footstep.setRightSide();
 
 	pelvis_pos.setZero();
 	pelvis_ori.setIdentity();	
@@ -32,6 +29,18 @@ void FeasibilityDataGenerator::common_initialization(){
   swing_foot_pos.setZero();
   swing_foot_ori.setIdentity();
   swing_foot_theta_angle = 0.0;
+
+  // Reserve foot contact list sizes
+  int contact_size = left_footstep.global_contact_point_list.size() + right_footstep.global_contact_point_list.size();
+  foot_contact_list_3d.reserve(contact_size);
+  foot_contact_list_2d.reserve(contact_size);
+  // Populate with zeroes
+  for(int i = 0; i < contact_size; i++){
+    foot_contact_list_3d.push_back(Eigen::Vector3d::Zero(3));
+    foot_contact_list_2d.push_back(math_utils::Point(0.0, 0.0));
+  }
+
+
 }
 
 void FeasibilityDataGenerator::setRobotModel(std::shared_ptr<RobotModel> & robot_model_in){
@@ -108,15 +117,11 @@ void FeasibilityDataGenerator::randomizeStartingConfiguration(){
 
   // Set Left foot to be the stance otherwise, set right foot to be the stance for all other cases
   if (data_gen_stance_case == CASE_STANCE_LEFT_FOOT){
-    left_foot_pos = stance_foot_pos;
-    left_foot_ori = stance_foot_ori;
-    right_foot_pos = swing_foot_pos;
-    right_foot_ori = swing_foot_ori;
+    left_footstep.setPosOri(stance_foot_pos, stance_foot_ori);
+    right_footstep.setPosOri(swing_foot_pos, swing_foot_ori);
   }else{
-    right_foot_pos = stance_foot_pos;
-    right_foot_ori = stance_foot_ori;
-    left_foot_pos = swing_foot_pos;
-    left_foot_ori = swing_foot_ori;
+    right_footstep.setPosOri(stance_foot_pos, stance_foot_ori);
+    left_footstep.setPosOri(swing_foot_pos, swing_foot_ori);
   }
 
   // Set pelvis pose to be the midfoot frame
@@ -125,7 +130,7 @@ void FeasibilityDataGenerator::randomizeStartingConfiguration(){
   // pelvis_pos[0] = generateRandMinMax(pelvis_height_min, pelvis_height_max);
   // pelvis_pos[1] = generateRandMinMax(pelvis_height_min, pelvis_height_max);
 
-  // set Possible Hull Vertices (based on stance foot and swing foot poses)
+  getFeetVertexList();   // get Possible Hull Vertices (based on stance foot and swing foot poses)
   // compute Hull Vertices
   // randomly select line segment from vertices
   // randomly select a point on the line segment
@@ -154,6 +159,31 @@ void FeasibilityDataGenerator::randomizeStartingConfiguration(){
     joint_pos[i] = q_rand[robot_model->getJointIndex(upper_body_joint_names[i])];
   }
   std::cout << "joint_pos = " << joint_pos.transpose() << std::endl;
+
+
+}
+
+void FeasibilityDataGenerator::getFeetVertexList(){
+  // Get Vertices of the left foot contact points
+  for(int i = 0; i < left_footstep.global_contact_point_list.size(); i++){
+    foot_contact_list_3d[i][0] = left_footstep.global_contact_point_list[i][0];
+    foot_contact_list_3d[i][1] = left_footstep.global_contact_point_list[i][1];
+    foot_contact_list_3d[i][2] = left_footstep.global_contact_point_list[i][2];
+  }
+
+  // Get Vertices of the right foot contact points  
+  int offset = left_footstep.global_contact_point_list.size();
+  for(int i = 0; i < right_footstep.global_contact_point_list.size(); i++){
+    foot_contact_list_3d[i + offset][0] = right_footstep.global_contact_point_list[i][0];
+    foot_contact_list_3d[i + offset][1] = right_footstep.global_contact_point_list[i][1];
+    foot_contact_list_3d[i + offset][2] = right_footstep.global_contact_point_list[i][2];
+  }
+
+  // Get the x,y locations only
+  for(int i = 0; i < foot_contact_list_3d.size(); i++){
+    foot_contact_list_2d[i].x = foot_contact_list_3d[i][0];
+    foot_contact_list_2d[i].y = foot_contact_list_3d[i][1];
+  }
 
 }
 

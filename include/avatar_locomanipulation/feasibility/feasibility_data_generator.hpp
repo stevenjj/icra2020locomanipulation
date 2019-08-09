@@ -20,7 +20,7 @@
 #include <avatar_locomanipulation/tasks/task_stack.hpp>
 
 #include <avatar_locomanipulation/helpers/orientation_utils.hpp>
-
+#include <avatar_locomanipulation/helpers/convex_hull.hpp>
 
 // Parameter Loader and Saver
 #include <avatar_locomanipulation/helpers/yaml_data_saver.hpp>
@@ -74,11 +74,8 @@ public:
 	// Task References
 	Eigen::VectorXd joint_pos;
 	
-	Eigen::Vector3d left_foot_pos;
-	Eigen::Quaterniond left_foot_ori;
-
-	Eigen::Vector3d right_foot_pos;
-	Eigen::Quaterniond right_foot_ori;	
+	Footstep left_footstep;
+	Footstep right_footstep;
 
 	Eigen::Vector3d pelvis_pos;
 	Eigen::Quaterniond pelvis_ori;	
@@ -131,6 +128,11 @@ public:
 	double swing_foot_theta_angle;
 
 	Eigen::VectorXd q_rand;
+
+
+	void getFeetVertexList();
+	std::vector<Eigen::Vector3d> foot_contact_list_3d;
+	std::vector<math_utils::Point> foot_contact_list_2d;
 
 };
 
