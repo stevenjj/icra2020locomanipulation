@@ -102,7 +102,7 @@ double FeasibilityDataGenerator::generateRandMinMax(const double min, const doub
   return (static_cast<double>(rand()) / static_cast<double>(RAND_MAX)) *(max-min) + min;
  }
 
-void FeasibilityDataGenerator::randomizeStartingConfiguration(){
+bool FeasibilityDataGenerator::randomizeStartingConfiguration(){
   // Set stance foot to be the origin
   stance_foot_pos.setZero();
   stance_foot_ori.setIdentity();
@@ -145,8 +145,6 @@ void FeasibilityDataGenerator::randomizeStartingConfiguration(){
    for(int i = 0; i < upper_body_joint_names.size(); i++){
     joint_pos[i] = q_rand[robot_model->getJointIndex(upper_body_joint_names[i])];
   }
-  std::cout << "joint_pos = " << joint_pos.transpose() << std::endl;
-
 
   // Set IK references
   upper_body_config_task->setReference(joint_pos);
@@ -159,14 +157,21 @@ void FeasibilityDataGenerator::randomizeStartingConfiguration(){
   double total_error_norm;
   std::vector<double> task_error_norms;
   Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(robot_model->getDimQdot()); 
-  int ik_verbosity_level = IK_VERBOSITY_HIGH;// : IK_VERBOSITY_LOW;
+  int ik_verbosity_level = IK_VERBOSITY_LOW;
   bool config_convergence = false;
 
   // Set Verbosity Level
   ik_start_config_module->setVerbosityLevel(ik_verbosity_level);
   // Solve IK
   config_convergence = ik_start_config_module->solveIK(solve_result, task_error_norms, total_error_norm, q_sol);
-  ik_start_config_module->printSolutionResults();
+  // ik_start_config_module->printSolutionResults();
+
+  // If we found a starting configuration set it to be the starting config.
+  if (config_convergence){
+    q_start = q_sol;
+  }
+
+  return config_convergence;
 
 }
 

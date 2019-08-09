@@ -1,4 +1,5 @@
 #include <avatar_locomanipulation/feasibility/feasibility_data_generator.hpp>
+#include <avatar_locomanipulation/bridge/rviz_visualizer.hpp>
 
 
 void initialize_config(Eigen::VectorXd & q_init, std::shared_ptr<RobotModel> & robot_model){
@@ -58,10 +59,38 @@ int main(int argc, char ** argv){
   unsigned int seed_number = 1;
   feas_data_gen.initializeSeed(seed_number);
 
-  for(int i = 0; i < 10; i++){
+  // Try finding initial configurations
+  int N_tries = 10;
+  bool found_start_config = false;
+
+  int N_success = 0;
+  std::vector<Eigen::VectorXd> q_successes;
+
+  for(int i = 0; i < N_tries; i++){
     // set random starting configuration
-    feas_data_gen.randomizeStartingConfiguration();   
+    found_start_config = feas_data_gen.randomizeStartingConfiguration();   
+    std::cout << "Found starting config? " << (found_start_config ? "True" : "False") << std::endl;
+    if (found_start_config){
+      std::cout << "q_start = " << feas_data_gen.q_start.transpose() << std::endl;
+      // Store successful configurations
+      q_successes.push_back(feas_data_gen.q_start);
+      N_success++;
+    }
   }
+
+  // Set the "trajectory" to visualize
+  TrajEuclidean   traj_q_config;
+  double dt_visualize = 0.5;
+  traj_q_config.set_dim_N_dt(robot_model->getDimQ(), N_success, dt_visualize);
+  for (int i = 0; i < N_success; i++){
+    traj_q_config.set_pos(i, q_successes[i]);
+  }
+
+  ros::init(argc, argv, "test_feasibility_data_generation");
+  std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
+  RVizVisualizer visualizer(ros_node, robot_model);  
+  visualizer.visualizeConfigurationTrajectory(q_ik_start, traj_q_config);
+
 
 
   return 0;

@@ -52,7 +52,7 @@ public:
     // Randomly generate a number from a specified interval
 	double generateRandMinMax(const double min, const double max);
 	// Generate random starting configuration 
-    void randomizeStartingConfiguration();
+    bool randomizeStartingConfiguration();
 
     // Sets the starting IK configuration
 	void setStartingIKConfig(const Eigen::VectorXd & q_ik_start_in);
@@ -101,7 +101,7 @@ public:
 
 	double convex_hull_percentage = 0.9; // Percentage of convex hull to use for randomization of pelvis location
 	double pelvis_height_min = 0.9;
-	double pelvis_height_max = 1.1;
+	double pelvis_height_max = 1.05;
 
 	double com_height_min = 0.9;
 	double com_height_max = 1.0;
