@@ -48,7 +48,6 @@ public:
 
 	void initialize_modules();
 
-
 	// data generation parameters
 	double max_reach = 0.4;
 	double min_reach = -0.2;
