@@ -96,6 +96,7 @@ public:
 	double max_theta = 0.6; // maximum foot angle w.r.t stance
 	double min_theta = -0.15; // minimum foot angle w.r.t stance
 
+	double convex_hull_percentage = 0.9; // Percentage of convex hull to use for randomization of pelvis location
 	double pelvis_height_min = 0.9;
 	double pelvis_height_max = 1.1;
 
@@ -132,6 +133,7 @@ public:
 
 
 	void getFeetVertexList();
+	void getRandomPelvisLocation(Eigen::Vector3d & pelvis_out);
 	std::vector<Eigen::Vector3d> foot_contact_list_3d;
 	std::vector<math_utils::Point> foot_contact_list_2d;
 	std::vector<math_utils::Point> contact_hull_vertices;

@@ -127,33 +127,8 @@ void FeasibilityDataGenerator::randomizeStartingConfiguration(){
 
   // Set pelvis pose to be the midfoot frame
   pelvis_ori = Eigen::AngleAxisd( swing_foot_theta_angle/2.0, Eigen::Vector3d(0.0, 0.0, 1.0) );
-
-  // pelvis_pos[0] = generateRandMinMax(pelvis_height_min, pelvis_height_max);
-  // pelvis_pos[1] = generateRandMinMax(pelvis_height_min, pelvis_height_max);
-
-  getFeetVertexList();   // get Possible Hull Vertices (based on stance foot and swing foot poses)
-  contact_hull_vertices = math_utils::convexHull(foot_contact_list_2d); // compute Hull Vertices
-  std::cout << "contact hull vertices list size = " << contact_hull_vertices.size() << std::endl;
-  for(int i = 0; i < contact_hull_vertices.size(); i++){
-    std::cout << "contact_hull "<< i << " (x,y) = (" << contact_hull_vertices[i].x << ", " << contact_hull_vertices[i].y << ")" << std::endl;
-  }
-  
-  std::uniform_int_distribution<int> distribution(1, contact_hull_vertices.size()-1);
-  for(int i = 0 ; i < 100; i++){
-    int rand_line_segment_index = distribution(generator);
-    std::cout << "random index = " << rand_line_segment_index << std::endl;
-  }
-
-
-  // randomly select line segment from vertices
-  // randomly select a point on the line segment
-  // randomly select x,y point from midfeet to point on the line segment.
-  // ^-- this is the pelvis x,y position
-
-
-  pelvis_pos = 0.5*(stance_foot_pos + swing_foot_pos); // set pelvis x,y 
-  pelvis_pos[2] = generateRandMinMax(pelvis_height_min, pelvis_height_max); // set pelvis height
-
+  // Randomize pelvis location based on swing and stance feet location
+  getRandomPelvisLocation(pelvis_pos);
 
   std::cout << "swing_foot_position " << swing_foot_pos.transpose() << std::endl;
   std::cout << "swing_foot_theta_angle " << swing_foot_theta_angle << std::endl;
@@ -173,6 +148,44 @@ void FeasibilityDataGenerator::randomizeStartingConfiguration(){
   }
   std::cout << "joint_pos = " << joint_pos.transpose() << std::endl;
 
+
+}
+
+void FeasibilityDataGenerator::getRandomPelvisLocation(Eigen::Vector3d & pelvis_out){
+  // get Possible Hull Vertices (based on stance foot and swing foot poses)
+  getFeetVertexList();   
+  // compute Hull Vertices
+  contact_hull_vertices = math_utils::convexHull(foot_contact_list_2d); 
+  // randomly select line segment from vertices
+  std::uniform_int_distribution<int> u_distribution_int(1, contact_hull_vertices.size()-1);
+  int segment_head_idx = u_distribution_int(generator);
+  int segment_tail_idx = segment_head_idx - 1;
+
+  Eigen::Vector3d segment_head(contact_hull_vertices[segment_head_idx].x, contact_hull_vertices[segment_head_idx].y, 0.0);
+  Eigen::Vector3d segment_tail(contact_hull_vertices[segment_tail_idx].x, contact_hull_vertices[segment_tail_idx].y, 0.0);
+
+  // randomly select a point on the line segment
+  std::uniform_real_distribution<double> u_distribution_double(0.0, 1.0);
+  double alpha = u_distribution_double(generator);
+  std::cout << "alpha" << alpha << std::endl;
+  Eigen::Vector3d point_on_segment = alpha*segment_head + (1.0-alpha)*segment_tail;
+
+  std::cout << "segment_head = " << segment_head.transpose() << std::endl;
+  std::cout << "segment_tail = " << segment_tail.transpose() << std::endl;
+  std::cout << "point_on_segment = " << point_on_segment.transpose() << std::endl;
+
+  // randomly select x,y point from midfeet to point on the line segment.
+  Eigen::Vector3d midfeet_position =  0.5*(stance_foot_pos + swing_foot_pos);
+  alpha = u_distribution_double(generator)*convex_hull_percentage;
+  Eigen::Vector3d rand_pelvis_pos = alpha*point_on_segment + (1.0-alpha)*midfeet_position;
+  // ^-- this is the pelvis x,y position
+
+  std::cout << "alpha" << alpha << std::endl;
+  std::cout << "rand_pelvis_pos = " << rand_pelvis_pos.transpose() << std::endl;
+
+  // Randomize pelvis height
+  rand_pelvis_pos[2] = generateRandMinMax(pelvis_height_min, pelvis_height_max); // set pelvis height
+  pelvis_out = rand_pelvis_pos;
 
 }
 
