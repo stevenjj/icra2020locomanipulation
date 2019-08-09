@@ -3,6 +3,7 @@
 
 #include <math.h>
 #include <time.h>
+#include <random>
 
 #include <Configuration.h>
 #include <avatar_locomanipulation/models/robot_model.hpp>
@@ -133,6 +134,9 @@ public:
 	void getFeetVertexList();
 	std::vector<Eigen::Vector3d> foot_contact_list_3d;
 	std::vector<math_utils::Point> foot_contact_list_2d;
+	std::vector<math_utils::Point> contact_hull_vertices;
+	std::mt19937 generator;
+
 
 };
 

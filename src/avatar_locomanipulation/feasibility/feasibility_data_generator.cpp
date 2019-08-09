@@ -54,6 +54,7 @@ void FeasibilityDataGenerator::setRobotModel(std::shared_ptr<RobotModel> & robot
 
 void FeasibilityDataGenerator::initializeSeed(unsigned int seed_number){
 	srand(seed_number);
+  generator.seed(seed_number);
 }
 
 void FeasibilityDataGenerator::initializeStartingIKTasks(){
@@ -131,7 +132,19 @@ void FeasibilityDataGenerator::randomizeStartingConfiguration(){
   // pelvis_pos[1] = generateRandMinMax(pelvis_height_min, pelvis_height_max);
 
   getFeetVertexList();   // get Possible Hull Vertices (based on stance foot and swing foot poses)
-  // compute Hull Vertices
+  contact_hull_vertices = math_utils::convexHull(foot_contact_list_2d); // compute Hull Vertices
+  std::cout << "contact hull vertices list size = " << contact_hull_vertices.size() << std::endl;
+  for(int i = 0; i < contact_hull_vertices.size(); i++){
+    std::cout << "contact_hull "<< i << " (x,y) = (" << contact_hull_vertices[i].x << ", " << contact_hull_vertices[i].y << ")" << std::endl;
+  }
+  
+  std::uniform_int_distribution<int> distribution(1, contact_hull_vertices.size()-1);
+  for(int i = 0 ; i < 100; i++){
+    int rand_line_segment_index = distribution(generator);
+    std::cout << "random index = " << rand_line_segment_index << std::endl;
+  }
+
+
   // randomly select line segment from vertices
   // randomly select a point on the line segment
   // randomly select x,y point from midfeet to point on the line segment.
