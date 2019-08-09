@@ -52,6 +52,12 @@ void FeasibilityDataGenerator::setRobotModel(std::shared_ptr<RobotModel> & robot
 	ctg->commonInitialization();
 }
 
+void FeasibilityDataGenerator::setStartingIKConfig(const Eigen::VectorXd & q_ik_start_in){
+  q_ik_start = q_ik_start_in;
+  ik_start_config_module->setInitialConfig(q_ik_start);
+}
+
+
 void FeasibilityDataGenerator::initializeSeed(unsigned int seed_number){
 	srand(seed_number);
   generator.seed(seed_number);
@@ -141,6 +147,26 @@ void FeasibilityDataGenerator::randomizeStartingConfiguration(){
   }
   std::cout << "joint_pos = " << joint_pos.transpose() << std::endl;
 
+
+  // Set IK references
+  upper_body_config_task->setReference(joint_pos);
+  left_foot_task->setReference(left_footstep.position, left_footstep.orientation);
+  right_foot_task->setReference(right_footstep.position, right_footstep.orientation);
+  pelvis_task->setReference(pelvis_pos, pelvis_ori);
+
+  // Prepare IK output
+  int solve_result;
+  double total_error_norm;
+  std::vector<double> task_error_norms;
+  Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(robot_model->getDimQdot()); 
+  int ik_verbosity_level = IK_VERBOSITY_HIGH;// : IK_VERBOSITY_LOW;
+  bool config_convergence = false;
+
+  // Set Verbosity Level
+  ik_start_config_module->setVerbosityLevel(ik_verbosity_level);
+  // Solve IK
+  config_convergence = ik_start_config_module->solveIK(solve_result, task_error_norms, total_error_norm, q_sol);
+  ik_start_config_module->printSolutionResults();
 
 }
 

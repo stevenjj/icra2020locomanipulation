@@ -51,8 +51,11 @@ public:
 
     // Randomly generate a number from a specified interval
 	double generateRandMinMax(const double min, const double max);
-
+	// Generate random starting configuration 
     void randomizeStartingConfiguration();
+
+    // Sets the starting IK configuration
+	void setStartingIKConfig(const Eigen::VectorXd & q_ik_start_in);
 
     // Parameter Handler
     ParamHandler param_handler;
@@ -111,6 +114,7 @@ public:
 	// robot configuration data types
 	Eigen::VectorXd q_min;
 	Eigen::VectorXd q_max;	
+	Eigen::VectorXd q_ik_start;
 	Eigen::VectorXd q_start;	
 
 	// Trajectory configuration
