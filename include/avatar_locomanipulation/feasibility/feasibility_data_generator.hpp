@@ -45,7 +45,8 @@ public:
     void initializeSeed(unsigned int seed_number);
     // Initialize the starting IK tasks
     void initializeStartingIKTasks();
-
+    // Initialize configuration limits
+    void initializeConfigurationLimits();
 
     // Randomly generate a number from a specified interval
 	double generateRandMinMax(const double min, const double max);
@@ -128,6 +129,8 @@ public:
 	Eigen::Vector3d swing_foot_pos;
 	Eigen::Quaterniond swing_foot_ori;
 	double swing_foot_theta_angle;
+
+	Eigen::VectorXd q_rand;
 
 };
 
