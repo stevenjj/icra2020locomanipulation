@@ -26,6 +26,14 @@
 #include <avatar_locomanipulation/helpers/yaml_data_saver.hpp>
 #include <avatar_locomanipulation/helpers/param_handler.hpp>
 
+#define CASE_MANIPULATION_LEFT_HAND 0
+#define CASE_MANIPULATION_RIGHT_HAND 1
+#define CASE_MANIPULATION_BOTH_HANDS 2
+
+#define CASE_STANCE_LEFT_FOOT 0 // Left foot stance right foot swing 
+#define CASE_STANCE_RIGHT_FOOT 1 // Right foot stance left foot swing
+#define CASE_STANCE_DOUBLE_SUPPORT 2 // No transition
+
 class FeasibilityDataGenerator{
 public:
 	FeasibilityDataGenerator();
@@ -38,6 +46,11 @@ public:
     // Initialize the starting IK tasks
     void initializeStartingIKTasks();
 
+
+    // Randomly generate a number from a specified interval
+	double generateRandMinMax(const double min, const double max);
+
+    void randomizeStartingConfiguration();
 
     // Parameter Handler
     ParamHandler param_handler;
@@ -57,18 +70,32 @@ public:
 	std::vector< std::shared_ptr<Task> > vec_task_stack;
 	std::shared_ptr<Task> ik_task_stack;
 
+	// Task References
+	Eigen::VectorXd joint_pos;
+	
+	Eigen::Vector3d left_foot_pos;
+	Eigen::Quaterniond left_foot_ori;
+
+	Eigen::Vector3d right_foot_pos;
+	Eigen::Quaterniond right_foot_ori;	
+
+	Eigen::Vector3d pelvis_pos;
+	Eigen::Quaterniond pelvis_ori;	
+
+
+
 	// std::shared_ptr<Task> pelvis_ori;
 	// std::shared_ptr<Task> com_task;
 
-	void initialize_modules();
+	void common_initialization();
 
 	// data generation parameters
-	double max_reach = 0.4;
-	double min_reach = -0.2;
-	double max_width = 0.4;
-	double min_width = 0.2;
-	double max_theta = 0.6;
-	double min_theta = -0.15;
+	double max_reach = 0.4; // maximum forward step
+	double min_reach = -0.2; // maximum backward step
+	double max_width = 0.4; // maximum side step
+	double min_width = 0.2; // minimum side step
+	double max_theta = 0.6; // maximum foot angle w.r.t stance
+	double min_theta = -0.15; // minimum foot angle w.r.t stance
 
 	double pelvis_height_min = 0.9;
 	double pelvis_height_max = 1.1;
@@ -88,6 +115,19 @@ public:
 
 	// Trajectory configuration
 	TrajEuclidean   traj_q_config;
+
+	// data gen case
+	int data_gen_manipulation_case;
+	int data_gen_stance_case;
+
+
+	// temp variables
+	Eigen::Vector3d stance_foot_pos;
+	Eigen::Quaterniond stance_foot_ori;
+
+	Eigen::Vector3d swing_foot_pos;
+	Eigen::Quaterniond swing_foot_ori;
+	double swing_foot_theta_angle;
 
 };
 
