@@ -257,9 +257,35 @@ void FeasibilityDataGenerator::randomizeFootLandingConfiguration(){
   landing_footstep.printInfo();
 }
 
+
+void FeasibilityDataGenerator::initializeConfigTrajectoryGenerationModule(){
+  // Prepare the config trajectory generator
+  // Set resolution of the config trajectory generator
+  ctg->initializeDiscretization(N_resolution);
+
+  // Don't restrict the torso joints
+  ctg->setUseTorsoJointPosition(false);
+  // Have fast double support times
+  ctg->wpg.setDoubleSupportTime(0.2);
+
+  // Check if the right hand is being used
+  if  ((data_gen_manipulation_case == CASE_MANIPULATION_RIGHT_HAND) || 
+      (data_gen_manipulation_case == CASE_MANIPULATION_BOTH_HANDS)){
+    ctg->setUseRightHand(true);
+  }
+
+  // Check if the left hand is being used
+  if  ((data_gen_manipulation_case == CASE_MANIPULATION_LEFT_HAND) || 
+      (data_gen_manipulation_case == CASE_MANIPULATION_BOTH_HANDS)){
+    ctg->setUseLeftHand(true);
+  }
+
+  // Reinitialize the task stack
+  ctg->reinitializeTaskStack();
+}
+
 // Randomly generate a contact transition data
 bool FeasibilityDataGenerator::generateContactTransitionData(){
-
   bool start_configuration = false;
 
   // Generate a random starting configuration
@@ -267,15 +293,9 @@ bool FeasibilityDataGenerator::generateContactTransitionData(){
     start_configuration = randomizeStartingConfiguration();    
   }
   // Randomize a foot landing configuration
-  randomizeFootLandingConfiguration();
+  randomizeFootLandingConfiguration();    
 
-  // Prepare the config trajectory generator
-  // Set resolution of the config trajectory generator
-  ctg->initializeDiscretization(N_resolution);
-
-  // Don't restrict the torso joints
-  ctg->setUseTorsoJointPosition(false);
-
+  // Set the hand configuration
   // Check if the right hand is being used
   if  ((data_gen_manipulation_case == CASE_MANIPULATION_RIGHT_HAND) || 
       (data_gen_manipulation_case == CASE_MANIPULATION_BOTH_HANDS)){
@@ -285,7 +305,6 @@ bool FeasibilityDataGenerator::generateContactTransitionData(){
     robot_model->getFrameWorldPose("rightPalm", rhand_pos, rhand_ori);  
     // Set Constant Right Hand trajectory to current
     ctg->setConstantRightHandTrajectory(rhand_pos, rhand_ori);
-    ctg->setUseRightHand(true);
   }
 
   // Check if the left hand is being used
@@ -297,17 +316,10 @@ bool FeasibilityDataGenerator::generateContactTransitionData(){
     robot_model->getFrameWorldPose("leftPalm", lhand_pos, lhand_ori);  
     // Set Constant Right Hand trajectory to current
     ctg->setConstantLeftHandTrajectory(lhand_pos, lhand_ori);
-    ctg->setUseLeftHand(true);
-  }
-
-  // Reinitialize the task stack
-  ctg->reinitializeTaskStack();    
+  }  
 
   // Set the landing footstep to try
   std::vector<Footstep> input_footstep_list = {landing_footstep};
-
-  // Have fast double support times
-  ctg->wpg.setDoubleSupportTime(0.2);
 
   // Try to compute the trajectory
   bool trajectory_convergence = ctg->computeConfigurationTrajectory(q_start, input_footstep_list);

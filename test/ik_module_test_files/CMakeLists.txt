@@ -1,4 +1,4 @@
-add_executable(test_config_trajectory_generator test_config_trajectory_generator.cpp ${PROJECT_SOURCES})
+# add_executable(test_config_trajectory_generator test_config_trajectory_generator.cpp ${PROJECT_SOURCES})
 # add_executable(test_ik_module test_ik_module.cpp ${PROJECT_SOURCES})
 # add_executable(test_ik_objectcollision test_ik_objectcollision.cpp ${PROJECT_SOURCES})
 # add_executable(test_ik_selfcollision test_ik_selfcollision.cpp ${PROJECT_SOURCES})
@@ -6,7 +6,7 @@ add_executable(test_config_trajectory_generator test_config_trajectory_generator
 # add_executable(test_walking_pattern_generator test_walking_pattern_generator.cpp ${PROJECT_SOURCES})
 
 
-target_link_libraries(test_config_trajectory_generator ${PROJECT_LIBRARIES})
+# target_link_libraries(test_config_trajectory_generator ${PROJECT_LIBRARIES})
 # target_link_libraries(test_ik_module ${PROJECT_LIBRARIES})
 # target_link_libraries(test_ik_objectcollision ${PROJECT_LIBRARIES})
 # target_link_libraries(test_ik_selfcollision ${PROJECT_LIBRARIES})

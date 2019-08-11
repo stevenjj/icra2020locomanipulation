@@ -119,10 +119,12 @@ void test_generate_contact_transition_data(){
   // Generate contact transition data
   std::cout << "try generating a contact transition data" << std::endl;
 
+  // Initialize the config trajectory generation module
+  feas_data_gen.initializeConfigTrajectoryGenerationModule();
   while(feas_data_gen.generateContactTransitionData() != true){
     continue;
   }
-  
+
 }
 
 int main(int argc, char ** argv){

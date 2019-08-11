@@ -58,7 +58,10 @@ public:
 	// Randomize the foot landing configuration
 	void randomizeFootLandingConfiguration();
 
+	// sets up the tasks and parameters for the config trajectory generation module.
+	void initializeConfigTrajectoryGenerationModule();
 	// Randomly generate a contact transition data
+	// -- assumes initializeConfigTrajectoryGenerationModule() has already been called.
 	bool generateContactTransitionData();
 
     // Parameter Handler
