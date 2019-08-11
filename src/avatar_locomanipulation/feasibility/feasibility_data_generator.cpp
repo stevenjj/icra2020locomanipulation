@@ -257,6 +257,52 @@ void FeasibilityDataGenerator::randomizeFootLandingConfiguration(){
   landing_footstep.printInfo();
 }
 
+// Randomly generate a contact transition data
+bool FeasibilityDataGenerator::generateContactTransitionData(){
+
+  bool start_configuration = false;
+
+  // Generate a random starting configuration
+  while (start_configuration != true){
+    start_configuration = randomizeStartingConfiguration();    
+  }
+  // Randomize a foot landing configuration
+  randomizeFootLandingConfiguration();
+
+/*
+  int N_resolution = 60; //single step = 30. two steps = 60// 30* number of footsteps
+  ConfigTrajectoryGenerator ctg(valkyrie_model, N_resolution);
+
+  std::vector<Footstep> input_footstep_list = {landing_footstep}
+ 
+  // Get current hand pose
+  Eigen::Vector3d rhand_pos;
+  Eigen::Quaterniond rhand_ori;
+  valkyrie_model->getFrameWorldPose("rightPalm", rhand_pos, rhand_ori);  
+  // Set Constant Right Hand trajectory to current //To do. set task gain for hand to be small in orientation
+  ctg.setConstantRightHandTrajectory(rhand_pos, rhand_ori);
+  ctg.setUseRightHand(true);
+  ctg.setUseTorsoJointPosition(false);
+  ctg.reinitializeTaskStack();
+
+    // timer
+  PinocchioTicToc timer = PinocchioTicToc(PinocchioTicToc::MS);
+
+  // Have fast double support times
+  ctg.wpg.setDoubleSupportTime(0.2);
+  // Set Verbosity
+  ctg.setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_2);
+  // Solve for configurations
+  timer.tic();
+  ctg.computeConfigurationTrajectory(q_start, input_footstep_list);
+  std::cout << "IK Trajectory took: " << timer.toc() << timer.unitName(timer.DEFAULT_UNIT) << std::endl;
+*/
+
+
+  return false;
+
+}
+
 /*
 initializeSeed();
 initializeStartingIKTasks();

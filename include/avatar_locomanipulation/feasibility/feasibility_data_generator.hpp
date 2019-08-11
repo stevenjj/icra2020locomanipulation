@@ -58,6 +58,8 @@ public:
 	// Randomize the foot landing configuration
 	void randomizeFootLandingConfiguration();
 
+	// Randomly generate a contact transition data
+	bool generateContactTransitionData();
 
     // Parameter Handler
     ParamHandler param_handler;
