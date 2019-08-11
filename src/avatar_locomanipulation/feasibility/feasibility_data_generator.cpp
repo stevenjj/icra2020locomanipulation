@@ -231,6 +231,32 @@ void FeasibilityDataGenerator::getFeetVertexList(){
 
 }
 
+void FeasibilityDataGenerator::randomizeFootLandingConfiguration(){
+  // Check which foot is the swing foot
+  double direction = 1.0;
+  if (data_gen_stance_case == CASE_STANCE_LEFT_FOOT){
+    direction = -1.0;
+    // If stance foot is left, then swing foot is the right side
+    landing_footstep.setRightSide();
+  }else{
+    // stance foot is right, so swing foot is the left side
+    landing_footstep.setLeftSide();    
+  }
+
+  // Set Randomize desired swing foot landing pose
+  swing_foot_pos[0] = generateRandMinMax(min_reach, max_reach); // x
+  swing_foot_pos[1] = direction*generateRandMinMax(min_width, max_width); // y
+  swing_foot_pos[2] = 0.0; // z
+
+  // Set swing foot angle theta
+  swing_foot_theta_angle = direction*generateRandMinMax(min_theta, max_theta); // theta
+  swing_foot_ori = Eigen::AngleAxisd(swing_foot_theta_angle, Eigen::Vector3d(0.0, 0.0, 1.0) );
+
+  // Set the landing foot location
+  landing_footstep.setPosOri(swing_foot_pos, swing_foot_ori);
+  landing_footstep.printInfo();
+}
+
 /*
 initializeSeed();
 initializeStartingIKTasks();

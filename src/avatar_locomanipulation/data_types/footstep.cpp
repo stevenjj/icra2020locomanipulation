@@ -74,6 +74,10 @@ void Footstep::updateContactLocations(){
 
 
 void Footstep::printInfo(){
+  if ((robot_side == LEFT_FOOTSTEP) || (robot_side == RIGHT_FOOTSTEP)){
+    std::cout << "side = " << (robot_side == LEFT_FOOTSTEP ? "LEFT_FOOTSTEP" : "RIGHT_FOOTSTEP") << std::endl;    
+  }
+
 	std::cout << "pos: " << position[0] << ", " << position[1] << ", " << position[2] << std::endl;
   std::cout << "ori: " << orientation.x() << ", " 
                      << orientation.y() << ", " 

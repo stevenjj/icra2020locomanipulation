@@ -71,6 +71,9 @@ int main(int argc, char ** argv){
     found_start_config = feas_data_gen.randomizeStartingConfiguration();   
     std::cout << "Found starting config? " << (found_start_config ? "True" : "False") << std::endl;
     if (found_start_config){
+      std::cout << "randomizing foot landing configuration:" << std::endl;
+      feas_data_gen.randomizeFootLandingConfiguration();
+
       std::cout << "q_start = " << feas_data_gen.q_start.transpose() << std::endl;
       // Store successful configurations
       q_successes.push_back(feas_data_gen.q_start);
@@ -90,7 +93,6 @@ int main(int argc, char ** argv){
   std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
   RVizVisualizer visualizer(ros_node, robot_model);  
   visualizer.visualizeConfigurationTrajectory(q_ik_start, traj_q_config);
-
 
 
   return 0;

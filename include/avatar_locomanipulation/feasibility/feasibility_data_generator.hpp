@@ -53,9 +53,11 @@ public:
 	double generateRandMinMax(const double min, const double max);
 	// Generate random starting configuration 
     bool randomizeStartingConfiguration();
-
     // Sets the starting IK configuration
 	void setStartingIKConfig(const Eigen::VectorXd & q_ik_start_in);
+	// Randomize the foot landing configuration
+	void randomizeFootLandingConfiguration();
+
 
     // Parameter Handler
     ParamHandler param_handler;
@@ -78,6 +80,7 @@ public:
 	// Task References
 	Eigen::VectorXd joint_pos;
 	
+	Footstep landing_footstep;
 	Footstep left_footstep;
 	Footstep right_footstep;
 
