@@ -116,6 +116,9 @@ public:
 	double walking_single_support_time = 1.0; // AKA swing time	
 	double walking_swing_height = 0.1;
 
+	int N_resolution = 60; // Resolution discretization to use for solving the transition trajectory
+
+
 	// robot configuration data types
 	Eigen::VectorXd q_min;
 	Eigen::VectorXd q_max;	

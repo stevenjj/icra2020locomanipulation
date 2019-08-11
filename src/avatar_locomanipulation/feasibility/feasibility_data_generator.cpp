@@ -269,37 +269,51 @@ bool FeasibilityDataGenerator::generateContactTransitionData(){
   // Randomize a foot landing configuration
   randomizeFootLandingConfiguration();
 
-/*
-  int N_resolution = 60; //single step = 30. two steps = 60// 30* number of footsteps
-  ConfigTrajectoryGenerator ctg(valkyrie_model, N_resolution);
+  // Prepare the config trajectory generator
+  // Set resolution of the config trajectory generator
+  ctg->initializeDiscretization(N_resolution);
 
-  std::vector<Footstep> input_footstep_list = {landing_footstep}
- 
-  // Get current hand pose
-  Eigen::Vector3d rhand_pos;
-  Eigen::Quaterniond rhand_ori;
-  valkyrie_model->getFrameWorldPose("rightPalm", rhand_pos, rhand_ori);  
-  // Set Constant Right Hand trajectory to current //To do. set task gain for hand to be small in orientation
-  ctg.setConstantRightHandTrajectory(rhand_pos, rhand_ori);
-  ctg.setUseRightHand(true);
-  ctg.setUseTorsoJointPosition(false);
-  ctg.reinitializeTaskStack();
+  // Don't restrict the torso joints
+  ctg->setUseTorsoJointPosition(false);
 
-    // timer
-  PinocchioTicToc timer = PinocchioTicToc(PinocchioTicToc::MS);
+  // Check if the right hand is being used
+  if  ((data_gen_manipulation_case == CASE_MANIPULATION_RIGHT_HAND) || 
+      (data_gen_manipulation_case == CASE_MANIPULATION_BOTH_HANDS)){
+    // robot model would already have been updated after an initial configuration has been set
+    Eigen::Vector3d rhand_pos;
+    Eigen::Quaterniond rhand_ori;
+    robot_model->getFrameWorldPose("rightPalm", rhand_pos, rhand_ori);  
+    // Set Constant Right Hand trajectory to current
+    ctg->setConstantRightHandTrajectory(rhand_pos, rhand_ori);
+    ctg->setUseRightHand(true);
+  }
+
+  // Check if the left hand is being used
+  if  ((data_gen_manipulation_case == CASE_MANIPULATION_LEFT_HAND) || 
+      (data_gen_manipulation_case == CASE_MANIPULATION_BOTH_HANDS)){
+    // robot model would already have been updated after an initial configuration has been set
+    Eigen::Vector3d lhand_pos;
+    Eigen::Quaterniond lhand_ori;
+    robot_model->getFrameWorldPose("leftPalm", lhand_pos, lhand_ori);  
+    // Set Constant Right Hand trajectory to current
+    ctg->setConstantLeftHandTrajectory(lhand_pos, lhand_ori);
+    ctg->setUseLeftHand(true);
+  }
+
+  // Reinitialize the task stack
+  ctg->reinitializeTaskStack();    
+
+  // Set the landing footstep to try
+  std::vector<Footstep> input_footstep_list = {landing_footstep};
 
   // Have fast double support times
-  ctg.wpg.setDoubleSupportTime(0.2);
-  // Set Verbosity
-  ctg.setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_2);
-  // Solve for configurations
-  timer.tic();
-  ctg.computeConfigurationTrajectory(q_start, input_footstep_list);
-  std::cout << "IK Trajectory took: " << timer.toc() << timer.unitName(timer.DEFAULT_UNIT) << std::endl;
-*/
+  ctg->wpg.setDoubleSupportTime(0.2);
 
+  // Try to compute the trajectory
+  bool trajectory_convergence = ctg->computeConfigurationTrajectory(q_start, input_footstep_list);
 
-  return false;
+  // Return the trajectory convergence result
+  return trajectory_convergence;
 
 }
 

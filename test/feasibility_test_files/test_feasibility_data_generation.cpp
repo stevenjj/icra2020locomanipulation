@@ -39,7 +39,7 @@ void initialize_config(Eigen::VectorXd & q_init, std::shared_ptr<RobotModel> & r
   q_init = q_start;
 }
 
-int main(int argc, char ** argv){
+void test_initial_configuration_data_generation(int argc, char ** argv){
   std::cout << "[Testing FeasibilityDataGenerator]" << std::endl;
 
   std::string filename = THIS_PACKAGE_PATH"models/valkyrie_simplified.urdf"; 
@@ -92,8 +92,41 @@ int main(int argc, char ** argv){
   ros::init(argc, argv, "test_feasibility_data_generation");
   std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
   RVizVisualizer visualizer(ros_node, robot_model);  
-  visualizer.visualizeConfigurationTrajectory(q_ik_start, traj_q_config);
+  visualizer.visualizeConfigurationTrajectory(q_ik_start, traj_q_config);  
+}
 
 
+void test_generate_contact_transition_data(){
+  std::cout << "[Testing FeasibilityDataGenerator]" << std::endl;
+
+  std::string filename = THIS_PACKAGE_PATH"models/valkyrie_simplified.urdf"; 
+  std::shared_ptr<RobotModel> robot_model(new RobotModel(filename));
+  Eigen::VectorXd q_ik_start;
+  initialize_config(q_ik_start, robot_model);
+
+  // Initialize feasibility data generator
+  FeasibilityDataGenerator feas_data_gen;
+
+  // Set the robot model
+  feas_data_gen.setRobotModel(robot_model);
+  // Set the initial IK configuration
+  feas_data_gen.setStartingIKConfig(q_ik_start);
+
+  // Set the seed
+  unsigned int seed_number = 1;
+  feas_data_gen.initializeSeed(seed_number);
+
+  // Generate contact transition data
+  std::cout << "try generating a contact transition data" << std::endl;
+
+  while(feas_data_gen.generateContactTransitionData() != true){
+    continue;
+  }
+  
+}
+
+int main(int argc, char ** argv){
+  // test_initial_configuration_data_generation(argc, argv);
+  test_generate_contact_transition_data();
   return 0;
 }

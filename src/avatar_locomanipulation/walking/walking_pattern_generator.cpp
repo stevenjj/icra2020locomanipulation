@@ -67,6 +67,7 @@ void WalkingPatternGenerator::initialize_footsteps_rvrp(const std::vector<Footst
   right_stance_rvrp = current_stance_rvrp;
 
   // Specify that this is the eos for the previous rvrp
+  rvrp_type_list.clear();
   rvrp_type_list.push_back(DOUBLE_SUPPORT_TRANSFER_VRP_TYPE);
   dcm_eos_list.push_back(current_stance_rvrp);
 
@@ -287,9 +288,10 @@ void WalkingPatternGenerator::construct_trajectories(const std::vector<Footstep>
                                                      const Footstep & initial_right_footstance, 
                                                      const Eigen::Vector3d & initial_com,
                                                      const Eigen::Quaterniond initial_pelvis_ori){
-  
+
   // Initialize r_VRP and r_vrp types
   initialize_footsteps_rvrp(input_footstep_list, initial_left_footstance, initial_right_footstance, initial_com);
+
   // Compute DCM boundary conditions
   computeDCM_states();
 
@@ -335,6 +337,10 @@ void WalkingPatternGenerator::compute_trajectory_lists(){
   // std::cout << "N_swing = " << N_swing << std::endl;
   // std::cout << "N_DS = " << N_DS << std::endl;
 
+
+  // clear state list and bin size list
+  state_list.clear();  
+  bin_size_list.clear();
   for(int i = 0; i < rvrp_type_list.size(); i++){
     // If it's a swing, there is always a double support phase except for the last step
     if (rvrp_type_list[i] == SWING_VRP_TYPE){
@@ -455,6 +461,8 @@ void WalkingPatternGenerator::compute_pelvis_orientation_trajectory(const Eigen:
   int step_counter = 0;
 
   // std::cout << "Pelvis Ori Length = " << traj_ori_pelvis.get_trajectory_length() << std::endl;
+  // std::cout << "state list size =  " << state_list.size() << std::endl;
+
 
   // Go through each state and compute pelvis orientation trajectory
   for(int state_index = 0; state_index < state_list.size(); state_index++){
