@@ -89,14 +89,11 @@ void test_initial_configuration_data_generation(int argc, char ** argv){
     traj_q_config.set_pos(i, q_successes[i]);
   }
 
-  ros::init(argc, argv, "test_feasibility_data_generation");
-  std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
-  RVizVisualizer visualizer(ros_node, robot_model);  
-  visualizer.visualizeConfigurationTrajectory(q_ik_start, traj_q_config);  
+
 }
 
 
-void test_generate_contact_transition_data(){
+void test_generate_contact_transition_data(int argc, char ** argv){
   std::cout << "[Testing FeasibilityDataGenerator]" << std::endl;
 
   std::string filename = THIS_PACKAGE_PATH"models/valkyrie_simplified.urdf"; 
@@ -121,14 +118,32 @@ void test_generate_contact_transition_data(){
 
   // Initialize the config trajectory generation module
   feas_data_gen.initializeConfigTrajectoryGenerationModule();
+
+  // Attempt to generate a contact transition data until success.
   while(feas_data_gen.generateContactTransitionData() != true){
     continue;
   }
 
+
+  // Visualize the successful trajectory
+  // Get the starting configuration of the trajectory
+  std::cout << "Getting the starting position" << std::endl;
+  Eigen::VectorXd q_begin = q_ik_start;
+  feas_data_gen.ctg->traj_q_config.get_pos(0, q_begin);
+
+  // Initialize the ros node
+  ros::init(argc, argv, "test_feasibility_data_generation");
+  std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
+  // Initialize and start the visualizer
+  RVizVisualizer visualizer(ros_node, robot_model);
+
+  std::cout << "Begin visualizing the trajectory..." << std::endl;
+  std::cout << "size of traj_q_config = " << feas_data_gen.ctg->traj_q_config.get_trajectory_length() << std::endl;  
+  visualizer.visualizeConfigurationTrajectory(q_begin, feas_data_gen.ctg->traj_q_config);
 }
 
 int main(int argc, char ** argv){
   // test_initial_configuration_data_generation(argc, argv);
-  test_generate_contact_transition_data();
+  test_generate_contact_transition_data(argc, argv);
   return 0;
 }
