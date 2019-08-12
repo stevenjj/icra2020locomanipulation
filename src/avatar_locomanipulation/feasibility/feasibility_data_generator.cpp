@@ -185,6 +185,26 @@ bool FeasibilityDataGenerator::randomizeStartingConfiguration(){
   // Set the starting configuration for the upper body joints:
   setStartingIKConfig(q_ik_start);
 
+  // Before running the IK, first check if the hands are in front of the pelvis
+  robot_model->updateFullKinematics(q_ik_start);
+
+  // convert the hand positions to the pelvis frame
+  Eigen::Vector3d rhand_pos, lhand_pos, rhand_pos_pelvis_frame, lhand_pos_pelvis_frame;
+  Eigen::Quaterniond rhand_ori, lhand_ori;
+  robot_model->getFrameWorldPose("rightPalm", rhand_pos, rhand_ori);  
+  robot_model->getFrameWorldPose("leftPalm", lhand_pos, lhand_ori);  
+
+  Eigen::Matrix3d R_pelvis_ori = pelvis_ori.toRotationMatrix();
+
+  rhand_pos_pelvis_frame = R_pelvis_ori*rhand_pos + pelvis_pos;
+  lhand_pos_pelvis_frame = R_pelvis_ori*lhand_pos + pelvis_pos;
+
+  // ensure that the x position of the hands in the pelvis frame is greater than 0
+  bool hands_in_front_of_pelvis = ((rhand_pos_pelvis_frame[0] >= 0) && (lhand_pos_pelvis_frame[0] >= 0));
+  if (!hands_in_front_of_pelvis) {
+    return false;    
+  }
+
   // Set IK references
   upper_body_config_task->setReference(joint_pos);
   left_foot_task->setReference(left_footstep.position, left_footstep.orientation);
@@ -206,10 +226,8 @@ bool FeasibilityDataGenerator::randomizeStartingConfiguration(){
   // ik_start_config_module->printSolutionResults();
 
   // Check if CoM height position is within limits
-  bool com_height_within_limits = false;
-  if  ((com_height_min <= robot_model->x_com[2]) && (robot_model->x_com[2] <= com_height_max)){
-    com_height_within_limits = true;
-  }else{
+  bool com_within_limits = ((com_height_min <= robot_model->x_com[2]) && (robot_model->x_com[2] <= com_height_max)); 
+  if (!com_within_limits){
     return false;
   }
 
@@ -217,8 +235,7 @@ bool FeasibilityDataGenerator::randomizeStartingConfiguration(){
   if (config_convergence){
     q_start = q_sol;
   }
-
-  return (config_convergence && com_height_within_limits);
+  return (config_convergence);
 }
 
 void FeasibilityDataGenerator::getRandomPelvisLocation(Eigen::Vector3d & pelvis_out){
