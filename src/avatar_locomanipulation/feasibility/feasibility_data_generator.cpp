@@ -58,7 +58,78 @@ void FeasibilityDataGenerator::setStartingIKConfig(const Eigen::VectorXd & q_ik_
 }
 
 void FeasibilityDataGenerator::loadParamFile(const std::string filepath){
+  std::cout << "[FeasibilityDataGenerator] Loading parameter file: " << filepath << std::endl;
   param_handler.load_yaml_file(filepath);
+
+  // Set the seed number
+  int seed_number = 1;
+  param_handler.getInteger("seed_num", seed_number);
+  initializeSeed(seed_number);
+
+  // Set the walking parameters
+  param_handler.getValue("max_reach", max_reach);
+  param_handler.getValue("min_reach", min_reach);
+  param_handler.getValue("max_width", max_width);
+  param_handler.getValue("min_width", min_width);
+  param_handler.getValue("max_theta", max_theta);
+  param_handler.getValue("min_theta", min_theta);
+
+  param_handler.getValue("convex_hull_percentage", convex_hull_percentage);
+  param_handler.getValue("pelvis_height_min", pelvis_height_min);
+  param_handler.getValue("pelvis_height_max", pelvis_height_max);
+
+  param_handler.getValue("com_height_min", com_height_min);
+  param_handler.getValue("com_height_max", com_height_max);
+
+
+  // Set which hand/s to use  
+  param_handler.getBoolean("use_left_hand", use_left_hand);
+  param_handler.getBoolean("use_right_hand", use_right_hand);
+
+  // left hand and not right hand
+  if ((use_left_hand) && (!use_right_hand)){
+      data_gen_manipulation_case = CASE_MANIPULATION_LEFT_HAND;
+      std::cout << "[FeasibilityDataGenerator] Using the left hand" << std::endl;
+  }// right hand and not left hand
+  else if ((!use_left_hand) && (use_right_hand)){
+      data_gen_manipulation_case = CASE_MANIPULATION_RIGHT_HAND;
+      std::cout << "[FeasibilityDataGenerator] Using the right hand" << std::endl;
+  }// using both hands
+  else if ((use_left_hand) && (use_right_hand)){
+      data_gen_manipulation_case = CASE_MANIPULATION_BOTH_HANDS;
+      std::cout << "[FeasibilityDataGenerator] Using both hands" << std::endl;
+  }// default to right hand
+  else{
+      data_gen_manipulation_case = CASE_MANIPULATION_RIGHT_HAND;
+      std::cout << "[FeasibilityDataGenerator] Defaulting to right hand" << std::endl;
+  }
+
+  param_handler.getBoolean("right_foot_stance", right_foot_stance);
+  param_handler.getBoolean("left_foot_stance", left_foot_stance);
+
+  if (left_foot_stance){
+    data_gen_stance_case = CASE_STANCE_LEFT_FOOT;
+    std::cout << "[FeasibilityDataGenerator] Left foot stance is set to be the origin" << std::endl;
+  }
+  // Default to right foot stance if both are active
+  if (right_foot_stance){
+    data_gen_stance_case = CASE_STANCE_RIGHT_FOOT;
+    std::cout << "[FeasibilityDataGenerator] Right foot stance is set to be the origin" << std::endl;
+  }
+
+  // Set the walking pattern generator parameters
+  ctg->wpg.setCoMHeight(walking_com_height); // Sets the desired CoM Height
+  ctg->wpg.setDoubleSupportTime(walking_double_support_time); // Sets the desired double support / transfer time time
+  ctg->wpg.setSingleSupportSwingTime(walking_single_support_time); // Sets the desired single support swing time
+  ctg->wpg.setSettlingPercentage(walking_settling_percentage); // Percentage to settle. Default 0.999
+  ctg->wpg.setSwingHeight(walking_swing_height); // Sets the swing height of the robot. Default 0.1m
+
+  // Set the resolution
+  param_handler.getInteger("N_resolution", N_resolution);
+
+  // Initialize the config trajectory generation module
+  initializeConfigTrajectoryGenerationModule();
+
 }
 
 
@@ -322,7 +393,7 @@ void FeasibilityDataGenerator::randomizeFootLandingConfiguration(){
 
   // Set the landing foot location
   landing_footstep.setPosOri(swing_foot_pos, swing_foot_ori);
-  landing_footstep.printInfo();
+  // landing_footstep.printInfo();
 }
 
 

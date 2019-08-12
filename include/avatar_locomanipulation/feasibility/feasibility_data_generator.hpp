@@ -120,7 +120,13 @@ public:
 	double walking_com_height = 0.95;
 	double walking_double_support_time = 0.45; // AKA transfer time
 	double walking_single_support_time = 1.0; // AKA swing time	
+	double walking_settling_percentage = 0.999;
 	double walking_swing_height = 0.1;
+
+	bool use_left_hand = false; 
+	bool use_right_hand = true; 
+	bool right_foot_stance = false;
+	bool left_foot_stance = true;
 
 	int N_resolution = 60; // Resolution discretization to use for solving the transition trajectory
 

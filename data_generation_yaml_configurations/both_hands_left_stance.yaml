@@ -2,7 +2,7 @@
 seed_num: 5
 
 # Manipulation type
-use_left_hand: false
+use_left_hand: true
 use_right_hand: true
 
 # Stance type

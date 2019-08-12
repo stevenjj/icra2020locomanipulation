@@ -109,15 +109,9 @@ void test_generate_contact_transition_data(int argc, char ** argv){
   // Set the initial IK configuration
   feas_data_gen.setStartingIKConfig(q_ik_start);
 
-  // Set the seed
-  unsigned int seed_number = 5;
-  feas_data_gen.initializeSeed(seed_number);
-
-  // Generate contact transition data
-  std::cout << "try generating a contact transition data" << std::endl;
-
-  // Initialize the config trajectory generation module
-  feas_data_gen.initializeConfigTrajectoryGenerationModule();
+  // set the data data_gen_config_filename configuration file path
+  std::string data_gen_config_filename = THIS_PACKAGE_PATH"data_generation_yaml_configurations/right_hand_left_stance.yaml";
+  feas_data_gen.loadParamFile(data_gen_config_filename);
 
   // Attempt to generate a contact transition data until success.
   while(feas_data_gen.generateContactTransitionData() != true){
