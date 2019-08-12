@@ -144,7 +144,12 @@ bool FeasibilityDataGenerator::randomizeStartingConfiguration(){
   q_rand[robot_model->getJointIndex("upperNeckPitch")] = 0.0;  
    for(int i = 0; i < upper_body_joint_names.size(); i++){
     joint_pos[i] = q_rand[robot_model->getJointIndex(upper_body_joint_names[i])];
+    // also set the starting ik configuration to the randomized upper body joint configuration:
+    q_ik_start[robot_model->getJointIndex(upper_body_joint_names[i])] = joint_pos[i];
   }
+
+  // Set the starting configuration for the upper body joints:
+  setStartingIKConfig(q_ik_start);
 
   // Set IK references
   upper_body_config_task->setReference(joint_pos);
