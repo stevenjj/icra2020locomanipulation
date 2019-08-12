@@ -60,7 +60,7 @@ void test_initial_configuration_data_generation(int argc, char ** argv){
   feas_data_gen.initializeSeed(seed_number);
 
   // Try finding initial configurations
-  int N_tries = 10;
+  int N_tries = 100;
   bool found_start_config = false;
 
   int N_success = 0;
@@ -128,7 +128,7 @@ void test_generate_contact_transition_data(){
 }
 
 int main(int argc, char ** argv){
-  test_initial_configuration_data_generation(argc, argv);
-  // test_generate_contact_transition_data();
+  // test_initial_configuration_data_generation(argc, argv);
+  test_generate_contact_transition_data();
   return 0;
 }

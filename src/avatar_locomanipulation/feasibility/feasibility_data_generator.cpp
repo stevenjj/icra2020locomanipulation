@@ -94,8 +94,42 @@ void FeasibilityDataGenerator::initializeConfigurationLimits(){
   q_min = robot_model->q_lower_pos_limit;
   q_max = robot_model->q_upper_pos_limit;
 
+  // Set Custom Limits:
+
+  // Define limits for the floating base as the regular [inf, -inf] bounds provided by pinocchio cannot do randomization
   q_min.head(7) = -10 * Eigen::VectorXd::Ones(7);
   q_max.head(7) = 10 * Eigen::VectorXd::Ones(7);
+
+  // Define custom limits for the torso joints:
+  q_min[robot_model->getJointIndex("torsoYaw")] = -0.4;
+  q_min[robot_model->getJointIndex("torsoPitch")] = -0.1;
+  q_min[robot_model->getJointIndex("torsoRoll")] = -0.2;
+
+  q_max[robot_model->getJointIndex("torsoYaw")] = 0.4;
+  q_max[robot_model->getJointIndex("torsoPitch")] = 0.25;
+  q_max[robot_model->getJointIndex("torsoRoll")] = 0.2;
+
+  // Define custom limits for the arm joints:
+  // Right arm
+  q_min[robot_model->getJointIndex("rightShoulderPitch")] = -1.5;  
+  q_min[robot_model->getJointIndex("rightShoulderRoll")] = 0.0;  
+  q_min[robot_model->getJointIndex("rightShoulderYaw")] = -1.5;  
+  
+  q_min[robot_model->getJointIndex("rightForearmYaw")] = -1.0;  
+
+  q_max[robot_model->getJointIndex("rightShoulderPitch")] = 1.0;  
+  q_max[robot_model->getJointIndex("rightShoulderYaw")] = 1.5;  
+
+  // Left arm
+  q_min[robot_model->getJointIndex("leftShoulderPitch")] = -1.5;  
+  q_min[robot_model->getJointIndex("leftShoulderYaw")] = -1.5;
+
+  q_min[robot_model->getJointIndex("leftForearmYaw")] = -1.0;  
+
+  q_max[robot_model->getJointIndex("leftShoulderPitch")] = 1.0;  
+  q_max[robot_model->getJointIndex("leftShoulderRoll")] = 0.0;  
+  q_max[robot_model->getJointIndex("leftShoulderYaw")] = 1.5;
+
 }
 
 double FeasibilityDataGenerator::generateRandMinMax(const double min, const double max){
