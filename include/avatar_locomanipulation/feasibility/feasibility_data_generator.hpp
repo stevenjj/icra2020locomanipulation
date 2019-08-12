@@ -129,7 +129,9 @@ public:
 	bool left_foot_stance = true;
 
 	int N_resolution = 60; // Resolution discretization to use for solving the transition trajectory
+	int loaded_seed_number = 1;
 
+	void printDataGenerationParameters();
 
 	// robot configuration data types
 	Eigen::VectorXd q_min;

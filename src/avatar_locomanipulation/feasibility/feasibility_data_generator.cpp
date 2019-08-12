@@ -62,9 +62,8 @@ void FeasibilityDataGenerator::loadParamFile(const std::string filepath){
   param_handler.load_yaml_file(filepath);
 
   // Set the seed number
-  int seed_number = 1;
-  param_handler.getInteger("seed_num", seed_number);
-  initializeSeed(seed_number);
+  param_handler.getInteger("seed_num", loaded_seed_number);
+  initializeSeed(loaded_seed_number);
 
   // Set the walking parameters
   param_handler.getValue("max_reach", max_reach);
@@ -118,6 +117,12 @@ void FeasibilityDataGenerator::loadParamFile(const std::string filepath){
   }
 
   // Set the walking pattern generator parameters
+  param_handler.getValue("walking_com_height", walking_com_height);
+  param_handler.getValue("walking_double_support_time", walking_double_support_time);
+  param_handler.getValue("walking_single_support_time", walking_single_support_time);
+  param_handler.getValue("walking_settling_percentage", walking_settling_percentage);
+  param_handler.getValue("walking_swing_height", walking_swing_height);
+
   ctg->wpg.setCoMHeight(walking_com_height); // Sets the desired CoM Height
   ctg->wpg.setDoubleSupportTime(walking_double_support_time); // Sets the desired double support / transfer time time
   ctg->wpg.setSingleSupportSwingTime(walking_single_support_time); // Sets the desired single support swing time
@@ -130,8 +135,40 @@ void FeasibilityDataGenerator::loadParamFile(const std::string filepath){
   // Initialize the config trajectory generation module
   initializeConfigTrajectoryGenerationModule();
 
+  // Print data generation parameters
+  printDataGenerationParameters();
 }
 
+void FeasibilityDataGenerator::printDataGenerationParameters(){
+  std::cout << "[FeasibilityDataGenerator] Data Generation Parameters:" << std::endl;
+  std::cout << "  max_reach: " <<   max_reach << std::endl;
+  std::cout << "  min_reach: " <<   min_reach << std::endl;  
+  std::cout << "  max_width: " << max_width << std::endl;  
+  std::cout << "  min_width: " << min_width << std::endl;  
+  std::cout << "  max_theta: " << max_theta << std::endl;  
+  std::cout << "  min_theta: " << min_theta << std::endl;  
+
+  std::cout << "  convex_hull_percentage: " << convex_hull_percentage << std::endl;  
+  std::cout << "  pelvis_height_min: " << pelvis_height_min << std::endl;  
+  std::cout << "  pelvis_height_max: " << pelvis_height_max << std::endl;  
+  std::cout << "  com_height_min: " << com_height_min << std::endl;  
+  std::cout << "  com_height_max: " << com_height_max << std::endl;  
+
+  std::cout << "  walking_com_height: " << walking_com_height << std::endl;  
+  std::cout << "  walking_double_support_time: " << walking_double_support_time << std::endl;  
+  std::cout << "  walking_single_support_time: " << walking_single_support_time << std::endl;  
+  std::cout << "  walking_settling_percentage: " << walking_settling_percentage << std::endl;  
+  std::cout << "  walking_swing_height: " << walking_swing_height << std::endl;  
+
+  std::cout << "  use_left_hand: " << use_left_hand << std::endl;  
+  std::cout << "  use_right_hand: " << use_right_hand << std::endl;  
+  std::cout << "  right_foot_stance: " << right_foot_stance << std::endl;  
+  std::cout << "  left_foot_stance: " << left_foot_stance << std::endl;  
+
+  std::cout << "  N_resolution: " << N_resolution << std::endl;  
+  std::cout << "  loaded_seed_number: " << loaded_seed_number << std::endl;  
+
+}
 
 void FeasibilityDataGenerator::initializeSeed(unsigned int seed_number){
 	srand(seed_number);
