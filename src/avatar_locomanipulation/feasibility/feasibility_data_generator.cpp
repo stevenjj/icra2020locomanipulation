@@ -199,9 +199,10 @@ bool FeasibilityDataGenerator::randomizeStartingConfiguration(){
   robot_model->getFrameWorldPose("leftPalm", lhand_pos, lhand_ori);  
 
   Eigen::Matrix3d R_pelvis_ori = pelvis_ori.toRotationMatrix();
+  Eigen::Matrix3d R_pelvis_ori_T = R_pelvis_ori.transpose();
 
-  rhand_pos_pelvis_frame = R_pelvis_ori*rhand_pos + pelvis_pos;
-  lhand_pos_pelvis_frame = R_pelvis_ori*lhand_pos + pelvis_pos;
+  rhand_pos_pelvis_frame = R_pelvis_ori_T*(rhand_pos - pelvis_pos);
+  lhand_pos_pelvis_frame = R_pelvis_ori_T*(lhand_pos - pelvis_pos);
 
   // ensure that the x position of the hands in the pelvis frame is greater than 0
   bool hands_in_front_of_pelvis = ((rhand_pos_pelvis_frame[0] >= 0) && (lhand_pos_pelvis_frame[0] >= 0));
