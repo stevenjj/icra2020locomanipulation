@@ -171,13 +171,20 @@ bool FeasibilityDataGenerator::randomizeStartingConfiguration(){
   config_convergence = ik_start_config_module->solveIK(solve_result, task_error_norms, total_error_norm, q_sol);
   // ik_start_config_module->printSolutionResults();
 
+  // Check if CoM height position is within limits
+  bool com_height_within_limits = false;
+  if  ((com_height_min <= robot_model->x_com[2]) && (robot_model->x_com[2] <= com_height_max)){
+    com_height_within_limits = true;
+  }else{
+    return false;
+  }
+
   // If we found a starting configuration set it to be the starting config.
   if (config_convergence){
     q_start = q_sol;
   }
 
-  return config_convergence;
-
+  return (config_convergence && com_height_within_limits);
 }
 
 void FeasibilityDataGenerator::getRandomPelvisLocation(Eigen::Vector3d & pelvis_out){

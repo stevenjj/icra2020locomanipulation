@@ -128,7 +128,7 @@ void test_generate_contact_transition_data(){
 }
 
 int main(int argc, char ** argv){
-  // test_initial_configuration_data_generation(argc, argv);
-  test_generate_contact_transition_data();
+  test_initial_configuration_data_generation(argc, argv);
+  // test_generate_contact_transition_data();
   return 0;
 }
