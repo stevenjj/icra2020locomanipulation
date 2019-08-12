@@ -58,6 +58,9 @@ public:
 	// Randomize the foot landing configuration
 	void randomizeFootLandingConfiguration();
 
+	// load yaml file which sets all the parameters
+	void loadParamFile(const std::string filepath);
+
 	// sets up the tasks and parameters for the config trajectory generation module.
 	void initializeConfigTrajectoryGenerationModule();
 	// Randomly generate a contact transition data

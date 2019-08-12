@@ -110,7 +110,7 @@ void test_generate_contact_transition_data(int argc, char ** argv){
   feas_data_gen.setStartingIKConfig(q_ik_start);
 
   // Set the seed
-  unsigned int seed_number = 1;
+  unsigned int seed_number = 2;
   feas_data_gen.initializeSeed(seed_number);
 
   // Generate contact transition data

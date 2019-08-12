@@ -57,6 +57,10 @@ void FeasibilityDataGenerator::setStartingIKConfig(const Eigen::VectorXd & q_ik_
   ik_start_config_module->setInitialConfig(q_ik_start);
 }
 
+void FeasibilityDataGenerator::loadParamFile(const std::string filepath){
+  param_handler.load_yaml_file(filepath);
+}
+
 
 void FeasibilityDataGenerator::initializeSeed(unsigned int seed_number){
 	srand(seed_number);
