@@ -90,8 +90,6 @@ void CollisionEnvironment::append_models(){
       appended->q_current[j] = temp[k];
       ++k;
     }
-    std::cout << "appended->getDimQ(): " << appended->getDimQ() << std::endl;
-    std::cout << "appended->q_current.size(): " << appended->q_current.size() << std::endl;
     // Now that appended->q_current is filled update full kinematics
     appended->enableUpdateGeomOnKinematicsUpdate(true);
     appended->updateFullKinematics(appended->q_current);
@@ -208,7 +206,7 @@ void CollisionEnvironment::build_self_directed_vectors(const std::string & frame
     }
   }
 
-  std::cout << "directed_vectors.size(): " << directed_vectors.size() << std::endl;
+  // std::cout << "directed_vectors.size(): " << directed_vectors.size() << std::endl;
 
 }
   
@@ -328,12 +326,12 @@ void CollisionEnvironment::build_object_directed_vectors(std::string & frame_nam
   // appended->getFrameWorldPose(collision_to_frame.find("rightPalm_0")->second, cur_pos_to, cur_ori);
   // std::cout << "current pose rightPalm_0:\n" << cur_pos_to << std::endl;
 
-  // for(int i=0; i<directed_vectors.size(); ++i){
-  //   std::cout << "directed_vectors[i].from: " << directed_vectors[i].from << std::endl;
-  //   std::cout << "directed_vectors[i].to: " << directed_vectors[i].to << std::endl;
-  //   std::cout << "directed_vectors[i].magnitude: " << directed_vectors[i].magnitude << std::endl;
-  //   std::cout << "directed_vectors[i].direction: \n" << directed_vectors[i].direction << std::endl;
-  // }
+  for(int i=0; i<directed_vectors.size(); ++i){
+    std::cout << "directed_vectors[i].from: " << directed_vectors[i].from << std::endl;
+    std::cout << "directed_vectors[i].to: " << directed_vectors[i].to << std::endl;
+    std::cout << "directed_vectors[i].magnitude: " << directed_vectors[i].magnitude << std::endl;
+    std::cout << "directed_vectors[i].direction: \n" << directed_vectors[i].direction << std::endl;
+  }
 
 }
 
@@ -439,6 +437,8 @@ void CollisionEnvironment::get_dvector_collision_links(const std::string & from_
   Eigen::Vector3d cur_pos_to, cur_pos_from, difference; 
   Eigen::Quaternion<double> cur_ori;
   
+  std::cout << "collision_to_frame.find(from_name)->second: " << collision_to_frame.find(from_name)->second << std::endl;
+
   appended->getFrameWorldPose(collision_to_frame.find(to_name)->second, cur_pos_to, cur_ori);
   appended->getFrameWorldPose(collision_to_frame.find(from_name)->second, cur_pos_from, cur_ori);
 
@@ -472,30 +472,7 @@ std::vector<std::string> CollisionEnvironment::make_point_collision_list(){
 
 
 void CollisionEnvironment::map_collision_names_to_frame_names(){
-  collision_to_frame["leftElbowNearLink_0"] = "leftElbowPitch";
-  collision_to_frame["rightElbowNearLink_0"] = "rightElbowPitch";
-  collision_to_frame["leftKneeNearLink_0"] = "leftKneePitch";
-  collision_to_frame["rightKneeNearLink_0"] = "rightKneePitch";
-  collision_to_frame["pelvis_0"] = "pelvis";
-  collision_to_frame["torso_0"] = "torso";
-  collision_to_frame["torso_1"] = "torso";
-  collision_to_frame["torso_2"] = "torso";
-  collision_to_frame["torso_3"] = "torso";
-  collision_to_frame["torso_4"] = "torso";
-  collision_to_frame["rightPalm_0"] = "rightPalm";
-  collision_to_frame["leftPalm_0"] = "leftPalm";
-  collision_to_frame["head_0"] = "head";
-  collision_to_frame["rightHipUpperLink_0"] = "rightHipUpperLink";
-  collision_to_frame["leftHipUpperLink_0"] = "leftHipUpperLink";
-  collision_to_frame["rightForearmLink_0"] = "rightForearmLink";
-  collision_to_frame["leftForearmLink_0"] = "leftForearmLink";
-  collision_to_frame["rightShoulderRollLink_0"] = "rightShoulderRollLink";
-  collision_to_frame["leftShoulderRollLink_0"] = "leftShoulderRollLink";
-  collision_to_frame["rightHipPitchLink_0"] = "rightHipPitchLink";
-  collision_to_frame["leftHipPitchLink_0"] = "leftHipPitchLink";
-  collision_to_frame["rightKneePitchLink_0"] = "rightKneePitchLink";
-  collision_to_frame["leftKneePitchLink_0"] = "leftKneePitchLink";
-
+  
   std::string tmp;
   // if we added an object to the collision environment
   if(object_flag){
@@ -504,6 +481,31 @@ void CollisionEnvironment::map_collision_names_to_frame_names(){
       tmp = object->geomModel.getGeometryName(i); tmp.pop_back(); tmp.pop_back();
       collision_to_frame[object->geomModel.getGeometryName(i)] = prefix_ + tmp;
     }
+  }
+  else{
+    collision_to_frame["leftElbowNearLink_0"] = "leftElbowPitch";
+    collision_to_frame["rightElbowNearLink_0"] = "rightElbowPitch";
+    collision_to_frame["leftKneeNearLink_0"] = "leftKneePitch";
+    collision_to_frame["rightKneeNearLink_0"] = "rightKneePitch";
+    collision_to_frame["pelvis_0"] = "pelvis";
+    collision_to_frame["torso_0"] = "torso";
+    collision_to_frame["torso_1"] = "torso";
+    collision_to_frame["torso_2"] = "torso";
+    collision_to_frame["torso_3"] = "torso";
+    collision_to_frame["torso_4"] = "torso";
+    collision_to_frame["rightPalm_0"] = "rightPalm";
+    collision_to_frame["leftPalm_0"] = "leftPalm";
+    collision_to_frame["head_0"] = "head";
+    collision_to_frame["rightHipUpperLink_0"] = "rightHipUpperLink";
+    collision_to_frame["leftHipUpperLink_0"] = "leftHipUpperLink";
+    collision_to_frame["rightForearmLink_0"] = "rightForearmLink";
+    collision_to_frame["leftForearmLink_0"] = "leftForearmLink";
+    collision_to_frame["rightShoulderRollLink_0"] = "rightShoulderRollLink";
+    collision_to_frame["leftShoulderRollLink_0"] = "leftShoulderRollLink";
+    collision_to_frame["rightHipPitchLink_0"] = "rightHipPitchLink";
+    collision_to_frame["leftHipPitchLink_0"] = "leftHipPitchLink";
+    collision_to_frame["rightKneePitchLink_0"] = "rightKneePitchLink";
+    collision_to_frame["leftKneePitchLink_0"] = "leftKneePitchLink";
   }
   
 }
