@@ -310,6 +310,10 @@ void CollisionEnvironment::build_object_directed_vectors(std::string & frame_nam
 
   std::cout << "directed_vectors.size(): " << directed_vectors.size() << std::endl;
 
+  std::cout << "appended->model: \n" << appended->model << std::endl;
+  std::cout << "appended->geomModel: \n " << appended->geomModel << std::endl;
+  std::cout << "appended->q_current: \n" << appended->q_current << std::endl; 
+
   // std::cout << "appended->model:\n" << appended->model << std::endl;
   // std::cout << "appended->geomModel:\n" << appended->geomModel << std::endl;
   // for (int k=0 ; k<appended->model.frames.size() ; ++k){
@@ -326,12 +330,12 @@ void CollisionEnvironment::build_object_directed_vectors(std::string & frame_nam
   // appended->getFrameWorldPose(collision_to_frame.find("rightPalm_0")->second, cur_pos_to, cur_ori);
   // std::cout << "current pose rightPalm_0:\n" << cur_pos_to << std::endl;
 
-  for(int i=0; i<directed_vectors.size(); ++i){
-    std::cout << "directed_vectors[i].from: " << directed_vectors[i].from << std::endl;
-    std::cout << "directed_vectors[i].to: " << directed_vectors[i].to << std::endl;
-    std::cout << "directed_vectors[i].magnitude: " << directed_vectors[i].magnitude << std::endl;
-    std::cout << "directed_vectors[i].direction: \n" << directed_vectors[i].direction << std::endl;
-  }
+  // for(int i=0; i<directed_vectors.size(); ++i){
+  //   std::cout << "directed_vectors[i].from: " << directed_vectors[i].from << std::endl;
+  //   std::cout << "directed_vectors[i].to: " << directed_vectors[i].to << std::endl;
+  //   std::cout << "directed_vectors[i].magnitude: " << directed_vectors[i].magnitude << std::endl;
+  //   std::cout << "directed_vectors[i].direction: \n" << directed_vectors[i].direction << std::endl;
+  // }
 
 }
 

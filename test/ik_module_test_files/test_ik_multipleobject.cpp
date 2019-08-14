@@ -78,7 +78,7 @@ std::shared_ptr<RobotModel> initialize_config(Eigen::VectorXd & q_init, Eigen::V
   // Define the configuration of the cart
   Eigen::VectorXd q_box1;
   q_box1 = Eigen::VectorXd::Zero(box1->getDimQ());
-  q_box1[0] = 0.33;  q_box1[1] = -0.524;  q_box1[2] = 0.813;
+  q_box1[0] = 0.33;  q_box1[1] = -0.524;  q_box1[2] = 0.813;//0.475 x
   // q_box1[0] = -0.06;  q_box1[1] = -0.0085;  q_box1[2] = -0.04;
   double theta1 = 0;//M_PI/4.0;	
   Eigen::AngleAxis<double> bb(theta1, Eigen::Vector3d(0.0, 0.0, 1.0)); // yaw pi/4 to the left	
@@ -134,7 +134,7 @@ void testIK_module(){
   collision->add_new_object(box1, box_init, prefix);
 
   prefix = "box2";
-  box_init[0] = 0.43;
+  box_init[0] = 0.83;
   box_init[1] = 0.524;
   box2->enableUpdateGeomOnKinematicsUpdate(true);
   box2->updateFullKinematics(box_init);
@@ -147,16 +147,17 @@ void testIK_module(){
 
   std::shared_ptr<Task> rhand_task(new TaskObjectCollision(ik_module.robot_model, "rightPalm", collision, "rhand"));
   std::shared_ptr<Task> lhand_task(new TaskObjectCollision(ik_module.robot_model, "leftPalm", collision, "lhand"));
-  std::shared_ptr<Task> pelvis_object_task(new TaskObjectCollision(ik_module.robot_model, "pelvis", collision, "pelvis"));
+  // std::shared_ptr<Task> pelvis_object_task(new TaskObjectCollision(ik_module.robot_model, "pelvis", collision, "pelvis"));
 
   rhand_task->setTaskGain(20.0);
   lhand_task->setTaskGain(20.0);
-  pelvis_object_task->setTaskGain(20.0);
+  // pelvis_object_task->setTaskGain(20.0);
 
 
   // Stack Tasks in order of priority
-  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {pelvis_task, lfoot_task, rfoot_task}));
-  std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {rhand_task, lhand_task, pelvis_object_task}));
+  std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {pelvis_task, lfoot_task, rfoot_task}));
+  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {rhand_task}));
+  std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {lhand_task}));
 
   // Set desired Pelvis configuration
   Eigen::Vector3d pelvis_des_pos;
@@ -176,7 +177,7 @@ void testIK_module(){
 
   // Foot should be flat on the ground and spaced out by 0.25m
   rfoot_des_pos.setZero();
-  rfoot_des_pos[0] = 0.125;
+  rfoot_des_pos[0] = 0.0; //0.125;
   rfoot_des_pos[1] = -0.125;
   rfoot_des_quat.setIdentity();
 
@@ -193,11 +194,12 @@ void testIK_module(){
   Eigen::VectorXd task_error;
   rhand_task->getError(task_error);
   std::cout << "Right Hand Task Error = " << task_error.transpose() << std::endl;
-  lhand_task->getError(task_error);
-  std::cout << "Left Hand Task Error = " << task_error.transpose() << std::endl;
-  pelvis_object_task->getError(task_error);
-  std::cout << "Pelvis Object Task Error = " << task_error.transpose() << std::endl;
+  // lhand_task->getError(task_error);
+  // std::cout << "Left Hand Task Error = " << task_error.transpose() << std::endl;
+  // pelvis_object_task->getError(task_error);
+  // std::cout << "Pelvis Object Task Error = " << task_error.transpose() << std::endl;
 
+  ik_module.addTasktoHierarchy(task_stack_priority_3);
   ik_module.addTasktoHierarchy(task_stack_priority_1);
   ik_module.addTasktoHierarchy(task_stack_priority_2);
 

@@ -103,11 +103,7 @@ void TaskObjectCollision::computeError(){
 	
  	collision_env->directed_vectors.clear();
 
- 	std::cout << "task1\n";
-
  	collision_env->build_object_directed_vectors(frame_name, robot_model->q_current);
-	
-	std::cout << "task2\n";
 
  	double V = collision_env->get_collision_potential();
 
