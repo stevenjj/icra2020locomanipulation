@@ -44,7 +44,10 @@ void FeasibilityDataGenerator::common_initialization(){
     foot_contact_list_2d.push_back(math_utils::Point(0.0, 0.0));
   }
 
-
+  // initialize counters to 0
+  initial_config_counter = 0;
+  positive_transition_data_counter = 0; 
+  negative_transition_data_counter = 0;  
 }
 
 void FeasibilityDataGenerator::setRobotModel(std::shared_ptr<RobotModel> & robot_model_in){
@@ -157,14 +160,8 @@ void FeasibilityDataGenerator::printDataGenerationParameters(){
   std::cout << "  N_resolution: " << N_resolution << std::endl;  
   std::cout << "  loaded_seed_number: " << loaded_seed_number << std::endl;  
 
-  std::cout << "  N_resolution: " << N_resolution << std::endl;  
-  std::cout << "  loaded_seed_number: " << loaded_seed_number << std::endl;  
-
   std::cout << "  manipulation_type: " << manipulation_type << std::endl;  
   std::cout << "  stance_foot: " << stance_foot << std::endl;  
-
-
-
 }
 
 void FeasibilityDataGenerator::initializeSeed(unsigned int seed_number){
@@ -506,7 +503,7 @@ bool FeasibilityDataGenerator::generateContactTransitionData(bool store_data){
 
   if (store_data){
     // Store the transition data with task space info
-    storeTransitionDatawithTaskSpaceInfo();
+    storeTransitionDatawithTaskSpaceInfo(trajectory_convergence);
     if (trajectory_convergence){
       // store the positive transition data
       storePositiveTransitionData();
@@ -534,102 +531,22 @@ bool FeasibilityDataGenerator::generateNDataTransitions(int num_data_to_generate
 
 
 void FeasibilityDataGenerator::storeInitialConfiguration(){
-  // define yaml emitter
+  // keep counter
+  // Define the yaml emitter
   YAML::Emitter out;
+  std::string save_path = parent_folder_path + "/raw_positive_initial_config_data/";
+  // Begin map creation
   out << YAML::BeginMap;
 
   out << YAML::EndMap;
+  // store the data
+  std::ofstream file_output_stream(save_path);
 }
 
 void FeasibilityDataGenerator::storePositiveTransitionData(){
 
 }
-void FeasibilityDataGenerator::storeTransitionDatawithTaskSpaceInfo(){
+void FeasibilityDataGenerator::storeTransitionDatawithTaskSpaceInfo(bool result){
 
 }
 
-
-
-// if initial configuration succeeds:
-//  store initial configuration data
-// if generetateContactTransitionData();
-//    succeeds:
-//    store raw_positive transition data
-//  store transition data with task space info
-
-/*
-initializeSeed();
-initializeStartingIKTasks();
-
-
-
-loadStartingConfiguration();
-initializeConfigurationLimits();
-
-
-checkCOMinHull();
-
-// use case for each of
-randomizeConfiguration();
-	generateRandXYFromHullPoints
-
-setStartingIKTasks();
-
-randomizeDesiredFinalConfiguration();
-setConfigurationTrajectoryTasks();
-
-
-storeInitConfig();
-storeNegativeExamplePair()
-storePositiveExamplePair();
-storeTrajectoryConfig();
-
-
-//
-generateData();
-
-
-generateData(){
-	desired_positive_examples = 1000;
-	count_positive_examples = 0;
-
-	// set which hand to use for ctg
-
-
-	while (count_positive_examples < desired_positive_examples){
-		randomizeConfiguration();
-		bool initial_configuration_convergence = solveIK();
-		
-		// visualizeInitial()
-
-		if !(initial_configuration_convergence){
-			continue; // Repeat the randomization
-		}
-		storeInitConfig();
-
-		randomizeDesiredFinalConfiguration();
-
-		// Set starting CoM position,Pelvis Ori, Footstance
-		bool trajectory_convergence = ctg->computeTrajectory();
-
-		// visualizeTrajectory()
-
-		if !(trajectory_convergence){
-			storeNegativeExamplePair()
-			continue; // Repeat the randomization
-		}
-		storePositiveExamplePair();
-		storeTrajectoryConfig();
-	}
-
-
-
-
-
-	
-
-	
-}
-
-
-*/

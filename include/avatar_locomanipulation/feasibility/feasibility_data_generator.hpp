@@ -26,6 +26,7 @@
 // Parameter Loader and Saver
 #include <avatar_locomanipulation/helpers/yaml_data_saver.hpp>
 #include <avatar_locomanipulation/helpers/param_handler.hpp>
+#include <fstream>
 
 #define CASE_MANIPULATION_LEFT_HAND 0
 #define CASE_MANIPULATION_RIGHT_HAND 1
@@ -71,9 +72,13 @@ public:
 	bool generateNDataTransitions(int num_data_to_generate);
 
 	// Emit YAML Files
+	int initial_config_counter = 0;
 	void storeInitialConfiguration();
+
+	int positive_transition_data_counter = 0;	
+	int negative_transition_data_counter = 0;
 	void storePositiveTransitionData();
-	void storeTransitionDatawithTaskSpaceInfo();
+	void storeTransitionDatawithTaskSpaceInfo(bool result);
 
     // Parameter Handler
     ParamHandler param_handler;
