@@ -30,6 +30,10 @@ void FeasibilityDataGenerator::common_initialization(){
   swing_foot_ori.setIdentity();
   swing_foot_theta_angle = 0.0;
 
+  landing_foot_pos.setZero();
+  landing_foot_ori.setIdentity();
+  landing_foot_theta_angle = 0.0;
+
   // Reserve foot contact list sizes
   int contact_size = left_footstep.global_contact_point_list.size() + right_footstep.global_contact_point_list.size();
   foot_contact_list_3d.reserve(contact_size);
@@ -420,16 +424,16 @@ void FeasibilityDataGenerator::randomizeFootLandingConfiguration(){
   }
 
   // Set Randomize desired swing foot landing pose
-  swing_foot_pos[0] = generateRandMinMax(min_reach, max_reach); // x
-  swing_foot_pos[1] = direction*generateRandMinMax(min_width, max_width); // y
-  swing_foot_pos[2] = 0.0; // z
+  landing_foot_pos[0] = generateRandMinMax(min_reach, max_reach); // x
+  landing_foot_pos[1] = direction*generateRandMinMax(min_width, max_width); // y
+  landing_foot_pos[2] = 0.0; // z
 
   // Set swing foot angle theta
-  swing_foot_theta_angle = direction*generateRandMinMax(min_theta, max_theta); // theta
-  swing_foot_ori = Eigen::AngleAxisd(swing_foot_theta_angle, Eigen::Vector3d(0.0, 0.0, 1.0) );
+  landing_foot_theta_angle = direction*generateRandMinMax(min_theta, max_theta); // theta
+  landing_foot_ori = Eigen::AngleAxisd(landing_foot_theta_angle, Eigen::Vector3d(0.0, 0.0, 1.0) );
 
   // Set the landing foot location
-  landing_footstep.setPosOri(swing_foot_pos, swing_foot_ori);
+  landing_footstep.setPosOri(landing_foot_pos, landing_foot_ori);
   // landing_footstep.printInfo();
 }
 
@@ -461,13 +465,19 @@ void FeasibilityDataGenerator::initializeConfigTrajectoryGenerationModule(){
 }
 
 // Randomly generate a contact transition data
-bool FeasibilityDataGenerator::generateContactTransitionData(){
+bool FeasibilityDataGenerator::generateContactTransitionData(bool store_data){
   bool start_configuration = false;
 
   // Generate a random starting configuration
   while (start_configuration != true){
     start_configuration = randomizeStartingConfiguration();    
   }
+
+  if (store_data){
+    // store the initial configuration 
+    storeInitialConfiguration();   
+  }
+
   // Randomize a foot landing configuration
   randomizeFootLandingConfiguration();    
 
@@ -500,10 +510,54 @@ bool FeasibilityDataGenerator::generateContactTransitionData(){
   // Try to compute the trajectory
   bool trajectory_convergence = ctg->computeConfigurationTrajectory(q_start, input_footstep_list);
 
+
+  if (store_data){
+    // Store the transition data with task space info
+    storeTransitionDatawithTaskSpaceInfo();
+    if (trajectory_convergence){
+      // store the positive transition data
+      storePositiveTransitionData();
+    }
+
+  }
+
+
   // Return the trajectory convergence result
   return trajectory_convergence;
 
 }
+
+bool FeasibilityDataGenerator::generateNDataTransitions(int num_data_to_generate){
+  int generated_data_count = 0;
+  while(generated_data_count < num_data_to_generate){
+    // if we generate a data successfully, increment the counter
+    if (generateContactTransitionData()){
+      generated_data_count++;
+    }    
+  }
+  // Finished generated num_data_to_generate
+  return true;
+}
+
+
+void FeasibilityDataGenerator::storeInitialConfiguration(){
+}
+
+void FeasibilityDataGenerator::storePositiveTransitionData(){
+
+}
+void FeasibilityDataGenerator::storeTransitionDatawithTaskSpaceInfo(){
+
+}
+
+
+
+// if initial configuration succeeds:
+//  store initial configuration data
+// if generetateContactTransitionData();
+//    succeeds:
+//    store raw_positive transition data
+//  store transition data with task space info
 
 /*
 initializeSeed();

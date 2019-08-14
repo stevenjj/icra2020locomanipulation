@@ -65,7 +65,15 @@ public:
 	void initializeConfigTrajectoryGenerationModule();
 	// Randomly generate a contact transition data
 	// -- assumes initializeConfigTrajectoryGenerationModule() has already been called.
-	bool generateContactTransitionData();
+	bool generateContactTransitionData(bool store_data=false);
+
+	// runs in a loop until generateContactTransiitionData() returns true for N = num_data_to_generate times.
+	bool generateNDataTransitions(int num_data_to_generate);
+
+	// Emit YAML Files
+	void storeInitialConfiguration();
+	void storePositiveTransitionData();
+	void storeTransitionDatawithTaskSpaceInfo();
 
     // Parameter Handler
     ParamHandler param_handler;
@@ -154,6 +162,11 @@ public:
 	Eigen::Vector3d swing_foot_pos;
 	Eigen::Quaterniond swing_foot_ori;
 	double swing_foot_theta_angle;
+
+	Eigen::Vector3d landing_foot_pos;
+	Eigen::Quaterniond landing_foot_ori;
+	double landing_foot_theta_angle;
+
 
 	Eigen::VectorXd q_rand;
 
