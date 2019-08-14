@@ -115,7 +115,8 @@ void test_generate_contact_transition_data(int argc, char ** argv){
   feas_data_gen.loadParamFile(data_gen_config_filename);
 
   // Attempt to generate a contact transition data until success.
-  while(feas_data_gen.generateContactTransitionData() != true){
+  bool store_data = true;
+  while(feas_data_gen.generateContactTransitionData(store_data) != true){
     continue;
   }
 

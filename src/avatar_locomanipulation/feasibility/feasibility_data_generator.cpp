@@ -87,6 +87,7 @@ void FeasibilityDataGenerator::loadParamFile(const std::string filepath){
   param_handler.getValue("com_height_min", com_height_min);
   param_handler.getValue("com_height_max", com_height_max);
 
+  // Set the manipulation parameters
   param_handler.getString("manipulation_type", manipulation_type);
   param_handler.getString("stance_foot", stance_foot);
 
@@ -129,6 +130,9 @@ void FeasibilityDataGenerator::loadParamFile(const std::string filepath){
   // Set the resolution
   param_handler.getInteger("N_resolution", N_resolution);
 
+  // set the parent folder path
+  param_handler.getString("parent_folder_path", parent_folder_path);
+  
   // Initialize the config trajectory generation module
   initializeConfigTrajectoryGenerationModule();
 
@@ -531,16 +535,21 @@ bool FeasibilityDataGenerator::generateNDataTransitions(int num_data_to_generate
 
 
 void FeasibilityDataGenerator::storeInitialConfiguration(){
-  // keep counter
   // Define the yaml emitter
   YAML::Emitter out;
-  std::string save_path = parent_folder_path + "/raw_positive_initial_config_data/";
+  std::string save_path = parent_folder_path + "raw_positive_initial_config_data/" + manipulation_type + "_" + stance_foot + "_" + std::to_string(initial_config_counter) + ".yaml";
+
   // Begin map creation
   out << YAML::BeginMap;
-
+  data_saver::emit_string(out, "stance_origin", stance_foot);
+  data_saver::emit_string(out, "manipulation_type", manipulation_type);
+  data_saver::emit_joint_configuration(out, "q_init", q_start);
   out << YAML::EndMap;
   // store the data
   std::ofstream file_output_stream(save_path);
+  file_output_stream << out.c_str();
+  // increment counter
+  initial_config_counter++;
 }
 
 void FeasibilityDataGenerator::storePositiveTransitionData(){
