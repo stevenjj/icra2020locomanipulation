@@ -131,13 +131,13 @@ public:
 	double walking_settling_percentage = 0.999;
 	double walking_swing_height = 0.1;
 
-	bool use_left_hand = false; 
-	bool use_right_hand = true; 
-	bool right_foot_stance = false;
-	bool left_foot_stance = true;
+	std::string manipulation_type = ""; // "left_hand" "right_hand" "both_hands" 
+	std::string stance_foot = ""; // "left_foot" / "right_foot"
 
 	int N_resolution = 60; // Resolution discretization to use for solving the transition trajectory
 	int loaded_seed_number = 1;
+
+	std::string parent_folder_path = ""; // folder file path to use when generating the data 
 
 	void printDataGenerationParameters();
 

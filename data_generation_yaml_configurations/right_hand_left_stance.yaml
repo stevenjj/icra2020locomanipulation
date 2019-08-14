@@ -2,12 +2,10 @@
 seed_num: 5
 
 # Manipulation type
-use_left_hand: false
-use_right_hand: true
+manipulation_type: "right_hand" # "right_hand" / "left_hand" / "both_hands"
 
 # Stance type
-right_foot_stance: false
-left_foot_stance: true
+stance_foot: "left_foot" # "right_foot" / left_foot" 
 
 # Resolution to use
 N_resolution: 60 # Use 60 discrete points

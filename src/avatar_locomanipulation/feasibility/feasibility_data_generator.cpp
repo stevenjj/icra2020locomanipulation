@@ -84,38 +84,28 @@ void FeasibilityDataGenerator::loadParamFile(const std::string filepath){
   param_handler.getValue("com_height_min", com_height_min);
   param_handler.getValue("com_height_max", com_height_max);
 
+  param_handler.getString("manipulation_type", manipulation_type);
+  param_handler.getString("stance_foot", stance_foot);
 
-  // Set which hand/s to use  
-  param_handler.getBoolean("use_left_hand", use_left_hand);
-  param_handler.getBoolean("use_right_hand", use_right_hand);
 
-  // left hand and not right hand
-  if ((use_left_hand) && (!use_right_hand)){
+  if (manipulation_type.compare("left_hand") == 0){
       data_gen_manipulation_case = CASE_MANIPULATION_LEFT_HAND;
-      std::cout << "[FeasibilityDataGenerator] Using the left hand" << std::endl;
-  }// right hand and not left hand
-  else if ((!use_left_hand) && (use_right_hand)){
+      std::cout << "[FeasibilityDataGenerator] Using the left hand" << std::endl;    
+  }
+  if (manipulation_type.compare("right_hand") == 0){
       data_gen_manipulation_case = CASE_MANIPULATION_RIGHT_HAND;
       std::cout << "[FeasibilityDataGenerator] Using the right hand" << std::endl;
-  }// using both hands
-  else if ((use_left_hand) && (use_right_hand)){
+  }
+  if (manipulation_type.compare("both_hands") == 0){
       data_gen_manipulation_case = CASE_MANIPULATION_BOTH_HANDS;
       std::cout << "[FeasibilityDataGenerator] Using both hands" << std::endl;
-  }// default to right hand
-  else{
-      data_gen_manipulation_case = CASE_MANIPULATION_RIGHT_HAND;
-      std::cout << "[FeasibilityDataGenerator] Defaulting to right hand" << std::endl;
   }
 
-  param_handler.getBoolean("right_foot_stance", right_foot_stance);
-  param_handler.getBoolean("left_foot_stance", left_foot_stance);
-
-  if (left_foot_stance){
+  if (stance_foot.compare("left_foot") == 0){
     data_gen_stance_case = CASE_STANCE_LEFT_FOOT;
     std::cout << "[FeasibilityDataGenerator] Left foot stance is set to be the origin" << std::endl;
   }
-  // Default to right foot stance if both are active
-  if (right_foot_stance){
+  if (stance_foot.compare("right_foot") == 0){
     data_gen_stance_case = CASE_STANCE_RIGHT_FOOT;
     std::cout << "[FeasibilityDataGenerator] Right foot stance is set to be the origin" << std::endl;
   }
@@ -164,13 +154,16 @@ void FeasibilityDataGenerator::printDataGenerationParameters(){
   std::cout << "  walking_settling_percentage: " << walking_settling_percentage << std::endl;  
   std::cout << "  walking_swing_height: " << walking_swing_height << std::endl;  
 
-  std::cout << "  use_left_hand: " << use_left_hand << std::endl;  
-  std::cout << "  use_right_hand: " << use_right_hand << std::endl;  
-  std::cout << "  right_foot_stance: " << right_foot_stance << std::endl;  
-  std::cout << "  left_foot_stance: " << left_foot_stance << std::endl;  
+  std::cout << "  N_resolution: " << N_resolution << std::endl;  
+  std::cout << "  loaded_seed_number: " << loaded_seed_number << std::endl;  
 
   std::cout << "  N_resolution: " << N_resolution << std::endl;  
   std::cout << "  loaded_seed_number: " << loaded_seed_number << std::endl;  
+
+  std::cout << "  manipulation_type: " << manipulation_type << std::endl;  
+  std::cout << "  stance_foot: " << stance_foot << std::endl;  
+
+
 
 }
 
@@ -541,6 +534,11 @@ bool FeasibilityDataGenerator::generateNDataTransitions(int num_data_to_generate
 
 
 void FeasibilityDataGenerator::storeInitialConfiguration(){
+  // define yaml emitter
+  YAML::Emitter out;
+  out << YAML::BeginMap;
+
+  out << YAML::EndMap;
 }
 
 void FeasibilityDataGenerator::storePositiveTransitionData(){

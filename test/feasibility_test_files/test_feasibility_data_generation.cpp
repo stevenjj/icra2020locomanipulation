@@ -111,6 +111,7 @@ void test_generate_contact_transition_data(int argc, char ** argv){
 
   // set the data data_gen_config_filename configuration file path
   std::string data_gen_config_filename = THIS_PACKAGE_PATH"data_generation_yaml_configurations/right_hand_left_stance.yaml";
+  // std::string data_gen_config_filename = THIS_PACKAGE_PATH"data_generation_yaml_configurations/both_hands_left_stance.yaml";
   feas_data_gen.loadParamFile(data_gen_config_filename);
 
   // Attempt to generate a contact transition data until success.
