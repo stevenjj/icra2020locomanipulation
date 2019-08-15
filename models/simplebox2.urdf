@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
-<robot name="box10" xmlns:xacro="http://ros.org/wiki/xacro">
+<robot name="box2" xmlns:xacro="http://ros.org/wiki/xacro">
 
 
-	<link name="box10">
+	<link name="box2">
     <inertial>
       <mass value="3.0"/>
       <origin rpy="0 0 0" xyz="0.000000 0.000000 -0.010000"/>
@@ -10,13 +10,13 @@
     </inertial>
     <visual>
       <geometry>
-        <box size="0.1 0.1 0.1"/>
+        <box size="0.02 0.02 0.02"/>
       </geometry>
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
     </visual>
     <collision>
       <geometry>
-        <box size="0.1 0.1 0.1"/>
+        <box size="0.02 0.02 0.02"/>
       </geometry>
       <origin rpy="0.0 0 1.57" xyz="0.0 0.0 0.0"/>
     </collision>

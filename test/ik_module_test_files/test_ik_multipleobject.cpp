@@ -14,6 +14,7 @@
 // Import ROS and Rviz visualization
 #include <ros/ros.h>
 #include <avatar_locomanipulation/bridge/val_rviz_translator.hpp>
+#include "visualization_msgs/Marker.h"
 
 
 void visualize_robot(Eigen::VectorXd & q_start, Eigen::VectorXd & q_end);
@@ -36,7 +37,7 @@ std::shared_ptr<RobotModel> initialize_config(Eigen::VectorXd & q_init, Eigen::V
 	// Initialize Valkyrie RobotModel
 	std::shared_ptr<RobotModel> valkyrie(new RobotModel(filename, meshDir, srdf_filename) );
 
-  filename = THIS_PACKAGE_PATH"models/simplebox20.urdf";
+  filename = THIS_PACKAGE_PATH"models/simplebox2.urdf";
   meshDir  = THIS_PACKAGE_PATH"models/box/";
 
   // Initialize Boxes RobotModel
@@ -100,7 +101,7 @@ void testIK_module(){
   std::shared_ptr<RobotModel> box1 = initialize_config(q_init, box_init);
 
   std::string filename, meshDir;
-  filename = THIS_PACKAGE_PATH"models/simplebox10.urdf";
+  filename = THIS_PACKAGE_PATH"models/simplebox1.urdf";
   meshDir  = THIS_PACKAGE_PATH"models/box/";
 
   // Initialize Boxes RobotModel
@@ -149,15 +150,13 @@ void testIK_module(){
   std::shared_ptr<Task> lhand_task(new TaskObjectCollision(ik_module.robot_model, "leftPalm", collision, "lhand"));
   // std::shared_ptr<Task> pelvis_object_task(new TaskObjectCollision(ik_module.robot_model, "pelvis", collision, "pelvis"));
 
-  rhand_task->setTaskGain(20.0);
-  lhand_task->setTaskGain(20.0);
+  rhand_task->setTaskGain(1.0);
+  lhand_task->setTaskGain(1.0);
   // pelvis_object_task->setTaskGain(20.0);
 
 
   // Stack Tasks in order of priority
-  std::shared_ptr<Task> task_stack_priority_3(new TaskStack(ik_module.robot_model, {pelvis_task, lfoot_task, rfoot_task}));
-  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {rhand_task}));
-  std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {lhand_task}));
+  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {rhand_task, lhand_task, lfoot_task, rfoot_task}));
 
   // Set desired Pelvis configuration
   Eigen::Vector3d pelvis_des_pos;
@@ -194,14 +193,12 @@ void testIK_module(){
   Eigen::VectorXd task_error;
   rhand_task->getError(task_error);
   std::cout << "Right Hand Task Error = " << task_error.transpose() << std::endl;
-  // lhand_task->getError(task_error);
-  // std::cout << "Left Hand Task Error = " << task_error.transpose() << std::endl;
+  lhand_task->getError(task_error);
+  std::cout << "Left Hand Task Error = " << task_error.transpose() << std::endl;
   // pelvis_object_task->getError(task_error);
   // std::cout << "Pelvis Object Task Error = " << task_error.transpose() << std::endl;
 
-  ik_module.addTasktoHierarchy(task_stack_priority_3);
   ik_module.addTasktoHierarchy(task_stack_priority_1);
-  ik_module.addTasktoHierarchy(task_stack_priority_2);
 
   int solve_result;
   double error_norm;
@@ -253,12 +250,59 @@ void visualize_robot(Eigen::VectorXd & q_start, Eigen::VectorXd & q_end){
   rviz_translator.populate_joint_state_msg(valkyrie.model, q_start, tf_world_pelvis_init, joint_msg_init);
   rviz_translator.populate_joint_state_msg(valkyrie.model, q_end, tf_world_pelvis_end, joint_msg_end);
 
+  // Visualize the two boxes
+  ros::Publisher point1_pub = n.advertise<visualization_msgs::Marker>("point1", 100);
+  ros::Publisher point2_pub = n.advertise<visualization_msgs::Marker>("point2", 100);
+
+  visualization_msgs::Marker point1, point2;
+
+  // Fill the Points marker msg
+  point1.pose.position.x = 0.33;
+  point1.pose.position.y = -0.524;
+  point1.pose.position.z = 0.813;
+  point1.pose.orientation.y = 0.;
+  point1.pose.orientation.z = 0.;
+  point1.pose.orientation.w = 1.;
+  point1.scale.x = 0.02;
+  point1.scale.y = 0.02;
+  point1.scale.z = 0.02;
+  point1.header.frame_id = "world";
+  point1.text = "point1";
+  point1.color.r = 0.0f;
+  point1.color.g = 1.0f;
+  point1.color.b = 0.0f;
+  point1.color.a = 1.0;
+  point1.action = visualization_msgs::Marker::ADD;
+  point1.type = visualization_msgs::Marker::CUBE;
+
+  // Fill the Points marker msg
+  point2.pose.position.x = 0.83;
+  point2.pose.position.y = 0.524;
+  point2.pose.position.z = 0.813;
+  point2.pose.orientation.y = 0.;
+  point2.pose.orientation.z = 0.;
+  point2.pose.orientation.w = 1.;
+  point2.scale.x = 0.01;
+  point2.scale.y = 0.01;
+  point2.scale.z = 0.01;
+  point2.header.frame_id = "world";
+  point2.text = "point2";
+  point2.color.r = 0.0f;
+  point2.color.g = 1.0f;
+  point2.color.b = 0.0f;
+  point2.color.a = 1.0;
+  point2.action = visualization_msgs::Marker::ADD;
+  point2.type = visualization_msgs::Marker::CUBE;
+
   while (ros::ok()){
       br_robot.sendTransform(tf::StampedTransform(tf_world_pelvis_init, ros::Time::now(), "world",  "val_robot/pelvis"));
       robot_joint_state_pub.publish(joint_msg_init);
 
       br_ik.sendTransform(tf::StampedTransform(tf_world_pelvis_end, ros::Time::now(), "world", "val_ik_robot/pelvis"));
       robot_ik_joint_state_pub.publish(joint_msg_end);
+
+      point1_pub.publish(point1);
+      point2_pub.publish(point2);
     ros::spinOnce();
     loop_rate.sleep();
   }

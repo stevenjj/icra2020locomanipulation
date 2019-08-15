@@ -220,9 +220,6 @@ void CollisionEnvironment::build_point_list_directed_vectors(const std::vector<E
   Eigen::Quaternion<double> cur_ori;
   // For sending to getFrameWorldPose
   std::string frame_name = frame;
-  // // Get list of links of interest
-  // std::vector<std::string> names;
-  // names = make_point_collision_list();
   // For naming the from vectors
   char myString[2];
 
@@ -248,18 +245,6 @@ void CollisionEnvironment::build_point_list_directed_vectors(const std::vector<E
     dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
     dvector.using_worldFramePose = false;
     directed_vectors.push_back(dvector);
-    // // loop thru all of the links of interest
-    // for(int j=0; j<names.size(); ++j){
-    //   frame_name = names[j];
-    //   // Get worldFramePose for this robot link
-    //   appended->getFrameWorldPose(frame_name, cur_pos_to, cur_ori);
-    //   difference = cur_pos_to - cur_pos_from;
-    //   // Fill the dvector and push_back
-    //   dvector.from = myString; dvector.to = frame_name;
-    //   dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
-    //   dvector.using_worldFramePose = false;
-    //   directed_vectors.push_back(dvector);
-    // }
     
   }
 }
@@ -316,11 +301,11 @@ void CollisionEnvironment::build_object_directed_vectors(std::string & frame_nam
 
   } // end outer for
 
-  std::cout << "directed_vectors.size(): " << directed_vectors.size() << std::endl;
+  // std::cout << "directed_vectors.size(): " << directed_vectors.size() << std::endl;
 
-  std::cout << "appended->model: \n" << appended->model << std::endl;
-  std::cout << "appended->geomModel: \n " << appended->geomModel << std::endl;
-  std::cout << "appended->q_current: \n" << appended->q_current << std::endl; 
+  // std::cout << "appended->model: \n" << appended->model << std::endl;
+  // std::cout << "appended->geomModel: \n " << appended->geomModel << std::endl;
+  // std::cout << "appended->q_current: \n" << appended->q_current << std::endl; 
 
   // std::cout << "appended->model:\n" << appended->model << std::endl;
   // std::cout << "appended->geomModel:\n" << appended->geomModel << std::endl;
