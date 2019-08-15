@@ -22,6 +22,12 @@ void FeasibilityDataGenerator::common_initialization(){
 	pelvis_pos.setZero();
 	pelvis_ori.setIdentity();	
 
+  starting_rhand_pos.setZero();
+  starting_rhand_ori.setIdentity(); 
+
+  starting_lhand_pos.setZero();
+  starting_lhand_ori.setIdentity(); 
+
   // Initialize temporary variables
   stance_foot_pos.setZero();
   stance_foot_ori.setIdentity();
@@ -476,26 +482,27 @@ bool FeasibilityDataGenerator::generateContactTransitionData(bool store_data){
   randomizeFootLandingConfiguration();    
 
   // Set the hand configuration
+  starting_rhand_pos.setZero();
+  starting_rhand_ori.setIdentity(); 
+
+  starting_lhand_pos.setZero();
+  starting_lhand_ori.setIdentity(); 
   // Check if the right hand is being used
   if  ((data_gen_manipulation_case == CASE_MANIPULATION_RIGHT_HAND) || 
       (data_gen_manipulation_case == CASE_MANIPULATION_BOTH_HANDS)){
     // robot model would already have been updated after an initial configuration has been set
-    Eigen::Vector3d rhand_pos;
-    Eigen::Quaterniond rhand_ori;
-    robot_model->getFrameWorldPose("rightPalm", rhand_pos, rhand_ori);  
+    robot_model->getFrameWorldPose("rightPalm", starting_rhand_pos, starting_rhand_ori);  
     // Set Constant Right Hand trajectory to current
-    ctg->setConstantRightHandTrajectory(rhand_pos, rhand_ori);
+    ctg->setConstantRightHandTrajectory(starting_rhand_pos, starting_rhand_ori);
   }
 
   // Check if the left hand is being used
   if  ((data_gen_manipulation_case == CASE_MANIPULATION_LEFT_HAND) || 
       (data_gen_manipulation_case == CASE_MANIPULATION_BOTH_HANDS)){
     // robot model would already have been updated after an initial configuration has been set
-    Eigen::Vector3d lhand_pos;
-    Eigen::Quaterniond lhand_ori;
-    robot_model->getFrameWorldPose("leftPalm", lhand_pos, lhand_ori);  
+    robot_model->getFrameWorldPose("leftPalm", starting_lhand_pos, starting_lhand_ori);  
     // Set Constant Right Hand trajectory to current
-    ctg->setConstantLeftHandTrajectory(lhand_pos, lhand_ori);
+    ctg->setConstantLeftHandTrajectory(starting_lhand_pos, starting_lhand_ori);
   }  
 
   // Set the landing footstep to try
@@ -537,7 +544,7 @@ bool FeasibilityDataGenerator::generateNDataTransitions(int num_data_to_generate
 void FeasibilityDataGenerator::storeInitialConfiguration(){
   // Define the yaml emitter
   YAML::Emitter out;
-  std::string save_path = parent_folder_path + "raw_positive_initial_config_data/" + manipulation_type + "_" + stance_foot + "_" + std::to_string(initial_config_counter) + ".yaml";
+  std::string save_path = parent_folder_path + "raw_positive_initial_config_data/" + manipulation_type + "_" + stance_foot + "_" + "s" + std::to_string(loaded_seed_number) + "_" + std::to_string(initial_config_counter) + ".yaml";
 
   // Begin map creation
   out << YAML::BeginMap;
@@ -556,6 +563,48 @@ void FeasibilityDataGenerator::storePositiveTransitionData(){
 
 }
 void FeasibilityDataGenerator::storeTransitionDatawithTaskSpaceInfo(bool result){
+  std::string result_folder = result ? "positive_examples/" : "negative_examples/";
+
+ // Define the yaml emitter
+  int counter_to_use = result ? positive_transition_data_counter : negative_transition_data_counter;
+  YAML::Emitter out;
+  std::string save_path = parent_folder_path + "transitions_data_with_task_space_info/" + result_folder + manipulation_type + "_" + stance_foot + "_" + "s" + std::to_string(loaded_seed_number) + "_" + std::to_string(counter_to_use) + ".yaml";
+
+  // Begin map creation
+  out << YAML::BeginMap;
+
+  data_saver::emit_string(out, "result", (result ? "success" : "failure"));
+  data_saver::emit_joint_configuration(out, "q_init", q_start);
+  data_saver::emit_string(out, "stance_origin", stance_foot);
+
+  data_saver::emit_position(out, "swing_foot_starting_position", swing_foot_pos);
+  data_saver::emit_orientation(out, "swing_foot_starting_orientation", swing_foot_ori);
+  data_saver::emit_position(out, "pelvis_starting_position", pelvis_pos);
+  data_saver::emit_orientation(out, "pelvis_starting_orientation", pelvis_ori);
+
+  data_saver::emit_string(out, "manipulation_type", manipulation_type);
+
+  data_saver::emit_position(out, "left_hand_starting_position", starting_lhand_pos);
+  data_saver::emit_orientation(out, "left_hand_starting_orientation", starting_lhand_ori);
+
+  data_saver::emit_position(out, "right_hand_starting_position", starting_rhand_pos);
+  data_saver::emit_orientation(out, "right_hand_starting_orientation", starting_rhand_ori);
+
+  data_saver::emit_position(out, "landing_foot_position", landing_foot_pos);
+  data_saver::emit_orientation(out, "landing_foot_orientation", landing_foot_ori);
+
+  out << YAML::EndMap;
+  // store the data
+  std::ofstream file_output_stream(save_path);
+  file_output_stream << out.c_str();
+  // increment counter
+  if (result){
+    positive_transition_data_counter++;    
+  }else{
+    negative_transition_data_counter++;    
+  }
+
+
 
 }
 

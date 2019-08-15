@@ -108,7 +108,11 @@ public:
 	Eigen::Vector3d pelvis_pos;
 	Eigen::Quaterniond pelvis_ori;	
 
+    Eigen::Vector3d starting_rhand_pos;
+    Eigen::Quaterniond starting_rhand_ori;
 
+    Eigen::Vector3d starting_lhand_pos;
+    Eigen::Quaterniond starting_lhand_ori;
 
 	// std::shared_ptr<Task> pelvis_ori;
 	// std::shared_ptr<Task> com_task;
