@@ -211,7 +211,7 @@ void CollisionEnvironment::build_self_directed_vectors(const std::string & frame
 }
   
 
-void CollisionEnvironment::build_point_list_directed_vectors(const std::vector<Eigen::Vector3d> & point_list_in, Eigen::VectorXd & q_update){
+void CollisionEnvironment::build_point_list_directed_vectors(const std::vector<Eigen::Vector3d> & point_list_in, Eigen::VectorXd & q_update, std::string & frame){
   // used to build directed vectors
   Eigen::Vector3d difference;
   // Used to hold the current 3d pos of points in and worlFramePose of robotlinks
@@ -219,10 +219,10 @@ void CollisionEnvironment::build_point_list_directed_vectors(const std::vector<E
   // For getting results from getFrameWorldPose
   Eigen::Quaternion<double> cur_ori;
   // For sending to getFrameWorldPose
-  std::string frame_name;
-  // Get list of links of interest
-  std::vector<std::string> names;
-  names = make_point_collision_list();
+  std::string frame_name = frame;
+  // // Get list of links of interest
+  // std::vector<std::string> names;
+  // names = make_point_collision_list();
   // For naming the from vectors
   char myString[2];
 
@@ -240,18 +240,26 @@ void CollisionEnvironment::build_point_list_directed_vectors(const std::vector<E
   for(int i=0; i<point_list_in.size(); ++i){
     cur_pos_from = point_list_in[i];
     sprintf(myString, "%d", i);
-    // loop thru all of the links of interest
-    for(int j=0; j<names.size(); ++j){
-      frame_name = names[j];
-      // Get worldFramePose for this robot link
-      appended->getFrameWorldPose(frame_name, cur_pos_to, cur_ori);
-      difference = cur_pos_to - cur_pos_from;
-      // Fill the dvector and push_back
-      dvector.from = myString; dvector.to = frame_name;
-      dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
-      dvector.using_worldFramePose = false;
-      directed_vectors.push_back(dvector);
-    }
+
+    appended->getFrameWorldPose(frame_name, cur_pos_to, cur_ori);
+    difference = cur_pos_to - cur_pos_from;
+    // Fill the dvector and push_back
+    dvector.from = myString; dvector.to = frame_name;
+    dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+    dvector.using_worldFramePose = false;
+    directed_vectors.push_back(dvector);
+    // // loop thru all of the links of interest
+    // for(int j=0; j<names.size(); ++j){
+    //   frame_name = names[j];
+    //   // Get worldFramePose for this robot link
+    //   appended->getFrameWorldPose(frame_name, cur_pos_to, cur_ori);
+    //   difference = cur_pos_to - cur_pos_from;
+    //   // Fill the dvector and push_back
+    //   dvector.from = myString; dvector.to = frame_name;
+    //   dvector.direction = difference.normalized(); dvector.magnitude = difference.norm();
+    //   dvector.using_worldFramePose = false;
+    //   directed_vectors.push_back(dvector);
+    // }
     
   }
 }

@@ -6,7 +6,7 @@
 
 class TaskPointCollision: public Task{
 public:
-	TaskPointCollision(const std::string task_name_in, std::shared_ptr<RobotModel> & input_model, std::shared_ptr<CollisionEnvironment> & collision, const std::vector<Eigen::Vector3d> & point_list_in);
+	TaskPointCollision(const std::string task_name_in, std::shared_ptr<RobotModel> & input_model, const std::string & input_frame_name, std::shared_ptr<CollisionEnvironment> & collision, const std::vector<Eigen::Vector3d> & point_list_in);
 
 	virtual ~TaskPointCollision();
 
@@ -42,6 +42,7 @@ protected:
 
 	std::vector<Eigen::Vector3d> points_to_avoid;
 	std::string nearest_robot_frame;
+	std::string frame_name;
 
 	double eta;
 

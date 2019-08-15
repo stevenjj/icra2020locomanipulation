@@ -1,9 +1,10 @@
 #include <avatar_locomanipulation/tasks/task_pointcollision.hpp>
 
-TaskPointCollision::TaskPointCollision(const std::string task_name_in, std::shared_ptr<RobotModel> & input_model, std::shared_ptr<CollisionEnvironment> & collision, const std::vector<Eigen::Vector3d> & point_list_in){
+TaskPointCollision::TaskPointCollision(const std::string task_name_in, std::shared_ptr<RobotModel> & input_model, const std::string & input_frame_name, std::shared_ptr<CollisionEnvironment> & collision, const std::vector<Eigen::Vector3d> & point_list_in){
 	robot_model = input_model;
 	task_dim = 1;
 	task_name = task_name_in;
+	frame_name = input_frame_name;
 
 	points_to_avoid = point_list_in;
 
@@ -102,7 +103,7 @@ void TaskPointCollision::computeError(){
 	
  	collision_env->directed_vectors.clear();
  	// Fills dvectors from each point in list to important robot frames
- 	collision_env->build_point_list_directed_vectors(points_to_avoid, robot_model->q_current);
+ 	collision_env->build_point_list_directed_vectors(points_to_avoid, robot_model->q_current, frame_name);
 	// Sorts through the dvectors and gets potential for the shortes pair
  	double V = collision_env->get_collision_potential();
  	// Name of the robot frame that is in the nearest pair

@@ -123,7 +123,7 @@ public:
   //  to avoid those points
   // Inputs: - list of 3D points from which to build dvectors
   //         - q_update, the current robot config 
-  void build_point_list_directed_vectors(const std::vector<Eigen::Vector3d> & point_list_in, Eigen::VectorXd & q_update);
+  void build_point_list_directed_vectors(const std::vector<Eigen::Vector3d> & point_list_in, Eigen::VectorXd & q_update, std::string & frame);
 
  
   // Used by self collision and object collision tasks to calculate the potential field
