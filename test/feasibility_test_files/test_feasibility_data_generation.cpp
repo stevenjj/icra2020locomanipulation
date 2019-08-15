@@ -163,12 +163,65 @@ void test_generate_N_contact_transition_data(int argc, char ** argv){
   bool store_data = true;
   feas_data_gen.generateNDataTransitions(N_positive_data_to_generate, store_data);
 
+}
+
+
+void test_generate_and_visualize_N_contact_transition_data(int argc, char ** argv){
+  std::cout << "[Testing FeasibilityDataGenerator]" << std::endl;
+
+  std::string filename = THIS_PACKAGE_PATH"models/valkyrie_simplified.urdf"; 
+  std::shared_ptr<RobotModel> robot_model(new RobotModel(filename));
+  Eigen::VectorXd q_ik_start;
+  initialize_config(q_ik_start, robot_model);
+
+  // Initialize feasibility data generator
+  FeasibilityDataGenerator feas_data_gen;
+
+  // Set the robot model
+  feas_data_gen.setRobotModel(robot_model);
+  // Set the initial IK configuration
+  feas_data_gen.setStartingIKConfig(q_ik_start);
+
+  // set the data data_gen_config_filename configuration file path
+  std::string data_gen_config_filename = THIS_PACKAGE_PATH"data_generation_yaml_configurations/right_hand_left_stance.yaml";
+  // std::string data_gen_config_filename = THIS_PACKAGE_PATH"data_generation_yaml_configurations/both_hands_left_stance.yaml";
+  feas_data_gen.loadParamFile(data_gen_config_filename);
+
+
+  // Initialize and start the visualizer
+  ros::init(argc, argv, "test_feasibility_data_generation");
+  std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
+  RVizVisualizer visualizer(ros_node, robot_model);
+  Eigen::VectorXd q_begin = q_ik_start;
+
+
+  // Attempt to generate a contact transition data until success. Visualize each successful result.
+  int N_positive_data_to_generate = 2;
+  bool store_data = true;
+  bool visualize_once = true;
+
+  int generated_data_count = 0;
+  while(generated_data_count < N_positive_data_to_generate){
+    // if we generate a data successfully, increment the counter
+    if (feas_data_gen.generateContactTransitionData(store_data)){
+      generated_data_count++;
+      std::cout << "    Generated positive example # " << generated_data_count << std::endl; 
+
+      std::cout << "  Begin visualizing the trajectory..." << std::endl;
+      // Get q_begin
+      feas_data_gen.ctg->traj_q_config.get_pos(0, q_begin);
+      // Visualize
+      visualizer.visualizeConfigurationTrajectory(q_begin, feas_data_gen.ctg->traj_q_config, visualize_once);
+
+    }    
+  }
 
 }
 
 int main(int argc, char ** argv){
   // test_initial_configuration_data_generation(argc, argv);
-  test_generate_contact_transition_data(argc, argv);
+  // test_generate_contact_transition_data(argc, argv);
   // test_generate_N_contact_transition_data(argc, argv);
+  test_generate_and_visualize_N_contact_transition_data(argc, argv);
   return 0;
 }
