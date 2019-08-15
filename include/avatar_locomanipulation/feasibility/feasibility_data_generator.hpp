@@ -71,6 +71,10 @@ public:
 	// runs in a loop until generateContactTransiitionData() returns true for N = num_data_to_generate times.
 	bool generateNDataTransitions(int num_data_to_generate, bool store_data=false);
 
+	// set whether to generate only positive examples
+	void setGenerateOnlyPositiveExamples(bool generate_only_positive_examples_in);
+	bool generate_only_positive_examples = false;
+
 	// Emit YAML Files
 	int initial_config_counter = 0;
 	void storeInitialConfiguration();

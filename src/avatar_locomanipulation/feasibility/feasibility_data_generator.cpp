@@ -55,6 +55,14 @@ void FeasibilityDataGenerator::common_initialization(){
   raw_positive_transition_data_counter = 0;
   positive_transition_data_counter = 0; 
   negative_transition_data_counter = 0;  
+
+  // initialize to generate all data
+  generate_only_positive_examples = false;
+
+}
+
+void FeasibilityDataGenerator::setGenerateOnlyPositiveExamples(bool generate_only_positive_examples_in){ 
+  generate_only_positive_examples = generate_only_positive_examples_in;
 }
 
 void FeasibilityDataGenerator::setRobotModel(std::shared_ptr<RobotModel> & robot_model_in){
@@ -474,7 +482,7 @@ bool FeasibilityDataGenerator::generateContactTransitionData(bool store_data){
     start_configuration = randomizeStartingConfiguration();    
   }
 
-  if (store_data){
+  if ((store_data) && (!generate_only_positive_examples)){
     // store the initial configuration 
     storeInitialConfiguration();   
   }
@@ -514,15 +522,19 @@ bool FeasibilityDataGenerator::generateContactTransitionData(bool store_data){
 
 
   if (store_data){
-    // Store the transition data with task space info
-    storeTransitionDatawithTaskSpaceInfo(trajectory_convergence);
     if (trajectory_convergence){
-      // store the positive transition data
+      // Store the Transition data with task space info
+      storeTransitionDatawithTaskSpaceInfo(trajectory_convergence);        
+      // Store the positive transition data
       storePositiveTransitionData();
+    }else{
+      // Store the Transition data with task space info if allowed to store negative example
+      if (!generate_only_positive_examples){
+        storeTransitionDatawithTaskSpaceInfo(trajectory_convergence);        
+      }      
     }
 
   }
-
 
   // Return the trajectory convergence result
   return trajectory_convergence;

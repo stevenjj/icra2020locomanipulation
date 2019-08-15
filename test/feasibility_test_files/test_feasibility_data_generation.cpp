@@ -197,6 +197,10 @@ void test_generate_and_visualize_N_contact_transition_data(int argc, char ** arg
 
   // Attempt to generate a contact transition data until success. Visualize each successful result.
   int N_positive_data_to_generate = 2;
+
+  // whether or not we only want to generate positive examples:
+  // feas_data_gen.setGenerateOnlyPositiveExamples(true);
+
   bool store_data = true;
   bool visualize_once = true;
 
