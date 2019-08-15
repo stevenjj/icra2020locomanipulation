@@ -206,8 +206,6 @@ void CollisionEnvironment::build_self_directed_vectors(const std::string & frame
     }
   }
 
-  // std::cout << "directed_vectors.size(): " << directed_vectors.size() << std::endl;
-
 }
   
 
@@ -300,35 +298,6 @@ void CollisionEnvironment::build_object_directed_vectors(std::string & frame_nam
     } // end inner for
 
   } // end outer for
-
-  // std::cout << "directed_vectors.size(): " << directed_vectors.size() << std::endl;
-
-  // std::cout << "appended->model: \n" << appended->model << std::endl;
-  // std::cout << "appended->geomModel: \n " << appended->geomModel << std::endl;
-  // std::cout << "appended->q_current: \n" << appended->q_current << std::endl; 
-
-  // std::cout << "appended->model:\n" << appended->model << std::endl;
-  // std::cout << "appended->geomModel:\n" << appended->geomModel << std::endl;
-  // for (int k=0 ; k<appended->model.frames.size() ; ++k){
-  //   std::cout << "frame:" << k << " " << appended->model.frames[k].name << " : " << appended->data->oMf[k].translation().transpose() << std::endl;
-  // }
-
-  // Eigen::Vector3d cur_pos_to, cur_pos_from; 
-  // Eigen::Quaternion<double> cur_ori;
-  
-  // appended->getFrameWorldPose(collision_to_frame.find("base_link_0")->second, cur_pos_to, cur_ori);
-  // std::cout << "current pose base_link_0:\n" << cur_pos_to << std::endl;
-  // appended->getFrameWorldPose("rightThumbPitch3Link", cur_pos_to, cur_ori);
-  // std::cout << "current pose rightThumbPitch3Link:\n" << cur_pos_to << std::endl;
-  // appended->getFrameWorldPose(collision_to_frame.find("rightPalm_0")->second, cur_pos_to, cur_ori);
-  // std::cout << "current pose rightPalm_0:\n" << cur_pos_to << std::endl;
-
-  // for(int i=0; i<directed_vectors.size(); ++i){
-  //   std::cout << "directed_vectors[i].from: " << directed_vectors[i].from << std::endl;
-  //   std::cout << "directed_vectors[i].to: " << directed_vectors[i].to << std::endl;
-  //   std::cout << "directed_vectors[i].magnitude: " << directed_vectors[i].magnitude << std::endl;
-  //   std::cout << "directed_vectors[i].direction: \n" << directed_vectors[i].direction << std::endl;
-  // }
 
 }
 
