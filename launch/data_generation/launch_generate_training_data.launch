@@ -2,7 +2,17 @@
 	<arg name="num_positive_data" default="1"/>
 	<arg name="yaml_filename" default="right_hand_left_stance"/>
     <arg name="visualize" default="true" />  
-    <arg name="positive_data_only" default="true" />
+    <arg name="positive_data_only" default="false" />
+
 
     <node name="generate_data_$(arg yaml_filename)" pkg="avatar_locomanipulation" type="test_generate_data" args="$(arg num_positive_data) $(arg yaml_filename).yaml $(arg visualize) $(arg positive_data_only)" output="screen" /> 
+
+
+    <!-- Launch visualization node -->
+    <group if="$(arg visualize)">
+	    <include file="$(find avatar_locomanipulation)/launch/launch_viz_robot_simple_collisions.launch">
+	      <arg name="use_static_transform" value="False"/>
+	    </include>    
+	</group>
+
 </launch>

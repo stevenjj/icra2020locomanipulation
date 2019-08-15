@@ -1,6 +1,6 @@
 #!/bin/bash
-num=2
-parent_folder="param_set_$num"
+num=10
+parent_folder="param_set_$num/both_hands"
 
 echo "Creating folders: $parent_folder/raw_positive_initial_config_data"
 echo "Creating folders: $parent_folder/raw_positive_transitions_data"
