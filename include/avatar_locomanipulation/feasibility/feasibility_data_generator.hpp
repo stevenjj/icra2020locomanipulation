@@ -69,7 +69,7 @@ public:
 	bool generateContactTransitionData(bool store_data=false);
 
 	// runs in a loop until generateContactTransiitionData() returns true for N = num_data_to_generate times.
-	bool generateNDataTransitions(int num_data_to_generate);
+	bool generateNDataTransitions(int num_data_to_generate, bool store_data=false);
 
 	// Emit YAML Files
 	int initial_config_counter = 0;

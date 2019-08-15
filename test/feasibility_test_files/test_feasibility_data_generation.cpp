@@ -138,8 +138,37 @@ void test_generate_contact_transition_data(int argc, char ** argv){
   visualizer.visualizeConfigurationTrajectory(q_begin, feas_data_gen.ctg->traj_q_config);
 }
 
+void test_generate_N_contact_transition_data(int argc, char ** argv){
+  std::cout << "[Testing FeasibilityDataGenerator]" << std::endl;
+
+  // Initialize the robot model and the initial joint configuration
+  std::string filename = THIS_PACKAGE_PATH"models/valkyrie_simplified.urdf"; 
+  std::shared_ptr<RobotModel> robot_model(new RobotModel(filename));
+  Eigen::VectorXd q_ik_start;
+  initialize_config(q_ik_start, robot_model);
+
+  // Initialize feasibility data generator
+  FeasibilityDataGenerator feas_data_gen;
+  // Set the robot model
+  feas_data_gen.setRobotModel(robot_model);
+  // Set the initial IK configuration
+  feas_data_gen.setStartingIKConfig(q_ik_start);
+
+  // set the data data_gen_config_filename configuration file path
+  std::string data_gen_config_filename = THIS_PACKAGE_PATH"data_generation_yaml_configurations/right_hand_left_stance.yaml";
+  feas_data_gen.loadParamFile(data_gen_config_filename);
+
+  // Attempt to generate a contact transition data until success.
+  int N_positive_data_to_generate = 2;
+  bool store_data = true;
+  feas_data_gen.generateNDataTransitions(N_positive_data_to_generate, store_data);
+
+
+}
+
 int main(int argc, char ** argv){
   // test_initial_configuration_data_generation(argc, argv);
-  test_generate_contact_transition_data(argc, argv);
+  // test_generate_contact_transition_data(argc, argv);
+  test_generate_N_contact_transition_data(argc, argv);
   return 0;
 }

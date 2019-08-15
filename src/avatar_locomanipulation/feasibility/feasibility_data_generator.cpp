@@ -529,12 +529,15 @@ bool FeasibilityDataGenerator::generateContactTransitionData(bool store_data){
 
 }
 
-bool FeasibilityDataGenerator::generateNDataTransitions(int num_data_to_generate){
+bool FeasibilityDataGenerator::generateNDataTransitions(int num_data_to_generate,  bool store_data){
   int generated_data_count = 0;
+
+  std::cout << "[FeasibilityDataGenerator] generating N = " << num_data_to_generate << " positive transition data" << std::endl;
   while(generated_data_count < num_data_to_generate){
     // if we generate a data successfully, increment the counter
-    if (generateContactTransitionData()){
+    if (generateContactTransitionData(store_data)){
       generated_data_count++;
+      std::cout << "    Generated positive example # " << generated_data_count << std::endl; 
     }    
   }
   // Finished generated num_data_to_generate
@@ -577,6 +580,7 @@ void FeasibilityDataGenerator::storePositiveTransitionData(){
   data_saver::emit_string(out, "stance_origin", stance_foot);
   data_saver::emit_string(out, "manipulation_type", manipulation_type);
   data_saver::emit_integer(out, "N_resolution", N_resolution);
+  data_saver::emit_value(out, "dt", ctg->traj_q_config.get_dt());
 
   // Output the trajectory
   std::string idx_string;
