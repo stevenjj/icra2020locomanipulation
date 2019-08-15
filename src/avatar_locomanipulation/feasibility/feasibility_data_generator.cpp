@@ -52,6 +52,7 @@ void FeasibilityDataGenerator::common_initialization(){
 
   // initialize counters to 0
   initial_config_counter = 0;
+  raw_positive_transition_data_counter = 0;
   positive_transition_data_counter = 0; 
   negative_transition_data_counter = 0;  
 }
@@ -542,9 +543,11 @@ bool FeasibilityDataGenerator::generateNDataTransitions(int num_data_to_generate
 
 
 void FeasibilityDataGenerator::storeInitialConfiguration(){
+  // Defube the save path
+  std::string save_path = parent_folder_path + "raw_positive_initial_config_data/" + manipulation_type + "_" + stance_foot + "_" + "s" + std::to_string(loaded_seed_number) + "_" + std::to_string(initial_config_counter) + ".yaml";
+
   // Define the yaml emitter
   YAML::Emitter out;
-  std::string save_path = parent_folder_path + "raw_positive_initial_config_data/" + manipulation_type + "_" + stance_foot + "_" + "s" + std::to_string(loaded_seed_number) + "_" + std::to_string(initial_config_counter) + ".yaml";
 
   // Begin map creation
   out << YAML::BeginMap;
@@ -552,52 +555,86 @@ void FeasibilityDataGenerator::storeInitialConfiguration(){
   data_saver::emit_string(out, "manipulation_type", manipulation_type);
   data_saver::emit_joint_configuration(out, "q_init", q_start);
   out << YAML::EndMap;
-  // store the data
+
+  // Store the data
   std::ofstream file_output_stream(save_path);
   file_output_stream << out.c_str();
-  // increment counter
+  
+  // Increment counter
   initial_config_counter++;
 }
 
 void FeasibilityDataGenerator::storePositiveTransitionData(){
+  // Define the save path
+  int counter_to_use = raw_positive_transition_data_counter; 
+  std::string save_path = parent_folder_path + "raw_positive_transitions_data/" + manipulation_type + "_" + stance_foot + "_" + "s" + std::to_string(loaded_seed_number) + "_" + std::to_string(counter_to_use) + ".yaml"; 
 
-}
-void FeasibilityDataGenerator::storeTransitionDatawithTaskSpaceInfo(bool result){
-  std::string result_folder = result ? "positive_examples/" : "negative_examples/";
-
- // Define the yaml emitter
-  int counter_to_use = result ? positive_transition_data_counter : negative_transition_data_counter;
+   // Define the yaml emitter
   YAML::Emitter out;
-  std::string save_path = parent_folder_path + "transitions_data_with_task_space_info/" + result_folder + manipulation_type + "_" + stance_foot + "_" + "s" + std::to_string(loaded_seed_number) + "_" + std::to_string(counter_to_use) + ".yaml";
 
   // Begin map creation
   out << YAML::BeginMap;
+  data_saver::emit_string(out, "stance_origin", stance_foot);
+  data_saver::emit_string(out, "manipulation_type", manipulation_type);
+  data_saver::emit_integer(out, "N_resolution", N_resolution);
 
+  // Output the trajectory
+  std::string idx_string;
+  Eigen::VectorXd q_traj_idx = Eigen::VectorXd::Zero(robot_model->getDimQ());
+
+  for(int i = 0; i < N_resolution; i++){
+    ctg->traj_q_config.get_pos(i, q_traj_idx);
+    idx_string = "q_trajectory_idx" + std::to_string(i);
+    data_saver::emit_joint_configuration(out, idx_string, q_traj_idx);
+  }
+  // Finish outputing the trajectory
+  
+  out << YAML::EndMap;
+  // End Map creation
+
+  // Store the data
+  std::ofstream file_output_stream(save_path);
+  file_output_stream << out.c_str();
+
+  // Increment counter
+  raw_positive_transition_data_counter++;  
+
+}
+void FeasibilityDataGenerator::storeTransitionDatawithTaskSpaceInfo(bool result){
+  // Define the save path
+  std::string result_folder = result ? "positive_examples/" : "negative_examples/";
+  int counter_to_use = result ? positive_transition_data_counter : negative_transition_data_counter;
+  std::string save_path = parent_folder_path + "transitions_data_with_task_space_info/" + result_folder + manipulation_type + "_" + stance_foot + "_" + "s" + std::to_string(loaded_seed_number) + "_" + std::to_string(counter_to_use) + ".yaml";
+
+  // Define the yaml emitter
+  YAML::Emitter out;
+  
+  // Begin map creation
+  out << YAML::BeginMap;
   data_saver::emit_string(out, "result", (result ? "success" : "failure"));
   data_saver::emit_joint_configuration(out, "q_init", q_start);
-  data_saver::emit_string(out, "stance_origin", stance_foot);
 
+  data_saver::emit_string(out, "stance_origin", stance_foot);
   data_saver::emit_position(out, "swing_foot_starting_position", swing_foot_pos);
   data_saver::emit_orientation(out, "swing_foot_starting_orientation", swing_foot_ori);
   data_saver::emit_position(out, "pelvis_starting_position", pelvis_pos);
   data_saver::emit_orientation(out, "pelvis_starting_orientation", pelvis_ori);
 
   data_saver::emit_string(out, "manipulation_type", manipulation_type);
-
   data_saver::emit_position(out, "left_hand_starting_position", starting_lhand_pos);
   data_saver::emit_orientation(out, "left_hand_starting_orientation", starting_lhand_ori);
-
   data_saver::emit_position(out, "right_hand_starting_position", starting_rhand_pos);
   data_saver::emit_orientation(out, "right_hand_starting_orientation", starting_rhand_ori);
 
   data_saver::emit_position(out, "landing_foot_position", landing_foot_pos);
   data_saver::emit_orientation(out, "landing_foot_orientation", landing_foot_ori);
-
   out << YAML::EndMap;
-  // store the data
+
+  // Store the data
   std::ofstream file_output_stream(save_path);
   file_output_stream << out.c_str();
-  // increment counter
+  
+  // Increment counter
   if (result){
     positive_transition_data_counter++;    
   }else{

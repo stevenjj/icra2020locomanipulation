@@ -75,9 +75,11 @@ public:
 	int initial_config_counter = 0;
 	void storeInitialConfiguration();
 
+	int raw_positive_transition_data_counter = 0;
+	void storePositiveTransitionData();
+
 	int positive_transition_data_counter = 0;	
 	int negative_transition_data_counter = 0;
-	void storePositiveTransitionData();
 	void storeTransitionDatawithTaskSpaceInfo(bool result);
 
     // Parameter Handler
