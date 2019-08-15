@@ -15,7 +15,7 @@ N_resolution: 60 # Use 60 discrete points
 
 # Data generation parameters
 max_reach: 0.4 #  maximum forward step
-min_reach: -0.2 #  maximum backward step
+min_reach: -0.3 #  maximum backward step
 max_width: 0.4 #  maximum side step
 min_width: 0.2 #  minimum side step
 max_theta: 0.6 #  maximum foot angle w.r.t stance

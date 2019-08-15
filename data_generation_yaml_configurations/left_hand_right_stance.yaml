@@ -1,14 +1,14 @@
 # Folder path to use
-parent_folder_path: "/media/sjorgen1/Seagate Expansion Drive/LocomanipulationProject/generated_data/param_set_2/"
+parent_folder_path: "/media/sjorgen1/Seagate Expansion Drive/LocomanipulationProject/generated_data/param_set_1/"
 
 # Data generation seed
-seed_num: 11
+seed_num: 5
 
 # Manipulation type
-manipulation_type: "right_hand" # "right_hand" / "left_hand" / "both_hands"
+manipulation_type: "left_hand" # "right_hand" / "left_hand" / "both_hands"
 
 # Stance type
-stance_foot: "left_foot" # "right_foot" / left_foot" 
+stance_foot: "right_foot" # "right_foot" / left_foot" 
 
 # Resolution to use
 N_resolution: 60 # Use 60 discrete points

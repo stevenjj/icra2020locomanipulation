@@ -1,5 +1,5 @@
 #!/bin/bash
-num=3
+num=2
 parent_folder="param_set_$num"
 
 echo "Creating folders: $parent_folder/raw_positive_initial_config_data"
