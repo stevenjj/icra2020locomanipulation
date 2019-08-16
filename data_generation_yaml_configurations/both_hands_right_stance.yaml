@@ -1,8 +1,8 @@
 # Folder path to use
-parent_folder_path: "/media/sjorgen1/Seagate Expansion Drive/LocomanipulationProject/generated_data/param_set_10/both_hands/"
+parent_folder_path: "/home/stevenjj/Data/param_set_1/both_hands/"
 
 # Data generation seed
-seed_num: 5
+seed_num: 25
 
 # Manipulation type
 manipulation_type: "both_hands" # "right_hand" / "left_hand" / "both_hands"

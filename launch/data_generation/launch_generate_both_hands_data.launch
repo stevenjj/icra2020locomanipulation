@@ -1,0 +1,21 @@
+<launch>
+	<arg name="num_positive_data" default="5"/>
+
+	<!-- Both Hands Left Stance -->
+    <include file="$(find avatar_locomanipulation)/launch/data_generation/launch_generate_training_data.launch">
+		<arg name="yaml_filename" value="both_hands_left_stance"/>
+
+		<arg name="num_positive_data" value="$(arg num_positive_data)"/>
+	    <arg name="visualize" value="false" />  
+	    <arg name="positive_data_only" value="false" />
+    </include>  
+
+	<!-- Both Hands Right Stance -->
+    <include file="$(find avatar_locomanipulation)/launch/data_generation/launch_generate_training_data.launch">
+		<arg name="yaml_filename" value="both_hands_right_stance"/>
+
+		<arg name="num_positive_data" value="$(arg num_positive_data)"/>
+	    <arg name="visualize" value="false" />  
+	    <arg name="positive_data_only" value="false" />
+    </include>  
+</launch>
