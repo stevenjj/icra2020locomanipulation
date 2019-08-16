@@ -1,3 +1,3 @@
 #!/bin/bash
 # create new terminal to process command
-gnome-terminal -e $1
+x-terminal-emulator -e $1
