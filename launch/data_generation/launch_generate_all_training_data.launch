@@ -1,6 +1,9 @@
 <launch>
+	<!-- Create Data Folder it it doesn't exist -->
+	<node name="$(anon generate_folders)" pkg="avatar_locomanipulation" type="generate_folders.sh" />
 
-	<arg name="num_positive_data" default="5"/>
+	<arg name="num_positive_data" default="10000"/>
+	<arg name="generate_positive_data_only" value="true" />
 
 	<!-- Right Hand Left Stance -->
     <include file="$(find avatar_locomanipulation)/launch/data_generation/launch_generate_training_data.launch">
@@ -8,7 +11,7 @@
 
 		<arg name="num_positive_data" value="$(arg num_positive_data)"/>
 	    <arg name="visualize" value="false" />  
-	    <arg name="positive_data_only" value="false" />
+	    <arg name="positive_data_only" value="$(arg generate_positive_data_only)" />
     </include>  
 
 	<!-- Right Hand Right Stance -->
@@ -17,7 +20,7 @@
 
 		<arg name="num_positive_data" value="$(arg num_positive_data)"/>
 	    <arg name="visualize" value="false" />  
-	    <arg name="positive_data_only" value="false" />
+	    <arg name="positive_data_only" value="$(arg generate_positive_data_only)" />
     </include>  
 
 	<!-- Left Hand Left Stance -->
@@ -26,7 +29,7 @@
 
 		<arg name="num_positive_data" value="$(arg num_positive_data)"/>
 	    <arg name="visualize" value="false" />  
-	    <arg name="positive_data_only" value="false" />
+	    <arg name="positive_data_only" value="$(arg generate_positive_data_only)" />
     </include>  
 
 	<!-- Left Hand Right Stance -->
@@ -35,7 +38,7 @@
 
 		<arg name="num_positive_data" value="$(arg num_positive_data)"/>
 	    <arg name="visualize" value="false" />  
-	    <arg name="positive_data_only" value="false" />
+	    <arg name="positive_data_only" value="$(arg generate_positive_data_only)" />
     </include>  
 
 	<!-- Both Hands Left Stance -->
@@ -44,7 +47,7 @@
 
 		<arg name="num_positive_data" value="$(arg num_positive_data)"/>
 	    <arg name="visualize" value="false" />  
-	    <arg name="positive_data_only" value="false" />
+	    <arg name="positive_data_only" value="$(arg generate_positive_data_only)" />
     </include>  
 
 	<!-- Both Hands Right Stance -->
@@ -53,7 +56,7 @@
 
 		<arg name="num_positive_data" value="$(arg num_positive_data)"/>
 	    <arg name="visualize" value="false" />  
-	    <arg name="positive_data_only" value="false" />
+	    <arg name="positive_data_only" value="$(arg generate_positive_data_only)" />
     </include>  
 
 </launch>

@@ -558,8 +558,11 @@ bool FeasibilityDataGenerator::generateNDataTransitions(int num_data_to_generate
 
 
 void FeasibilityDataGenerator::storeInitialConfiguration(){
-  // Defube the save path
-  std::string save_path = parent_folder_path + "raw_positive_initial_config_data/" + manipulation_type + "_" + stance_foot + "_" + "s" + std::to_string(loaded_seed_number) + "_" + std::to_string(initial_config_counter) + ".yaml";
+  // Define the save path
+  std::string userhome = std::string("/home/") + std::string(std::getenv("USER")) + std::string("/");
+  std::cout << "User home path: " << userhome << std::endl;
+  std::string save_path = userhome + parent_folder_path + "raw_positive_initial_config_data/" + manipulation_type + "_" + stance_foot + "_" + "s" + std::to_string(loaded_seed_number) + "_" + std::to_string(initial_config_counter) + ".yaml";
+  std::cout << "saving to: " << save_path << std::endl;
 
   // Define the yaml emitter
   YAML::Emitter out;
@@ -581,9 +584,13 @@ void FeasibilityDataGenerator::storeInitialConfiguration(){
 
 void FeasibilityDataGenerator::storePositiveTransitionData(){
   // Define the save path
-  int counter_to_use = raw_positive_transition_data_counter; 
-  std::string save_path = parent_folder_path + "raw_positive_transitions_data/" + manipulation_type + "_" + stance_foot + "_" + "s" + std::to_string(loaded_seed_number) + "_" + std::to_string(counter_to_use) + ".yaml"; 
+  std::string userhome = std::string("/home/") + std::string(std::getenv("USER")) + std::string("/");
+  std::cout << "User home path: " << userhome << std::endl;
 
+  int counter_to_use = raw_positive_transition_data_counter; 
+  std::string save_path = userhome + parent_folder_path + "raw_positive_transitions_data/" + manipulation_type + "_" + stance_foot + "_" + "s" + std::to_string(loaded_seed_number) + "_" + std::to_string(counter_to_use) + ".yaml"; 
+  std::cout << "saving to: " << save_path << std::endl;
+  
    // Define the yaml emitter
   YAML::Emitter out;
 
@@ -618,9 +625,13 @@ void FeasibilityDataGenerator::storePositiveTransitionData(){
 }
 void FeasibilityDataGenerator::storeTransitionDatawithTaskSpaceInfo(bool result){
   // Define the save path
+  std::string userhome = std::string("/home/") + std::string(std::getenv("USER")) + std::string("/");
+  std::cout << "User home path: " << userhome << std::endl;
+
   std::string result_folder = result ? "positive_examples/" : "negative_examples/";
   int counter_to_use = result ? positive_transition_data_counter : negative_transition_data_counter;
-  std::string save_path = parent_folder_path + "transitions_data_with_task_space_info/" + result_folder + manipulation_type + "_" + stance_foot + "_" + "s" + std::to_string(loaded_seed_number) + "_" + std::to_string(counter_to_use) + ".yaml";
+  std::string save_path = userhome + parent_folder_path + "transitions_data_with_task_space_info/" + result_folder + manipulation_type + "_" + stance_foot + "_" + "s" + std::to_string(loaded_seed_number) + "_" + std::to_string(counter_to_use) + ".yaml";
+  std::cout << "saving to: " << save_path << std::endl;
 
   // Define the yaml emitter
   YAML::Emitter out;

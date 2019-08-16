@@ -1,8 +1,8 @@
-# Folder path to use
-parent_folder_path: "/home/stevenjj/Data/param_set_1/both_hands/"
+# Folder path to use relative to /home/$USER/
+parent_folder_path: "Data/param_set_1/both_hands/"
 
 # Data generation seed
-seed_num: 25
+seed_num: 101
 
 # Manipulation type
 manipulation_type: "both_hands" # "right_hand" / "left_hand" / "both_hands"

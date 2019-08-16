@@ -5,6 +5,8 @@
 #include <time.h>
 #include <random>
 
+#include <stdlib.h>
+
 #include <Configuration.h>
 #include <avatar_locomanipulation/models/robot_model.hpp>
 #include <avatar_locomanipulation/ik_module/ik_module.hpp>
@@ -152,7 +154,7 @@ public:
 	int N_resolution = 60; // Resolution discretization to use for solving the transition trajectory
 	int loaded_seed_number = 1;
 
-	std::string parent_folder_path = ""; // folder file path to use when generating the data 
+	std::string parent_folder_path = "Data/"; // folder file path to use when generating the data 
 
 	void printDataGenerationParameters();
 

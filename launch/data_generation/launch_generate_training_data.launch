@@ -5,7 +5,7 @@
     <arg name="positive_data_only" default="false" />
 
 
-    <node name="generate_data_$(arg yaml_filename)" pkg="avatar_locomanipulation" type="test_generate_data" args="$(arg num_positive_data) $(arg yaml_filename).yaml $(arg visualize) $(arg positive_data_only)" output="screen" /> 
+    <node name="generate_data_$(arg yaml_filename)_$(anon instance)" pkg="avatar_locomanipulation" type="test_generate_data" args="$(arg num_positive_data) $(arg yaml_filename).yaml $(arg visualize) $(arg positive_data_only)" output="screen" /> 
 
 
     <!-- Launch visualization node -->
