@@ -2,6 +2,8 @@
 	<!-- Create Data Folder it it doesn't exist -->
 	<node name="$(anon generate_folders)" pkg="avatar_locomanipulation" type="generate_folders.sh" />
 
+	<node name="$(anon monitor_progress)" pkg="avatar_locomanipulation" type="new_terminal_run_command.sh" args="$(find avatar_locomanipulation)/scripts/monitor_progress.sh" />
+
 	<arg name="num_positive_data" default="10000"/>
 	<arg name="generate_positive_data_only" value="true" />
 
