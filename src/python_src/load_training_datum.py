@@ -23,7 +23,7 @@ def convert_quat_to_3vec(quat):
 		vec = vec / np.linalg.norm(vec) * theta
 		return vec 
 
-class TransitionData:
+class ContactTransitionData:
 	def __init__(self, yaml_file_path=""):
 		self.stance_origin_to_num = { "left_foot": 0, "right_foot":1 }
 		self.manipulation_type_to_num = { "left_hand": 0, "right_hand":1, "both_hands":2 }
@@ -158,12 +158,12 @@ class TransitionData:
 
 
 def test_load_file(filepath):
-	training_data = TransitionData(filepath)
+	training_data = ContactTransitionData(filepath)
 	training_data.printData()
 	print "x = ", training_data.get_x()
 	print "y = ", training_data.get_y()
 
-	# training_data = TransitionData()
+	# training_data = ContactTransitionData()
 	#training_data.load_yaml_file(filepath)
 
 
