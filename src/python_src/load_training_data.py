@@ -24,7 +24,7 @@ def convert_quat_to_3vec(quat):
 		return vec 
 
 class TransitionData:
-	def __init__(self):
+	def __init__(self, yaml_file_path=""):
 		self.stance_origin_to_num = { "left_foot": 0, "right_foot":1 }
 		self.manipulation_type_to_num = { "left_hand": 0, "right_hand":1, "both_hands":2 }
 		
@@ -60,8 +60,13 @@ class TransitionData:
 		self.set_x()
 		self.set_y()
 
+		if (yaml_file_path != ""):
+			self.load_yaml_file(yaml_file_path)
+
+
 	def set_x(self):
 		# sets the x vector for the training data
+		# stance_origin, manipulation_type
 		self.x = np.concatenate( (self.swing_foot_starting_position, self.swing_foot_starting_orientation_vec,
 								  self.pelvis_starting_position, self.pelvis_starting_orientation_vec,
 								  self.left_hand_starting_position,self.left_hand_starting_orientation_vec,
@@ -87,14 +92,13 @@ class TransitionData:
 		ori[2] = data_loaded[key]["z"]	
 		ori[3] = data_loaded[key]["w"]			
 
-	def loadYamlFile(self, yaml_file_path):
+	def load_yaml_file(self, yaml_file_path):
 		with open(filepath, 'r') as stream:
-			data_loaded = yaml.load(stream)		
+			data_loaded = yaml.load(stream)
+			self.path = yaml_file_path		
 			self.loadData(data_loaded)
 
 	def loadData(self, data_loaded):
-		self.path = filepath 
-
 		self.stance_origin = data_loaded["stance_origin"] 
 		self.manipulation_type = data_loaded["manipulation_type"]		
 		self.result = 1 if data_loaded["result"] == "success" else 0
@@ -153,18 +157,14 @@ class TransitionData:
 		print "  landing_foot_orientation_vec:" , self.landing_foot_orientation_vec
 
 
-def load_file(filepath):
-	with open(filepath, 'r') as stream:
-	    data_loaded = yaml.load(stream)
-	    # print data_loaded	
-	training_data = TransitionData()
-
-	training_data.loadData(data_loaded)
+def test_load_file(filepath):
+	training_data = TransitionData(filepath)
 	training_data.printData()
+	print "x = ", training_data.get_x()
+	print "y = ", training_data.get_y()
 
-	print "x vec = ", training_data.get_x()
-
-
+	# training_data = TransitionData()
+	#training_data.load_yaml_file(filepath)
 
 
 if __name__ == "__main__":
@@ -173,6 +173,6 @@ if __name__ == "__main__":
 		if '.yaml' in item:
 			filepath = item
 			print "loading yaml file:", item
-			load_file(filepath)
+			test_load_file(filepath)
 
 			break
