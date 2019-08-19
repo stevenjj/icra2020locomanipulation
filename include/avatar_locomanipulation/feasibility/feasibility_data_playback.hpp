@@ -16,6 +16,10 @@
 #include <avatar_locomanipulation/helpers/param_handler.hpp>
 #include <fstream>
 
+#include <iostream>
+
+// Helpers
+#include <avatar_locomanipulation/helpers/orientation_utils.hpp>
 
 // This class loads a positive transition data and recomputes the trajectory.
 // it also plays back a symmetric version of the data.
@@ -29,7 +33,7 @@ public:
     void setRobotModel(std::shared_ptr<RobotModel> & robot_model_in);
 
     // Load the walking pattern generator file path
-	void loadParamfile(const std::string filepath);
+	void loadParamFile(const std::string filepath);
 	// Load the stored positive transition data
 	void loadData(const std::string filepath);
 
@@ -38,21 +42,13 @@ public:
 	void playback();
 	void produceSymmetricData();
 
-	// Data Parameters
-	double max_reach = 0.4; // maximum forward step
-	double min_reach = -0.2; // maximum backward step
-	double max_width = 0.4; // maximum side step
-	double min_width = 0.2; // minimum side step
-	double max_theta = 0.6; // maximum foot angle w.r.t stance
-	double min_theta = -0.15; // minimum foot angle w.r.t stance
+    // Parameter Handler
+    ParamHandler param_handler;
 
-	double convex_hull_percentage = 0.9; // Percentage of convex hull to use for randomization of pelvis location
-	double pelvis_height_min = 0.9;
-	double pelvis_height_max = 1.05;
+	std::shared_ptr<RobotModel> robot_model;
+	std::shared_ptr<ConfigTrajectoryGenerator> ctg;
 
-	double com_height_min = 0.9;
-	double com_height_max = 1.0;
-
+	// Data Walking Parameters
 	double walking_com_height = 0.95;
 	double walking_double_support_time = 0.45; // AKA transfer time
 	double walking_single_support_time = 1.0; // AKA swing time	
@@ -69,12 +65,30 @@ public:
 	// robot starting configuration
 	Eigen::VectorXd q_start;	
 
+	Eigen::Vector3d swing_foot_position;
+	Eigen::Quaterniond swing_foot_orientation;
+
+	Eigen::Vector3d landing_foot_position;
+	Eigen::Quaterniond landing_foot_orientation;
+
+	Eigen::Vector3d right_hand_position;
+	Eigen::Quaterniond right_hand_orientation;
+
+	Eigen::Vector3d left_hand_position;
+	Eigen::Quaterniond left_hand_orientation;
+
+
 	// data gen case
 	int data_gen_manipulation_case;
 	int data_gen_stance_case;
 
 	// Trajectory configuration
 	TrajEuclidean  traj_q_config;
+
+private:
+	void getParamVec(const std::string param_name, Eigen::VectorXd & vec);
+	void getParamPos(const std::string param_name, Eigen::Vector3d & pos);
+	void getParamOri(const std::string param_name, Eigen::Quaterniond & ori);
 
 
 };

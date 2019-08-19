@@ -81,6 +81,7 @@ SET (ROS_BRIDGE_SOURCES
 SET (FEASIBILITY_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/feasibility/feasibility.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/feasibility/feasibility_data_generator.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/feasibility/feasibility_data_playback.cpp	
 	)
 
 SET (TASK_SOURCES
