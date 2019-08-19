@@ -26,21 +26,25 @@ model = tf.keras.Sequential()
 model.add(layers.Dense(64, activation='relu',  kernel_regularizer=tf.keras.regularizers.l2(0.01), input_shape=(dataset_dim,)))
 model.add(layers.Dense(64, activation='relu',  kernel_regularizer=tf.keras.regularizers.l2(0.01)))
 model.add(layers.Dense(64, activation='relu',  kernel_regularizer=tf.keras.regularizers.l2(0.01)))
-#model.add(layers.Dense(2, activation='softmax'))
 model.add(layers.Dense(1, activation='sigmoid'))
-
-
-
 # Model
 model.compile(optimizer=tf.train.AdamOptimizer(0.001),
               loss='binary_crossentropy',
-              # loss='sparse_categorical_crossentropy',
               metrics=['accuracy'])
 
+
+# model.add(layers.Dense(2, activation='softmax'))
+# # Model
+# model.compile(optimizer=tf.train.AdamOptimizer(0.001),
+#               loss='sparse_categorical_crossentropy',
+#               metrics=['accuracy'])
+
 # Fit
-model.fit(x_train, y_train, epochs=10, batch_size=32)
+model.fit(x_train, y_train, epochs=50, batch_size=32)
 # Evaluate
-#model.evaluate(x_test, y_test)
+model.evaluate(x_train, y_train)
 
 # model.add( layers.Dense(64, activation='relu', input_shape( dim ,)) )
 
+print "prediction for ", x_train[:1]
+print model.predict(x_train[:1])
