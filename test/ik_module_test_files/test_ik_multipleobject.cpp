@@ -150,8 +150,8 @@ void testIK_module(){
   std::shared_ptr<Task> lhand_task(new TaskObjectCollision(ik_module.robot_model, "leftPalm", collision, "lhand"));
   // std::shared_ptr<Task> pelvis_object_task(new TaskObjectCollision(ik_module.robot_model, "pelvis", collision, "pelvis"));
 
-  rhand_task->setTaskGain(1.0);
-  lhand_task->setTaskGain(1.0);
+  rhand_task->setTaskGain(0.1);
+  lhand_task->setTaskGain(0.1);
   // pelvis_object_task->setTaskGain(20.0);
 
 
