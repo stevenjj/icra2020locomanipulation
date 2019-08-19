@@ -10,6 +10,19 @@ import numpy as np
 #import tensorflow as tf
 
 
+def convert_quat_to_3vec(quat):
+	# Normalize and extract quaternion
+	x, y, z, w = quat/np.linalg.norm(quat)
+	# Compute theta
+	theta = np.arccos(w)
+
+	if (theta <= 1e-6):
+		return np.array([0.0, 0.0, 0.0])
+	else:
+		vec = np.array([x,y,z]) / np.sin(theta)
+		vec = vec / np.linalg.norm(vec) * theta
+		return vec 
+
 class TransitionData:
 	def __init__(self):
 		self.path = ""
