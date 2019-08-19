@@ -2,7 +2,7 @@
 parent_folder_path: "Data/param_set_1/left_hand/"
 
 # Data generation seed
-seed_num: 101
+seed_num: 95
 
 # Manipulation type
 manipulation_type: "left_hand" # "right_hand" / "left_hand" / "both_hands"
@@ -29,7 +29,7 @@ com_height_min: 0.9 # Minimum acceptable CoM Height for the initial condition
 com_height_max: 1.0 # Maximum acceptable CoM Height for the initial condition
 
 walking_com_height: 0.95 # Desired CoM walking height
-walking_double_support_time: 0.45 #  Desired Transfer time during double support
+walking_double_support_time: 0.2 #  Desired Transfer time during double support
 walking_single_support_time: 1.0 # Desired Swing Time during single support	
 walking_settling_percentage: 0.99 # Percentage to for CoM dynamics to settle at final step
 walking_swing_height: 0.1 # Desired swing height

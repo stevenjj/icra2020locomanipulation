@@ -39,7 +39,7 @@ public:
 
 	// compute the configuration trajectory to ensure correctness of the data
 	// also compute the symmetric version of this data
-	void playback();
+	bool playback();
 	void produceSymmetricData();
 
     // Parameter Handler
@@ -68,6 +68,7 @@ public:
 	Eigen::Vector3d swing_foot_position;
 	Eigen::Quaterniond swing_foot_orientation;
 
+	Footstep landing_footstep;
 	Eigen::Vector3d landing_foot_position;
 	Eigen::Quaterniond landing_foot_orientation;
 
@@ -77,13 +78,9 @@ public:
 	Eigen::Vector3d left_hand_position;
 	Eigen::Quaterniond left_hand_orientation;
 
-
 	// data gen case
 	int data_gen_manipulation_case;
 	int data_gen_stance_case;
-
-	// Trajectory configuration
-	TrajEuclidean  traj_q_config;
 
 private:
 	void getParamVec(const std::string param_name, Eigen::VectorXd & vec);

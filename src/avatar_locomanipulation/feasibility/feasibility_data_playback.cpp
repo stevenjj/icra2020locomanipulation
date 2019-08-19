@@ -35,12 +35,14 @@ void FeasibilityDataPlayBack::setRobotModel(std::shared_ptr<RobotModel> & robot_
 void FeasibilityDataPlayBack::loadParamFile(const std::string filepath){
   param_handler.load_yaml_file(filepath);
 
+  param_handler.getInteger("N_resolution", N_resolution);
   param_handler.getValue("walking_com_height", walking_com_height);
   param_handler.getValue("walking_double_support_time", walking_double_support_time);
   param_handler.getValue("walking_single_support_time", walking_single_support_time);
   param_handler.getValue("walking_settling_percentage", walking_settling_percentage);
   param_handler.getValue("walking_swing_height", walking_swing_height);
 
+  ctg->initializeDiscretization(N_resolution); // Sets the discretization resolution
   ctg->wpg.setCoMHeight(walking_com_height); // Sets the desired CoM Height
   ctg->wpg.setDoubleSupportTime(walking_double_support_time); // Sets the desired double support / transfer time time
   ctg->wpg.setSingleSupportSwingTime(walking_single_support_time); // Sets the desired single support swing time
@@ -48,6 +50,7 @@ void FeasibilityDataPlayBack::loadParamFile(const std::string filepath){
   ctg->wpg.setSwingHeight(walking_swing_height); // Sets the swing height of the robot. Default 0.1m
 
   std::cout << "[FeasibilityDataPlayBack] Data Generation Parameters:" << std::endl;
+  std::cout << "  N_resolution: " << N_resolution << std::endl;  
   std::cout << "  walking_com_height: " << walking_com_height << std::endl;  
   std::cout << "  walking_double_support_time: " << walking_double_support_time << std::endl;  
   std::cout << "  walking_single_support_time: " << walking_single_support_time << std::endl;  
@@ -79,6 +82,20 @@ void FeasibilityDataPlayBack::loadData(const std::string filepath){
   getParamPos("landing_foot_position", landing_foot_position);
   getParamOri("landing_foot_orientation", landing_foot_orientation);
 
+
+  // Set the landing footstep
+  if (stance_foot.compare("left_foot") == 0){
+    std::cout << "left stance foot" << std::endl;
+    // If stance foot is left, then swing foot is the right side
+    landing_footstep.setRightSide();
+  }else{
+    // stance foot is right, so swing foot is the left side
+    std::cout << "right stance foot" << std::endl;
+    landing_footstep.setLeftSide();    
+  }
+  landing_footstep.setPosOri(landing_foot_position, landing_foot_orientation);
+  landing_footstep.printInfo();
+
   // Load the hand SE3 positions
   getParamPos("right_hand_starting_position", right_hand_position);
   getParamOri("right_hand_starting_orientation", right_hand_orientation);
@@ -105,6 +122,7 @@ void FeasibilityDataPlayBack::loadData(const std::string filepath){
 
   // Compare hand SE3 positions with the stored q_init configuration
 	if ((manipulation_type.compare("right_hand") == 0) || (manipulation_type.compare("both_hands") == 0)){
+    ctg->setUseRightHand(true);
 	  std::cout << "[FeasibilityDataPlayBack] Using the right hand" << std::endl;    
 
     Eigen::Vector3d rhand_pos;
@@ -114,6 +132,7 @@ void FeasibilityDataPlayBack::loadData(const std::string filepath){
     std::cout << "  robot rightPalm ori "; math_utils::printQuat(rhand_ori);
 	}
   if ((manipulation_type.compare("left_hand") == 0) || (manipulation_type.compare("both_hands") == 0)){
+    ctg->setUseLeftHand(true);
     std::cout << "[FeasibilityDataPlayBack] Using the left hand" << std::endl;    
 
     Eigen::Vector3d lhand_pos;
@@ -151,3 +170,17 @@ void FeasibilityDataPlayBack::getParamOri(const std::string param_name, Eigen::Q
   param_handler.getNestedValue({param_name, "z"}, ori.z());  
   param_handler.getNestedValue({param_name, "w"}, ori.w());      
 }
+
+bool FeasibilityDataPlayBack::playback(){
+  ctg->setConstantRightHandTrajectory(right_hand_position, right_hand_orientation);
+  ctg->setConstantLeftHandTrajectory(left_hand_position, left_hand_orientation);
+
+  // Set the landing footstep to try
+  std::vector<Footstep> input_footstep_list = {landing_footstep};
+
+  // Try to compute the trajectory
+  bool trajectory_convergence = ctg->computeConfigurationTrajectory(q_start, input_footstep_list);
+
+  // Return the result
+  return trajectory_convergence;
+} 

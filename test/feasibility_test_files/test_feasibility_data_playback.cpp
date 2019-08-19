@@ -1,3 +1,4 @@
+
 #include <avatar_locomanipulation/feasibility/feasibility_data_playback.hpp>
 #include <avatar_locomanipulation/bridge/rviz_visualizer.hpp>
 
@@ -15,6 +16,20 @@ int main(int argc, char ** argv){
 
 	feas_data_playback.loadParamFile(param_filepath);
 	feas_data_playback.loadData(data_filepath);	
+
+	bool playback_result = feas_data_playback.playback();
+	std::cout << "playback result = " << (playback_result ? "success": "failure") << std::endl;
+
+	std::cout << "Visualizing playback..." << std::endl;
+	
+	ros::init(argc, argv, "test_feasibility_data_playback");
+	std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
+	RVizVisualizer visualizer(ros_node, robot_model);
+	Eigen::VectorXd q_begin = feas_data_playback.q_start;
+
+	// Visualize trajectory
+	bool visualize_once = false;
+	visualizer.visualizeConfigurationTrajectory(q_begin, feas_data_playback.ctg->traj_q_config, visualize_once);	  
 
 	return 0;
 }

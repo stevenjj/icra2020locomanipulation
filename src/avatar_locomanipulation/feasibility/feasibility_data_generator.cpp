@@ -454,8 +454,6 @@ void FeasibilityDataGenerator::initializeConfigTrajectoryGenerationModule(){
 
   // Don't restrict the torso joints
   ctg->setUseTorsoJointPosition(false);
-  // Have fast double support times
-  ctg->wpg.setDoubleSupportTime(0.2);
 
   // Check if the right hand is being used
   if  ((data_gen_manipulation_case == CASE_MANIPULATION_RIGHT_HAND) || 
