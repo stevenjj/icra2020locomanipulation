@@ -52,21 +52,33 @@ class ContactTransitionDataset:
 
     def load_dataset(self, filepath):
         print os.listdir(filepath)
+
         self.x = []
         self.y = []
-        self.load_data_from_path(filepath + "/positive_examples", 10)
-        self.load_data_from_path(filepath + "/negative_examples", 10)
+        self.load_data_from_path(filepath + "/positive_examples", 5)
+        self.load_data_from_path(filepath + "/negative_examples", 5)
 
+        # turn to numpy array
         self.x = np.array(self.x)
         self.y = np.array(self.y)
 
-        print self.x.shape
-        print self.y.shape
+        self.normalize_dataset()
+
 
     def normalize_dataset(self):
-        self.x
+        self.x_train_mean = np.mean(self.x, axis = 0)
+        self.x_train_std = np.std(self.x, axis = 0)
+        self.x_train = (self.x - self.x_train_mean) / self.x_train_std
+
+    def get_xy_train(self):
+        return self.x_train, self.y_train
 
 
 if __name__ == "__main__":
     dataset = ContactTransitionDataset()
     dataset.load_dataset(dataset_folder)
+
+    print "unnormalized data:"
+    print dataset.x, dataset.y
+    print "normalized data"
+    print dataset.x_train, dataset.y
