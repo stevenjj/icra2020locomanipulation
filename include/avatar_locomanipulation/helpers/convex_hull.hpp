@@ -10,8 +10,16 @@ namespace math_utils{
 typedef double coord_t;   // coordinate type
 typedef double coord2_t;  // must be big enough to hold 2*max(|coordinate|)^2
 
-struct Point {
+// struct Point {
+class Point{
+public:
   coord_t x, y;
+
+  Point(){}
+  Point(const coord_t x_in, const coord_t y_in){
+  	x = x_in;
+  	y = y_in;
+  }
 
   bool operator<(const Point &p) const {
     return x < p.x || (x == p.x && y < p.y);

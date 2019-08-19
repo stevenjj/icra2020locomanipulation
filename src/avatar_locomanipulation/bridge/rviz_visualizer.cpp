@@ -91,7 +91,7 @@ void RVizVisualizer::visualizeConfiguration(const Eigen::VectorXd & q_start_in, 
 }
 
 // Visualize Configuration Trajectory
-void RVizVisualizer::visualizeConfigurationTrajectory(const Eigen::VectorXd & q_start_in, TrajEuclidean & traj_q_in){
+void RVizVisualizer::visualizeConfigurationTrajectory(const Eigen::VectorXd & q_start_in, TrajEuclidean & traj_q_in, bool visualize_once){
 	std::cout << "[RVizVisualizer] Visualizing configuration trajectory" << std::endl;
 
 	// Initialize Starting Configuration
@@ -124,14 +124,19 @@ void RVizVisualizer::visualizeConfigurationTrajectory(const Eigen::VectorXd & q_
 		    ros::spinOnce();
 		    loop_rate.sleep();  			
   		}
+
+ 		if (visualize_once){
+  			break; // break if we want to visualize only once
+  		}
+		// Visualize the robot on a loop otherwise
+
   	}  	
 
-	// Visualize the robot on a loop
 
 }
 
 void RVizVisualizer::visualizeConfigurationTrajectory(std::shared_ptr<ManipulationFunction> f_s, int robot_manipulation_side, 
-													  const Eigen::VectorXd & q_start_in, TrajEuclidean & traj_q_in){
+													  const Eigen::VectorXd & q_start_in, TrajEuclidean & traj_q_in, bool visualize_once){
 
 	std::cout << "[RVizVisualizer] Visualizing configuration trajectory" << std::endl;
 
@@ -193,6 +198,11 @@ void RVizVisualizer::visualizeConfigurationTrajectory(std::shared_ptr<Manipulati
 		    ros::spinOnce();
 		    loop_rate.sleep();  			
   		}
+
+ 		if (visualize_once){
+  			break; // break if we want to visualize only once
+  		}
+		// Visualize the robot on a loop otherwise
   	}  	
 
 }

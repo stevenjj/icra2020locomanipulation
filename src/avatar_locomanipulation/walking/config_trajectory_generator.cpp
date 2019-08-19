@@ -451,6 +451,7 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 		ik_to_use_module = ik_manipulation_only_module;
 	}
 
+
 	// Prepare IK solver
     int solve_result;
     std::vector<double> task_error_norms;

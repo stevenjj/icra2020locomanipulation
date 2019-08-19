@@ -37,7 +37,7 @@ void GMMFit::setData(const std::vector<Eigen::VectorXd> & data_in){
   sig_sum = Eigen::MatrixXd::Zero(dim, dim);
 }
 
-double GMMFit::multivariateGuassian(Eigen::VectorXd & x, Eigen::VectorXd & mu, Eigen::MatrixXd & Sigma){
+double GMMFit::multivariateGuassian(const Eigen::VectorXd & x, const Eigen::VectorXd & mu, const Eigen::MatrixXd & Sigma){
   double p;
   double den;
   double detSig;
@@ -54,7 +54,7 @@ double GMMFit::multivariateGuassian(Eigen::VectorXd & x, Eigen::VectorXd & mu, E
   return p;
 }
 
-double GMMFit::multivariateGuassian(Eigen::VectorXd & x, int cluster_index){
+double GMMFit::multivariateGuassian(const Eigen::VectorXd & x, const int cluster_index){
   double p;
   double den;
   double detSig;
@@ -121,10 +121,11 @@ void GMMFit::maxStep(){
       }
     }
     list_of_Sigma_determinants[k] = detSig;
+
     // Done Update
-
-
   }
+  // compute the sum of the GMM Scaling factors
+  computeScalingFactorSum(); 
 }
 
 double GMMFit::logLike(){
@@ -189,6 +190,8 @@ void GMMFit::randInitialGuess(){
   sig_sum = Eigen::MatrixXd::Zero(dim, dim);
   alphs = Eigen::VectorXd::Constant(num_clus, 1.0/num_clus);
 
+  gmm_scaling_factor_sum = 0.0;
+
   list_of_mus.clear();
   list_of_Sigmas.clear();
   list_of_Sigma_inverses.clear();
@@ -202,7 +205,7 @@ void GMMFit::randInitialGuess(){
   }
 }
 
-void GMMFit::addData(Eigen::VectorXd & datum){
+void GMMFit::addData(const Eigen::VectorXd & datum){
   list_of_datums_raw.push_back(datum);
   data_mean_sum += datum;
 
@@ -246,7 +249,7 @@ void GMMFit::useRawData(){
   list_of_datums = list_of_datums_raw;
 }
 
-double GMMFit::mixtureModelProb(Eigen::VectorXd & x_in){
+double GMMFit::mixtureModelProb(const Eigen::VectorXd & x_in){
   double p = 0;
   for(int i=0; i<num_clus; i++){
     p += alphs[i]*multivariateGuassian(x_in, i);
@@ -283,4 +286,29 @@ void GMMFit::setTol(const double & tol_in){
 
 void GMMFit::setSVDTol(const double & svd_tol_in){
   svd_tol = svd_tol_in;
+} 
+
+
+// returns the denominator value of the specified cluster index
+double GMMFit::mixtureDenominator(const int & cluster_index){
+  return pow(2.0*pi,dim/2.0)*pow(list_of_Sigma_determinants[cluster_index],0.5);
+}
+
+// computes the scaling factor of the GMM
+void GMMFit::computeScalingFactorSum(){
+  gmm_scaling_factor_sum = 0.0;
+  for(int i=0; i<num_clus; i++){
+    gmm_scaling_factor_sum += (alphs[i]/mixtureDenominator(i));
+  }
+} 
+
+// returns the sum of the scaling factors of the probability distributiuon;
+double GMMFit::getScalingFactorSum(){
+  return gmm_scaling_factor_sum;
+} 
+
+double GMMFit::logCost(const Eigen::VectorXd & x_in){
+  // computes the  logCost (AKA feasibility cost) defined as f(x) = log(gmm_scaling_factor_sum) -log(p(x))
+  // this is always nonzero
+  return log(gmm_scaling_factor_sum) - log(mixtureModelProb(x_in));
 } 

@@ -15,19 +15,28 @@ void ParamHandler::load_yaml_file(const std::string & file_name){
 ParamHandler::~ParamHandler(){}
 
 bool ParamHandler::getString(const std::string & key, std::string& str_value) {
-  str_value = config[key].as<std::string>();
-  return true;
+  if (config[key]){
+	  str_value = config[key].as<std::string>();
+	  return true;  	
+	}
+  return false;
 }
 
 bool ParamHandler::getVector(const std::string & key,
                              std::vector<double> & vec_value) {
-  vec_value = config[key].as<std::vector<double> >();
-  return true;
+  if (config[key]){
+    vec_value = config[key].as<std::vector<double> >();
+    return true;
+  }
+  return false;
 }
 
 bool ParamHandler::getValue(const std::string & key, double & double_value) {
-  double_value = config[key].as<double>();
-  return true;
+  if (config[key]){
+    double_value = config[key].as<double>();
+    return true;
+  }
+  return false;
 }
 
 bool ParamHandler::getNestedValue(const std::vector<std::string> & nested_key, double & double_value){
@@ -48,12 +57,18 @@ bool ParamHandler::getNestedValue(const std::vector<std::string> & nested_key, d
 
 
 bool ParamHandler::getBoolean(const std::string & key, bool & bool_value) {
-  bool_value = config[key].as<bool>();
-  return true;
+  if (config[key]){
+    bool_value = config[key].as<bool>();
+    return true;
+  }
+  return false;
 }
 
 bool ParamHandler::getInteger(const std::string & key, int & int_value) {
-  int_value = config[key].as<int>();
-  return true;
+  if (config[key]){
+    int_value = config[key].as<int>();
+    return true;
+  }
+  return false;
 }
 

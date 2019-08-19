@@ -8,6 +8,7 @@
 
 namespace data_saver{
   void emit_value(YAML::Emitter & out, const std::string & key, const double & value);
+  void emit_integer(YAML::Emitter & out, const std::string & key, const int & value);
   void emit_string(YAML::Emitter & out, const std::string & key, const std::string & value);
   void emit_position(YAML::Emitter & out, const std::string & key, const Eigen::Vector3d & pos);
   void emit_orientation(YAML::Emitter & out, const std::string & key, const Eigen::Quaterniond & quat);

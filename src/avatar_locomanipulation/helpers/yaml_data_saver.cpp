@@ -7,6 +7,12 @@ namespace data_saver{
     out << YAML::Value << value;
   }
 
+
+  void emit_integer(YAML::Emitter & out, const std::string & key, const int & value) {
+    out << YAML::Key << key;
+    out << YAML::Value << value;
+  }  
+
   void emit_string(YAML::Emitter & out, const std::string & key, const std::string & value) {
     out << YAML::Key << key;
     out << YAML::Value << value;

@@ -21,7 +21,7 @@ public:
 
   // Position and orientation of the sole of the footstep
   Eigen::Vector3d position;
-  Eigen::Quaternion<double>  orientation;
+  Eigen::Quaternion<double> orientation;
 
   Eigen::Matrix3d R_ori;
 
@@ -40,11 +40,16 @@ public:
   void printInfo();
 
   // length and width of the soles
-  double sole_length;
-  double sole_width;
+  double sole_length = 0.2;
+  double sole_width = 0.1;
+
+  std::vector<Eigen::Vector3d> local_contact_point_list;
+  std::vector<Eigen::Vector3d> global_contact_point_list;
+
 
 private:
   void common_initialization();
+  void updateContactLocations();
 
 };
 
