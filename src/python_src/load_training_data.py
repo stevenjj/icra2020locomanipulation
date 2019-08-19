@@ -16,11 +16,14 @@ def convert_quat_to_3vec(quat):
 	# Compute theta
 	theta = np.arccos(w)
 
+	print theta
 	if (theta <= 1e-6):
 		return np.array([0.0, 0.0, 0.0])
 	else:
 		vec = np.array([x,y,z]) / np.sin(theta)
+		print vec
 		vec = vec / np.linalg.norm(vec) * theta
+		print vec
 		return vec 
 
 class TransitionData:
@@ -33,19 +36,24 @@ class TransitionData:
 
 		self.swing_foot_starting_position = np.array([0,0,0], dtype='f') #x, y, z
 		self.swing_foot_starting_orientation_quat = np.array([0,0,0,0], dtype='f') #x,y,z,w
+		self.swing_foot_starting_orientation_vec = np.array([0,0,0], dtype='f') #rx,ry,rz
 
 		self.pelvis_starting_position = np.array([0,0,0], dtype='f') #x, y, z
 		self.pelvis_starting_orientation_quat = np.array([0, 0, 0, 0], dtype='f') #x,y,z,w
-
+		self.pelvis_starting_orientation_vec = np.array([0,0,0], dtype='f') #rx,ry,rz
 
 		self.left_hand_starting_position = np.array([0,0,0], dtype='f')
 		self.left_hand_starting_orientation_quat = np.array([0,0,0,0], dtype='f')
+		self.left_hand_starting_orientation_vec = np.array([0,0,0], dtype='f') #rx,ry,rz
 
 		self.right_hand_starting_position = np.array([0,0,0], dtype='f')
 		self.right_hand_starting_orientation_quat = np.array([0,0,0,0], dtype='f')
+		self.right_hand_starting_orientation_vec = np.array([0,0,0], dtype='f') #rx,ry,rz
 
 		self.landing_foot_position = np.array([0,0,0], dtype='f')
 		self.landing_foot_orientation_quat = np.array([0,0,0,0], dtype='f')
+		self.landing_foot_orientation_vec =  np.array([0,0,0], dtype='f') #rx,ry,rz
+
 
 	def loadPosition(self, data_loaded, key, pos):
 		pos[0] = data_loaded[key]["x"]
@@ -68,18 +76,23 @@ class TransitionData:
 
 		self.loadPosition(data_loaded, "swing_foot_starting_position", self.swing_foot_starting_position)
 		self.loadOrientation(data_loaded, "swing_foot_starting_orientation", self.swing_foot_starting_orientation_quat)
+		self.swing_foot_starting_orientation_vec = convert_quat_to_3vec(self.swing_foot_starting_orientation_quat)
 
 		self.loadPosition(data_loaded, "pelvis_starting_position", self.pelvis_starting_position)
 		self.loadOrientation(data_loaded, "pelvis_starting_orientation", self.pelvis_starting_orientation_quat)
+		self.pelvis_starting_orientation_vec = convert_quat_to_3vec(self.pelvis_starting_orientation_quat)
 
 		self.loadPosition(data_loaded, "left_hand_starting_position", self.left_hand_starting_position)
 		self.loadOrientation(data_loaded, "left_hand_starting_orientation", self.left_hand_starting_orientation_quat)
+		self.left_hand_starting_orientation_vec = convert_quat_to_3vec(self.left_hand_starting_orientation_quat)
 
 		self.loadPosition(data_loaded, "right_hand_starting_position", self.right_hand_starting_position)
 		self.loadOrientation(data_loaded, "right_hand_starting_orientation", self.right_hand_starting_orientation_quat)
+		self.right_hand_starting_orientation_vec = convert_quat_to_3vec(self.right_hand_starting_orientation_quat)
 
 		self.loadPosition(data_loaded, "landing_foot_position", self.landing_foot_position)
 		self.loadOrientation(data_loaded, "landing_foot_orientation", self.landing_foot_orientation_quat)
+		self.landing_foot_orientation_vec = convert_quat_to_3vec(self.landing_foot_orientation_quat)
 
 
 	def printData(self):
@@ -91,18 +104,23 @@ class TransitionData:
 		print " "
 		print "  swing_foot_starting_position" , self.swing_foot_starting_position
 		print "  swing_foot_starting_orientation_quat" , self.swing_foot_starting_orientation_quat
+		print "  swing_foot_starting_orientation_vec" , self.swing_foot_starting_orientation_vec
 		print " "
 		print "  pelvis_starting_position" , self.pelvis_starting_position
 		print "  pelvis_starting_orientation_quat" , self.pelvis_starting_orientation_quat
+		print "  pelvis_starting_orientation_vec" , self.pelvis_starting_orientation_vec
 		print " "
 		print "  left_hand_starting_position" , self.left_hand_starting_position
 		print "  left_hand_starting_orientation_quat" , self.left_hand_starting_orientation_quat
+		print "  left_hand_starting_orientation_vec" , self.left_hand_starting_orientation_vec
 		print " "
 		print "  right_hand_starting_position" , self.right_hand_starting_position
 		print "  right_hand_starting_orientation_quat" , self.right_hand_starting_orientation_quat
+		print "  right_hand_starting_orientation_vec" , self.right_hand_starting_orientation_vec
 		print " "
 		print "  landing_foot_position" , self.landing_foot_position
 		print "  landing_foot_orientation_quat" , self.landing_foot_orientation_quat
+		print "  landing_foot_orientation_vec" , self.landing_foot_orientation_vec
 
 
 def load_file(filepath):
