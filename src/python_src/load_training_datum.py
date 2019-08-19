@@ -93,7 +93,7 @@ class ContactTransitionData:
 		ori[3] = data_loaded[key]["w"]			
 
 	def load_yaml_file(self, yaml_file_path):
-		with open(filepath, 'r') as stream:
+		with open(yaml_file_path, 'r') as stream:
 			data_loaded = yaml.load(stream)
 			self.path = yaml_file_path		
 			self.loadData(data_loaded)
