@@ -14,8 +14,8 @@ dataset_folder = "/home/sjorgen1/Data/param_set_1/right_hand/transitions_data_wi
 
 
 class ContactTransitionDataset:
-    def __init__(self):
-        self.num = 10000 # Total number of training data
+    def __init__(self, num_in = 100):
+        self.num = num_in # Total number of training data
 
         self.x = None
         self.y = None
@@ -32,7 +32,7 @@ class ContactTransitionDataset:
         self.x_test = None
         self.y_test = None
 
-    def load_data_from_path(self, filepath, max_load=10):
+    def load_data_from_path(self, filepath, max_load=100):
         # get the yaml files from this directory
         yaml_files = os.listdir(filepath)
 
@@ -40,13 +40,14 @@ class ContactTransitionDataset:
         obj = datum.ContactTransitionData()
         for file in yaml_files:
             if (count < max_load):
-                print file 
                 # Load the yaml file and add the training data
-                obj.load_yaml_file(filepath + "/" + file)
-                self.x.append(obj.get_x())
-                self.y.append(obj.get_y())
-                # increment counter
-                count += 1
+                if obj.load_yaml_file(filepath + "/" + file):
+                    print file 
+                    # obj.printData()
+                    self.x.append(obj.get_x())
+                    self.y.append(obj.get_y())
+                    # increment counter
+                    count += 1
 
         print len(yaml_files)
 
@@ -55,8 +56,8 @@ class ContactTransitionDataset:
 
         self.x = []
         self.y = []
-        self.load_data_from_path(filepath + "/positive_examples", 5)
-        self.load_data_from_path(filepath + "/negative_examples", 5)
+        self.load_data_from_path(filepath + "/positive_examples", self.num)
+        self.load_data_from_path(filepath + "/negative_examples", self.num)
 
         # turn to numpy array
         self.x = np.array(self.x)
@@ -70,13 +71,18 @@ class ContactTransitionDataset:
         self.x_train_std = np.std(self.x, axis = 0)
         self.x_train = (self.x - self.x_train_mean) / self.x_train_std
 
-    def get_xy_train(self):
-        return self.x_train, self.y_train
+        self.y_train = self.y
+
+    def get_normalized_xy_train(self):
+        return (self.x_train, self.y_train)
 
 
 if __name__ == "__main__":
     dataset = ContactTransitionDataset()
     dataset.load_dataset(dataset_folder)
+
+    print dataset.x_train.shape
+    print "dataset dim = ", dataset.x_train.shape[1] 
 
     print "unnormalized data:"
     print dataset.x, dataset.y

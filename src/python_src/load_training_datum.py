@@ -113,7 +113,14 @@ class ContactTransitionData:
 		with open(yaml_file_path, 'r') as stream:
 			data_loaded = yaml.load(stream)
 			self.path = yaml_file_path		
+
+			# hack
+			if data_loaded["stance_origin"] == "left_foot":
+				return False
+
 			self.loadData(data_loaded)
+
+			return True
 
 	def loadData(self, data_loaded):
 		self.stance_origin = data_loaded["stance_origin"] 
