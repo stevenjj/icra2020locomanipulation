@@ -54,15 +54,26 @@ def plot_history(histories, key='binary_crossentropy'):
 
 
 # Load data
-dataset_folder = "/home/sjorgen1/Data/param_set_1/right_hand/transitions_data_with_task_space_info"
+dataset_folder = "/home/sjorgen1/Data/param_set_1/"
 
-num_positive_data = 10000 #10000 # per transition_type
-num_transition_types = 2 # currently, we have (right_foot, right_hand) and (left_foot, right_hand)
+num_positive_data = 100 #10000 # per transition_type
+
 dataset = transition_dataset.ContactTransitionDataset(num_positive_data)
-dataset.load_dataset(dataset_folder, stance_type="right_foot", manipulation_type="right_hand")
-dataset.load_dataset(dataset_folder, stance_type="left_foot", manipulation_type="right_hand")
 
-total_data = num_transition_types*(num_positive_data*2) # equal number of positive and negative examples times number of transition types
+contact_transition_types = [ ("right_hand", "right_foot"), ("left_hand", "left_foot") ]
+shorthand = {"right_hand" : "rh", "left_hand" : "lh", "both_hands" : "bh", "right_foot": "rf", "left_foot": "lf"}
+
+save_folder = ""
+for type in contact_transition_types:
+	subfolder = "/transitions_data_with_task_space_info"
+	dataset.load_dataset(dataset_folder + type[0] + subfolder, stance_type=type[1], manipulation_type=type[0])
+	save_folder = save_folder + shorthand[type[0]] + "_" + shorthand[type[1]]
+
+# Count total transition types
+num_transition_types = len(contact_transition_types)
+
+# total number od data has equal number of positive and negative examples times number of transition types
+total_data = num_transition_types*(num_positive_data*2) 
 
 # Get the normalize thefilepath + "/" + data
 (x_dataset, y_dataset) = dataset.get_normalized_xy_train()
@@ -90,7 +101,7 @@ x_test = x_dataset_rand[trainset_size:]
 y_test = y_dataset_rand[trainset_size:]
 
 # Create checkpoint callback
-checkpoint_path = "training_1/baseline/cp.ckpt"
+checkpoint_path = "./training_1/" + save_folder + "/baseline/cp.ckpt"
 checkpoint_dir = os.path.dirname(checkpoint_path)
 cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,
                                                  save_weights_only=True,
@@ -105,7 +116,7 @@ model_history = model.fit(x_train, y_train, epochs=75, batch_size=32, validation
 # model_history = model.fit(x_train, y_train, epochs=50, batch_size=32, validation_data=(x_test, y_test), verbose=2,
 #               			  callbacks = [cp_callback]) #pass callback to training)
 
-model.save_weights('./learned_model/rh_transitions')
+model.save_weights("./learned_model/" + save_folder + "/")
 # model.load_weights('./learned_model/rh_transitions')
 
 
