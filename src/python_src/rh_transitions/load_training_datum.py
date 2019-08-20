@@ -114,8 +114,12 @@ class ContactTransitionData:
 			data_loaded = yaml.load(stream)
 			self.path = yaml_file_path		
 
-			# hack
-			if data_loaded["stance_origin"] == "left_foot":
+			# Only load the requested stance type
+			if ((stance_type != None) and (data_loaded["stance_origin"] != stance_type)):
+				return False
+
+			# Only load the requested manipulation type 
+			if ((manipulation_type != None) and (data_loaded["manipulation_type"] != manipulation_type)):
 				return False
 
 			self.loadData(data_loaded)

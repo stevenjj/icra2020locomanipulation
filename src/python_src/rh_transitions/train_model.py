@@ -57,7 +57,7 @@ def plot_history(histories, key='binary_crossentropy'):
 dataset_folder = "/home/sjorgen1/Data/param_set_1/right_hand/transitions_data_with_task_space_info"
 total_data = 20000#2000
 dataset = transition_dataset.ContactTransitionDataset(total_data/2)
-dataset.load_dataset(dataset_folder)
+dataset.load_dataset(dataset_folder, stance_type="right_foot")
 
 # Get the normalize thefilepath + "/" + data
 (x_dataset, y_dataset) = dataset.get_normalized_xy_train()
@@ -96,7 +96,7 @@ model_history = model.fit(x_train, y_train, epochs=75, batch_size=32, validation
 # model_history = model.fit(x_train, y_train, epochs=50, batch_size=32, validation_data=(x_test, y_test), verbose=2,
 #               			  callbacks = [cp_callback]) #pass callback to training)
 
-model.save_weights('./learned_model/rh_transitions')
+# model.save_weights('./learned_model/rh_transitions')
 # model.load_weights('./learned_model/rh_transitions')
 
 
@@ -106,5 +106,6 @@ model.evaluate(x_test, y_test)
 
 
 # Plot model performance
+plot_history([('baseline', model_history)], key='acc')
 plot_history([('baseline', model_history)])
 plt.show()

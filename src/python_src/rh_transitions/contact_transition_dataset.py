@@ -32,7 +32,7 @@ class ContactTransitionDataset:
         self.x_test = None
         self.y_test = None
 
-    def load_data_from_path(self, filepath, max_load=100):
+    def load_data_from_path(self, filepath, max_load=100, stance_type=None, manipulation_type=None):
         # get the yaml files from this directory
         yaml_files = os.listdir(filepath)
 
@@ -41,7 +41,7 @@ class ContactTransitionDataset:
         for file in yaml_files:
             if (count < max_load):
                 # Load the yaml file and add the training data
-                if obj.load_yaml_file(filepath + "/" + file):
+                if obj.load_yaml_file(filepath + "/" + file, stance_type, manipulation_type):
                     print "Loading", count+1 , "/", max_load,  filepath, "/", file 
                     # obj.printData()
                     self.x.append(obj.get_x())
@@ -53,13 +53,13 @@ class ContactTransitionDataset:
 
         print len(yaml_files)
 
-    def load_dataset(self, filepath):
+    def load_dataset(self, filepath, stance_type=None, manipulation_type=None):
         print os.listdir(filepath)
 
         self.x = []
         self.y = []
-        self.load_data_from_path(filepath + "/positive_examples", self.num)
-        self.load_data_from_path(filepath + "/negative_examples", self.num)
+        self.load_data_from_path(filepath + "/positive_examples", self.num, stance_type, manipulation_type)
+        self.load_data_from_path(filepath + "/negative_examples", self.num, stance_type, manipulation_type)
 
         # turn to numpy array
         self.x = np.array(self.x)
