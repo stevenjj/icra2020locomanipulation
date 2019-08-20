@@ -74,7 +74,9 @@ class ContactTransitionData:
 		landingfoot_xy = self.landing_foot_position[:2]
 		landingfoot_theta = self.landing_foot_orientation_vec[2:3]
 
-		self.x = np.concatenate( (swingfoot_xy, swingfoot_theta,
+		stance_origin_type = np.array([self.stance_origin_num])
+
+		self.x = np.concatenate( (stance_origin_type, swingfoot_xy, swingfoot_theta,
 								  self.pelvis_starting_position, pelvis_theta,
 								  self.right_hand_starting_position,self.right_hand_starting_orientation_vec,
 								  landingfoot_xy, landingfoot_theta) )

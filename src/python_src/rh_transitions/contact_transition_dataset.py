@@ -17,8 +17,8 @@ class ContactTransitionDataset:
     def __init__(self, num_in = 100):
         self.num = num_in # Total number of training data
 
-        self.x = None
-        self.y = None
+        self.x = np.array([])
+        self.y = np.array([])
 
         self.x_train_mean = None
         self.x_train_std = None
@@ -32,7 +32,7 @@ class ContactTransitionDataset:
         self.x_test = None
         self.y_test = None
 
-    def load_data_from_path(self, filepath, max_load=100, stance_type=None, manipulation_type=None):
+    def load_data_from_path(self, filepath, data_x, data_y, max_load=100, stance_type=None, manipulation_type=None):
         # get the yaml files from this directory
         yaml_files = os.listdir(filepath)
 
@@ -44,26 +44,35 @@ class ContactTransitionDataset:
                 if obj.load_yaml_file(filepath + "/" + file, stance_type, manipulation_type):
                     print "Loading", count+1 , "/", max_load,  filepath, "/", file 
                     # obj.printData()
-                    self.x.append(obj.get_x())
-                    self.y.append(obj.get_y())
+                    data_x.append(obj.get_x())
+                    data_y.append(obj.get_y())
                     # increment counter
                     count += 1
             else:
                 break
 
-        print len(yaml_files)
-
     def load_dataset(self, filepath, stance_type=None, manipulation_type=None):
         print os.listdir(filepath)
 
-        self.x = []
-        self.y = []
-        self.load_data_from_path(filepath + "/positive_examples", self.num, stance_type, manipulation_type)
-        self.load_data_from_path(filepath + "/negative_examples", self.num, stance_type, manipulation_type)
+        data_x = []
+        data_y = []
+        self.load_data_from_path(filepath + "/positive_examples", data_x, data_y, self.num, stance_type, manipulation_type)
+        self.load_data_from_path(filepath + "/negative_examples", data_x, data_y, self.num, stance_type, manipulation_type)
 
-        # turn to numpy array
-        self.x = np.array(self.x)
-        self.y = np.array(self.y)
+        print "self.x.shape", self.x.shape
+
+        # Create numpy array if the list was initially empty. Otherwise, append the dataset
+        if (len(self.x) == 0 or len(self.y) == 0):          
+            print "constructing numpy array"
+            self.x = np.array(data_x)
+            self.y = np.array(data_y)
+        else:
+            print "concatenating"
+            self.x = np.concatenate( (self.x, np.array(data_x)), axis=0 )
+            self.y = np.concatenate( (self.y, np.array(data_y)), axis=0 )
+
+        print "self.x.shape", self.x.shape
+
 
         self.normalize_dataset()
 

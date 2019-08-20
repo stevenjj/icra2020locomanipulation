@@ -55,9 +55,14 @@ def plot_history(histories, key='binary_crossentropy'):
 
 # Load data
 dataset_folder = "/home/sjorgen1/Data/param_set_1/right_hand/transitions_data_with_task_space_info"
-total_data = 20000#2000
-dataset = transition_dataset.ContactTransitionDataset(total_data/2)
-dataset.load_dataset(dataset_folder, stance_type="right_foot")
+
+num_positive_data = 10000 #10000 # per transition_type
+num_transition_types = 2 # currently, we have (right_foot, right_hand) and (left_foot, right_hand)
+dataset = transition_dataset.ContactTransitionDataset(num_positive_data)
+dataset.load_dataset(dataset_folder, stance_type="right_foot", manipulation_type="right_hand")
+dataset.load_dataset(dataset_folder, stance_type="left_foot", manipulation_type="right_hand")
+
+total_data = num_transition_types*(num_positive_data*2) # equal number of positive and negative examples times number of transition types
 
 # Get the normalize thefilepath + "/" + data
 (x_dataset, y_dataset) = dataset.get_normalized_xy_train()
@@ -72,6 +77,10 @@ for i in range(0, len(random_indices)):
 
 # Set the training size
 trainset_size = int(total_data*0.8)
+
+print trainset_size
+print dataset.x
+print dataset.y
 
 # Set the training set and test set
 x_train = x_dataset_rand[:trainset_size]
@@ -96,7 +105,7 @@ model_history = model.fit(x_train, y_train, epochs=75, batch_size=32, validation
 # model_history = model.fit(x_train, y_train, epochs=50, batch_size=32, validation_data=(x_test, y_test), verbose=2,
 #               			  callbacks = [cp_callback]) #pass callback to training)
 
-# model.save_weights('./learned_model/rh_transitions')
+model.save_weights('./learned_model/rh_transitions')
 # model.load_weights('./learned_model/rh_transitions')
 
 
@@ -105,7 +114,7 @@ print "Evaluating test set:"
 model.evaluate(x_test, y_test)
 
 
-# Plot model performance
+# # Plot model performance
 plot_history([('baseline', model_history)], key='acc')
 plot_history([('baseline', model_history)])
 plt.show()
