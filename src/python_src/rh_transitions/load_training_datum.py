@@ -84,32 +84,15 @@ class ContactTransitionData:
 	def set_x(self):
 		# sets the x vector for the training data
 		# stance_origin, manipulation_type
-		swingfoot_xy = self.swing_foot_starting_position[:2]
-		swingfoot_theta = self.swing_foot_starting_orientation_vec[2:3] 		 
-
-		pelvis_theta = self.pelvis_starting_orientation_vec[2:3] 		 
-		landingfoot_xy = self.landing_foot_position[:2]
-		landingfoot_theta = self.landing_foot_orientation_vec[2:3]
-
 		stance_origin_type = np.array([self.stance_origin_num])
+		manipulation_type = np.array([self.manipulation_type_num])
 
-
-		self.x = np.concatenate( (swingfoot_xy, swingfoot_theta,
-								  self.pelvis_starting_position, pelvis_theta,
-								  landingfoot_xy, landingfoot_theta) )
-
-		# Add right hand data if enabled
-		if self.use_right_hand_data:
-			self.x = np.concatenate( (self.x, self.right_hand_starting_position,self.right_hand_starting_orientation_vec) )
-
-		# Add left hand data if enabled
-		if self.use_left_hand_data:
-			self.x = np.concatenate( (self.x, self.left_hand_starting_position,self.left_hand_starting_orientation_vec) )
-
-		# Add both hands data if enabled
-		if self.use_stance_origin_data:
-			self.x = np.concatenate( (self.x, stance_origin_type))
-
+		self.x = np.concatenate( (stance_origin_type,manipulation_type,
+								  self.swing_foot_starting_position, self.swing_foot_starting_orientation_vec,
+								  self.pelvis_starting_position, self.pelvis_starting_orientation_vec,
+								  self.landing_foot_position, self.landing_foot_orientation_vec,
+								  self.right_hand_starting_position,self.right_hand_starting_orientation_vec,
+								  self.left_hand_starting_position,self.left_hand_starting_orientation_vec) )
 
 	def set_y(self):
 		self.y = self.result
