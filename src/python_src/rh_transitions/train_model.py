@@ -57,12 +57,6 @@ def save_model(save_directory, dataset, model):
 	x_train_mean = [float(mean) for mean in dataset.x_train_mean] 
 	x_train_std = [float(std) for std in dataset.x_train_std] 
 
-	print "x mean"
-	print x_train_mean
-
-	print "x std"
-	print x_train_std
-
 	if not os.path.exists(save_directory):
 		os.makedirs(save_directory)
 
@@ -83,14 +77,10 @@ def save_model(save_directory, dataset, model):
 # Load data
 dataset_folder = "/home/sjorgen1/Data/param_set_1/"
 
-num_positive_data = 8000 #10000 # per transition_type
-
+num_positive_data = 10000 #10000 # per transition_type
 dataset = transition_dataset.ContactTransitionDataset(num_positive_data)
-dataset.enable_right_hand_data(False)
-dataset.enable_left_hand_data(True)
-dataset.enable_stance_origin_data(False)
 
-contact_transition_types = [ ("left_hand", "right_foot") ]# [ ("right_hand", "right_foot"), ("right_hand", "left_foot") ]
+contact_transition_types = [ ("right_hand", "right_foot") ]# [ ("right_hand", "right_foot"), ("right_hand", "left_foot") ]
 shorthand = {"right_hand" : "rh", "left_hand" : "lh", "both_hands" : "bh", "right_foot": "rf", "left_foot": "lf"}
 
 save_folder = ""
@@ -98,37 +88,14 @@ for type in contact_transition_types:
 	subfolder = "/transitions_data_with_task_space_info"
 	dataset.load_dataset(dataset_folder + type[0] + subfolder, stance_type=type[1], manipulation_type=type[0])
 	save_folder = save_folder + shorthand[type[0]] + "_" + shorthand[type[1]]
+# Prepare and normalize the dataset
+dataset.prepare_and_normalize_dataset()
 
-# Count total transition types
-num_transition_types = len(contact_transition_types)
+# Get train and val sets
+x_train, y_train = dataset.get_normalized_xy_train()
+x_test, y_test = dataset.get_normalized_xy_val()
+dataset_dim = x_train.shape[1]
 
-# total number od data has equal number of positive and negative examples times number of transition types
-total_data = num_transition_types*(num_positive_data*2) 
-
-# Get the normalize thefilepath + "/" + data
-(x_dataset, y_dataset) = dataset.get_normalized_xy_train()
-(x_dataset_rand, y_dataset_rand) = dataset.get_normalized_xy_train()
-dataset_dim = x_dataset.shape[1] 
-
-# Randomize the data
-random_indices = np.random.choice(x_dataset.shape[0], x_dataset.shape[0], replace=False)
-for i in range(0, len(random_indices)):
-	x_dataset_rand[i] = x_dataset[random_indices[i]]
-	y_dataset_rand[i] = y_dataset[random_indices[i]]
-
-# Set the training size
-trainset_size = int(total_data*0.8)
-
-print trainset_size
-print dataset.x
-print dataset.y
-
-# Set the training set and test set
-x_train = x_dataset_rand[:trainset_size]
-y_train = y_dataset_rand[:trainset_size]
-
-x_test = x_dataset_rand[trainset_size:]
-y_test = y_dataset_rand[trainset_size:]
 
 # Create checkpoint callback
 checkpoint_path = "./training_1/" + save_folder + "/baseline/cp.ckpt"
@@ -138,7 +105,7 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,
                                                  verbose=1)
 # Create model and print summary
 # best so far
-model = create_model(dataset_dim, num_hidden_layers=5, units_per_layer=256, l2_reg=0.001)
+model = create_model(dataset_dim, num_hidden_layers=5, units_per_layer=128, l2_reg=0.01)
 model_history = model.fit(x_train, y_train, epochs=75, batch_size=32, validation_data=(x_test, y_test), verbose=2,
               			  callbacks = [cp_callback]) #pass callback to training)
 
@@ -149,8 +116,10 @@ model_history = model.fit(x_train, y_train, epochs=75, batch_size=32, validation
 save_directory = "./learned_model/" + save_folder + "/"
 save_model(save_directory, dataset, model)
 
-# model.load_weights('./learned_model/rh_transitions')
 
+# Reload the model
+model = create_model(dataset_dim, num_hidden_layers=5, units_per_layer=256, l2_reg=0.001)
+model.load_weights(save_directory)
 
 # Evaluate
 print "Evaluating test set:"
