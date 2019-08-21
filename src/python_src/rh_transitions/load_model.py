@@ -14,14 +14,14 @@ print(tf.version.VERSION)
 print(tf.keras.__version__)
 
 num_positive_data = 100
-contact_transition_types = [ ("right_hand", "left_foot") ]
+contact_transition_types = [ ("left_hand", "right_foot") ]
 shorthand = {"right_hand" : "rh", "left_hand" : "lh", "both_hands" : "bh", "right_foot": "rf", "left_foot": "lf"}
 
 def get_data(contact_transition_types_input):
 	dataset_folder = "/home/sjorgen1/Data/param_set_1/"
 	dataset = transition_dataset.ContactTransitionDataset(num_positive_data)
-	dataset.enable_right_hand_data(True)
-	dataset.enable_left_hand_data(False)
+	dataset.enable_right_hand_data(False)
+	dataset.enable_left_hand_data(True)
 	dataset.enable_stance_origin_data(False)
 
 	for type in contact_transition_types_input:

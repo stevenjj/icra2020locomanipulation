@@ -31,7 +31,7 @@ def create_model(dataset_dim, num_hidden_layers = 3, units_per_layer=64, l2_reg=
 	# Model
 	model.compile(optimizer=tf.train.AdamOptimizer(0.001),
 	              loss='binary_crossentropy',
-	              metrics=['accuracy', 'binary_crossentropy'])
+	              metrics=['accuracy', 'binary_crossentropy', tf.keras.metrics.Precision(), tf.keras.metrics.Recall()])
 
 	return model
 
@@ -56,14 +56,14 @@ def plot_history(histories, key='binary_crossentropy'):
 # Load data
 dataset_folder = "/home/sjorgen1/Data/param_set_1/"
 
-num_positive_data = 10000 #10000 # per transition_type
+num_positive_data = 4000 #10000 # per transition_type
 
 dataset = transition_dataset.ContactTransitionDataset(num_positive_data)
 dataset.enable_right_hand_data(True)
-dataset.enable_left_hand_data(False)
+dataset.enable_left_hand_data(True)
 dataset.enable_stance_origin_data(False)
 
-contact_transition_types = [ ("right_hand", "left_foot") ]# [ ("right_hand", "right_foot"), ("right_hand", "left_foot") ]
+contact_transition_types = [ ("both_hands", "left_foot") ]# [ ("right_hand", "right_foot"), ("right_hand", "left_foot") ]
 shorthand = {"right_hand" : "rh", "left_hand" : "lh", "both_hands" : "bh", "right_foot": "rf", "left_foot": "lf"}
 
 save_folder = ""

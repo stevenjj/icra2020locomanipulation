@@ -40,26 +40,13 @@ class ContactTransitionDataset:
         yaml_files = os.listdir(filepath)
         count = 0
 
-        # random_indices = np.random.choice(len(yaml_files), len(yaml_files), replace=False)
-        # for i in range(0, len(random_indices)):
-        #     if (count < max_load):
-        #         # Load the yaml file and add the training data
-        #         if self.obj.load_yaml_file(filepath + "/" + yaml_files[i], stance_type, manipulation_type):
-        #             print "Loading", count+1 , "/", max_load,  filepath, "/", yaml_files[i] 
-        #             # self.obj.printData()
-        #             data_x.append(self.obj.get_x())
-        #             data_y.append(self.obj.get_y())
-        #             # increment counter
-        #             count += 1
-        #     else:
-        #         break
-
-
-        for file in yaml_files:
+        print "Randomizing data load order..."
+        random_indices = np.random.choice(len(yaml_files), len(yaml_files), replace=False)
+        for i in range(0, len(random_indices)):
             if (count < max_load):
                 # Load the yaml file and add the training data
-                if self.obj.load_yaml_file(filepath + "/" + file, stance_type, manipulation_type):
-                    print "Loading", count+1 , "/", max_load,  filepath, "/", file 
+                if self.obj.load_yaml_file(filepath + "/" + yaml_files[i], stance_type, manipulation_type):
+                    print "Loading", count+1 , "/", max_load,  filepath, "/", yaml_files[i] 
                     # self.obj.printData()
                     data_x.append(self.obj.get_x())
                     data_y.append(self.obj.get_y())
@@ -67,6 +54,20 @@ class ContactTransitionDataset:
                     count += 1
             else:
                 break
+
+
+        # for file in yaml_files:
+        #     if (count < max_load):
+        #         # Load the yaml file and add the training data
+        #         if self.obj.load_yaml_file(filepath + "/" + file, stance_type, manipulation_type):
+        #             print "Loading", count+1 , "/", max_load,  filepath, "/", file 
+        #             # self.obj.printData()
+        #             data_x.append(self.obj.get_x())
+        #             data_y.append(self.obj.get_y())
+        #             # increment counter
+        #             count += 1
+        #     else:
+        #         break
 
     def load_dataset(self, filepath, stance_type=None, manipulation_type=None):
         print os.listdir(filepath)
