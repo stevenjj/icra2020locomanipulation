@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 print(tf.version.VERSION)
 print(tf.keras.__version__)
 
-num_positive_data = 1000
+num_positive_data = 100
 contact_transition_types = [ ("right_hand", "right_foot") ]
 shorthand = {"right_hand" : "rh", "left_hand" : "lh", "both_hands" : "bh", "right_foot": "rf", "left_foot": "lf"}
 
@@ -23,6 +23,14 @@ def load_normalization_params(yaml_path):
     with open(yaml_path, 'r') as stream:
         data_loaded = yaml.load(stream)	
     return np.array(data_loaded['x_train_mean'], dtype='f'), np.array(data_loaded['x_train_std'], dtype='f')
+
+
+def load_hyper_params(yaml_path):
+    with open(yaml_path, 'r') as stream:
+        data_loaded = yaml.load(stream)	
+    return {'n_units_per_layer': data_loaded['n_units_per_layer'], 
+    		'n_hidden_layers': data_loaded['n_hidden_layers'],
+    		'l2_regularization': data_loaded['l2_regularization']}
 
 def get_data(dataset, dataset_folder, contact_transition_types_input):
 
@@ -78,12 +86,15 @@ x_train_mean, x_train_std = load_normalization_params(load_path+'normalization_p
 x_test = (x_test - x_train_mean) / x_train_std
 
 # Load and create the model
-n_hidden_layers = 5
-n_units_per_player = 200 #128
-l2_regularization = 0.01
+hyper_params = load_hyper_params(load_path+'hyper_params.yaml')
+n_hidden_layers = hyper_params['n_hidden_layers']
+n_units_per_layer = hyper_params['n_units_per_layer']
+l2_regularization = hyper_params['l2_regularization']
+
+print "hyperparams = ", hyper_params
 
 # best so far
-model = create_model(dataset_dim, num_hidden_layers=n_hidden_layers, units_per_layer=n_units_per_player, l2_reg=l2_regularization)
+model = create_model(dataset_dim, num_hidden_layers=n_hidden_layers, units_per_layer=n_units_per_layer, l2_reg=l2_regularization)
 model.load_weights(load_path)
 print model.summary()
 
