@@ -32,20 +32,37 @@ class ContactTransitionDataset:
         self.x_test = None
         self.y_test = None
 
+        # contact transition data
+        self.obj = datum.ContactTransitionData()
+
     def load_data_from_path(self, filepath, data_x, data_y, max_load=100, stance_type=None, manipulation_type=None):
         # get the yaml files from this directory
         yaml_files = os.listdir(filepath)
-
         count = 0
-        obj = datum.ContactTransitionData()
+
+        # random_indices = np.random.choice(len(yaml_files), len(yaml_files), replace=False)
+        # for i in range(0, len(random_indices)):
+        #     if (count < max_load):
+        #         # Load the yaml file and add the training data
+        #         if self.obj.load_yaml_file(filepath + "/" + yaml_files[i], stance_type, manipulation_type):
+        #             print "Loading", count+1 , "/", max_load,  filepath, "/", yaml_files[i] 
+        #             # self.obj.printData()
+        #             data_x.append(self.obj.get_x())
+        #             data_y.append(self.obj.get_y())
+        #             # increment counter
+        #             count += 1
+        #     else:
+        #         break
+
+
         for file in yaml_files:
             if (count < max_load):
                 # Load the yaml file and add the training data
-                if obj.load_yaml_file(filepath + "/" + file, stance_type, manipulation_type):
+                if self.obj.load_yaml_file(filepath + "/" + file, stance_type, manipulation_type):
                     print "Loading", count+1 , "/", max_load,  filepath, "/", file 
-                    # obj.printData()
-                    data_x.append(obj.get_x())
-                    data_y.append(obj.get_y())
+                    # self.obj.printData()
+                    data_x.append(self.obj.get_x())
+                    data_y.append(self.obj.get_y())
                     # increment counter
                     count += 1
             else:
@@ -87,6 +104,15 @@ class ContactTransitionDataset:
     def get_normalized_xy_train(self):
         return (self.x_train, self.y_train)
 
+
+    def enable_right_hand_data(self, bool_input):
+        self.obj.enable_right_hand_data(bool_input)
+
+    def enable_left_hand_data(self, bool_input):
+        self.obj.enable_left_hand_data(bool_input)
+
+    def enable_stance_origin_data(self, bool_input):
+        self.obj.enable_stance_origin_data(bool_input)
 
 if __name__ == "__main__":
     dataset = ContactTransitionDataset()

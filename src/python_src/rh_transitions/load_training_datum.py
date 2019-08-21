@@ -28,6 +28,14 @@ class ContactTransitionData:
 		self.stance_origin_to_num = { "left_foot": 0, "right_foot":1 }
 		self.manipulation_type_to_num = { "left_hand": 0, "right_hand":1, "both_hands":2 }
 		
+		# use stance origin data
+		# use right hand data
+		# use left hand data
+
+		self.use_stance_origin_data = True
+		self.use_right_hand_data = True
+		self.use_left_hand_data = False
+
 		self.path = ""
 
 		self.stance_origin = ""
@@ -64,6 +72,15 @@ class ContactTransitionData:
 			self.load_yaml_file(yaml_file_path)
 
 
+	def enable_right_hand_data(self, bool_input):
+		self.use_right_hand_data = bool_input
+
+	def enable_left_hand_data(self, bool_input):
+		self.use_left_hand_data = bool_input
+
+	def enable_stance_origin_data(self, bool_input):
+		self.use_stance_origin_data = bool_input
+
 	def set_x(self):
 		# sets the x vector for the training data
 		# stance_origin, manipulation_type
@@ -76,19 +93,22 @@ class ContactTransitionData:
 
 		stance_origin_type = np.array([self.stance_origin_num])
 
-		self.x = np.concatenate( (stance_origin_type, swingfoot_xy, swingfoot_theta,
+
+		self.x = np.concatenate( (swingfoot_xy, swingfoot_theta,
 								  self.pelvis_starting_position, pelvis_theta,
-								  self.right_hand_starting_position,self.right_hand_starting_orientation_vec,
 								  landingfoot_xy, landingfoot_theta) )
 
+		# Add right hand data if enabled
+		if self.use_right_hand_data:
+			self.x = np.concatenate( (self.x, self.right_hand_starting_position,self.right_hand_starting_orientation_vec) )
 
-		# add left hand SE3, stance foot, and manipulation type
+		# Add left hand data if enabled
+		if self.use_left_hand_data:
+			self.x = np.concatenate( (self.x, self.left_hand_starting_position,self.left_hand_starting_orientation_vec) )
 
-		# self.x = np.concatenate( (self.swing_foot_starting_position, self.swing_foot_starting_orientation_vec,
-		# 						  self.pelvis_starting_position, self.pelvis_starting_orientation_vec,
-		# 						  self.left_hand_starting_position,self.left_hand_starting_orientation_vec,
-		# 						  self.right_hand_starting_position,self.right_hand_starting_orientation_vec,
-		# 						  self.landing_foot_position, self.landing_foot_orientation_vec) )
+		# Add both hands data if enabled
+		if self.use_stance_origin_data:
+			self.x = np.concatenate( (self.x, stance_origin_type))
 
 
 	def set_y(self):

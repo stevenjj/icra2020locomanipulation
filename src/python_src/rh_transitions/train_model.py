@@ -56,11 +56,14 @@ def plot_history(histories, key='binary_crossentropy'):
 # Load data
 dataset_folder = "/home/sjorgen1/Data/param_set_1/"
 
-num_positive_data = 1000 #10000 # per transition_type
+num_positive_data = 10000 #10000 # per transition_type
 
 dataset = transition_dataset.ContactTransitionDataset(num_positive_data)
+dataset.enable_right_hand_data(True)
+dataset.enable_left_hand_data(False)
+dataset.enable_stance_origin_data(False)
 
-contact_transition_types = [ ("right_hand", "right_foot"), ("right_hand", "left_foot") ]
+contact_transition_types = [ ("right_hand", "left_foot") ]# [ ("right_hand", "right_foot"), ("right_hand", "left_foot") ]
 shorthand = {"right_hand" : "rh", "left_hand" : "lh", "both_hands" : "bh", "right_foot": "rf", "left_foot": "lf"}
 
 save_folder = ""
@@ -108,7 +111,7 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,
                                                  verbose=1)
 # Create model and print summary
 # best so far
-model = create_model(dataset_dim, num_hidden_layers=5, units_per_layer=512, l2_reg=0.001)
+model = create_model(dataset_dim, num_hidden_layers=5, units_per_layer=256, l2_reg=0.001)
 model_history = model.fit(x_train, y_train, epochs=75, batch_size=32, validation_data=(x_test, y_test), verbose=2,
               			  callbacks = [cp_callback]) #pass callback to training)
 
