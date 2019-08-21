@@ -67,13 +67,13 @@ def save_model(save_directory, dataset, model, model_hyper_params):
 
 	# Save the normalization parameters
 	stream = file(save_directory + 'normalization_params.yaml', 'w') 			
-	print yaml.dump(normalization_params)
+	#print yaml.dump(normalization_params)
 	yaml.safe_dump(normalization_params, stream, allow_unicode=False)
 	stream.close()
 
 	# Save the model hyper parameters
 	stream = file(save_directory + 'hyper_params.yaml', 'w') 			
-	print yaml.dump(model_hyper_params)
+	#print yaml.dump(model_hyper_params)
 	yaml.safe_dump(model_hyper_params, stream, default_flow_style=False)
 	stream.close()
 
@@ -84,7 +84,7 @@ def save_model(save_directory, dataset, model, model_hyper_params):
 # Load data
 dataset_folder = "/home/sjorgen1/Data/param_set_1/"
 
-num_positive_data = 10 #10000 # per transition_type
+num_positive_data = 20000 #10000 # per transition_type
 dataset = transition_dataset.ContactTransitionDataset(num_positive_data)
 
 contact_transition_types = [ ("right_hand", "right_foot") ]# [ ("right_hand", "right_foot"), ("right_hand", "left_foot") ]
@@ -113,11 +113,11 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,
 # Create model and print summary
 n_hidden_layers = 5
 n_units_per_layer = 512 #128
-l2_regularization = 0.01
+l2_regularization = 0.001
 
 # best so far
 model = create_model(dataset_dim, num_hidden_layers=n_hidden_layers, units_per_layer=n_units_per_layer, l2_reg=l2_regularization)
-model_history = model.fit(x_train, y_train, epochs=20, batch_size=32, validation_data=(x_test, y_test), verbose=2,
+model_history = model.fit(x_train, y_train, epochs=75, batch_size=32, validation_data=(x_test, y_test), verbose=2,
               			  callbacks = [cp_callback]) #pass callback to training)
 
 
@@ -162,7 +162,8 @@ best_model = 'baseline'
 
 
 # Number of models to generate
-num_models = 2
+random.seed(2)
+num_models = 20
 
 for i in range(num_models):
 	n_hidden_layers = random.randint(2,10)
@@ -174,7 +175,7 @@ for i in range(num_models):
 	print "model #", i+1 , "out of", num_models
 	print "attempting", model_name
 	model = create_model(dataset_dim, num_hidden_layers=n_hidden_layers, units_per_layer=n_units_per_layer, l2_reg=l2_regularization)
-	model_history = model.fit(x_train, y_train, epochs=20, batch_size=32, validation_data=(x_test, y_test), verbose=2) 
+	model_history = model.fit(x_train, y_train, epochs=75, batch_size=32, validation_data=(x_test, y_test), verbose=2) 
 	model_histories.append((model_name, model_history))
 
 	loss, acc, b_ent, prec, recall =  model.evaluate(x_test, y_test)

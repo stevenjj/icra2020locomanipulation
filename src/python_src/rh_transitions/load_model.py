@@ -71,6 +71,7 @@ def create_model(dataset_dim, num_hidden_layers = 3, units_per_layer=64, l2_reg=
 # Get the data
 dataset_folder = "/home/sjorgen1/Data/param_set_1/"
 dataset = transition_dataset.ContactTransitionDataset(num_positive_data)
+
 x_test, y_test = get_data(dataset, dataset_folder, contact_transition_types)
 dataset_dim = x_test.shape[1]
 
