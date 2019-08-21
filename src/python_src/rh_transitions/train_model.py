@@ -8,6 +8,7 @@ import contact_transition_dataset as transition_dataset
 
 import os
 import numpy as np
+import yaml
 import matplotlib.pyplot as plt
 
 print(tf.version.VERSION)
@@ -52,18 +53,44 @@ def plot_history(histories, key='binary_crossentropy'):
 
   plt.xlim([0,max(history.epoch)])
 
+def save_model(save_directory, dataset, model):
+	x_train_mean = [float(mean) for mean in dataset.x_train_mean] 
+	x_train_std = [float(std) for std in dataset.x_train_std] 
+
+	print "x mean"
+	print x_train_mean
+
+	print "x std"
+	print x_train_std
+
+	if not os.path.exists(save_directory):
+		os.makedirs(save_directory)
+
+	normalization_params = {}
+	normalization_params['x_train_mean'] = x_train_mean
+	normalization_params['x_train_std'] = x_train_std
+
+	# Save the normalization parameters
+	stream = file(save_directory + 'normalization_params.yaml', 'w') 			
+	print yaml.dump(normalization_params)
+	yaml.safe_dump(normalization_params, stream, allow_unicode=False)
+	stream.close()
+
+	# Save the model
+	model.save_weights(save_directory)
+	return
 
 # Load data
 dataset_folder = "/home/sjorgen1/Data/param_set_1/"
 
-num_positive_data = 4000 #10000 # per transition_type
+num_positive_data = 8000 #10000 # per transition_type
 
 dataset = transition_dataset.ContactTransitionDataset(num_positive_data)
-dataset.enable_right_hand_data(True)
+dataset.enable_right_hand_data(False)
 dataset.enable_left_hand_data(True)
 dataset.enable_stance_origin_data(False)
 
-contact_transition_types = [ ("both_hands", "left_foot") ]# [ ("right_hand", "right_foot"), ("right_hand", "left_foot") ]
+contact_transition_types = [ ("left_hand", "right_foot") ]# [ ("right_hand", "right_foot"), ("right_hand", "left_foot") ]
 shorthand = {"right_hand" : "rh", "left_hand" : "lh", "both_hands" : "bh", "right_foot": "rf", "left_foot": "lf"}
 
 save_folder = ""
@@ -119,7 +146,9 @@ model_history = model.fit(x_train, y_train, epochs=75, batch_size=32, validation
 # model_history = model.fit(x_train, y_train, epochs=50, batch_size=32, validation_data=(x_test, y_test), verbose=2,
 #               			  callbacks = [cp_callback]) #pass callback to training)
 
-model.save_weights("./learned_model/" + save_folder + "/")
+save_directory = "./learned_model/" + save_folder + "/"
+save_model(save_directory, dataset, model)
+
 # model.load_weights('./learned_model/rh_transitions')
 
 

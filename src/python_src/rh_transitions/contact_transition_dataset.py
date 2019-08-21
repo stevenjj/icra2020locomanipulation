@@ -42,7 +42,8 @@ class ContactTransitionDataset:
 
         print "Randomizing data load order..."
         random_indices = np.random.choice(len(yaml_files), len(yaml_files), replace=False)
-        for i in range(0, len(random_indices)):
+        # for i in range(0, len(random_indices)):
+        for i in range(len(yaml_files)):
             if (count < max_load):
                 # Load the yaml file and add the training data
                 if self.obj.load_yaml_file(filepath + "/" + yaml_files[i], stance_type, manipulation_type):
@@ -96,8 +97,13 @@ class ContactTransitionDataset:
 
 
     def normalize_dataset(self):
+        # compute mean and standard deviation
         self.x_train_mean = np.mean(self.x, axis = 0)
-        self.x_train_std = np.std(self.x, axis = 0)
+        x_train_std = np.std(self.x, axis = 0)
+        # set std to 1.0 if std is near 0:       
+        eps = 1e-6
+        self.x_train_std = np.array( [elem if abs(elem) >= eps else 1.0 for elem in x_train_std], dtype='f' )
+
         self.x_train = (self.x - self.x_train_mean) / self.x_train_std
 
         self.y_train = self.y
