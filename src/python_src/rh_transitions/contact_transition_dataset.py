@@ -45,7 +45,7 @@ class ContactTransitionDataset:
         # contact transition data
         self.obj = datum.ContactTransitionData()
 
-    def load_data_from_path(self, filepath, data_x, data_y, max_load=100, stance_type=None, manipulation_type=None):
+    def load_data_from_path(self, filepath, data_x, data_y, max_load=100, stance_type=None, manipulation_type=None, reverse_traversal=False):
         # get the yaml files from this directory
         yaml_files = os.listdir(filepath)
         count = 0
@@ -53,7 +53,11 @@ class ContactTransitionDataset:
         # print "Randomizing data load order..."
         # random_indices = np.random.choice(len(yaml_files), len(yaml_files), replace=False)
         # for i in range(0, len(random_indices)):
-        for i in range(len(yaml_files)):
+        file_indices = range(len(yaml_files))
+        if reverse_traversal:
+            file_indices = reversed(file_indices)
+
+        for i in file_indices:
             if (count < max_load):
                 # Load the yaml file and add the training data
                 if self.obj.load_yaml_file(filepath + "/" + yaml_files[i], stance_type, manipulation_type):
@@ -67,13 +71,13 @@ class ContactTransitionDataset:
                 break
 
 
-    def load_dataset(self, filepath, stance_type=None, manipulation_type=None):
+    def load_dataset(self, filepath, stance_type=None, manipulation_type=None, reverse_traversal=False):
         print os.listdir(filepath)
 
         data_x = []
         data_y = []
-        self.load_data_from_path(filepath + "/positive_examples", data_x, data_y, self.num, stance_type, manipulation_type)
-        self.load_data_from_path(filepath + "/negative_examples", data_x, data_y, self.num, stance_type, manipulation_type)
+        self.load_data_from_path(filepath + "/positive_examples", data_x, data_y, self.num, stance_type, manipulation_type, reverse_traversal)
+        self.load_data_from_path(filepath + "/negative_examples", data_x, data_y, self.num, stance_type, manipulation_type, reverse_traversal)
 
         print "self.x.shape", self.x.shape
 

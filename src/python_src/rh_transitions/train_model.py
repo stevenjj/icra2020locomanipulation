@@ -104,8 +104,12 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,
                                                  save_weights_only=True,
                                                  verbose=1)
 # Create model and print summary
+n_hidden_layers = 5
+n_units_per_player = 200 #128
+l2_regularization = 0.01
+
 # best so far
-model = create_model(dataset_dim, num_hidden_layers=5, units_per_layer=128, l2_reg=0.01)
+model = create_model(dataset_dim, num_hidden_layers=n_hidden_layers, units_per_layer=n_units_per_player, l2_reg=l2_regularization)
 model_history = model.fit(x_train, y_train, epochs=75, batch_size=32, validation_data=(x_test, y_test), verbose=2,
               			  callbacks = [cp_callback]) #pass callback to training)
 
@@ -118,7 +122,7 @@ save_model(save_directory, dataset, model)
 
 
 # Reload the model
-model = create_model(dataset_dim, num_hidden_layers=5, units_per_layer=256, l2_reg=0.001)
+model = create_model(dataset_dim, num_hidden_layers=n_hidden_layers, units_per_layer=n_units_per_player, l2_reg=l2_regularization)
 model.load_weights(save_directory)
 
 # Evaluate

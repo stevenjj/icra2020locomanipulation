@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 print(tf.version.VERSION)
 print(tf.keras.__version__)
 
-num_positive_data = 100
+num_positive_data = 1000
 contact_transition_types = [ ("right_hand", "right_foot") ]
 shorthand = {"right_hand" : "rh", "left_hand" : "lh", "both_hands" : "bh", "right_foot": "rf", "left_foot": "lf"}
 
@@ -28,7 +28,7 @@ def get_data(dataset, dataset_folder, contact_transition_types_input):
 
 	for type in contact_transition_types_input:
 		subfolder = "/transitions_data_with_task_space_info"
-		dataset.load_dataset(dataset_folder + type[0] + subfolder, stance_type=type[1], manipulation_type=type[0])
+		dataset.load_dataset(dataset_folder + type[0] + subfolder, stance_type=type[1], manipulation_type=type[0], reverse_traversal=True)
 
 	# Count total transition types
 	num_transition_types = len(contact_transition_types_input)
@@ -78,7 +78,12 @@ x_train_mean, x_train_std = load_normalization_params(load_path+'normalization_p
 x_test = (x_test - x_train_mean) / x_train_std
 
 # Load and create the model
-model = create_model(dataset_dim, num_hidden_layers=5, units_per_layer=256, l2_reg=0.001)
+n_hidden_layers = 5
+n_units_per_player = 200 #128
+l2_regularization = 0.01
+
+# best so far
+model = create_model(dataset_dim, num_hidden_layers=n_hidden_layers, units_per_layer=n_units_per_player, l2_reg=l2_regularization)
 model.load_weights(load_path)
 print model.summary()
 
