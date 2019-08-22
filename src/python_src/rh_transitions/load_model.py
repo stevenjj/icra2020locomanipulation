@@ -14,8 +14,8 @@ import matplotlib.pyplot as plt
 print(tf.version.VERSION)
 print(tf.keras.__version__)
 
-num_positive_data = 100
-contact_transition_types = [ ("right_hand", "right_foot") ]
+num_positive_data = 200
+contact_transition_types = [ ("right_hand", "left_foot") ]
 shorthand = {"right_hand" : "rh", "left_hand" : "lh", "both_hands" : "bh", "right_foot": "rf", "left_foot": "lf"}
 
 

@@ -117,7 +117,7 @@ l2_regularization = 0.001
 
 # best so far
 model = create_model(dataset_dim, num_hidden_layers=n_hidden_layers, units_per_layer=n_units_per_layer, l2_reg=l2_regularization)
-model_history = model.fit(x_train, y_train, epochs=75, batch_size=32, validation_data=(x_test, y_test), verbose=2,
+model_history = model.fit(x_train, y_train, epochs=30, batch_size=32, validation_data=(x_test, y_test), verbose=2,
               			  callbacks = [cp_callback]) #pass callback to training)
 
 
@@ -162,7 +162,7 @@ best_model = 'baseline'
 
 
 # Number of models to generate
-random.seed(2)
+random.seed(3)
 num_models = 20
 
 for i in range(num_models):
@@ -175,7 +175,7 @@ for i in range(num_models):
 	print "model #", i+1 , "out of", num_models
 	print "attempting", model_name
 	model = create_model(dataset_dim, num_hidden_layers=n_hidden_layers, units_per_layer=n_units_per_layer, l2_reg=l2_regularization)
-	model_history = model.fit(x_train, y_train, epochs=75, batch_size=32, validation_data=(x_test, y_test), verbose=2) 
+	model_history = model.fit(x_train, y_train, epochs=30, batch_size=32, validation_data=(x_test, y_test), verbose=2) 
 	model_histories.append((model_name, model_history))
 
 	loss, acc, b_ent, prec, recall =  model.evaluate(x_test, y_test)
