@@ -192,6 +192,28 @@ namespace planner{
 
   void LocomanipulationPlanner::generateDiscretization(){
     delta_s_vals = {0.0, 0.04};
+
+    //number of bins for the local lattice
+    int num_x_lattice_pts = int(abs(2*max_lattice_translation)/dx) + 1;
+    int num_y_lattice_pts = int(abs(2*max_lattice_translation)/dy) + 1;
+    int num_theta_lattice_pts = int(abs(max_lattice_theta - min_lattice_theta)/dtheta);
+
+    // create x coordinate local lattice from -max_lattice_translation to max_lattice_translation spaced by dx
+    dx_vals.clear();
+    for(int i = 0; i < num_x_lattice_pts; i++){
+      dx_vals.push_back( i*dx - max_lattice_translation);
+    }
+    // create y coordinate local lattice from -max_lattice_translation to max_lattice_translation spaced by dx
+    dy_vals.clear();
+    for(int i = 0; i < num_y_lattice_pts; i++){
+      dy_vals.push_back( i*dy - max_lattice_translation);
+    }
+    // create dtheta coordinate local lattice from -min_lattice_theta to max_lattice_theta spaced by dtheta
+    dtheta_vals.clear();
+    for(int i = 0; i < num_y_lattice_pts; i++){
+      dy_vals.push_back( i*dtheta - min_lattice_theta);
+    }
+
     neighbors.reserve(delta_s_vals.size());
   }
 

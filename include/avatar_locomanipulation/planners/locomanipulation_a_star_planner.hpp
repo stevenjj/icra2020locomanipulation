@@ -62,6 +62,33 @@ namespace planner{
 
  	  	// Discretized values
  	  	std::vector<double> delta_s_vals;
+ 	  	std::vector<double> dx_vals;
+ 	  	std::vector<double> dy_vals;
+ 	  	std::vector<double> dtheta_vals;
+
+ 	  	// lattice discretization to be used. with orientation aligned with the starting origin frame but 
+ 	  	// the translation origin is aligned with the stance frame
+ 	  	double dx = 0.05; // dx translation discretization
+ 	  	double dy = 0.05; // dy translation discretization
+ 	  	double dtheta = 10.0*M_PI/180.0; // 10 degrees of discretization
+
+ 	  	double max_lattice_translation = 0.8;
+ 	  	double max_lattice_theta = M_PI*7.0/8.0;
+ 	  	double min_lattice_theta = -M_PI*7.0/8.0;
+
+	  	// swing foot kinematic limits w.r.t the stance frame
+ 	  	double max_reach = 0.4;
+ 	  	double min_reach = -0.3;
+
+ 	  	double max_width = 0.4;
+ 	  	double min_width = 0.2;
+
+ 	  	double max_theta = 0.6; // radians
+ 	  	double min_theta = -0.15; 
+
+
+
+
 
 
  	  	// Get Neighbors Member Variables 

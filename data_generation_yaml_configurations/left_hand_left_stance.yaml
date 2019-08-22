@@ -2,7 +2,7 @@
 parent_folder_path: "Data/param_set_1/left_hand/"
 
 # Data generation seed
-seed_num: 95
+seed_num: 200
 
 # Manipulation type
 manipulation_type: "left_hand" # "right_hand" / "left_hand" / "both_hands"
