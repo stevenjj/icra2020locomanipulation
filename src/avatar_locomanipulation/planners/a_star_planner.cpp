@@ -552,6 +552,17 @@ namespace planner{
 					// Construct the path. return true if path reconstruction succeeds
 					if(constructPath()){
 						return true;
+					}else{
+						// This node will have no neighbors, so perform the necessary set operations and continue
+						//pop current node off the open list
+						node_it = OpenSet.begin();
+						*node_it = std::move(OpenSet.back());
+						OpenSet.pop_back();
+						//Erase node from the explored set
+						ExploredSet.erase(current_node);
+						//insert current node onto closed set
+						ClosedSet.insert(current_node); 
+						continue; 
 					}
 				}
 
