@@ -486,7 +486,7 @@ namespace planner{
 
 	//returns the optimal path
 
-	void A_starPlanner::constructPath(){
+	bool A_starPlanner::constructPath(){
 		// Clear cached optimal path
 		optimal_path.clear();
 		// Set Current node to the achieved goal
@@ -497,6 +497,8 @@ namespace planner{
 		}
 		// Add the parent
 		optimal_path.push_back(current_node);
+
+		return true;
 	}
 
 	bool A_starPlanner::goalReached(shared_ptr<Node> current_node, shared_ptr<Node> goal){
@@ -554,57 +556,56 @@ namespace planner{
 				}
 
 				//current node not equal to goal
-				else{
-					//pop current node off the open list
-					node_it = OpenSet.begin();
-					*node_it = std::move(OpenSet.back());
-					OpenSet.pop_back();
 
-					//Erase node from the explored set
-					ExploredSet.erase(current_node);
+				//pop current node off the open list
+				node_it = OpenSet.begin();
+				*node_it = std::move(OpenSet.back());
+				OpenSet.pop_back();
 
-					//insert current node onto closed set
-					ClosedSet.insert(current_node); 
+				//Erase node from the explored set
+				ExploredSet.erase(current_node);
 
-					//create new neighbor nodes
-					std::vector< shared_ptr<Node> > neighbors;
-					neighbors = getNeighbors(current_node);
+				//insert current node onto closed set
+				ClosedSet.insert(current_node); 
 
-					//iterate through all neighbors
-					for (size_t i(0);i < neighbors.size(); i++){
+				//create new neighbor nodes
+				std::vector< shared_ptr<Node> > neighbors;
+				neighbors = getNeighbors(current_node);
 
-						//check if node is not in the closed set
-						node_set_it = ClosedSet.find(neighbors[i]);
-						if (node_set_it == ClosedSet.end()){ 
-				
-							// find neighbor in explored set
-							es_it = ExploredSet.find(neighbors[i]);
+				//iterate through all neighbors
+				for (size_t i(0);i < neighbors.size(); i++){
 
-							//if neighbor exists in explored set
-							if (es_it != ExploredSet.end()){ 
+					//check if node is not in the closed set
+					node_set_it = ClosedSet.find(neighbors[i]);
+					if (node_set_it == ClosedSet.end()){ 
+			
+						// find neighbor in explored set
+						es_it = ExploredSet.find(neighbors[i]);
 
-								//determine tentative g score
-								double tentative_gscore = current_node->g_score + gScore(current_node,neighbors[i]);
-								
-								//check to see if g score path is better than previous
-								if (tentative_gscore < (*es_it)->g_score){ 
+						//if neighbor exists in explored set
+						if (es_it != ExploredSet.end()){ 
 
-									//update node
-									(*es_it)->parent = current_node;
-									(*es_it)->step_num = neighbors[i]->step_num; 
-									(*es_it)->g_score = tentative_gscore; 
-									(*es_it)->f_score = tentative_gscore + heuristicCost(neighbors[i],goal); 
-								
-								}
+							//determine tentative g score
+							double tentative_gscore = current_node->g_score + gScore(current_node,neighbors[i]);
+							
+							//check to see if g score path is better than previous
+							if (tentative_gscore < (*es_it)->g_score){ 
 
+								//update node
+								(*es_it)->parent = current_node;
+								(*es_it)->step_num = neighbors[i]->step_num; 
+								(*es_it)->g_score = tentative_gscore; 
+								(*es_it)->f_score = tentative_gscore + heuristicCost(neighbors[i],goal); 
+							
 							}
-							else{
-								neighbors[i]->g_score = current_node->g_score + gScore(current_node,neighbors[i]);
-								neighbors[i]->f_score = neighbors[i]->g_score + heuristicCost(neighbors[i],goal);
-								OpenSet.push_back(neighbors[i]);
-								ExploredSet.insert(neighbors[i]);
-							}		
+
 						}
+						else{
+							neighbors[i]->g_score = current_node->g_score + gScore(current_node,neighbors[i]);
+							neighbors[i]->f_score = neighbors[i]->g_score + heuristicCost(neighbors[i],goal);
+							OpenSet.push_back(neighbors[i]);
+							ExploredSet.insert(neighbors[i]);
+						}		
 					}
 				}
 			

@@ -59,7 +59,7 @@ namespace planner{
 		A_starPlanner();
 		virtual ~A_starPlanner();
 
-		void constructPath();
+		virtual bool constructPath();
 		bool doAstar();
 
 		void setStartNode(const shared_ptr<Node> begin_input);
