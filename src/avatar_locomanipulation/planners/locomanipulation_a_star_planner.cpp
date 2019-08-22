@@ -217,7 +217,7 @@ namespace planner{
     //number of bins for the local lattice
     int num_x_lattice_pts = int(abs(2*max_lattice_translation)/dx) + 1;
     int num_y_lattice_pts = int(abs(2*max_lattice_translation)/dy) + 1;
-    int num_theta_lattice_pts = int(abs(max_lattice_theta - min_lattice_theta)/dtheta);
+    int num_theta_lattice_pts = int(abs(max_lattice_theta - min_lattice_theta)/dtheta) + 1;
 
     // create x coordinate local lattice from -max_lattice_translation to max_lattice_translation spaced by dx
     dx_vals.clear();
@@ -231,9 +231,19 @@ namespace planner{
     }
     // create dtheta coordinate local lattice from -min_lattice_theta to max_lattice_theta spaced by dtheta
     dtheta_vals.clear();
-    for(int i = 0; i < num_y_lattice_pts; i++){
-      dy_vals.push_back( i*dtheta - min_lattice_theta);
+    for(int i = 0; i < num_theta_lattice_pts; i++){
+      dtheta_vals.push_back( i*dtheta - max_lattice_theta);
     }
+
+    // for(int i = 0; i < dx_vals.size(); i++){
+    //   std::cout << "x_lattice_pt " << i << " " << dx_vals[i] << std::endl;
+    // }
+    // for(int i = 0; i < dy_vals.size(); i++){
+    //   std::cout << "y_lattice_pt " << i << " " << dy_vals[i] << std::endl;
+    // }
+    // for(int i = 0; i < dtheta_vals.size(); i++){
+    //   std::cout << "dtheta_lattice_pt " << i << " " << dtheta_vals[i] << std::endl;
+    // }
 
     neighbors.reserve(delta_s_vals.size());
   }
