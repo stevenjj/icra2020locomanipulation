@@ -56,8 +56,15 @@ namespace planner{
     begin = begin_input;
     std::shared_ptr<LMVertex> begin_lmv = static_pointer_cast<LMVertex>(begin);
 
-    //set the starting foot to define the local origin frame:
-    //starting_foot = 
+    // Update the robot model with the starting node initial configuration
+    robot_model->updateFullKinematics(begin_lmv->q_init);
+    Eigen::Vector3d starting_foot_pos;
+    Eigen::Quaterniond starting_foot_ori;
+
+    // Get the right foot position and set the starting foot to be in this frame to define the local origin frame:
+    robot_model->getFrameWorldPose("rightCOP_Frame", starting_foot_pos, starting_foot_ori);
+    starting_foot.setPosOriSide(starting_foot_pos, starting_foot_ori, RIGHT_FOOTSTEP);
+    starting_foot.printInfo();
   }
 
   void LocomanipulationPlanner::setGoalNode(const shared_ptr<Node> goal_input){
