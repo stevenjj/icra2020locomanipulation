@@ -152,13 +152,17 @@ class ContactTransitionData:
 			data_loaded = yaml.load(stream)
 			self.path = yaml_file_path		
 
-			# Only load the requested stance type
-			if ((stance_type != None) and (data_loaded["stance_origin"] != stance_type)):
-				return False
+			try:
+				# Only load the requested stance type
+				if ((stance_type != None) and (data_loaded["stance_origin"] != stance_type)):
+					return False
 
-			# Only load the requested manipulation type 
-			if ((manipulation_type != None) and (data_loaded["manipulation_type"] != manipulation_type)):
-				return False
+				# Only load the requested manipulation type 
+				if ((manipulation_type != None) and (data_loaded["manipulation_type"] != manipulation_type)):
+					return False			
+			except:
+			  print "  Exception occurred in reading the yaml file", yaml_file_path
+			  return False
 
 			self.loadData(data_loaded)
 
