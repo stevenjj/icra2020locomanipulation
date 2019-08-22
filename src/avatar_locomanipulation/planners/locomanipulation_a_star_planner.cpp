@@ -51,6 +51,20 @@ namespace planner{
 	// Destructor
 	LocomanipulationPlanner::~LocomanipulationPlanner(){}
 
+  void LocomanipulationPlanner::setStartNode(const shared_ptr<Node> begin_input){
+    std::cout << "[LocomanipulationPlanner] Setting the starting node" << std::endl;
+    begin = begin_input;
+    std::shared_ptr<LMVertex> begin_lmv = static_pointer_cast<LMVertex>(begin);
+
+    //set the starting foot to define the local origin frame:
+    //starting_foot = 
+  }
+
+  void LocomanipulationPlanner::setGoalNode(const shared_ptr<Node> goal_input){
+    std::cout << "[LocomanipulationPlanner] Setting the goal node" << std::endl;
+    goal = goal_input;
+  }
+
 
   bool LocomanipulationPlanner::constructPath(){
     // Clear cached optimal path

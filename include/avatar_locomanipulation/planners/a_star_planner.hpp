@@ -62,8 +62,8 @@ namespace planner{
 		virtual bool constructPath();
 		bool doAstar();
 
-		void setStartNode(const shared_ptr<Node> begin_input);
-		void setGoalNode(const shared_ptr<Node> goal_input);
+		virtual void setStartNode(const shared_ptr<Node> begin_input);
+		virtual void setGoalNode(const shared_ptr<Node> goal_input);
 
 		virtual	double gScore(const shared_ptr<Node> current, const shared_ptr<Node> neighbor);
 		virtual double heuristicCost(const shared_ptr<Node> neighbor,const shared_ptr<Node> goal);

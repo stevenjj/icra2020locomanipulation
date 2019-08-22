@@ -33,6 +33,9 @@ namespace planner{
 		LocomanipulationPlanner();
 		virtual ~LocomanipulationPlanner();
 
+		virtual void setStartNode(const shared_ptr<Node> begin_input);
+		virtual void setGoalNode(const shared_ptr<Node> goal_input);
+
 		virtual	double gScore(const shared_ptr<Node> current, const shared_ptr<Node> neighbor);
 		virtual double heuristicCost(const shared_ptr<Node> neighbor,const shared_ptr<Node> goal);
 		virtual bool goalReached(shared_ptr<Node> current_node, shared_ptr<Node> goal);
@@ -60,6 +63,10 @@ namespace planner{
 		std::shared_ptr<ConfigTrajectoryGenerator> ctg;
  	  	std::vector<Footstep> input_footstep_list;
 
+ 	  	// Set the starting_foot.
+ 	  	Footstep starting_foot;
+
+
  	  	// Discretized values
  	  	std::vector<double> delta_s_vals;
  	  	std::vector<double> dx_vals;
@@ -85,10 +92,6 @@ namespace planner{
 
  	  	double max_theta = 0.6; // radians
  	  	double min_theta = -0.15; 
-
-
-
-
 
 
  	  	// Get Neighbors Member Variables 
