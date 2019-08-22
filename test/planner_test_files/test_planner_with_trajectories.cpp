@@ -133,6 +133,91 @@ void test_door_open_config_trajectory(){
 
 }
 
+void test_final_configuration(){
+  std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_no_fingers.urdf";
+  std::shared_ptr<RobotModel> valkyrie_model(new RobotModel(urdf_filename));
+
+  // Get the Initial Robot and Door Configuration
+  Eigen::VectorXd q_start_door;
+  Eigen::Vector3d hinge_position;
+  Eigen::Quaterniond hinge_orientation;
+  load_robot_door_configuration(q_start_door, hinge_position, hinge_orientation);
+
+  // Update the model
+  valkyrie_model->updateFullKinematics(q_start_door);
+
+  // Initialize the manipulation function for manipulating the door
+  std::string door_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/door_trajectory.yaml";
+  std::shared_ptr<ManipulationFunction> f_s_manipulate_door(new ManipulationFunction(door_yaml_file));
+  // Set hinge location as waypoints are with respect to the hinge
+  hinge_orientation.normalize();
+  f_s_manipulate_door->setWorldTransform(hinge_position, hinge_orientation);
+
+  // Get the starting pose of the hand 
+  Eigen::Vector3d rpalm_init_pos;
+  Eigen::Quaterniond rpalm_init_quat;
+  double s_init = 0.0;
+  f_s_manipulate_door->getPose(s_init, rpalm_init_pos, rpalm_init_quat);
+
+  // Get the ending pose 
+  Eigen::Vector3d rpalm_final_pos;
+  Eigen::Quaterniond rpalm_final_quat;
+  double s_final = 0.999;
+  f_s_manipulate_door->getPose(s_final, rpalm_final_pos, rpalm_final_quat);
+
+
+  // q_end of the robot
+  Eigen::VectorXd q_end_door = q_start_door;
+
+  // Get initial pelvis position and quaternion
+  Eigen::Vector3d pelvis_init_pos = q_start_door.head(3);
+  Eigen::Quaterniond pelvis_init_quat(q_start_door[6], q_start_door[3], q_start_door[4], q_start_door[5]);
+
+  std::cout << "pelvis pos = "  << pelvis_init_pos.transpose() << std::endl;
+  std::cout << "pelvis quat = "  << pelvis_init_quat.x() << ", " << pelvis_init_quat.y() << ", " << pelvis_init_quat.z() << ", " << pelvis_init_quat.w() << std::endl;
+
+  // Get the hand to pelvis transform:
+  Eigen::Matrix3d R_hand_ori_T = rpalm_init_quat.toRotationMatrix().transpose();
+  Eigen::Vector3d pelvis_pos_rhand_frame = R_hand_ori_T*(pelvis_init_pos - rpalm_init_pos);
+  Eigen::Quaterniond pelvis_quat_rhand_frame = rpalm_init_quat.inverse()*pelvis_init_quat; 
+
+  Eigen::Vector3d pelvis_pos_again = rpalm_init_quat.toRotationMatrix()*pelvis_pos_rhand_frame + rpalm_init_pos; 
+  Eigen::Quaterniond pelvis_ori_again = rpalm_init_quat*pelvis_quat_rhand_frame;
+
+  std::cout << "pelvis pos again = "  << pelvis_pos_again.transpose() << std::endl;
+  std::cout << "pelvis quat again = "  << pelvis_ori_again.x() << ", " << pelvis_ori_again.y() << ", " << pelvis_ori_again.z() << ", " << pelvis_ori_again.w() << std::endl;
+
+  // compute end configuration of the pelvis
+  Eigen::Quaternion<double> end_quat(1.0, 0.0, 0.0, 0.0); //Initialized to remember the w component comes first
+  end_quat = rpalm_final_quat*pelvis_quat_rhand_frame;
+  q_end_door.head(3) = rpalm_final_quat.toRotationMatrix()*pelvis_pos_rhand_frame + rpalm_final_pos;
+
+  q_end_door[3] = end_quat.x();
+  q_end_door[4] = end_quat.y();
+  q_end_door[5] = end_quat.z();
+  q_end_door[6] = end_quat.w();
+
+  // Store the data
+  // YAML::Emitter out;
+  // out << YAML::BeginMap;
+  //   data_saver::emit_joint_configuration(out, "robot_starting_configuration", q_end);
+  //   data_saver::emit_position(out, "hinge_position", hinge_position);
+  //   data_saver::emit_orientation(out, "hinge_orientation", hinge_orientation);
+  // out << YAML::EndMap;  
+  // std::cout << "Here's the output YAML:\n" << out.c_str() << "\n" << std::endl;
+  // std::ofstream file_output_stream("robot_door_initial_configuration.yaml");
+  // file_output_stream << out.c_str();
+  // End of Storing the data
+
+
+  // Visualize starting and ending configurations:
+  // Create visualization object
+  std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
+  RVizVisualizer visualizer(ros_node, valkyrie_model);  
+  visualizer.visualizeConfiguration(q_start_door, q_end_door);
+
+}
+
 
 void test_LM_planner(){
   // Initialize the robot ---------------------------------------------------------------------------------------
@@ -230,8 +315,10 @@ void test_planner(){
 
 int main(int argc, char ** argv){   
   ros::init(argc, argv, "test_planner_with_trajectories");
-  test_LM_planner();
 
+  // test_final_configuration();
+
+  test_LM_planner();
   // test_planner();
   // test_door_open_config_trajectory();
  
