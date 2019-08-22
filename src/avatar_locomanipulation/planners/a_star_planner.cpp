@@ -549,10 +549,10 @@ namespace planner{
 					cout << "goal reached" << endl;
 					//reproduce path
 					achieved_goal = current_node;
-					// Construct the path
-					constructPath();
-
-					return true;
+					// Construct the path. return true if path reconstruction succeeds
+					if(constructPath()){
+						return true;
+					}
 				}
 
 				//current node not equal to goal

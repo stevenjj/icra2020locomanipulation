@@ -253,7 +253,7 @@ void test_LM_planner(){
   // Set Manipulation Only time to 3 seconds
   ctg->setManipulationOnlyTime(3.0);
   // Set Verbosity
-  ctg->setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_2);
+  ctg->setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_1);
 
   // End of initialization ---------------------------------------------------------------------------------------
 
@@ -273,11 +273,11 @@ void test_LM_planner(){
   bool a_star_success = lm_planner.doAstar();
   if (a_star_success){
     // Construct the path
-    std::cout << "Constructing the path" << std::endl;
-    lm_planner.constructPath();
-    std::cout << "Path has size: " << lm_planner.optimal_path.size() << std::endl;
-    std::cout << "reconstructing the total trajectory" << std::endl;
-    lm_planner.reconstructConfigurationTrajectory();
+    // std::cout << "Constructing the path" << std::endl;
+    // lm_planner.constructPath();
+    // std::cout << "Path has size: " << lm_planner.optimal_path.size() << std::endl;
+    // std::cout << "reconstructing the total trajectory" << std::endl;
+    // lm_planner.reconstructConfigurationTrajectory();
 
     // Visualize the trajectory:
     std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());

@@ -52,6 +52,25 @@ namespace planner{
 	LocomanipulationPlanner::~LocomanipulationPlanner(){}
 
 
+  bool LocomanipulationPlanner::constructPath(){
+    // Clear cached optimal path
+    optimal_path.clear();
+    // Set Current node to the achieved goal
+    shared_ptr<Node> current_node = achieved_goal;
+    while (begin->key.compare(current_node->key) != 0) {
+      optimal_path.push_back(current_node);
+      current_node = current_node->parent;  
+    }
+    // Add the parent
+    optimal_path.push_back(current_node);
+
+    std::cout << "Path has size: " << optimal_path.size() << std::endl;
+    std::cout << "Found potential path reconstructing the trajectory..." << std::endl;
+
+    return reconstructConfigurationTrajectory();
+  }
+
+
   bool LocomanipulationPlanner::reconstructConfigurationTrajectory(){
     // Iterate through optimal path backwards. to construct the forward path
     forward_order_optimal_path.clear();

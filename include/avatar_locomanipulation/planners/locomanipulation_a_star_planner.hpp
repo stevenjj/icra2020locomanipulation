@@ -37,6 +37,8 @@ namespace planner{
 		virtual double heuristicCost(const shared_ptr<Node> neighbor,const shared_ptr<Node> goal);
 		virtual bool goalReached(shared_ptr<Node> current_node, shared_ptr<Node> goal);
 
+		virtual bool constructPath();
+
 		virtual std::vector< shared_ptr<Node> > getNeighbors(shared_ptr<Node> & current);
 
 		bool reconstructConfigurationTrajectory();
