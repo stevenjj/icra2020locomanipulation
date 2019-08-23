@@ -84,10 +84,10 @@ def save_model(save_directory, dataset, model, model_hyper_params):
 # Load data
 dataset_folder = "/home/sjorgen1/Data/param_set_1/"
 
-num_positive_data = 20000 #10000 # per transition_type
+num_positive_data = 9000 #10000 # per transition_type
 dataset = transition_dataset.ContactTransitionDataset(num_positive_data)
 
-contact_transition_types = [ ("right_hand", "right_foot") ]# [ ("right_hand", "right_foot"), ("right_hand", "left_foot") ]
+contact_transition_types = [ ("left_hand", "right_foot"), ("left_hand", "left_foot"), ("right_hand", "left_foot"), ("right_hand", "right_foot"), ("both_hands", "right_foot"), ("both_hands", "left_foot") ]# [ ("right_hand", "right_foot"), ("right_hand", "left_foot") ]
 shorthand = {"right_hand" : "rh", "left_hand" : "lh", "both_hands" : "bh", "right_foot": "rf", "left_foot": "lf"}
 
 save_folder = ""

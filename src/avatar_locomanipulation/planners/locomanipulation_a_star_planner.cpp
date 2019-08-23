@@ -244,7 +244,7 @@ namespace planner{
 	}
 
   void LocomanipulationPlanner::generateDiscretization(){
-    delta_s_vals = {0.0, 0.04};
+    delta_s_vals = {0.01, 0.04};
 
     //number of bins for the local lattice
     int num_x_lattice_pts = int(abs(2*max_lattice_translation)/dx) + 1;
@@ -322,7 +322,11 @@ namespace planner{
 
     std::cout << "generating neighbors for the current neighbor" << std::endl;
 
-    // Generate neighbors with lazy evaluation
+
+    // Generate neighbors with lazy evaluation ie: All neighbors are valid unless it has been attempted
+
+    // Generate no step neighbors
+    // delta_s
     for(int i = 0; i < delta_s_vals.size(); i++){
       // Create the neighbor
       // ensure that s is bounded between 0 and 1.
@@ -334,6 +338,34 @@ namespace planner{
       neighbors.push_back(neighbor);
     }
 
+    // Generate left step neighbors
+    // delta_s, dx, dy, dtheta
+    for(int i = 0; i < delta_s_vals.size(); i++){
+      for(int j = 0; j < dx_vals.size(); j++){
+        for (int k = 0; k < dy_vals.size(); k++){
+          for(int m = 0; m < dtheta_vals.size(); m++){
+            // prepare dx, dy, dtheta
+            // convert proposed left footstep w.r.t right footstep stance
+            // Check if proposed theta is within the kinematic bounds
+            // Add if it is within the bounds
+          }
+        }
+      }
+    }
+
+    // Generate right step neighbors
+    for(int i = 0; i < delta_s_vals.size(); i++){
+      for(int j = 0; j < dx_vals.size(); j++){
+        for (int k = 0; k < dy_vals.size(); k++){
+          for(int m = 0; m < dtheta_vals.size(); m++){
+            // prepare dx, dy, dtheta
+            // convert proposed left footstep w.r.t right footstep stance
+            // Check if proposed theta is within the kinematic bounds
+            // Add if it is within the kinematic bounds
+          }
+        }
+      }
+    }
 
 		return neighbors;
 	}
