@@ -23,7 +23,7 @@
 using namespace planner;
 
 
-void load_robot_door_configuration(Eigen::VectorXd & q_out, Eigen::Vector3d & hinge_pos_out, Eigen::Quaterniond & hinge_ori_out){
+void load_initial_robot_door_configuration(Eigen::VectorXd & q_out, Eigen::Vector3d & hinge_pos_out, Eigen::Quaterniond & hinge_ori_out){
   ParamHandler param_handler;
   param_handler.load_yaml_file(THIS_PACKAGE_PATH"stored_configurations/robot_door_initial_configuration.yaml");  
 
@@ -56,6 +56,24 @@ void load_robot_door_configuration(Eigen::VectorXd & q_out, Eigen::Vector3d & hi
 }
 
 
+void load_final_robot_door_configuration(Eigen::VectorXd & q_out){
+  ParamHandler param_handler;
+  param_handler.load_yaml_file(THIS_PACKAGE_PATH"stored_configurations/robot_door_final_configuration.yaml");  
+
+  // Get the robot configuration vector
+  std::vector<double> robot_q;
+  param_handler.getVector("robot_configuration", robot_q);
+
+  // Convert to Eigen data types
+  Eigen::VectorXd q = Eigen::VectorXd::Zero(robot_q.size());
+  for(int i = 0; i < robot_q.size(); i++){
+    q[i] = robot_q[i];
+  }
+  // Set outputs
+  q_out = q;
+}
+
+
 void test_door_open_config_trajectory(){
   // Initialize the robot
   std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_no_fingers.urdf";
@@ -65,7 +83,7 @@ void test_door_open_config_trajectory(){
   Eigen::VectorXd q_start_door;
   Eigen::Vector3d hinge_position;
   Eigen::Quaterniond hinge_orientation;
-  load_robot_door_configuration(q_start_door, hinge_position, hinge_orientation);
+  load_initial_robot_door_configuration(q_start_door, hinge_position, hinge_orientation);
 
   // Initialize the manipulation function for manipulating the door
   std::string door_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/door_trajectory.yaml";
@@ -141,7 +159,7 @@ void test_final_configuration(){
   Eigen::VectorXd q_start_door;
   Eigen::Vector3d hinge_position;
   Eigen::Quaterniond hinge_orientation;
-  load_robot_door_configuration(q_start_door, hinge_position, hinge_orientation);
+  load_initial_robot_door_configuration(q_start_door, hinge_position, hinge_orientation);
 
   // Update the model
   valkyrie_model->updateFullKinematics(q_start_door);
@@ -200,15 +218,15 @@ void test_final_configuration(){
   // Store the data
   // YAML::Emitter out;
   // out << YAML::BeginMap;
-  //   data_saver::emit_joint_configuration(out, "robot_starting_configuration", q_end);
-  //   data_saver::emit_position(out, "hinge_position", hinge_position);
-  //   data_saver::emit_orientation(out, "hinge_orientation", hinge_orientation);
+  //   data_saver::emit_joint_configuration(out, "robot_configuration", q_end_door);
   // out << YAML::EndMap;  
   // std::cout << "Here's the output YAML:\n" << out.c_str() << "\n" << std::endl;
-  // std::ofstream file_output_stream("robot_door_initial_configuration.yaml");
+  // std::ofstream file_output_stream("robot_door_final_configuration.yaml");
   // file_output_stream << out.c_str();
   // End of Storing the data
 
+  // Eigen::VectorXd q_final_door;
+  // load_final_robot_door_configuration(q_final_door);
 
   // Visualize starting and ending configurations:
   // Create visualization object
@@ -227,7 +245,11 @@ void test_LM_planner(){
   Eigen::VectorXd q_start_door;
   Eigen::Vector3d hinge_position;
   Eigen::Quaterniond hinge_orientation;
-  load_robot_door_configuration(q_start_door, hinge_position, hinge_orientation);
+  load_initial_robot_door_configuration(q_start_door, hinge_position, hinge_orientation);
+
+  // Get the final guessed robot configuration
+  Eigen::VectorXd q_final_door;
+  load_final_robot_door_configuration(q_final_door);
 
   // Initialize the manipulation function for manipulating the door ----------------------------------
   std::string door_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/door_trajectory.yaml";
@@ -265,7 +287,7 @@ void test_LM_planner(){
   double s_init = 0.0;
   double s_goal = 0.08;
   shared_ptr<Node> starting_vertex (std::make_shared<LMVertex>(s_init, q_start_door));    
-  shared_ptr<Node> goal_vertex (std::make_shared<LMVertex>(s_goal));
+  shared_ptr<Node> goal_vertex (std::make_shared<LMVertex>(s_goal, q_final_door));
 
   lm_planner.setStartNode(starting_vertex);
   lm_planner.setGoalNode(goal_vertex);
@@ -317,7 +339,6 @@ int main(int argc, char ** argv){
   ros::init(argc, argv, "test_planner_with_trajectories");
 
   // test_final_configuration();
-
   test_LM_planner();
   // test_planner();
   // test_door_open_config_trajectory();

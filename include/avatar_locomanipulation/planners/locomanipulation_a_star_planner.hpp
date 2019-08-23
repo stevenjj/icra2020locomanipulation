@@ -21,6 +21,10 @@ namespace planner{
 		Eigen::VectorXd q_init;
 		bool take_a_step = false;
 		Footstep footstep;
+
+		Footstep left_footstep;
+		Footstep right_footstep;
+
 	
 		void setRobotConfig(const Eigen::VectorXd & q_input);
 		void common_initialization();
