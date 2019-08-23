@@ -15,6 +15,8 @@ namespace planner{
 
 		// Problem specific:
 		LMVertex(double s_in, Eigen::VectorXd & q_init_in); // Constructor
+		LMVertex(double s_in, Eigen::VectorXd & q_init_in, Footstep & left_foot_in, Footstep & right_foot_in); // Constructor
+		LMVertex(double s_in, Footstep & left_foot_in, Footstep & right_foot_in); // Constructor
 		LMVertex(double s_in); // Constructor
 
 		double s = 0.0;
@@ -67,8 +69,9 @@ namespace planner{
 		std::shared_ptr<ConfigTrajectoryGenerator> ctg;
  	  	std::vector<Footstep> input_footstep_list;
 
- 	  	// Set the starting_foot.
- 	  	Footstep starting_foot;
+ 	  	// Set the planner origin
+ 	  	Eigen::Vector3d planner_origin_pos;
+ 	  	Eigen::Quaterniond planner_origin_ori; 	  	
 
 
  	  	// Discretized values

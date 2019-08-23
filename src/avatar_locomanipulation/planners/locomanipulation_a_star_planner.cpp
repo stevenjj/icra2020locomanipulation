@@ -11,6 +11,22 @@ namespace planner{
     common_initialization();
   }
 
+  LMVertex::LMVertex(double s_in, Eigen::VectorXd & q_init_in, Footstep & left_foot_in, Footstep & right_foot_in){
+    s = s_in;
+    q_init = q_init_in;
+    left_foot.setPosOriSide(left_foot_in.position, left_foot_in.orientation, left_foot_in.robot_side);
+    right_foot.setPosOriSide(right_foot_in.position, right_foot_in.orientation, right_foot_in.robot_side);
+    common_initialization();
+  }
+
+  LMVertex::LMVertex(double s_in, Footstep & left_foot_in, Footstep & right_foot_in){
+    s = s_in;
+    left_foot = left_foot_in;
+    right_foot = right_foot_in;
+    common_initialization();
+  }
+
+
   LMVertex::LMVertex(double s_in, Eigen::VectorXd & q_init_in){
     s = s_in;
     q_init = q_init_in;
@@ -66,9 +82,9 @@ namespace planner{
     begin_lmv->right_foot.setPosOriSide(foot_pos, foot_ori, RIGHT_FOOTSTEP);
     // begin_lmv->right_foot.printInfo();
 
-    // Set the starting foot to be in the right foot frame which defines the local origin frame: 
-    starting_foot.setPosOriSide(foot_pos, foot_ori, RIGHT_FOOTSTEP);
-    // starting_foot.printInfo();
+    // Set the planner origin to be the starting right foot frame
+    planner_origin_pos = foot_pos;
+    planner_origin_ori = foot_ori;
 
     // Set the left position as well
     robot_model->getFrameWorldPose("leftCOP_Frame", foot_pos, foot_ori);
@@ -338,16 +354,43 @@ namespace planner{
       neighbors.push_back(neighbor);
     }
 
+
+    // Initialize footstep landing location object and stance foot location.
+    //  These are both in the planner origin frame.
+    Footstep landing_foot, stance_foot;
+    Eigen::Vector3d   landing_pos, delta_translate; landing_pos.setZero(); delta_translate.setZero();
+    Eigen::Quaterniond landing_quat, delta_quat;  landing_quat.setIdentity(); delta_quat.setIdentity();
+
     // Generate left step neighbors
     // delta_s, dx, dy, dtheta
+    // Set stance foot to be the right foot
+    stance_foot.setPosOriSide(current_->right_foot.position, current_->right_foot.orientation, RIGHT_FOOTSTEP);
+
+    // Convert stance foot to planner origin frame
+    // convertToPlannerOriginFrame()
+
     for(int i = 0; i < delta_s_vals.size(); i++){
       for(int j = 0; j < dx_vals.size(); j++){
         for (int k = 0; k < dy_vals.size(); k++){
           for(int m = 0; m < dtheta_vals.size(); m++){
-            // prepare dx, dy, dtheta
-            // convert proposed left footstep w.r.t right footstep stance
+            // Prepare dx, dy, dtheta
+            delta_translate[0] = dx_vals[j];
+            delta_translate[1] = dy_vals[k];
+            delta_quat = Eigen::Quaterniond(cos(dtheta_vals[m]), 0.0, 0.0, sin(dtheta_vals[m]));
+
+            // delta x,y, theta w.r.t the stance
+            landing_pos = stance_foot.position + delta_translate;
+            landing_quat = stance_foot.orientation*delta_quat;
+            landing_foot.setPosOriSide(landing_pos, landing_quat, LEFT_FOOTSTEP);
+
             // Check if proposed theta is within the kinematic bounds
-            // Add if it is within the bounds
+            // Convert landing location back to the world frame
+            // Add landing foot if it is within the bounds
+
+            // if withinBounds(stance_foot, landing_foot)
+            //   convertToWorldFrame(landing_foot)
+            //   neighbor.push_back()
+
           }
         }
       }
