@@ -58,18 +58,50 @@ namespace planner{
 
     // Update the robot model with the starting node initial configuration
     robot_model->updateFullKinematics(begin_lmv->q_init);
-    Eigen::Vector3d starting_foot_pos;
-    Eigen::Quaterniond starting_foot_ori;
+    Eigen::Vector3d foot_pos;
+    Eigen::Quaterniond foot_ori;
 
-    // Get the right foot position and set the starting foot to be in this frame to define the local origin frame:
-    robot_model->getFrameWorldPose("rightCOP_Frame", starting_foot_pos, starting_foot_ori);
-    starting_foot.setPosOriSide(starting_foot_pos, starting_foot_ori, RIGHT_FOOTSTEP);
-    starting_foot.printInfo();
+    // Set the right foot position 
+    robot_model->getFrameWorldPose("rightCOP_Frame", foot_pos, foot_ori);
+    begin_lmv->right_foot.setPosOriSide(foot_pos, foot_ori, RIGHT_FOOTSTEP);
+    // begin_lmv->right_foot.printInfo();
+
+    // Set the starting foot to be in the right foot frame which defines the local origin frame: 
+    starting_foot.setPosOriSide(foot_pos, foot_ori, RIGHT_FOOTSTEP);
+    // starting_foot.printInfo();
+
+    // Set the left position as well
+    robot_model->getFrameWorldPose("leftCOP_Frame", foot_pos, foot_ori);
+    begin_lmv->left_foot.setPosOriSide(foot_pos, foot_ori, LEFT_FOOTSTEP);
+    // begin_lmv->left_foot.printInfo();
+
+    // Compute the midfoot 
+    begin_lmv->mid_foot.computeMidfeet(begin_lmv->left_foot, begin_lmv->right_foot, begin_lmv->mid_foot);
+    begin_lmv->mid_foot.setMidFoot();
+    // begin_lmv->mid_foot.printInfo();
+
   }
 
   void LocomanipulationPlanner::setGoalNode(const shared_ptr<Node> goal_input){
     std::cout << "[LocomanipulationPlanner] Setting the goal node" << std::endl;
     goal = goal_input;
+    std::shared_ptr<LMVertex> goal_lmv = static_pointer_cast<LMVertex>(goal);
+
+    // Update the robot model with the final node configuration to get the midfeet frame
+    robot_model->updateFullKinematics(goal_lmv->q_init);
+    Eigen::Vector3d foot_pos;
+    Eigen::Quaterniond foot_ori;
+
+    // Set the left and right foot of the node
+    robot_model->getFrameWorldPose("rightCOP_Frame", foot_pos, foot_ori);
+    goal_lmv->right_foot.setPosOriSide(foot_pos, foot_ori, RIGHT_FOOTSTEP);
+    robot_model->getFrameWorldPose("leftCOP_Frame", foot_pos, foot_ori);
+    goal_lmv->left_foot.setPosOriSide(foot_pos, foot_ori, LEFT_FOOTSTEP);
+
+    // Compute the midfoot 
+    goal_lmv->mid_foot.computeMidfeet(goal_lmv->left_foot, goal_lmv->right_foot, goal_lmv->mid_foot);
+    goal_lmv->mid_foot.setMidFoot();
+    goal_lmv->mid_foot.printInfo();
   }
 
 

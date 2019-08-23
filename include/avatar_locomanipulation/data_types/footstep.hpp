@@ -30,6 +30,7 @@ public:
   void setPosOri(const Eigen::Vector3d & pos_in, const Eigen::Quaterniond & quat_in);
   void setRightSide();
   void setLeftSide();
+  void setMidFoot();
 
   // Left or right side
   int robot_side;

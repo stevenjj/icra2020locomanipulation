@@ -22,9 +22,9 @@ namespace planner{
 		bool take_a_step = false;
 		Footstep footstep;
 
-		Footstep left_footstep;
-		Footstep right_footstep;
-
+		Footstep left_foot;
+		Footstep right_foot;
+		Footstep mid_foot;
 	
 		void setRobotConfig(const Eigen::VectorXd & q_input);
 		void common_initialization();
