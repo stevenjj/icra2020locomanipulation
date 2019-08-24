@@ -494,6 +494,8 @@ namespace planner{
         input_footstep_list.push_back(current_->right_foot);        
       }
       
+      edgeSVarMoved(static_pointer_cast<Node>(current_));
+
       convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
                                                                   parent_->s, delta_s, 
                                                                   parent_->q_init, 
@@ -565,6 +567,20 @@ namespace planner{
   }
 
   bool LocomanipulationPlanner::edgeSVarMoved(shared_ptr<Node> current_node){
+    std::shared_ptr<LMVertex> v1 = static_pointer_cast<LMVertex>(current_node);
+    std::shared_ptr<LMVertex> v2 = static_pointer_cast<LMVertex>(current_node->parent);
+
+    double epsilon = 1e-6;
+    double delta_s = fabs(v1->s - v2->s);
+
+    if (delta_s <= epsilon){
+      std::cout << "s variable did not moved moved" << std::endl;
+      return false;
+    }else{
+      std::cout << "s variable moved" << std::endl;
+      return true;
+    }
+
     return false;    
   }
 }
