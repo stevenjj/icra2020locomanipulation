@@ -225,9 +225,12 @@ namespace planner{
 
       // Update the input footstep list
       input_footstep_list.clear();
-      if (current_->take_a_step){
-        input_footstep_list.push_back(current_->footstep);
+      if (edgeStepTaken(static_pointer_cast<Node>(current_), LEFT_FOOTSTEP)){
+        input_footstep_list.push_back(current_->left_foot);
+      }else if (edgeStepTaken(static_pointer_cast<Node>(current_), RIGHT_FOOTSTEP)){
+        input_footstep_list.push_back(current_->right_foot);        
       }
+
       // Set initial configuration
       delta_s =  (current_->s - parent_->s);
 
@@ -298,9 +301,12 @@ namespace planner{
       delta_s =  (current_->s - parent_->s);
       // Update the input footstep list
       input_footstep_list.clear();
-      if (current_->take_a_step){
-        input_footstep_list.push_back(current_->footstep);
+      if (edgeStepTaken(static_pointer_cast<Node>(current_), LEFT_FOOTSTEP)){
+        input_footstep_list.push_back(current_->left_foot);
+      }else if (edgeStepTaken(static_pointer_cast<Node>(current_), RIGHT_FOOTSTEP)){
+        input_footstep_list.push_back(current_->right_foot);        
       }
+
       convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
                                                                   parent_->s, delta_s, 
                                                                   parent_->q_init, 
@@ -479,11 +485,15 @@ namespace planner{
 
       parent_ = static_pointer_cast<LMVertex>(current_->parent);
       delta_s =  (current_->s - parent_->s);
+
       // Update the input footstep list
       input_footstep_list.clear();
-      if (current_->take_a_step){
-        input_footstep_list.push_back(current_->footstep);
+      if (edgeStepTaken(static_pointer_cast<Node>(current_), LEFT_FOOTSTEP)){
+        input_footstep_list.push_back(current_->left_foot);
+      }else if (edgeStepTaken(static_pointer_cast<Node>(current_), RIGHT_FOOTSTEP)){
+        input_footstep_list.push_back(current_->right_foot);        
       }
+      
       convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
                                                                   parent_->s, delta_s, 
                                                                   parent_->q_init, 
@@ -525,13 +535,36 @@ namespace planner{
 
 
   // Edge identification between the current node and its parent
-  bool LocomanipulationPlanner::edgeLeftStepTaken(shared_ptr<Node> current_node){
-    return false;    
+  bool LocomanipulationPlanner::edgeStepTaken(shared_ptr<Node> current_node, int footstep_side){
+    // Create pointers
+    std::shared_ptr<LMVertex> v1 = static_pointer_cast<LMVertex>(current_node);
+    std::shared_ptr<LMVertex> v2 = static_pointer_cast<LMVertex>(current_node->parent);
+    double epsilon = 1e-6; 
+    double pos_difference, theta_difference;
+
+    if (footstep_side == RIGHT_FOOTSTEP){
+      pos_difference = (v1->right_foot.position - v2->right_foot.position).norm();
+      theta_difference = fabs(acos(v1->right_foot.orientation.w()) - acos(v2->right_foot.orientation.w()));
+    }else{
+      pos_difference = (v1->left_foot.position - v2->left_foot.position).norm();
+      theta_difference = fabs(acos(v1->left_foot.orientation.w()) - acos(v2->left_foot.orientation.w()));
+    }
+
+    // std::cout << "footstep = " << (footstep_side == RIGHT_FOOTSTEP ? "right step": "left step") << std::endl;
+    // std::cout << "pos difference = " << pos_difference << std::endl;
+    // std::cout << "theta difference = " << theta_difference << std::endl;
+
+    if ((pos_difference <= epsilon) && (theta_difference <= epsilon)) {
+      // std::cout << "no footstep has been taken" << std::endl;
+      return false;
+    }else{  
+      // std::cout << "footstep has been taken" << std::endl;
+      return true;          
+    }
+
   }
-  bool LocomanipulationPlanner::edgeRightStepTaken(shared_ptr<Node> current_node){
-    return false;    
-  }
-  bool LocomanipulationPlanner::edgeSVarMoved(shared_ptr<Node> current){
+
+  bool LocomanipulationPlanner::edgeSVarMoved(shared_ptr<Node> current_node){
     return false;    
   }
 }

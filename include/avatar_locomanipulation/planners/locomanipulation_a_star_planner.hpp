@@ -149,9 +149,8 @@ namespace planner{
 		double clamp_s_variable(const double s_in);
 
 		// Edge identification between the current node and its parent
-		bool edgeLeftStepTaken(shared_ptr<Node> current_node);
-		bool edgeRightStepTaken(shared_ptr<Node> current_node);
-		bool edgeSVarMoved(shared_ptr<Node> current);
+		bool edgeStepTaken(shared_ptr<Node> current_node, int footstep_side);
+		bool edgeSVarMoved(shared_ptr<Node> current_node);
 
 	};
 
