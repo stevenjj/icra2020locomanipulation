@@ -144,6 +144,9 @@ namespace planner{
 		void generateNonFootstepNeighbors();
 		void generateFootstepNeighbors(int footstep_side);
 
+		// Ensures that is is within 0.0 and 1.0
+		double clamp_s_variable(const double s_in);
+
 
 	};
 

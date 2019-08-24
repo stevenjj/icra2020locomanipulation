@@ -348,13 +348,24 @@ namespace planner{
   }
 
 
+  // Ensures that is is within 0.0 and 1.0
+  double LocomanipulationPlanner::clamp_s_variable(const double s_in){
+    if (s_in >= 1.0){
+      return 0.9999;
+    }else if (s_in <= 0.0){
+      return 0.0;
+    }else{
+      return s_in;
+    }
+  }
+
   // Function adds non-footstep neighbors to the list of neighbors using the current node
   void LocomanipulationPlanner::generateNonFootstepNeighbors(){
     // Generate no step neighbors. Only varies with delta_s
     for(int i = 0; i < delta_s_vals.size(); i++){
       // Create the neighbor.
       // ensure that s is bounded between 0 and 1.
-      shared_ptr<Node> neighbor (std::make_shared<LMVertex>(current_->s + delta_s_vals[i], current_->left_foot, current_->right_foot));
+      shared_ptr<Node> neighbor (std::make_shared<LMVertex>( clamp_s_variable(current_->s + delta_s_vals[i]), current_->left_foot, current_->right_foot));
       // Update the neighbor (probably make this a function to call)
       neighbor_change = static_pointer_cast<LMVertex>(neighbor);
       neighbor_change->parent = static_pointer_cast<Node>(current_);
@@ -417,19 +428,30 @@ namespace planner{
               convertPlannerToWorldOrigin(landing_pos, landing_quat, tmp_pos, tmp_ori);
               landing_foot.setPosOriSide(tmp_pos, tmp_ori, footstep_side);                
 
+              shared_ptr<Node> neighbor;
+              // Landing foot should go to the correct footstep. the stance foot remains unchanged
+              if (footstep_side == RIGHT_FOOTSTEP){
+                 neighbor = std::make_shared<LMVertex>(clamp_s_variable(current_->s + delta_s_vals[i]), 
+                                                                      current_->left_foot, 
+                                                                      landing_foot);
+              }else{
+                 neighbor = std::make_shared<LMVertex>(clamp_s_variable(current_->s + delta_s_vals[i]), 
+                                                                      landing_foot,
+                                                                      current_->right_foot);
+              }
+              // Update the neighbor's parent
+              neighbor_change = static_pointer_cast<LMVertex>(neighbor);
+              neighbor_change->parent = static_pointer_cast<Node>(current_);
+              // Add landing foot 
+              // neighbors.push_back(neighbor);
+
+              // Increment counter
               counter++;
-
-              // Add landing foot if it is within the bounds
-              // neighbor.push_back()
-
-            }
-
-
-
-          }
-        }
-      }
-    }    
+            } // End kinematic bounds check
+          } // End delta theta for loop
+        } // End delta y for loop
+      } // End delta x for loop
+    }  // End delta s for loop
 
     std::cout << "number of landing foot neighbors = " << counter << std::endl;
 
