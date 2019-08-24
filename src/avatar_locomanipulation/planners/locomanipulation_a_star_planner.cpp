@@ -315,6 +315,7 @@ namespace planner{
     return (s_satisfaction && convergence);
   }
 
+
   void LocomanipulationPlanner::generateDiscretization(){
     delta_s_vals = {0.01, 0.04};
 
@@ -327,29 +328,38 @@ namespace planner{
     dx_vals.clear();
     for(int i = 0; i < num_x_lattice_pts; i++){
       dx_vals.push_back( i*dx - max_lattice_translation);
+     //std::cout << "x_lattice_pt " << i << " " << dx_vals[i] << std::endl;
+
     }
     // create y coordinate local lattice from -max_lattice_translation to max_lattice_translation spaced by dx
     dy_vals.clear();
     for(int i = 0; i < num_y_lattice_pts; i++){
       dy_vals.push_back( i*dy - max_lattice_translation);
+      //std::cout << "y_lattice_pt " << i << " " << dy_vals[i] << std::endl;
     }
     // create dtheta coordinate local lattice from -min_lattice_theta to max_lattice_theta spaced by dtheta
     dtheta_vals.clear();
     for(int i = 0; i < num_theta_lattice_pts; i++){
       dtheta_vals.push_back( i*dtheta - max_lattice_theta);
+     //std::cout << "dtheta_lattice_pt " << i << " " << dtheta_vals[i] << std::endl;
     }
 
-    // for(int i = 0; i < dx_vals.size(); i++){
-    //   std::cout << "x_lattice_pt " << i << " " << dx_vals[i] << std::endl;
-    // }
-    // for(int i = 0; i < dy_vals.size(); i++){
-    //   std::cout << "y_lattice_pt " << i << " " << dy_vals[i] << std::endl;
-    // }
-    // for(int i = 0; i < dtheta_vals.size(); i++){
-    //   std::cout << "dtheta_lattice_pt " << i << " " << dtheta_vals[i] << std::endl;
-    // }
-
     neighbors.reserve(delta_s_vals.size());
+  }
+
+  void LocomanipulationPlanner::generateNonFootstepNeighbors(){
+    // Generate no step neighbors. Only varies with delta_s
+    for(int i = 0; i < delta_s_vals.size(); i++){
+      // Create the neighbor.
+      // ensure that s is bounded between 0 and 1.
+      shared_ptr<Node> neighbor (std::make_shared<LMVertex>(current_->s + delta_s_vals[i], current_->left_foot, current_->right_foot));
+      // Update the neighbor (probably make this a function to call)
+      neighbor_change = static_pointer_cast<LMVertex>(neighbor);
+      neighbor_change->parent = static_pointer_cast<Node>(current_);
+      // neighbor = static_pointer_cast<Node>(neighbor_change);
+      neighbors.push_back(neighbor);
+    }
+    
   }
 
   std::vector< std::shared_ptr<Node> > LocomanipulationPlanner::getNeighbors(shared_ptr<Node> & current){
@@ -397,19 +407,7 @@ namespace planner{
 
 
     // Generate neighbors with lazy evaluation ie: All neighbors are valid unless it has been attempted
-
-    // Generate no step neighbors
-    // delta_s
-    for(int i = 0; i < delta_s_vals.size(); i++){
-      // Create the neighbor.
-      // ensure that s is bounded between 0 and 1.
-      shared_ptr<Node> neighbor (std::make_shared<LMVertex>(current_->s + delta_s_vals[i], current_->left_foot, current_->right_foot));
-      // Update the neighbor (probably make this a function to call)
-      neighbor_change = static_pointer_cast<LMVertex>(neighbor);
-      neighbor_change->parent = current;
-      neighbor = static_pointer_cast<Node>(neighbor_change);
-      neighbors.push_back(neighbor);
-    }
+    generateNonFootstepNeighbors();
 
 
     // Initialize footstep landing location object and stance foot location.

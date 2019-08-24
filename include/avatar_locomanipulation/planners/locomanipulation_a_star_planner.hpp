@@ -140,6 +140,10 @@ namespace planner{
 		bool withinKinematicBounds(Footstep & stance_foot, Eigen::Vector3d & landing_pos, Eigen::Quaterniond & landing_ori);
 
 
+		// Creates the footstep neighbors
+		void generateNonFootstepNeighbors();
+		void generateFootstepNeighbors();
+
 
 	};
 
