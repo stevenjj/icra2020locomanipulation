@@ -7,7 +7,6 @@
 #include <avatar_locomanipulation/data_types/footstep.hpp>
 
 namespace planner{
-
 	class LMVertex: public Node{
 	public:
 		LMVertex(); // Constructor
@@ -18,6 +17,8 @@ namespace planner{
 		LMVertex(double s_in, Eigen::VectorXd & q_init_in, Footstep & left_foot_in, Footstep & right_foot_in); // Constructor
 		LMVertex(double s_in, Footstep & left_foot_in, Footstep & right_foot_in); // Constructor
 		LMVertex(double s_in); // Constructor
+
+		bool isStartNode = false;
 
 		double s = 0.0;
 		Eigen::VectorXd q_init;
@@ -147,6 +148,10 @@ namespace planner{
 		// Ensures that is is within 0.0 and 1.0
 		double clamp_s_variable(const double s_in);
 
+		// Edge identification between the current node and its parent
+		bool edgeLeftStepTaken(shared_ptr<Node> current_node);
+		bool edgeRightStepTaken(shared_ptr<Node> current_node);
+		bool edgeSVarMoved(shared_ptr<Node> current);
 
 	};
 

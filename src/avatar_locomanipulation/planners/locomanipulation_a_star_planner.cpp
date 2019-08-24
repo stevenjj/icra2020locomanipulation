@@ -84,6 +84,9 @@ namespace planner{
     begin = begin_input;
     std::shared_ptr<LMVertex> begin_lmv = static_pointer_cast<LMVertex>(begin);
 
+    // Set flag that this is a start node
+    begin_lmv->isStartNode = true;
+
     // Update the robot model with the starting node initial configuration
     robot_model->updateFullKinematics(begin_lmv->q_init);
     Eigen::Vector3d foot_pos;
@@ -344,7 +347,11 @@ namespace planner{
      //std::cout << "dtheta_lattice_pt " << i << " " << dtheta_vals[i] << std::endl;
     }
 
-    neighbors.reserve(delta_s_vals.size());
+    int max_neighbors_size = delta_s_vals.size() + 2*delta_s_vals.size()*dx_vals.size()*dy_vals.size()*dtheta_vals.size();
+    std::cout << "Maximum possible neighbor size: " << max_neighbors_size << std::endl;
+
+    // Preallocate space
+    neighbors.reserve(max_neighbors_size);
   }
 
 
@@ -515,4 +522,16 @@ namespace planner{
   void LocomanipulationPlanner::printPath(){
   }
 
+
+
+  // Edge identification between the current node and its parent
+  bool LocomanipulationPlanner::edgeLeftStepTaken(shared_ptr<Node> current_node){
+    return false;    
+  }
+  bool LocomanipulationPlanner::edgeRightStepTaken(shared_ptr<Node> current_node){
+    return false;    
+  }
+  bool LocomanipulationPlanner::edgeSVarMoved(shared_ptr<Node> current){
+    return false;    
+  }
 }
