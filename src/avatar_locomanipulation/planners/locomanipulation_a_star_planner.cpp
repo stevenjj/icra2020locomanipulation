@@ -62,6 +62,9 @@ namespace planner{
 		ctg = ctg_in;
 
 
+    // Initialize tmp variables
+    tmp_pos.setZero();
+    tmp_ori.setIdentity();    
 	}
 
 	// Destructor
@@ -85,6 +88,10 @@ namespace planner{
     // Set the planner origin to be the starting right foot frame
     planner_origin_pos = foot_pos;
     planner_origin_ori = foot_ori;
+
+    R_planner_origin = planner_origin_ori.toRotationMatrix();
+    R_planner_origin_transpose = R_planner_origin.transpose();
+
 
     // Set the left position as well
     robot_model->getFrameWorldPose("leftCOP_Frame", foot_pos, foot_ori);
@@ -118,6 +125,23 @@ namespace planner{
     goal_lmv->mid_foot.computeMidfeet(goal_lmv->left_foot, goal_lmv->right_foot, goal_lmv->mid_foot);
     goal_lmv->mid_foot.setMidFoot();
     goal_lmv->mid_foot.printInfo();
+  }
+
+
+  // Converts the input position and orientation 
+  // from the world frame to the planner frame
+  void LocomanipulationPlanner::convertWorldToPlannerOrigin(const Eigen::Vector3d & pos_in, const Eigen::Quaterniond ori_in,
+                                                            Eigen::Vector3d & pos_out, Eigen::Quaterniond & ori_out){
+    pos_out = R_planner_origin_transpose*(pos_in - planner_origin_pos);
+    ori_out = planner_origin_ori.inverse()*ori_in;
+  }
+  // Converts the input position and orientation 
+  // from the planner frame to the world frame
+  void LocomanipulationPlanner::convertPlannerToWorldOrigin(const Eigen::Vector3d & pos_in, const Eigen::Quaterniond ori_in,
+                                                            Eigen::Vector3d & pos_out, Eigen::Quaterniond & ori_out){
+
+    pos_out = R_planner_origin*pos_in + planner_origin_pos;
+    ori_out = planner_origin_ori*ori_in;
   }
 
 
@@ -365,6 +389,7 @@ namespace planner{
     // delta_s, dx, dy, dtheta
     // Set stance foot to be the right foot
     stance_foot.setPosOriSide(current_->right_foot.position, current_->right_foot.orientation, RIGHT_FOOTSTEP);
+
 
     // Convert stance foot to planner origin frame
     // convertToPlannerOriginFrame()

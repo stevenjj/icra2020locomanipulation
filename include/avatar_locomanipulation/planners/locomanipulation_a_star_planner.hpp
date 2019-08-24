@@ -72,7 +72,8 @@ namespace planner{
  	  	// Set the planner origin
  	  	Eigen::Vector3d planner_origin_pos;
  	  	Eigen::Quaterniond planner_origin_ori; 	  	
-
+ 	  	Eigen::Matrix3d R_planner_origin;
+ 	  	Eigen::Matrix3d R_planner_origin_transpose; 	  	
 
  	  	// Discretized values
  	  	std::vector<double> delta_s_vals;
@@ -115,14 +116,27 @@ namespace planner{
 		// robot_config temp 
  		Eigen::VectorXd q_tmp;
 
+ 		Eigen::Vector3d tmp_pos;
+ 		Eigen::Quaterniond tmp_ori;
+
 
  		// Full path configuration trajectory
 		std::vector< shared_ptr<Node> > forward_order_optimal_path;	
 		TrajEuclidean   path_traj_q_config; 	// Trajectory of configurations q
 
+	private:
+		// Converts the input position and orientation 
+		// from the world frame to the planner frame
+		void convertWorldToPlannerOrigin(const Eigen::Vector3d & pos_in, const Eigen::Quaterniond ori_in,
+									Eigen::Vector3d & pos_out, Eigen::Quaterniond & ori_out);
+		// Converts the input position and orientation 
+		// from the planner frame to the world frame
+		void convertPlannerToWorldOrigin(const Eigen::Vector3d & pos_in, const Eigen::Quaterniond ori_in,
+									Eigen::Vector3d & pos_out, Eigen::Quaterniond & ori_out);
+
+
 
 	};
-
 
 
 
