@@ -574,13 +574,10 @@ namespace planner{
     double delta_s = fabs(v1->s - v2->s);
 
     if (delta_s <= epsilon){
-      std::cout << "s variable did not moved moved" << std::endl;
-      return false;
+       return false;
     }else{
-      std::cout << "s variable moved" << std::endl;
-      return true;
+       return true;
     }
-
-    return false;    
   }
+
 }
