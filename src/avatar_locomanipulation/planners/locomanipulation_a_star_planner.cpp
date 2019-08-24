@@ -1,10 +1,10 @@
 #include <avatar_locomanipulation/planners/locomanipulation_a_star_planner.hpp>
 
 namespace planner{
-	// Constructor
-	LMVertex::LMVertex(){
-		common_initialization();
-	}
+  // Constructor
+  LMVertex::LMVertex(){
+    common_initialization();
+  }
 
   LMVertex::LMVertex(double s_in){
     s = s_in;
@@ -21,8 +21,8 @@ namespace planner{
 
   LMVertex::LMVertex(double s_in, Footstep & left_foot_in, Footstep & right_foot_in){
     s = s_in;
-    left_foot = left_foot_in;
-    right_foot = right_foot_in;
+    left_foot.setPosOriSide(left_foot_in.position, left_foot_in.orientation, left_foot_in.robot_side);
+    right_foot.setPosOriSide(right_foot_in.position, right_foot_in.orientation, right_foot_in.robot_side);
     common_initialization();
   }
 
@@ -34,41 +34,50 @@ namespace planner{
   }
 
 
-	// Destructor
-	LMVertex::~LMVertex(){}
+  // Destructor
+  LMVertex::~LMVertex(){}
 
-	// Common Initialization
-	void LMVertex::common_initialization(){
-		g_score = 100000;
-		f_score = 100000;
-		key = (to_string(s) + "-" + to_string(s));	
-	}
+  // Common Initialization
+  void LMVertex::common_initialization(){
+    g_score = 100000;
+    f_score = 100000;
+    double factor = 1000.0;
+    key = (to_string((int)round(s*factor)) + "/" + "lx:" + to_string((int)round(left_foot.position[0] * factor)) + "-"
+                                                 + "ly:" + to_string((int)round(left_foot.position[1] * factor)) + "-"
+                                                 + "lt:" + to_string((int)round(acos(left_foot.orientation.w()) * factor)) + "/"
+                                                 + "rx:" + to_string((int)round(right_foot.position[0] * factor)) + "-"
+                                                 + "ry:" + to_string((int)round(right_foot.position[1] * factor)) + "-"
+                                                 + "rt:" + to_string((int)round(acos(right_foot.orientation.w()) * factor))
+          );
+
+
+  }
 
   void LMVertex::setRobotConfig(const Eigen::VectorXd & q_input){
     q_init = q_input;
   }
 
-	// Constructor
-	LocomanipulationPlanner::LocomanipulationPlanner(){
+  // Constructor
+  LocomanipulationPlanner::LocomanipulationPlanner(){
     generateDiscretization();    
   }
-	void LocomanipulationPlanner::initializeLocomanipulationVariables(std::shared_ptr<RobotModel> robot_model_in, std::shared_ptr<ManipulationFunction> f_s_in, std::shared_ptr<ConfigTrajectoryGenerator> ctg_in){
-		std::cout << "[LocomanipulationPlanner] Initialized robot model, f_s, and trajectory generation module" << std::endl;
-		robot_model = robot_model_in;
+  void LocomanipulationPlanner::initializeLocomanipulationVariables(std::shared_ptr<RobotModel> robot_model_in, std::shared_ptr<ManipulationFunction> f_s_in, std::shared_ptr<ConfigTrajectoryGenerator> ctg_in){
+    std::cout << "[LocomanipulationPlanner] Initialized robot model, f_s, and trajectory generation module" << std::endl;
+    robot_model = robot_model_in;
 
     // To Do: check that we don't have to run updateFullKinematics before calling getDimQ()
     q_tmp = Eigen::VectorXd::Zero(robot_model->getDimQ());
-		f_s = f_s_in;
-		ctg = ctg_in;
+    f_s = f_s_in;
+    ctg = ctg_in;
 
 
     // Initialize tmp variables
     tmp_pos.setZero();
     tmp_ori.setIdentity();    
-	}
+  }
 
-	// Destructor
-	LocomanipulationPlanner::~LocomanipulationPlanner(){}
+  // Destructor
+  LocomanipulationPlanner::~LocomanipulationPlanner(){}
 
   void LocomanipulationPlanner::setStartNode(const shared_ptr<Node> begin_input){
     std::cout << "[LocomanipulationPlanner] Setting the starting node" << std::endl;
@@ -255,22 +264,22 @@ namespace planner{
   }
 
 
-	// Locomanipulation gscore
-	double LocomanipulationPlanner::gScore(const shared_ptr<Node> current, const shared_ptr<Node> neighbor){
+  // Locomanipulation gscore
+  double LocomanipulationPlanner::gScore(const shared_ptr<Node> current, const shared_ptr<Node> neighbor){
     current_ = std::static_pointer_cast<LMVertex>(current);
     neighbor_ = std::static_pointer_cast<LMVertex>(neighbor);
-		return (neighbor_->s - current_->s);		
-	}
-	// Locomanipulation heuristic	
-	double LocomanipulationPlanner::heuristicCost(const shared_ptr<Node> neighbor,const shared_ptr<Node> goal){
+    return (neighbor_->s - current_->s);    
+  }
+  // Locomanipulation heuristic 
+  double LocomanipulationPlanner::heuristicCost(const shared_ptr<Node> neighbor,const shared_ptr<Node> goal){
     neighbor_ = static_pointer_cast<LMVertex>(neighbor);
     goal_ = static_pointer_cast<LMVertex>(goal);
     // Linear distance to the manipulation goal. if w_heuristic = 1.0, we get the true A* result 
     return w_heuristic*(goal_->s - neighbor_->s); 
-	}
+  }
 
-	// Locomanipulation whether or not the goal was reached
-	bool LocomanipulationPlanner::goalReached(shared_ptr<Node> current_node, shared_ptr<Node> goal){
+  // Locomanipulation whether or not the goal was reached
+  bool LocomanipulationPlanner::goalReached(shared_ptr<Node> current_node, shared_ptr<Node> goal){
     current_ = static_pointer_cast<LMVertex>(current_node);  
     goal_ = static_pointer_cast<LMVertex>(goal);
 
@@ -304,7 +313,7 @@ namespace planner{
 
     std::cout << "goal reached? " << (s_satisfaction && convergence) << std::endl;
     return (s_satisfaction && convergence);
-	}
+  }
 
   void LocomanipulationPlanner::generateDiscretization(){
     delta_s_vals = {0.01, 0.04};
@@ -343,9 +352,10 @@ namespace planner{
     neighbors.reserve(delta_s_vals.size());
   }
 
-	std::vector< std::shared_ptr<Node> > LocomanipulationPlanner::getNeighbors(shared_ptr<Node> & current){
+  std::vector< std::shared_ptr<Node> > LocomanipulationPlanner::getNeighbors(shared_ptr<Node> & current){
     std::cout << "Getting Neighbors" << std::endl;
-		current_ = static_pointer_cast<LMVertex>(current);	
+    current_ = static_pointer_cast<LMVertex>(current);  
+    // Clear previous neighbor list
     neighbors.clear();
 
     // Check if this is the first time get Neighbors is being evaluated. 
@@ -391,9 +401,9 @@ namespace planner{
     // Generate no step neighbors
     // delta_s
     for(int i = 0; i < delta_s_vals.size(); i++){
-      // Create the neighbor
+      // Create the neighbor.
       // ensure that s is bounded between 0 and 1.
-      shared_ptr<Node> neighbor (std::make_shared<LMVertex>(current_->s + delta_s_vals[i]));
+      shared_ptr<Node> neighbor (std::make_shared<LMVertex>(current_->s + delta_s_vals[i], current_->left_foot, current_->right_foot));
       // Update the neighbor (probably make this a function to call)
       neighbor_change = static_pointer_cast<LMVertex>(neighbor);
       neighbor_change->parent = current;
@@ -472,11 +482,11 @@ namespace planner{
       }
     }
 
-		return neighbors;
-	}
+    return neighbors;
+  }
 
-	// Print the node path
-	void LocomanipulationPlanner::printPath(){
-	}
+  // Print the node path
+  void LocomanipulationPlanner::printPath(){
+  }
 
 }
