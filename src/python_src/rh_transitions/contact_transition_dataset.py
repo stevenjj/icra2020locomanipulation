@@ -81,8 +81,11 @@ class ContactTransitionDataset:
 
         print "self.x.shape", self.x.shape
 
+        if (len(data_x) == 0 or len(data_y) == 0):
+            return
+
         # Create numpy array if the list was initially empty. Otherwise, append the dataset
-        if (len(self.x) == 0 or len(self.y) == 0):          
+        if (self.x.shape[0] == 0 or self.y.shape[0] == 0):          
             print "constructing numpy array"
             self.x = np.array(data_x)
             self.y = np.array(data_y)
