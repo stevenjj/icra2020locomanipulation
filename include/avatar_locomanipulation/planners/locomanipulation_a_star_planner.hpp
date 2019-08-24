@@ -142,7 +142,7 @@ namespace planner{
 
 		// Creates the footstep neighbors
 		void generateNonFootstepNeighbors();
-		void generateFootstepNeighbors();
+		void generateFootstepNeighbors(int footstep_side);
 
 
 	};

@@ -347,6 +347,8 @@ namespace planner{
     neighbors.reserve(delta_s_vals.size());
   }
 
+
+  // Function adds non-footstep neighbors to the list of neighbors using the current node
   void LocomanipulationPlanner::generateNonFootstepNeighbors(){
     // Generate no step neighbors. Only varies with delta_s
     for(int i = 0; i < delta_s_vals.size(); i++){
@@ -361,6 +363,79 @@ namespace planner{
     }
     
   }
+
+  void LocomanipulationPlanner::generateFootstepNeighbors(int footstep_side){
+    std::cout << "Generating " << (footstep_side == RIGHT_FOOTSTEP ? "right" : "left") << " landing foot neighbors" << std::endl;
+
+    //  Initialize footstep landing location object and stance foot location.
+    //  These are both in the planner origin frame.
+    Footstep landing_foot, stance_foot;
+    Eigen::Vector3d   landing_pos, delta_translate; landing_pos.setZero(); delta_translate.setZero();
+    Eigen::Quaterniond landing_quat, delta_quat;  landing_quat.setIdentity(); delta_quat.setIdentity();
+
+    // Generate footstep neighbors depending on the stance foot
+    // delta_s, dx, dy, dtheta
+
+    // Set stance foot depending on the landing foot and convert it to the planner origin frame
+    if (footstep_side == RIGHT_FOOTSTEP){
+      convertWorldToPlannerOrigin(current_->left_foot.position, current_->left_foot.orientation, tmp_pos, tmp_ori);
+    }else if (footstep_side == LEFT_FOOTSTEP){
+      convertWorldToPlannerOrigin(current_->right_foot.position, current_->right_foot.orientation, tmp_pos, tmp_ori);
+    }
+    stance_foot.setPosOriSide(tmp_pos, tmp_ori, RIGHT_FOOTSTEP);      
+
+
+    int counter = 0;
+
+    for(int i = 0; i < delta_s_vals.size(); i++){
+      for(int j = 0; j < dx_vals.size(); j++){
+        for (int k = 0; k < dy_vals.size(); k++){
+          for(int m = 0; m < dtheta_vals.size(); m++){
+            // Prepare dx, dy, dtheta
+            delta_translate[0] = dx_vals[j];
+            delta_translate[1] = dy_vals[k];
+
+            delta_quat.x() = 0.0;
+            delta_quat.y() = 0.0;
+            delta_quat.z() = sin(dtheta_vals[m]);
+            delta_quat.w() = cos(dtheta_vals[m]);
+
+            // Compute delta x,y, theta w.r.t the stance
+            landing_pos = stance_foot.position + delta_translate;
+            landing_quat = stance_foot.orientation*delta_quat;
+
+            // Check if the landing foot is within the kinematic bounds w.r.t. the stance foot
+            if (withinKinematicBounds(stance_foot, landing_pos, landing_quat)){
+              // std::cout << "accepted" << std::endl;
+
+              // std::cout << "planner frame potential landing_foot_pos = " << landing_pos.transpose() << std::endl;
+              // std::cout << "planner frame potential landing_foot_ori = " << acos(landing_quat.w()) << std::endl;             
+              // std::cout << "world frame potential landing_foot_pos = " << tmp_pos.transpose() << std::endl;
+              // std::cout << "world frame potential landing_foot_ori = " << acos(tmp_ori.w()) << std::endl;             
+
+              // Convert landing location back to the world frame
+              convertPlannerToWorldOrigin(landing_pos, landing_quat, tmp_pos, tmp_ori);
+              landing_foot.setPosOriSide(tmp_pos, tmp_ori, footstep_side);                
+
+              counter++;
+
+              // Add landing foot if it is within the bounds
+              // neighbor.push_back()
+
+            }
+
+
+
+          }
+        }
+      }
+    }    
+
+    std::cout << "number of landing foot neighbors = " << counter << std::endl;
+
+
+  }
+
 
   std::vector< std::shared_ptr<Node> > LocomanipulationPlanner::getNeighbors(shared_ptr<Node> & current){
     std::cout << "Getting Neighbors" << std::endl;
@@ -408,77 +483,8 @@ namespace planner{
 
     // Generate neighbors with lazy evaluation ie: All neighbors are valid unless it has been attempted
     generateNonFootstepNeighbors();
-
-
-    // Initialize footstep landing location object and stance foot location.
-    //  These are both in the planner origin frame.
-    Footstep landing_foot, stance_foot;
-    Eigen::Vector3d   landing_pos, delta_translate; landing_pos.setZero(); delta_translate.setZero();
-    Eigen::Quaterniond landing_quat, delta_quat;  landing_quat.setIdentity(); delta_quat.setIdentity();
-
-    // Generate left step neighbors
-    // delta_s, dx, dy, dtheta
-
-    // Set stance foot to be the right foot
-    // Convert stance foot to planner origin frame
-    convertWorldToPlannerOrigin(current_->right_foot.position, current_->right_foot.orientation, tmp_pos, tmp_ori);
-    stance_foot.setPosOriSide(tmp_pos, tmp_ori, RIGHT_FOOTSTEP);
-
-    for(int i = 0; i < delta_s_vals.size(); i++){
-      for(int j = 0; j < dx_vals.size(); j++){
-        for (int k = 0; k < dy_vals.size(); k++){
-          for(int m = 0; m < dtheta_vals.size(); m++){
-            // Prepare dx, dy, dtheta
-            delta_translate[0] = dx_vals[j];
-            delta_translate[1] = dy_vals[k];
-
-            delta_quat.x() = 0.0;
-            delta_quat.y() = 0.0;
-            delta_quat.z() = sin(dtheta_vals[m]);
-            delta_quat.w() = cos(dtheta_vals[m]);
-
-            // Compute delta x,y, theta w.r.t the stance
-            landing_pos = stance_foot.position + delta_translate;
-            landing_quat = stance_foot.orientation*delta_quat;
-
-            // Check if the landing foot is within the kinematic bounds w.r.t. the stance foot
-            if (withinKinematicBounds(stance_foot, landing_pos, landing_quat)){
-              // std::cout << "accepted" << std::endl;
-
-              // std::cout << "planner frame potential landing_foot_pos = " << landing_pos.transpose() << std::endl;
-              // std::cout << "planner frame potential landing_foot_ori = " << acos(landing_quat.w()) << std::endl;             
-              // std::cout << "world frame potential landing_foot_pos = " << tmp_pos.transpose() << std::endl;
-              // std::cout << "world frame potential landing_foot_ori = " << acos(tmp_ori.w()) << std::endl;             
-
-              // Convert landing location back to the world frame
-              convertPlannerToWorldOrigin(landing_pos, landing_quat, tmp_pos, tmp_ori);
-              landing_foot.setPosOriSide(tmp_pos, tmp_ori, LEFT_FOOTSTEP);
- 
-              // Add landing foot if it is within the bounds
-              // neighbor.push_back()
-
-            }
-
-
-
-          }
-        }
-      }
-    }
-
-    // Generate right step neighbors
-    for(int i = 0; i < delta_s_vals.size(); i++){
-      for(int j = 0; j < dx_vals.size(); j++){
-        for (int k = 0; k < dy_vals.size(); k++){
-          for(int m = 0; m < dtheta_vals.size(); m++){
-            // prepare dx, dy, dtheta
-            // convert proposed left footstep w.r.t right footstep stance
-            // Check if proposed theta is within the kinematic bounds
-            // Add if it is within the kinematic bounds
-          }
-        }
-      }
-    }
+    generateFootstepNeighbors(LEFT_FOOTSTEP);
+    generateFootstepNeighbors(RIGHT_FOOTSTEP);
 
     return neighbors;
   }
