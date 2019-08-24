@@ -87,7 +87,7 @@ namespace planner{
  	  	double dy = 0.05; // dy translation discretization
  	  	double dtheta = 10.0*M_PI/180.0; // 10 degrees of discretization
 
- 	  	double max_lattice_translation = 0.8;
+ 	  	double max_lattice_translation = 0.4;
  	  	double max_lattice_theta = M_PI*7.0/8.0;
  	  	double min_lattice_theta = -M_PI*7.0/8.0;
 
@@ -116,8 +116,11 @@ namespace planner{
 		// robot_config temp 
  		Eigen::VectorXd q_tmp;
 
+ 		// Temporary variables
  		Eigen::Vector3d tmp_pos;
  		Eigen::Quaterniond tmp_ori;
+ 		Eigen::Vector3d foot_frame_landing_foot_pos;
+ 		Eigen::Quaterniond foot_frame_landing_foot_ori;
 
 
  		// Full path configuration trajectory
@@ -133,6 +136,8 @@ namespace planner{
 		// from the planner frame to the world frame
 		void convertPlannerToWorldOrigin(const Eigen::Vector3d & pos_in, const Eigen::Quaterniond ori_in,
 									Eigen::Vector3d & pos_out, Eigen::Quaterniond & ori_out);
+
+		bool withinKinematicBounds(Footstep & stance_foot, Eigen::Vector3d & landing_pos, Eigen::Quaterniond & landing_ori);
 
 
 

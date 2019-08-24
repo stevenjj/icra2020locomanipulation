@@ -145,6 +145,29 @@ namespace planner{
   }
 
 
+  bool LocomanipulationPlanner::withinKinematicBounds(Footstep & stance_foot, Eigen::Vector3d & landing_pos, Eigen::Quaterniond & landing_ori){
+    double sign = (stance_foot.robot_side == RIGHT_FOOTSTEP ? 1.0 : -1.0);     
+
+    foot_frame_landing_foot_pos = stance_foot.R_ori.transpose()*(landing_pos - stance_foot.position);
+    foot_frame_landing_foot_ori = stance_foot.orientation.inverse()*landing_ori;
+
+    if ((foot_frame_landing_foot_pos[0] >= min_reach) &&  
+        (foot_frame_landing_foot_pos[0] <= max_reach) &&
+        (sign*foot_frame_landing_foot_pos[1] >= min_width) &&
+        (sign*foot_frame_landing_foot_pos[1] <= max_width) &&
+        (acos(foot_frame_landing_foot_ori.w()) >= min_theta) &&
+        (acos(foot_frame_landing_foot_ori.w()) <= max_theta)){
+
+        return true;
+
+    }else{
+       return false;
+    }
+
+
+  }
+
+
   bool LocomanipulationPlanner::constructPath(){
     // Clear cached optimal path
     optimal_path.clear();
@@ -387,12 +410,11 @@ namespace planner{
 
     // Generate left step neighbors
     // delta_s, dx, dy, dtheta
+
     // Set stance foot to be the right foot
-    stance_foot.setPosOriSide(current_->right_foot.position, current_->right_foot.orientation, RIGHT_FOOTSTEP);
-
-
     // Convert stance foot to planner origin frame
-    // convertToPlannerOriginFrame()
+    convertWorldToPlannerOrigin(current_->right_foot.position, current_->right_foot.orientation, tmp_pos, tmp_ori);
+    stance_foot.setPosOriSide(tmp_pos, tmp_ori, RIGHT_FOOTSTEP);
 
     for(int i = 0; i < delta_s_vals.size(); i++){
       for(int j = 0; j < dx_vals.size(); j++){
@@ -401,20 +423,35 @@ namespace planner{
             // Prepare dx, dy, dtheta
             delta_translate[0] = dx_vals[j];
             delta_translate[1] = dy_vals[k];
-            delta_quat = Eigen::Quaterniond(cos(dtheta_vals[m]), 0.0, 0.0, sin(dtheta_vals[m]));
 
-            // delta x,y, theta w.r.t the stance
+            delta_quat.x() = 0.0;
+            delta_quat.y() = 0.0;
+            delta_quat.z() = sin(dtheta_vals[m]);
+            delta_quat.w() = cos(dtheta_vals[m]);
+
+            // Compute delta x,y, theta w.r.t the stance
             landing_pos = stance_foot.position + delta_translate;
             landing_quat = stance_foot.orientation*delta_quat;
-            landing_foot.setPosOriSide(landing_pos, landing_quat, LEFT_FOOTSTEP);
 
-            // Check if proposed theta is within the kinematic bounds
-            // Convert landing location back to the world frame
-            // Add landing foot if it is within the bounds
+            // Check if the landing foot is within the kinematic bounds w.r.t. the stance foot
+            if (withinKinematicBounds(stance_foot, landing_pos, landing_quat)){
+              // std::cout << "accepted" << std::endl;
 
-            // if withinBounds(stance_foot, landing_foot)
-            //   convertToWorldFrame(landing_foot)
-            //   neighbor.push_back()
+              // std::cout << "planner frame potential landing_foot_pos = " << landing_pos.transpose() << std::endl;
+              // std::cout << "planner frame potential landing_foot_ori = " << acos(landing_quat.w()) << std::endl;             
+              // std::cout << "world frame potential landing_foot_pos = " << tmp_pos.transpose() << std::endl;
+              // std::cout << "world frame potential landing_foot_ori = " << acos(tmp_ori.w()) << std::endl;             
+
+              // Convert landing location back to the world frame
+              convertPlannerToWorldOrigin(landing_pos, landing_quat, tmp_pos, tmp_ori);
+              landing_foot.setPosOriSide(tmp_pos, tmp_ori, LEFT_FOOTSTEP);
+ 
+              // Add landing foot if it is within the bounds
+              // neighbor.push_back()
+
+            }
+
+
 
           }
         }
