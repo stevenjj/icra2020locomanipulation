@@ -112,7 +112,12 @@ namespace planner{
 
 		//goal reached member variables
 		double goal_tol = 0.01;
-		double w_heuristic = 20;
+
+		// planner parameters
+		double w_heuristic = 200;
+		double w_distance = 1e-6;
+		double w_s = 1.0;		
+		double w_step = 10;
 
 		// robot_config temp 
  		Eigen::VectorXd q_tmp;

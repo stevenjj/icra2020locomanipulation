@@ -16,6 +16,9 @@ namespace planner{
     q_init = q_init_in;
     left_foot.setPosOriSide(left_foot_in.position, left_foot_in.orientation, left_foot_in.robot_side);
     right_foot.setPosOriSide(right_foot_in.position, right_foot_in.orientation, right_foot_in.robot_side);
+    // Compute the midfeet based on the left and right feet
+    mid_foot.computeMidfeet(left_foot, right_foot, mid_foot);
+    mid_foot.setMidFoot();
     common_initialization();
   }
 
@@ -23,6 +26,9 @@ namespace planner{
     s = s_in;
     left_foot.setPosOriSide(left_foot_in.position, left_foot_in.orientation, left_foot_in.robot_side);
     right_foot.setPosOriSide(right_foot_in.position, right_foot_in.orientation, right_foot_in.robot_side);
+    // Compute the midfeet based on the left and right feet
+    mid_foot.computeMidfeet(left_foot, right_foot, mid_foot);
+    mid_foot.setMidFoot();
     common_initialization();
   }
 
@@ -275,14 +281,26 @@ namespace planner{
   double LocomanipulationPlanner::gScore(const shared_ptr<Node> current, const shared_ptr<Node> neighbor){
     current_ = std::static_pointer_cast<LMVertex>(current);
     neighbor_ = std::static_pointer_cast<LMVertex>(neighbor);
-    return (neighbor_->s - current_->s);    
+
+    double s_cost = w_s*(neighbor_->s - current_->s);
+    double distance_cost = w_distance*((neighbor_->mid_foot.position - current_->mid_foot.position).norm() 
+                                        + fabs(acos(neighbor_->mid_foot.orientation.w()) - acos(current_->mid_foot.orientation.w())) );
+    double step_cost = w_step*( (edgeHasStepTaken(current_, neighbor_, LEFT_FOOTSTEP) || edgeHasStepTaken(current_, neighbor_, RIGHT_FOOTSTEP)) ? 1.0 : 0.0);
+    double delta_g = s_cost + distance_cost + step_cost;
+
+    return delta_g;    
   }
   // Locomanipulation heuristic 
   double LocomanipulationPlanner::heuristicCost(const shared_ptr<Node> neighbor,const shared_ptr<Node> goal){
     neighbor_ = static_pointer_cast<LMVertex>(neighbor);
     goal_ = static_pointer_cast<LMVertex>(goal);
+
+    double s_cost = w_s*(goal_->s - neighbor_->s);
+    double distance_cost = w_distance*((goal_->mid_foot.position - neighbor_->mid_foot.position).norm() 
+                                        + fabs(acos(goal_->mid_foot.orientation.w()) - acos(neighbor_->mid_foot.orientation.w())) );
+
     // Linear distance to the manipulation goal. if w_heuristic = 1.0, we get the true A* result 
-    return w_heuristic*(goal_->s - neighbor_->s); 
+    return w_heuristic*(s_cost + distance_cost); 
   }
 
   // Locomanipulation whether or not the goal was reached
@@ -555,10 +573,10 @@ namespace planner{
     // std::cout << "theta difference = " << theta_difference << std::endl;
 
     if ((pos_difference <= epsilon) && (theta_difference <= epsilon)) {
-      // std::cout << "no footstep has been taken" << std::endl;
+      std::cout << "no footstep has been taken" << std::endl;
       return false;
     }else{  
-      // std::cout << "footstep has been taken" << std::endl;
+      std::cout << "footstep has been taken" << std::endl;
       return true;          
     }
 
