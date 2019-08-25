@@ -440,11 +440,11 @@ namespace planner{
     // Set stance foot depending on the landing foot and convert it to the planner origin frame
     if (footstep_side == RIGHT_FOOTSTEP){
       convertWorldToPlannerOrigin(current_->left_foot.position, current_->left_foot.orientation, tmp_pos, tmp_ori);
+      stance_foot.setPosOriSide(tmp_pos, tmp_ori, LEFT_FOOTSTEP);      
     }else if (footstep_side == LEFT_FOOTSTEP){
       convertWorldToPlannerOrigin(current_->right_foot.position, current_->right_foot.orientation, tmp_pos, tmp_ori);
+      stance_foot.setPosOriSide(tmp_pos, tmp_ori, RIGHT_FOOTSTEP);      
     }
-    stance_foot.setPosOriSide(tmp_pos, tmp_ori, RIGHT_FOOTSTEP);      
-
 
     int counter = 0;
 
