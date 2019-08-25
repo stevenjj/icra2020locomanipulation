@@ -143,6 +143,9 @@ namespace planner{
     goal_lmv->mid_foot.computeMidfeet(goal_lmv->left_foot, goal_lmv->right_foot, goal_lmv->mid_foot);
     goal_lmv->mid_foot.setMidFoot();
     goal_lmv->mid_foot.printInfo();
+
+    // Get a copy of the goal node s variable
+    goal_s = goal_lmv->s;
   }
 
 
@@ -398,10 +401,10 @@ namespace planner{
   }
 
 
-  // Ensures that is is within 0.0 and 1.0
+  // Ensures that is is within 0.0 and goal_s
   double LocomanipulationPlanner::clamp_s_variable(const double s_in){
-    if (s_in >= 1.0){
-      return 0.9999;
+    if (s_in >= goal_s){
+      return (goal_s - 1e-4); 
     }else if (s_in <= 0.0){
       return 0.0;
     }else{

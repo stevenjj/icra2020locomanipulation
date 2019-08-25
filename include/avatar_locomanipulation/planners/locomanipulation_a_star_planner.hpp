@@ -111,12 +111,13 @@ namespace planner{
 		std::shared_ptr<LMVertex> neighbor_change;
 
 		//goal reached member variables
+		double goal_s = 1.0;
 		double goal_tol = 0.01;
 
 		// planner parameters
 		double w_heuristic = 2000;
-		double w_distance = 1e-6;
-		double w_s = 1.0;		
+		double w_distance = 1e-3;
+		double w_s = 100.0;		
 		double w_step = 10;
 		double w_transition_distance = 10.0;
 
@@ -151,7 +152,7 @@ namespace planner{
 		void generateNonFootstepNeighbors();
 		void generateFootstepNeighbors(int footstep_side);
 
-		// Ensures that is is within 0.0 and 1.0
+		// Ensures that is is within 0.0 and goal_s
 		double clamp_s_variable(const double s_in);
 
 		// Edge identification between the current node and its parent
