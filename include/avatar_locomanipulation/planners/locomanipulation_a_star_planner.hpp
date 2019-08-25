@@ -118,6 +118,7 @@ namespace planner{
 		double w_distance = 1e-6;
 		double w_s = 1.0;		
 		double w_step = 10;
+		double w_transition_distance = 10.0;
 
 		// robot_config temp 
  		Eigen::VectorXd q_tmp;

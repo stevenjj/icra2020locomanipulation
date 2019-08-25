@@ -285,8 +285,26 @@ namespace planner{
     double s_cost = w_s*(neighbor_->s - current_->s);
     double distance_cost = w_distance*((neighbor_->mid_foot.position - current_->mid_foot.position).norm() 
                                         + fabs(acos(neighbor_->mid_foot.orientation.w()) - acos(current_->mid_foot.orientation.w())) );
-    double step_cost = w_step*( (edgeHasStepTaken(current_, neighbor_, LEFT_FOOTSTEP) || edgeHasStepTaken(current_, neighbor_, RIGHT_FOOTSTEP)) ? 1.0 : 0.0);
-    double delta_g = s_cost + distance_cost + step_cost;
+   
+    bool left_step_taken = edgeHasStepTaken(current_, neighbor_, LEFT_FOOTSTEP);
+    bool right_step_taken = edgeHasStepTaken(current_, neighbor_, RIGHT_FOOTSTEP);
+
+    double step_cost = 0.0;
+    if (left_step_taken || right_step_taken){
+      step_cost = w_step;
+    }
+    
+    double transition_distance_cost = 0.0;
+    if (left_step_taken){
+      transition_distance_cost = w_transition_distance*((neighbor_->left_foot.position - current_->left_foot.position).norm() 
+                                              + fabs(acos(neighbor_->left_foot.orientation.w()) - acos(current_->left_foot.orientation.w())) );
+    }else if (right_step_taken){
+      transition_distance_cost = w_transition_distance*((neighbor_->right_foot.position - current_->right_foot.position).norm() 
+                                              + fabs(acos(neighbor_->right_foot.orientation.w()) - acos(current_->right_foot.orientation.w())) ); 
+    }
+
+
+    double delta_g = s_cost + distance_cost + step_cost + transition_distance_cost;
 
     return delta_g;    
   }
@@ -309,13 +327,13 @@ namespace planner{
     goal_ = static_pointer_cast<LMVertex>(goal);
 
     // check if s is within 0.05 of goal_s
-    std::cout << "testing if we got to the goal for (goal_s, current_s) = (" << goal_->s << ", " << current_->s << ")" << std::endl;
+    std::cout << "  testing if we got to the goal for (goal_s, current_s) = (" << goal_->s << ", " << current_->s << ")" << std::endl;
     bool s_satisfaction = (fabs(goal_->s - current_->s) <= goal_tol);
     bool convergence = false;
 
     // If s is within tolerance, actually check if we can perform this trajectory
     if (s_satisfaction){
-      std::cout << "within goal tolerance checking for convergence" << std::endl;
+      // std::cout << "within goal tolerance checking for convergence" << std::endl;
       parent_ = static_pointer_cast<LMVertex>(current_->parent);
       delta_s =  (current_->s - parent_->s);
       // Update the input footstep list
@@ -333,7 +351,7 @@ namespace planner{
 
       if (convergence){
         ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_tmp);
-        std::cout << "goal q_tmp = " << q_tmp.transpose() << std::endl;
+        // std::cout << "goal q_tmp = " << q_tmp.transpose() << std::endl;
         current_->setRobotConfig(q_tmp);       
       }
 
