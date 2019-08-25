@@ -225,9 +225,10 @@ namespace planner{
 
       // Update the input footstep list
       input_footstep_list.clear();
-      if (edgeStepTaken(static_pointer_cast<Node>(current_), LEFT_FOOTSTEP)){
+      // Check if a left or right footstep is taken
+      if (edgeHasStepTaken(parent_, current_, LEFT_FOOTSTEP)) {
         input_footstep_list.push_back(current_->left_foot);
-      }else if (edgeStepTaken(static_pointer_cast<Node>(current_), RIGHT_FOOTSTEP)){
+      }else if (edgeHasStepTaken(parent_, current_, RIGHT_FOOTSTEP)){
         input_footstep_list.push_back(current_->right_foot);        
       }
 
@@ -301,9 +302,9 @@ namespace planner{
       delta_s =  (current_->s - parent_->s);
       // Update the input footstep list
       input_footstep_list.clear();
-      if (edgeStepTaken(static_pointer_cast<Node>(current_), LEFT_FOOTSTEP)){
+      if (edgeHasStepTaken(parent_, current_, LEFT_FOOTSTEP)) {
         input_footstep_list.push_back(current_->left_foot);
-      }else if (edgeStepTaken(static_pointer_cast<Node>(current_), RIGHT_FOOTSTEP)){
+      }else if (edgeHasStepTaken(parent_, current_, RIGHT_FOOTSTEP)){
         input_footstep_list.push_back(current_->right_foot);        
       }
 
@@ -488,13 +489,13 @@ namespace planner{
 
       // Update the input footstep list
       input_footstep_list.clear();
-      if (edgeStepTaken(static_pointer_cast<Node>(current_), LEFT_FOOTSTEP)){
+      if (edgeHasStepTaken(parent_, current_, LEFT_FOOTSTEP)) {
         input_footstep_list.push_back(current_->left_foot);
-      }else if (edgeStepTaken(static_pointer_cast<Node>(current_), RIGHT_FOOTSTEP)){
+      }else if (edgeHasStepTaken(parent_, current_, RIGHT_FOOTSTEP)){
         input_footstep_list.push_back(current_->right_foot);        
       }
       
-      edgeSVarMoved(static_pointer_cast<Node>(current_));
+      edgeHasSVarMoved(parent_, current_);
 
       convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
                                                                   parent_->s, delta_s, 
@@ -537,19 +538,16 @@ namespace planner{
 
 
   // Edge identification between the current node and its parent
-  bool LocomanipulationPlanner::edgeStepTaken(shared_ptr<Node> current_node, int footstep_side){
-    // Create pointers
-    std::shared_ptr<LMVertex> v1 = static_pointer_cast<LMVertex>(current_node);
-    std::shared_ptr<LMVertex> v2 = static_pointer_cast<LMVertex>(current_node->parent);
+  bool LocomanipulationPlanner::edgeHasStepTaken(shared_ptr<LMVertex> from_node, shared_ptr<LMVertex> to_node, int footstep_side){
     double epsilon = 1e-6; 
     double pos_difference, theta_difference;
 
     if (footstep_side == RIGHT_FOOTSTEP){
-      pos_difference = (v1->right_foot.position - v2->right_foot.position).norm();
-      theta_difference = fabs(acos(v1->right_foot.orientation.w()) - acos(v2->right_foot.orientation.w()));
+      pos_difference = (to_node->right_foot.position - from_node->right_foot.position).norm();
+      theta_difference = fabs(acos(to_node->right_foot.orientation.w()) - acos(from_node->right_foot.orientation.w()));
     }else{
-      pos_difference = (v1->left_foot.position - v2->left_foot.position).norm();
-      theta_difference = fabs(acos(v1->left_foot.orientation.w()) - acos(v2->left_foot.orientation.w()));
+      pos_difference = (to_node->left_foot.position - from_node->left_foot.position).norm();
+      theta_difference = fabs(acos(to_node->left_foot.orientation.w()) - acos(from_node->left_foot.orientation.w()));
     }
 
     // std::cout << "footstep = " << (footstep_side == RIGHT_FOOTSTEP ? "right step": "left step") << std::endl;
@@ -566,12 +564,9 @@ namespace planner{
 
   }
 
-  bool LocomanipulationPlanner::edgeSVarMoved(shared_ptr<Node> current_node){
-    std::shared_ptr<LMVertex> v1 = static_pointer_cast<LMVertex>(current_node);
-    std::shared_ptr<LMVertex> v2 = static_pointer_cast<LMVertex>(current_node->parent);
-
+  bool LocomanipulationPlanner::edgeHasSVarMoved(shared_ptr<LMVertex> from_node, shared_ptr<LMVertex> to_node){
     double epsilon = 1e-6;
-    double delta_s = fabs(v1->s - v2->s);
+    double delta_s = fabs(to_node->s - from_node->s);
 
     if (delta_s <= epsilon){
        return false;
