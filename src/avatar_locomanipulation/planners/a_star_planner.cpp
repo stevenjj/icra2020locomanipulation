@@ -539,7 +539,7 @@ namespace planner{
                 current_node = OpenSet[0];
 
                 // shared_ptr<FootstepNode> current_ = static_pointer_cast<FootstepNode>(current_node);
-                // cout << "current node key: " << current_node->key << endl;
+                cout << "current node key: " << current_node->key << endl;
                 // cout << "step number: " << current_->step_num << endl;
                 // cout << endl;
 

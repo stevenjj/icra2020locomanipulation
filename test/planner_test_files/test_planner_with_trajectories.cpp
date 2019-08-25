@@ -143,7 +143,7 @@ void test_door_open_config_trajectory(){
   bool convergence = ctg.computeConfigurationTrajectory(f_s_manipulate_door, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
                                      s_o, delta_s, q_start_door, input_footstep_list);
 
-  std::cout << "Converged?" << (convergence ? "True" : "False") << std::endl; 
+  std::cout << "Converged? " << (convergence ? "True" : "False") << std::endl; 
 
   std::cout << "IK Trajectory took: " << timer.toc() << timer.unitName(timer.DEFAULT_UNIT) << std::endl;
   // Visualize Trajectory
@@ -275,7 +275,7 @@ void test_LM_planner(){
   // Set Manipulation Only time to 3 seconds
   ctg->setManipulationOnlyTime(3.0);
   // Set Verbosity
-  ctg->setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_1);
+  ctg->setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_0);
 
   // End of initialization ---------------------------------------------------------------------------------------
 
@@ -285,7 +285,7 @@ void test_LM_planner(){
 
   // 
   double s_init = 0.0;
-  double s_goal = 0.08;
+  double s_goal = 0.12;//0.08;
   shared_ptr<Node> starting_vertex (std::make_shared<LMVertex>(s_init, q_start_door));    
   shared_ptr<Node> goal_vertex (std::make_shared<LMVertex>(s_goal, q_final_door));
 

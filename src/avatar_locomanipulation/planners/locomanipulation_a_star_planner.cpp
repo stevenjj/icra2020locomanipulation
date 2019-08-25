@@ -339,7 +339,7 @@ namespace planner{
 
     }
 
-    std::cout << "goal reached? " << (s_satisfaction && convergence) << std::endl;
+    // std::cout << "goal reached? " << (s_satisfaction && convergence) << std::endl;
     return (s_satisfaction && convergence);
   }
 
@@ -519,7 +519,7 @@ namespace planner{
                                                                   parent_->s, delta_s, 
                                                                   parent_->q_init, 
                                                                   input_footstep_list);
-      std::cout << "Converged?" << (convergence ? "True" : "False") << std::endl;       
+      std::cout << "Converged? " << (convergence ? "True" : "False") << std::endl;       
 
       // If it converges, update the configuration of the current node
       if (convergence){
