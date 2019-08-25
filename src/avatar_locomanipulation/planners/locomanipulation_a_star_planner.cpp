@@ -475,7 +475,7 @@ namespace planner{
               neighbor_change = static_pointer_cast<LMVertex>(neighbor);
               neighbor_change->parent = static_pointer_cast<Node>(current_);
               // Add landing foot 
-              // neighbors.push_back(neighbor);
+              neighbors.push_back(neighbor);
 
               // Increment counter
               counter++;
@@ -573,10 +573,10 @@ namespace planner{
     // std::cout << "theta difference = " << theta_difference << std::endl;
 
     if ((pos_difference <= epsilon) && (theta_difference <= epsilon)) {
-      std::cout << "no footstep has been taken" << std::endl;
+      // std::cout << "no footstep has been taken" << std::endl;
       return false;
     }else{  
-      std::cout << "footstep has been taken" << std::endl;
+      // std::cout << "footstep has been taken" << std::endl;
       return true;          
     }
 
