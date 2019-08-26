@@ -155,3 +155,4 @@ SET(PROJECT_LIBRARIES
 	${YAML_CPP_LIBRARIES})
 
 add_subdirectory(test)
+add_subdirectory(nodes)
