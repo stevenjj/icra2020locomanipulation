@@ -84,7 +84,7 @@ def save_model(save_directory, dataset, model, model_hyper_params):
 # Load data
 dataset_folder = "/home/sjorgen1/Data/param_set_1/"
 
-num_positive_data = 9000 #10000 # per transition_type
+num_positive_data = 11500 #10000 # per transition_type
 dataset = transition_dataset.ContactTransitionDataset(num_positive_data)
 
 contact_transition_types = [ ("left_hand", "right_foot"), ("left_hand", "left_foot"), ("right_hand", "left_foot"), ("right_hand", "right_foot"), ("both_hands", "right_foot"), ("both_hands", "left_foot") ]# [ ("right_hand", "right_foot"), ("right_hand", "left_foot") ]
@@ -152,9 +152,9 @@ model_scores = {}
 model_histories = []
 
 models['baseline'] = model
+model_scores['baseline'] = baseline_f1
 model_histories.append(('baseline', model_history))
 print "baseline f1 score = ", baseline_f1
-best_model = 'baseline'
 
 # plot_history(model_histories, key='acc')
 # plot_history(model_histories)
@@ -162,7 +162,7 @@ best_model = 'baseline'
 
 
 # Number of models to generate
-random.seed(3)
+random.seed(10)
 num_models = 20
 
 for i in range(num_models):
@@ -192,9 +192,18 @@ for i in range(num_models):
 	model_hyper_params[model_name] = create_model_hyper_params_map(n_hidden_layers, n_units_per_layer, l2_regularization)
 
 
-
+# Print Model Scores
 print model_scores
-best_model = max(model_scores, key=model_scores.get)
+
+# Get the best performing model
+best_f1_score = baseline_f1
+best_model = 'baseline'
+
+for model_key, model_f1_score in model_scores.items():
+	if model_scores[model_key] > best_f1_score:
+		best_f1_score = model_scores[model_key]
+		best_model = model_key
+
 print "best performing model:", best_model , "with f1 score = ", model_scores[best_model]
 print "baseline f1 score = ", baseline_f1
 
