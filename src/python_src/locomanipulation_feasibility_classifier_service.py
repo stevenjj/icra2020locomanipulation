@@ -36,6 +36,8 @@ class LocomanipulationFeasibilityClassifier:
         self.l2_regularization = 1e-2
         self.model = None
 
+        self.x_input = np.array([[0 for i in range(self.input_dim)]], dtype='f')
+
         self.session = tf.Session(graph=tf.Graph())
 
     def load_model(self, stored_model_folder_path):
@@ -104,27 +106,27 @@ class LocomanipulationFeasibilityClassifier:
         print self.model.predict(sample_x)
 
     def perform_binary_classification(self, req):
-    	x = np.array([req.x], dtype='f')
-        x_normalized = (x - self.x_train_mean)/self.x_train_std
-
-        if DEBUG:
-	        print "Unnormalized Input Vector:", x
-	        print "Normalized Input Vector:", x_normalized
-	        print "  Input vector has shape:", x_normalized.shape
-
         res = BinaryClassifierQueryResponse()
-        if (x_normalized.shape[1] != self.input_dim):
-            rospy.logerr("Error. Input Dimension is %d but it must be %d", x_normalized.shape[1], self.input_dim)
+        if (len(req.x) != self.input_dim):
+            rospy.logerr("Error. Input Dimension is %d but it must be %d", len(req.x), self.input_dim)
             res.y = -1.0
         else:
+            # Apply Z-Normalization to the input 
+            for i in range(len(req.x)):
+                self.x_input[0][i] = (req.x[i] - self.x_train_mean[i]) / self.x_train_std[i]
+
+            if DEBUG:
+                print "Unnormalized Input Vector:", req.x
+                print "Normalized Input Vector:", self.x_input
+                print "  Input vector has shape:", self.x_input.shape
             with self.session.graph.as_default():
                 set_session(self.session)
-            	res.y = self.model.predict(x_normalized[:])[0][0]
-            	if DEBUG:
-	                print "prediction result = ", res.y
+                res.y = self.model.predict(self.x_input)[0][0]
+                if DEBUG:
+                    print "prediction result = ", res.y
     
-    	if DEBUG: 	       
-        	print "Returning:", res.y
+        if DEBUG:          
+            print "Returning:", res.y
         return res
 
     def start_classifier_server(self):

@@ -2,6 +2,8 @@
 #include <iostream>
 #include <avatar_locomanipulation/BinaryClassifierQuery.h>
 
+#include <chrono>
+typedef std::chrono::high_resolution_clock Clock;
 
 int main(int argc, char ** argv){   
 	ros::init(argc, argv, "classifier_client");
@@ -25,13 +27,32 @@ int main(int argc, char ** argv){
 	for(int i = 0; i < dim; i++){
 		srv.request.x.push_back(0);
 	}
+	double prediction;
 
-	// Make request
-	if (client.call(srv)){
-		ROS_INFO("Prediction: %0.4f", srv.response.y);
-	}else{
-	    ROS_ERROR("Failed to call service locomanipulation_feasibility_classifier");
-	    return 1;		
+	// Make request at 10kHz
+	ros::Rate r(10000); // 10,000 hz
+
+
+    auto t1 = Clock::now();
+    auto t2 = Clock::now();
+	double time_span;
+
+	while (ros::ok()){
+		t1 = Clock::now();
+		if (client.call(srv)){
+			prediction = srv.response.y;
+			// ROS_INFO("Prediction: %0.4f", srv.response.y);
+		}else{
+		    ROS_ERROR("Failed to call service locomanipulation_feasibility_classifier");
+		    return 1;		
+		}
+		t2 = Clock::now();
+		time_span = std::chrono::duration_cast< std::chrono::duration<double> >(t2 - t1).count();
+
+		std::cout << "Pred = " << prediction << std::endl;
+		std::cout << " inference round trip time = " << time_span << " seconds" << std::endl;
+		std::cout << " frequency = " << (1.0/time_span) << " Hz" << std::endl;
+		r.sleep();
 	}
 
 	return 0;
