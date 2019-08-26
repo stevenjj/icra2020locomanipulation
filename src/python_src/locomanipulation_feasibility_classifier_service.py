@@ -19,6 +19,8 @@ from tensorflow.keras.backend import set_session
 print(tf.version.VERSION)
 print(tf.keras.__version__)
 
+DEBUG = True
+
 class LocomanipulationFeasibilityClassifier:
     def __init__(self):
         self.input_dim = 32
@@ -99,61 +101,39 @@ class LocomanipulationFeasibilityClassifier:
                       metrics=['accuracy', 'binary_crossentropy', tf.keras.metrics.Precision(), tf.keras.metrics.Recall()])
         return model
 
-    def do_classify(self):
+    def sample_classify(self):
         sample_x = np.array([[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32]], dtype='f')
         print self.model.predict(sample_x)
 
     def perform_binary_classification(self, req):
-        # if not self.called_once:
-        #     print "self.model_path = ", self.model_path
-        #     self.load_model(self.model_path)
-        #     self.called_once = True
+    	x = np.array([req.x], dtype='f')
+        x_normalized = (x - self.x_train_mean)/self.x_train_std
 
-        x = np.array([[float(elem) for elem in req.x]], dtype='f')
-
-        print "Input Vector:", x
-        print "  Input vector has shape:", x.shape
+        if DEBUG:
+	        print "Unnormalized Input Vector:", x
+	        print "Normalized Input Vector:", x_normalized
+	        print "  Input vector has shape:", x_normalized.shape
 
         res = BinaryClassifierQueryResponse()
-        if (x.shape[1] != self.input_dim):
-            rospy.logerr("Error. Input Dimension is %d but it must be %d", x.shape[1], self.input_dim)
+        if (x_normalized.shape[1] != self.input_dim):
+            rospy.logerr("Error. Input Dimension is %d but it must be %d", x_normalized.shape[1], self.input_dim)
             res.y = -1.0
         else:
-            sample_x = np.array([[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32]], dtype='f')
-            print sample_x
-            print sample_x.shape
             with self.session.graph.as_default():
                 set_session(self.session)
-                print "prediction result = ", self.model.predict(sample_x[:1])
-
-            # print "x = ", x
-            # print "x[:1] = ", x[:1]
-            # print "prediction result = ", self.model.predict(x[:1])
-
-            res.y = 0.75
-
-        print "Returning:", res.y
-
-
+            	res.y = self.model.predict(x_normalized[:])[0][0]
+            	if DEBUG:
+	                print "prediction result = ", res.y
+    
+    	if DEBUG: 	       
+        	print "Returning:", res.y
         return res
-
-    def msg_callback(self, msg):
-        sample_x = np.array([[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32]], dtype='f')
-        print 'hi!'
-        print msg
 
     def start_classifier_server(self):
         rospy.init_node('locomanipulation_feasibility_classifier_server')
         s = rospy.Service('locomanipulation_feasibility_classifier', BinaryClassifierQuery, self.perform_binary_classification)
-        sub = rospy.Subscriber('chatter', String, self.msg_callback)
-
         print "Locomanipulation Feasibility Classifier Server Started."
-
-
-        r = rospy.Rate(10) # 10hz
-        while not rospy.is_shutdown():
-            # self.do_classify()
-            r.sleep()
+        rospy.spin()
 
 if __name__ == "__main__":
     classifier = LocomanipulationFeasibilityClassifier()
