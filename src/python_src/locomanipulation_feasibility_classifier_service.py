@@ -20,7 +20,7 @@ print(tf.version.VERSION)
 print(tf.keras.__version__)
 
 DEBUG = True
-model_path_relative_to_package = '/nn_models/baseline_9000pts/'
+model_path_relative_to_package = '/nn_models/baseline_11500pts/'
 
 class LocomanipulationFeasibilityClassifier:
     def __init__(self):
