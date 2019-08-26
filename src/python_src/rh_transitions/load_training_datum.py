@@ -13,15 +13,23 @@ import numpy as np
 def convert_quat_to_3vec(quat):
 	# Normalize and extract quaternion
 	x, y, z, w = quat/np.linalg.norm(quat)
-	# Compute theta
-	theta = np.arccos(w)
 
-	if (theta <= 1e-6):
-		return np.array([0.0, 0.0, 0.0])
-	else:
-		vec = np.array([x,y,z]) / np.sin(theta)
-		vec = vec / np.linalg.norm(vec) * theta
-		return vec 
+	# Define vector part and its norm
+	qv = np.array([x,y,z])
+	n = np.linalg.norm(qv)
+	eps = 1e-6
+
+	m_angle = 0.0
+	m_axis = np.array([0,0,0])
+
+	# Extract axis angle components if the norm is greater than epsilon
+	if (n > eps):
+		m_angle = 2.0*np.arctan2(n, w)
+		if (w < 0):
+			n = -n
+		m_axis = qv/n
+
+	return m_angle*m_axis
 
 class ContactTransitionData:
 	def __init__(self, yaml_file_path=""):
