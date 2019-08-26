@@ -43,6 +43,11 @@ namespace planner{
   // Destructor
   LMVertex::~LMVertex(){}
 
+  double LMVertex::getAngle(const Eigen::Quaterniond & quat_in){
+    tmp_aa = quat_in;
+    return tmp_aa.angle();
+  }
+
   // Common Initialization
   void LMVertex::common_initialization(){
     g_score = 100000;
@@ -50,10 +55,10 @@ namespace planner{
     double factor = 1000.0;
     key = (to_string((int)round(s*factor)) + "/" + "lx:" + to_string((int)round(left_foot.position[0] * factor)) + "-"
                                                  + "ly:" + to_string((int)round(left_foot.position[1] * factor)) + "-"
-                                                 + "lt:" + to_string((int)round(acos(left_foot.orientation.w()) * factor)) + "/"
+                                                 + "lt:" + to_string((int)round(getAngle(left_foot.orientation) * factor)) + "/"
                                                  + "rx:" + to_string((int)round(right_foot.position[0] * factor)) + "-"
                                                  + "ry:" + to_string((int)round(right_foot.position[1] * factor)) + "-"
-                                                 + "rt:" + to_string((int)round(acos(right_foot.orientation.w()) * factor))
+                                                 + "rt:" + to_string((int)round(getAngle(right_foot.orientation) * factor))
           );
 
 
@@ -148,6 +153,11 @@ namespace planner{
     goal_s = goal_lmv->s;
   }
 
+  double LocomanipulationPlanner::getAngle(const Eigen::Quaterniond & quat_in){
+    tmp_aa = quat_in;
+    return tmp_aa.angle();
+  }
+
 
   // Converts the input position and orientation 
   // from the world frame to the planner frame
@@ -176,8 +186,8 @@ namespace planner{
         (foot_frame_landing_foot_pos[0] <= max_reach) &&
         (sign*foot_frame_landing_foot_pos[1] >= min_width) &&
         (sign*foot_frame_landing_foot_pos[1] <= max_width) &&
-        (acos(foot_frame_landing_foot_ori.w()) >= min_theta) &&
-        (acos(foot_frame_landing_foot_ori.w()) <= max_theta)){
+        (getAngle(foot_frame_landing_foot_ori) >= min_theta) &&
+        (getAngle(foot_frame_landing_foot_ori) <= max_theta)){
 
         return true;
 
@@ -287,7 +297,7 @@ namespace planner{
 
     double s_cost = w_s*(neighbor_->s - current_->s);
     double distance_cost = w_distance*((neighbor_->mid_foot.position - current_->mid_foot.position).norm() 
-                                        + fabs(acos(neighbor_->mid_foot.orientation.w()) - acos(current_->mid_foot.orientation.w())) );
+                                        + fabs(getAngle(neighbor_->mid_foot.orientation) - getAngle(current_->mid_foot.orientation)) );
    
     bool left_step_taken = edgeHasStepTaken(current_, neighbor_, LEFT_FOOTSTEP);
     bool right_step_taken = edgeHasStepTaken(current_, neighbor_, RIGHT_FOOTSTEP);
@@ -300,10 +310,10 @@ namespace planner{
     double transition_distance_cost = 0.0;
     if (left_step_taken){
       transition_distance_cost = w_transition_distance*((neighbor_->left_foot.position - current_->left_foot.position).norm() 
-                                              + fabs(acos(neighbor_->left_foot.orientation.w()) - acos(current_->left_foot.orientation.w())) );
+                                              + fabs(getAngle(neighbor_->left_foot.orientation) - getAngle(current_->left_foot.orientation)) );
     }else if (right_step_taken){
       transition_distance_cost = w_transition_distance*((neighbor_->right_foot.position - current_->right_foot.position).norm() 
-                                              + fabs(acos(neighbor_->right_foot.orientation.w()) - acos(current_->right_foot.orientation.w())) ); 
+                                              + fabs(getAngle(neighbor_->right_foot.orientation) - getAngle(current_->right_foot.orientation)) ); 
     }
 
 
@@ -318,7 +328,7 @@ namespace planner{
 
     double s_cost = w_s*(goal_->s - neighbor_->s);
     double distance_cost = w_distance*((goal_->mid_foot.position - neighbor_->mid_foot.position).norm() 
-                                        + fabs(acos(goal_->mid_foot.orientation.w()) - acos(neighbor_->mid_foot.orientation.w())) );
+                                        + fabs(getAngle(goal_->mid_foot.orientation) - getAngle(neighbor_->mid_foot.orientation)) );
 
     // Linear distance to the manipulation goal. if w_heuristic = 1.0, we get the true A* result 
     return w_heuristic*(s_cost + distance_cost); 
@@ -461,8 +471,8 @@ namespace planner{
 
             delta_quat.x() = 0.0;
             delta_quat.y() = 0.0;
-            delta_quat.z() = sin(dtheta_vals[m]);
-            delta_quat.w() = cos(dtheta_vals[m]);
+            delta_quat.z() = sin(dtheta_vals[m]/2.0);
+            delta_quat.w() = cos(dtheta_vals[m]/2.0);
 
             // Compute delta x,y, theta w.r.t the stance
             landing_pos = stance_foot.position + delta_translate;
@@ -473,9 +483,9 @@ namespace planner{
               // std::cout << "accepted" << std::endl;
 
               // std::cout << "planner frame potential landing_foot_pos = " << landing_pos.transpose() << std::endl;
-              // std::cout << "planner frame potential landing_foot_ori = " << acos(landing_quat.w()) << std::endl;             
+              // std::cout << "planner frame potential landing_foot_ori = " << getAngle(landing_quat) << std::endl;             
               // std::cout << "world frame potential landing_foot_pos = " << tmp_pos.transpose() << std::endl;
-              // std::cout << "world frame potential landing_foot_ori = " << acos(tmp_ori.w()) << std::endl;             
+              // std::cout << "world frame potential landing_foot_ori = " << getAngle(tmp_ori) << std::endl;             
 
               // Convert landing location back to the world frame
               convertPlannerToWorldOrigin(landing_pos, landing_quat, tmp_pos, tmp_ori);
@@ -583,10 +593,10 @@ namespace planner{
 
     if (footstep_side == RIGHT_FOOTSTEP){
       pos_difference = (to_node->right_foot.position - from_node->right_foot.position).norm();
-      theta_difference = fabs(acos(to_node->right_foot.orientation.w()) - acos(from_node->right_foot.orientation.w()));
+      theta_difference = fabs(getAngle(to_node->right_foot.orientation) - getAngle(from_node->right_foot.orientation));
     }else{
       pos_difference = (to_node->left_foot.position - from_node->left_foot.position).norm();
-      theta_difference = fabs(acos(to_node->left_foot.orientation.w()) - acos(from_node->left_foot.orientation.w()));
+      theta_difference = fabs(getAngle(to_node->left_foot.orientation) - getAngle(from_node->left_foot.orientation));
     }
 
     // std::cout << "footstep = " << (footstep_side == RIGHT_FOOTSTEP ? "right step": "left step") << std::endl;

@@ -23,7 +23,6 @@ namespace planner{
 		double s = 0.0;
 		Eigen::VectorXd q_init;
 		bool take_a_step = false;
-		Footstep footstep;
 
 		Footstep left_foot;
 		Footstep right_foot;
@@ -31,6 +30,10 @@ namespace planner{
 	
 		void setRobotConfig(const Eigen::VectorXd & q_input);
 		void common_initialization();
+
+		double getAngle(const Eigen::Quaterniond & quat_in);
+		Eigen::AngleAxisd tmp_aa;
+
 
 	};
 
@@ -146,6 +149,10 @@ namespace planner{
 									Eigen::Vector3d & pos_out, Eigen::Quaterniond & ori_out);
 
 		bool withinKinematicBounds(Footstep & stance_foot, Eigen::Vector3d & landing_pos, Eigen::Quaterniond & landing_ori);
+
+		double getAngle(const Eigen::Quaterniond & quat_in);
+		Eigen::AngleAxisd tmp_aa;
+
 
 
 		// Creates the footstep neighbors
