@@ -38,10 +38,8 @@ class LocomanipulationFeasibilityClassifier:
 
         self.session = tf.Session(graph=tf.Graph())
 
-    def set_model_path(self, model_folder_path):
-        self.model_path = model_folder_path
-
     def load_model(self, stored_model_folder_path):
+        self.model_path = stored_model_folder_path
         print "Loading model from:", stored_model_folder_path
         self.x_train_mean, self.x_train_std = self.load_normalization_params(stored_model_folder_path+'normalization_params.yaml')
 
@@ -144,7 +142,6 @@ if __name__ == "__main__":
     stored_model_folder_path = rospack.get_path('avatar_locomanipulation') + '/src/python_src/rh_transitions/learned_model/' + model_name + '/'
     print stored_model_folder_path  
 
-    classifier.set_model_path(stored_model_folder_path)
     classifier.load_model(stored_model_folder_path)
     classifier.start_classifier_server()
 
