@@ -11,12 +11,12 @@ from tensorflow.keras import layers
 
 class LocomanipulationFeasibilityClassifier:
 	def __init__(self):
-		self.dataset_dim = 10
+		self.input_dim = 32
 		self.hyper_params = {}
 		self.n_hidden_layers = 5
 		self.n_units_per_layer = 512
 		self.l2_regularization = 1e-2
-		self.model = self.create_model(self.dataset_dim, num_hidden_layers=self.n_hidden_layers, units_per_layer=self.n_units_per_layer, l2_reg=self.l2_regularization)
+		self.model = self.create_model(self.input_dim, num_hidden_layers=self.n_hidden_layers, units_per_layer=self.n_units_per_layer, l2_reg=self.l2_regularization)
 
 	def load_model(self, stored_model_folder_path):
 		print "Loading model from:", stored_model_folder_path
@@ -26,7 +26,7 @@ class LocomanipulationFeasibilityClassifier:
 		self.l2_regularization = self.hyper_params['l2_regularization']
 
 		print "  Loaded hyperparams = ", self.hyper_params
-		self.model = self.create_model(self.dataset_dim, num_hidden_layers=self.n_hidden_layers, units_per_layer=self.n_units_per_layer, l2_reg=self.l2_regularization)
+		self.model = self.create_model(self.input_dim, num_hidden_layers=self.n_hidden_layers, units_per_layer=self.n_units_per_layer, l2_reg=self.l2_regularization)
 		self.model.load_weights(stored_model_folder_path)
 
 	def load_normalization_params(self, yaml_path):
@@ -43,13 +43,13 @@ class LocomanipulationFeasibilityClassifier:
 	    		'l2_regularization': data_loaded['l2_regularization']}
 
 	# Create a simple dense network for binary classification
-	def create_model(self, dataset_dim, num_hidden_layers = 3, units_per_layer=64, l2_reg=0.01):
+	def create_model(self, input_dim, num_hidden_layers = 3, units_per_layer=64, l2_reg=0.01):
 		# Construct Sequential Model
 		model = tf.keras.Sequential()
 
 		for i in range(num_hidden_layers):
 			if (i == 0):
-				model.add(layers.Dense(units_per_layer, activation='relu',  kernel_regularizer=tf.keras.regularizers.l2(l2_reg), input_shape=(dataset_dim,)))
+				model.add(layers.Dense(units_per_layer, activation='relu',  kernel_regularizer=tf.keras.regularizers.l2(l2_reg), input_shape=(input_dim,)))
 			else:
 				model.add(layers.Dense(units_per_layer, activation='relu',  kernel_regularizer=tf.keras.regularizers.l2(l2_reg)))			
 
