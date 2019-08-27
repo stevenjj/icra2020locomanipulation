@@ -179,6 +179,9 @@ namespace planner{
 
 
         // Feasibility function temporary variables 
+        Eigen::Vector3d feasibility_stance_foot_pos;
+        Eigen::Quaterniond feasibility_stance_foot_ori;
+
         double nn_stance_origin;
         double nn_manipulation_type;
 

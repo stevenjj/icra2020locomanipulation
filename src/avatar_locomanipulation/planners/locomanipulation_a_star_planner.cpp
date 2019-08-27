@@ -71,6 +71,28 @@ namespace planner{
   // Constructor
   LocomanipulationPlanner::LocomanipulationPlanner(){
     generateDiscretization();    
+
+    nn_stance_origin = CONTACT_TRANSITION_DATA_RIGHT_FOOT_STANCE; 
+    nn_manipulation_type = CONTACT_TRANSITION_DATA_RIGHT_HAND; 
+
+    feasibility_stance_foot_pos.setZero();
+    feasibility_stance_foot_ori.setIdentity();
+
+    nn_swing_foot_start_pos.setZero();
+    nn_swing_foot_start_ori.setIdentity();
+
+    nn_pelvis_pos.setZero();
+    nn_pelvis_ori.setIdentity();
+
+    nn_landing_foot_pos.setZero();
+    nn_landing_foot_ori.setIdentity();
+
+    nn_right_hand_start_pos.setZero();
+    nn_right_hand_start_ori.setIdentity();
+
+    nn_left_hand_start_pos.setZero();
+    nn_left_hand_start_ori.setIdentity();
+
   }
   void LocomanipulationPlanner::initializeLocomanipulationVariables(std::shared_ptr<RobotModel> robot_model_in, std::shared_ptr<ManipulationFunction> f_s_in, std::shared_ptr<ConfigTrajectoryGenerator> ctg_in){
     std::cout << "[LocomanipulationPlanner] Initialized robot model, f_s, and trajectory generation module" << std::endl;
@@ -293,25 +315,12 @@ namespace planner{
   double LocomanipulationPlanner::getFeasibility(shared_ptr<LMVertex> from_node, shared_ptr<LMVertex> to_node){
     bool left_step_taken = edgeHasStepTaken(from_node, to_node, LEFT_FOOTSTEP);
     bool right_step_taken = edgeHasStepTaken(from_node, to_node, RIGHT_FOOTSTEP);
+
+    bool step_taken = left_step_taken || right_step_taken;
     bool s_var_moved = edgeHasSVarMoved(from_node, to_node);
 
     nn_stance_origin = CONTACT_TRANSITION_DATA_RIGHT_FOOT_STANCE; 
     nn_manipulation_type = CONTACT_TRANSITION_DATA_RIGHT_HAND; 
-
-    nn_swing_foot_start_pos.setZero();
-    nn_swing_foot_start_ori.setIdentity();
-
-    nn_pelvis_pos.setZero();
-    nn_pelvis_ori.setIdentity();
-
-    nn_landing_foot_pos.setZero();
-    nn_landing_foot_ori.setIdentity();
-
-    nn_right_hand_start_pos.setZero();
-    nn_right_hand_start_ori.setIdentity();
-
-    nn_left_hand_start_pos.setZero();
-    nn_left_hand_start_ori.setIdentity();
 
     // Set starting pelvis pos and ori to the midfoot position
     nn_pelvis_pos = from_node->mid_foot.position;
@@ -319,52 +328,111 @@ namespace planner{
 
     // Which step is taken sets the stance origin
     if (left_step_taken){
+      // TODO: Make this a function which sets the stance, swing, and landing position
       // Set right foot stance origin
       nn_stance_origin = CONTACT_TRANSITION_DATA_RIGHT_FOOT_STANCE; 
+      feasibility_stance_foot_pos = from_node->right_foot.position;
+      feasibility_stance_foot_ori = from_node->right_foot.orientation;
 
       // Set the left foot swing start and landing poses
       nn_swing_foot_start_pos = from_node->left_foot.position;
       nn_swing_foot_start_ori = from_node->left_foot.orientation;
       nn_landing_foot_pos = to_node->left_foot.position;
-      nn_landing_foot_ori = to_node->left_foot.orientation
-;
+      nn_landing_foot_ori = to_node->left_foot.orientation;
+
     }else if (right_step_taken){
       // Set left foot stance origin
       nn_stance_origin = CONTACT_TRANSITION_DATA_LEFT_FOOT_STANCE;
+      feasibility_stance_foot_pos = from_node->left_foot.position;
+      feasibility_stance_foot_ori = from_node->left_foot.orientation;
 
       // Set the right foot swing start and landing poses
       nn_swing_foot_start_pos = from_node->right_foot.position;
       nn_swing_foot_start_ori = from_node->right_foot.orientation;
       nn_landing_foot_pos = to_node->right_foot.position;
       nn_landing_foot_ori = to_node->right_foot.orientation;
+
     }
-    // Remember to convert all the data to the stance frame
 
 
+    // TODO: Make this a function
     // manipulation function f_s sets the manipulation type
     if (nn_manipulation_type == CONTACT_TRANSITION_DATA_RIGHT_HAND){
       f_s->getPose(from_node->s, nn_right_hand_start_pos, nn_right_hand_start_ori);
+      nn_left_hand_start_pos.setZero();
+      nn_left_hand_start_ori.setIdentity();
     }else if (nn_manipulation_type == CONTACT_TRANSITION_DATA_LEFT_HAND){
       f_s->getPose(from_node->s, nn_left_hand_start_pos, nn_left_hand_start_ori);      
+      nn_right_hand_start_pos.setZero();
+      nn_right_hand_start_ori.setIdentity();
     }else if (nn_manipulation_type == CONTACT_TRANSITION_DATA_BOTH_HANDS){
       // not implemented
+      // f_s->getPose(from_node->s, nn_left_hand_start_pos, nn_left_hand_start_ori,
+      //                            nn_right_hand_start_pos, nn_right_hand_start_ori);      
+ 
     }
 
-    nn_feasibility_score = 0.0;
-    nn_prediction_score = 0.0;
+    nn_feasibility_score = 1.0;
+    nn_prediction_score = 1.0;
     nn_delta_s = 0.0;
-    // If the hand moves for this trajectory
-    if (s_var_moved){
+
+    // cases = {step_taken, no_steps} X {s_moved, s_constant} \ {(no_steps, s_constant)}
+
+    // Case 1: Step has been taken and the s variable did not move
+    if ((step_taken) && (!s_var_moved)){
+      // Convert all data to the stance frame
+
+      // Query the neural network classifier as normal
+      // nn_prediction_score =srv.response.y
+      nn_feasibility_score = nn_prediction_score;
+    }
+
+    // Case 2: Step has been taken and the s variable has moved    
+    else if ((step_taken) && (s_var_moved)){ 
+      // Convert all data to the stance frame
+
+      // Check feasibility for each s along the trajectory 
+      double s_local = 0.0;
       nn_delta_s =  (to_node->s - from_node->s);
-      // discretize 
-      // send query to the neural network classifier
 
-    }else{ // else, the hand has been kept in place during this stepping trajectory.
+      // For each s, check the neural network for feasibility. 
+      for(int i = 0; i < (N_s+1); i++){
+        s_local = from_node->s + (static_cast<double>(i)/static_cast<double>(N_s))*nn_delta_s;
+        // Update hand/s pose/s and convert to stance frame
+ 
+        // Query the neural network classifier 
 
-      // send query to the neural network classifier.
-      // score = feasibility
+        // Get sigmoid value
+        // nn_prediction_score =srv.response.y
+
+        // Keep track of the lowest result
+        if (nn_prediction_score < nn_feasibility_score){
+          nn_feasibility_score = nn_prediction_score;
+        }
+      }
 
     }
+
+    // Case 3: No step is taken and the s variable has moved
+    else if ((!step_taken) && (s_var_moved)){
+      // Try the feasibility for when the footstep is a left foot
+
+      // Set left footstep, right foot stance
+      // Convert all data to the stance frame
+      // Query NN 
+      
+      // Set the left foot swing start and landing poses
+      // Set right foot stance origin
+      nn_stance_origin = CONTACT_TRANSITION_DATA_RIGHT_FOOT_STANCE;
+
+      nn_swing_foot_start_pos = from_node->left_foot.position;
+      nn_swing_foot_start_ori = from_node->left_foot.orientation;
+      nn_landing_foot_pos = to_node->left_foot.position;
+      nn_landing_foot_ori = to_node->left_foot.orientation;
+
+    }
+
+
 
     return 0.0;
   }
