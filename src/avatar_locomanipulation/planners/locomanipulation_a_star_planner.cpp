@@ -455,7 +455,7 @@ namespace planner{
 
   // compute the feasibility score depending on edge type
   double LocomanipulationPlanner::getFeasibility(const shared_ptr<LMVertex> & from_node, const shared_ptr<LMVertex> & to_node){
-    std::cout << "Computing feasibility" << std::endl;
+    // std::cout << "Computing feasibility" << std::endl;
     bool left_step_taken = edgeHasStepTaken(from_node, to_node, LEFT_FOOTSTEP);
     bool right_step_taken = edgeHasStepTaken(from_node, to_node, RIGHT_FOOTSTEP);
 
@@ -553,8 +553,13 @@ namespace planner{
                                               + fabs(getAngle(neighbor_->right_foot.orientation) - getAngle(current_->right_foot.orientation)) ); 
     }
 
+    double feasibility_cost = 0.0; 
 
-    double delta_g = s_cost + distance_cost + step_cost + transition_distance_cost;
+    // if (use_classifier){
+    //   feasibility_cost =  w_feasibility*(1.0 - getFeasibility(current_, neighbor_));      
+    // }
+
+    double delta_g = s_cost + distance_cost + step_cost + transition_distance_cost + feasibility_cost;
 
     return delta_g;    
   }
@@ -762,14 +767,14 @@ namespace planner{
       } // End delta x for loop
     }  // End delta s for loop
 
-    std::cout << "number of landing foot neighbors = " << counter << std::endl;
+    // std::cout << "number of landing foot neighbors = " << counter << std::endl;
 
 
   }
 
 
   std::vector< std::shared_ptr<Node> > LocomanipulationPlanner::getNeighbors(shared_ptr<Node> & current){
-    std::cout << "Getting Neighbors" << std::endl;
+    // std::cout << "Getting Neighbors" << std::endl;
     current_ = static_pointer_cast<LMVertex>(current);  
     // Clear previous neighbor list
     neighbors.clear();
@@ -777,7 +782,7 @@ namespace planner{
     // Check if this is the first time get Neighbors is being evaluated. 
     bool convergence = false;
     if (first_node_evaluated){
-      std::cout << "Testing trajectory feasiblity for the current node" << std::endl;     
+      // std::cout << "Testing trajectory feasiblity for the current node" << std::endl;     
 
       parent_ = static_pointer_cast<LMVertex>(current_->parent);
       delta_s =  (current_->s - parent_->s);
@@ -790,7 +795,18 @@ namespace planner{
         input_footstep_list.push_back(current_->right_foot);        
       }
 
-      std::cout << "Feasibility Score = " << getFeasibility(parent_, current_) << std::endl;
+
+      if (use_classifier){
+        double feas_score = getFeasibility(parent_, current_);
+        if (print_classifier_results){
+          std::cout << "Feasibility Score = " << getFeasibility(parent_, current_) << std::endl;
+        }
+        // If the score is less than the treshold, don't bother with the computation
+        if (feas_score < feasibility_threshold){
+          return neighbors;
+        }      
+      }
+
 
       convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
                                                                   parent_->s, delta_s, 
