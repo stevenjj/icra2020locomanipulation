@@ -357,20 +357,41 @@ namespace planner{
     }
   }
 
+  // Assumes that the stance frame has already been set
   void LocomanipulationPlanner::setHandPoses(double s_value){
     // manipulation function f_s sets the manipulation type
     if (nn_manipulation_type == CONTACT_TRANSITION_DATA_RIGHT_HAND){
+      // Get the hand pose from the manipulation function
       f_s->getPose(s_value, nn_right_hand_start_pos, nn_right_hand_start_ori);
+
+      // Convert Right Hand to Stance Frame
+      convertWorldToStanceOrigin(nn_right_hand_start_pos, nn_right_hand_start_ori, tmp_pos, tmp_ori);
+      nn_right_hand_start_pos = tmp_pos; nn_right_hand_start_ori = tmp_ori;
+
+      // Zero out the left hand
       nn_left_hand_start_pos.setZero();
       nn_left_hand_start_ori.setIdentity();
     }else if (nn_manipulation_type == CONTACT_TRANSITION_DATA_LEFT_HAND){
+      // Get the hand pose from the manipulation function
       f_s->getPose(s_value, nn_left_hand_start_pos, nn_left_hand_start_ori);      
+
+      // Convert Left Hand to Stance Frame
+      convertWorldToStanceOrigin(nn_left_hand_start_pos, nn_left_hand_start_ori, tmp_pos, tmp_ori);
+      nn_left_hand_start_pos = tmp_pos; nn_left_hand_start_ori = tmp_ori;
+
       nn_right_hand_start_pos.setZero();
       nn_right_hand_start_ori.setIdentity();
     }else if (nn_manipulation_type == CONTACT_TRANSITION_DATA_BOTH_HANDS){
       // not implemented
       // f_s->getPose(s_value, nn_left_hand_start_pos, nn_left_hand_start_ori,
       //                            nn_right_hand_start_pos, nn_right_hand_start_ori);      
+
+      // Convert Right Hand to Stance Frame
+      convertWorldToStanceOrigin(nn_right_hand_start_pos, nn_right_hand_start_ori, tmp_pos, tmp_ori);
+      nn_right_hand_start_pos = tmp_pos; nn_right_hand_start_ori = tmp_ori;
+      // Convert Left Hand to Stance Frame
+      convertWorldToStanceOrigin(nn_left_hand_start_pos, nn_left_hand_start_ori, tmp_pos, tmp_ori);
+      nn_left_hand_start_pos = tmp_pos; nn_left_hand_start_ori = tmp_ori;
  
     }
   }
@@ -408,6 +429,16 @@ namespace planner{
     nn_feasibility_score = 1.0;
     nn_prediction_score = 1.0;
     nn_delta_s = 0.0;
+
+    // Convert Pelvis Pose to Stance Frame
+    convertWorldToStanceOrigin(nn_pelvis_pos, nn_pelvis_ori, tmp_pos, tmp_ori);
+    nn_pelvis_pos = tmp_pos; nn_pelvis_ori = tmp_ori;
+    // Convert Starting Swing to Stance Frame
+    convertWorldToStanceOrigin(nn_swing_foot_start_pos, nn_swing_foot_start_ori, tmp_pos, tmp_ori);
+    nn_swing_foot_start_pos = tmp_pos; nn_swing_foot_start_ori = tmp_ori;
+    // Convert Landing Foot to Stance Frame
+    convertWorldToStanceOrigin(nn_landing_foot_pos, nn_landing_foot_ori, tmp_pos, tmp_ori);
+    nn_landing_foot_pos = tmp_pos; nn_landing_foot_ori = tmp_ori;
 
     // Cartesian Product between whether or not there are steps and whether or not s has moved.
     //    do not consider the case when there are no footsteps and no s changes 

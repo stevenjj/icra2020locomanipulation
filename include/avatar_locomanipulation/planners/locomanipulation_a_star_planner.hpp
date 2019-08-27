@@ -183,7 +183,9 @@ namespace planner{
         void setSwingFoot(const shared_ptr<LMVertex> & from_node, const shared_ptr<LMVertex> & to_node, const int robot_side);
 
         // Sets the hand poses for the neural network input based on the manipulation function and an input s
-        // assumes that nn_manipulation_type has already been set
+        // Assumes that nn_manipulation_type has already been set
+        // Assumes that the stance frame has already been set
+
         void setHandPoses(double s_value);
 
      // Convert world to stance frame defined by feasibility_stance_foot_pos and feasibility_stance_foot_ori
