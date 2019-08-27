@@ -174,7 +174,11 @@ namespace planner{
         bool edgeHasSVarMoved(shared_ptr<LMVertex> from_node, shared_ptr<LMVertex> to_node);
 
         // Computes the feasibility between two nodes
-        double getFeasibility(shared_ptr<LMVertex> from_node, shared_ptr<LMVertex> to_node);
+        double getFeasibility(const shared_ptr<LMVertex> & from_node,const shared_ptr<LMVertex> & to_node);
+
+
+        // Sets the NN variables for the stance foot, swing foot, and pelvis
+        void setStanceSwingPelvisNNVariables(const shared_ptr<LMVertex> & from_node, const shared_ptr<LMVertex> & to_node, int robot_side);
 
 
         // Sets the stance foot for the neural network input 
@@ -185,12 +189,15 @@ namespace planner{
         // Sets the hand poses for the neural network input based on the manipulation function and an input s
         // Assumes that nn_manipulation_type has already been set
         // Assumes that the stance frame has already been set
-
         void setHandPoses(double s_value);
 
-     // Convert world to stance frame defined by feasibility_stance_foot_pos and feasibility_stance_foot_ori
+         // Convert world to stance frame defined by feasibility_stance_foot_pos and feasibility_stance_foot_ori
         void convertWorldToStanceOrigin(const Eigen::Vector3d & pos_in, const Eigen::Quaterniond & ori_in,
                                                                        Eigen::Vector3d & pos_out, Eigen::Quaterniond & ori_out);
+
+        // Assumes NN variables have been set except for the hand pose.
+        // Queries the NN for feasibility along the s trajectory
+        void computeHandTrajectoryFeasibility(const shared_ptr<LMVertex> & from_node, const shared_ptr<LMVertex> & to_node);
 
         // Feasibility function temporary variables 
         Eigen::Vector3d feasibility_stance_foot_pos;

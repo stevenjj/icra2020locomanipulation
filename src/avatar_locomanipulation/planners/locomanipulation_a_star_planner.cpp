@@ -359,7 +359,10 @@ namespace planner{
 
   // Assumes that the stance frame has already been set
   void LocomanipulationPlanner::setHandPoses(double s_value){
-    // manipulation function f_s sets the manipulation type
+    // TODO: manipulation function f_s should be setting the manipulation type
+    nn_manipulation_type = CONTACT_TRANSITION_DATA_RIGHT_HAND; 
+
+
     if (nn_manipulation_type == CONTACT_TRANSITION_DATA_RIGHT_HAND){
       // Get the hand pose from the manipulation function
       f_s->getPose(s_value, nn_right_hand_start_pos, nn_right_hand_start_ori);
@@ -396,39 +399,23 @@ namespace planner{
     }
   }
 
-  // compute the feasibility score depending on edge type
-  double LocomanipulationPlanner::getFeasibility(shared_ptr<LMVertex> from_node, shared_ptr<LMVertex> to_node){
-    bool left_step_taken = edgeHasStepTaken(from_node, to_node, LEFT_FOOTSTEP);
-    bool right_step_taken = edgeHasStepTaken(from_node, to_node, RIGHT_FOOTSTEP);
-
-    bool step_taken = left_step_taken || right_step_taken;
-    bool s_var_moved = edgeHasSVarMoved(from_node, to_node);
-
-    nn_stance_origin = CONTACT_TRANSITION_DATA_RIGHT_FOOT_STANCE; 
-    nn_manipulation_type = CONTACT_TRANSITION_DATA_RIGHT_HAND; 
-
+  void LocomanipulationPlanner::setStanceSwingPelvisNNVariables(const shared_ptr<LMVertex> & from_node, const shared_ptr<LMVertex> & to_node, int robot_side){
     // Add constant height offset for the pelvis z direction from the midfoot:
     Eigen::Vector3d pelvis_dz(0.0, 0.0, nn_starting_pelvis_height);
     nn_pelvis_pos = from_node->mid_foot.position + from_node->mid_foot.R_ori*pelvis_dz;
     // Set starting pelvis ori to the midfoot orientation
     nn_pelvis_ori = from_node->mid_foot.orientation;
 
-    // Which step is taken sets the stance and swing feet
-    if (left_step_taken){
+    // Set Variables for a left footstep
+    if (robot_side == LEFT_FOOTSTEP){
       setSwingFoot(from_node, to_node, LEFT_FOOTSTEP);
-      setStanceFoot(from_node, RIGHT_FOOTSTEP);
-    }else if (right_step_taken){
+      setStanceFoot(from_node, RIGHT_FOOTSTEP);      
+    } // Otherwise set it for a right footstep
+
+    if (robot_side == RIGHT_FOOTSTEP){
       setSwingFoot(from_node, to_node, RIGHT_FOOTSTEP);
       setStanceFoot(from_node, LEFT_FOOTSTEP);
     }
-
-    // set the hand poses
-    setHandPoses(from_node->s);
-
-    // initialize the feasibility score, prediction score and delta_s
-    nn_feasibility_score = 1.0;
-    nn_prediction_score = 1.0;
-    nn_delta_s = 0.0;
 
     // Convert Pelvis Pose to Stance Frame
     convertWorldToStanceOrigin(nn_pelvis_pos, nn_pelvis_ori, tmp_pos, tmp_ori);
@@ -438,68 +425,97 @@ namespace planner{
     nn_swing_foot_start_pos = tmp_pos; nn_swing_foot_start_ori = tmp_ori;
     // Convert Landing Foot to Stance Frame
     convertWorldToStanceOrigin(nn_landing_foot_pos, nn_landing_foot_ori, tmp_pos, tmp_ori);
-    nn_landing_foot_pos = tmp_pos; nn_landing_foot_ori = tmp_ori;
+    nn_landing_foot_pos = tmp_pos; nn_landing_foot_ori = tmp_ori;      
+
+  }
+
+  void LocomanipulationPlanner::computeHandTrajectoryFeasibility(const shared_ptr<LMVertex> & from_node, const shared_ptr<LMVertex> & to_node){
+    // Check feasibility for each s along the trajectory 
+    double s_local = 0.0;
+    nn_delta_s =  (to_node->s - from_node->s);
+
+    // For each s, check the neural network for feasibility. 
+    for(int i = 0; i < (N_s+1); i++){
+      s_local = from_node->s + (static_cast<double>(i)/static_cast<double>(N_s))*nn_delta_s;
+      // Update hand/s pose/s and convert to stance frame
+      setHandPoses(s_local);
+
+      // Query the neural network classifier 
+      // nn_prediction_score =srv.response.y
+
+      // Keep track of the lowest result
+      if (nn_prediction_score < nn_feasibility_score){
+        nn_feasibility_score = nn_prediction_score;
+      }
+    }    
+  }
+
+  // compute the feasibility score depending on edge type
+  double LocomanipulationPlanner::getFeasibility(const shared_ptr<LMVertex> & from_node, const shared_ptr<LMVertex> & to_node){
+    bool left_step_taken = edgeHasStepTaken(from_node, to_node, LEFT_FOOTSTEP);
+    bool right_step_taken = edgeHasStepTaken(from_node, to_node, RIGHT_FOOTSTEP);
+
+    bool step_taken = left_step_taken || right_step_taken;
+    bool s_var_moved = edgeHasSVarMoved(from_node, to_node);
+
+    // Reset feasibility and prediction scores
+    nn_feasibility_score = 1.0;
+    nn_prediction_score = 0.0;
 
     // Cartesian Product between whether or not there are steps and whether or not s has moved.
     //    do not consider the case when there are no footsteps and no s changes 
     // cases = {step_taken, no_steps} X {s_moved, s_constant} \ {(no_steps, s_constant)}
 
-    // Case 1: Step has been taken and the s variable did not move
+    // Case 1: Step has been taken and the s variable did not move-----------------------------------------------------
     if ((step_taken) && (!s_var_moved)){
-      // Convert all data to the stance frame
+      // Set NN variables based on which step was taken
+      if (left_step_taken){
+        setStanceSwingPelvisNNVariables(from_node, to_node, LEFT_FOOTSTEP);        
+      }else if (right_step_taken){
+        setStanceSwingPelvisNNVariables(from_node, to_node, RIGHT_FOOTSTEP);                
+      }
+
+      // set the hand pose to the start
+      setHandPoses(from_node->s);
       // Query the neural network classifier as normal
       // nn_prediction_score =srv.response.y
       nn_feasibility_score = nn_prediction_score;
     }
 
-    // Case 2: Step has been taken and the s variable has moved    
+    // Case 2: Step has been taken and the s variable has moved--------------------------------------------------------  
     else if ((step_taken) && (s_var_moved)){ 
-      // Convert all data to the stance frame
-
-      // Check feasibility for each s along the trajectory 
-      double s_local = 0.0;
-      nn_delta_s =  (to_node->s - from_node->s);
-
-      // For each s, check the neural network for feasibility. 
-      for(int i = 0; i < (N_s+1); i++){
-        s_local = from_node->s + (static_cast<double>(i)/static_cast<double>(N_s))*nn_delta_s;
-        // Update hand/s pose/s and convert to stance frame
- 
-        // Query the neural network classifier 
-
-        // Get sigmoid value
-        // nn_prediction_score =srv.response.y
-
-        // Keep track of the lowest result
-        if (nn_prediction_score < nn_feasibility_score){
-          nn_feasibility_score = nn_prediction_score;
-        }
+      // Set NN variables based on which step was taken
+      if (left_step_taken){
+        setStanceSwingPelvisNNVariables(from_node, to_node, LEFT_FOOTSTEP);        
+      }else if (right_step_taken){
+        setStanceSwingPelvisNNVariables(from_node, to_node, RIGHT_FOOTSTEP);                
       }
 
+      // Compute min feasibility score from the hand trajectory while taking a step
+      computeHandTrajectoryFeasibility(from_node, to_node);
+
     }
 
-    // Case 3: No step is taken and the s variable has moved
+    // Case 3: No step is taken and the s variable has moved-----------------------------------------------------------
     else if ((!step_taken) && (s_var_moved)){
-      // Try the feasibility for when the footstep is a left foot
+      // We want to compute the locomanipulability of this hand configuration by asking whether or not 
+      // it's possible to take footstep in place while keeping the hand in place. Do this over the discretization of s
 
-      // Set left footstep, right foot stance
-      // Convert all data to the stance frame
-      // Query NN 
-      
-      // Set the left foot swing start and landing poses
-      // Set right foot stance origin
-      nn_stance_origin = CONTACT_TRANSITION_DATA_RIGHT_FOOT_STANCE;
+      // Compute min feasibility score of the hand trajectory while taking an in place right footstep
+      setStanceSwingPelvisNNVariables(from_node, from_node, RIGHT_FOOTSTEP);        
+      computeHandTrajectoryFeasibility(from_node, to_node);
 
-      nn_swing_foot_start_pos = from_node->left_foot.position;
-      nn_swing_foot_start_ori = from_node->left_foot.orientation;
-      nn_landing_foot_pos = from_node->left_foot.position;
-      nn_landing_foot_ori = from_node->left_foot.orientation;
-
+      // Using the same feasibility score, 
+      // Compute min feasibility score of the hand trajectory while taking an in place left footstep
+      setStanceSwingPelvisNNVariables(from_node, from_node, LEFT_FOOTSTEP);
+      computeHandTrajectoryFeasibility(from_node, to_node);
+    }else{
+      std::cout << "Error. No step has been taken and the s variable did not move. Something must be wrong with the neighbor generation or the edge type transition checks " << std::endl;
     }
 
 
 
-    return 0.0;
+    return nn_feasibility_score;
   }
 
 
