@@ -278,6 +278,8 @@ namespace planner{
       current_ = static_pointer_cast<LMVertex>(forward_order_optimal_path[i]);
       parent_ = static_pointer_cast<LMVertex>(current_->parent);
 
+      std::cout << "Feasibility Score = " << getFeasibility(parent_, current_) << std::endl;
+
       // Update the input footstep list
       input_footstep_list.clear();
       // Check if a left or right footstep is taken
@@ -453,6 +455,7 @@ namespace planner{
 
   // compute the feasibility score depending on edge type
   double LocomanipulationPlanner::getFeasibility(const shared_ptr<LMVertex> & from_node, const shared_ptr<LMVertex> & to_node){
+    std::cout << "Computing feasibility" << std::endl;
     bool left_step_taken = edgeHasStepTaken(from_node, to_node, LEFT_FOOTSTEP);
     bool right_step_taken = edgeHasStepTaken(from_node, to_node, RIGHT_FOOTSTEP);
 
@@ -786,8 +789,8 @@ namespace planner{
       }else if (edgeHasStepTaken(parent_, current_, RIGHT_FOOTSTEP)){
         input_footstep_list.push_back(current_->right_foot);        
       }
-      
-      edgeHasSVarMoved(parent_, current_);
+
+      std::cout << "Feasibility Score = " << getFeasibility(parent_, current_) << std::endl;
 
       convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
                                                                   parent_->s, delta_s, 
@@ -798,9 +801,9 @@ namespace planner{
       // If it converges, update the configuration of the current node
       if (convergence){
         // Get the final configuration.
-        std::cout << "Current node is feasible. Updating q_tmp" << std::endl;     
+        // std::cout << "Current node is feasible. Updating q_tmp" << std::endl;     
         ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_tmp);
-        std::cout << "q_tmp = " << q_tmp.transpose() << std::endl;
+        // std::cout << "q_tmp = " << q_tmp.transpose() << std::endl;
         current_->setRobotConfig(q_tmp);
       }else{
         // If it does not converge, return an empty neighbor list       
