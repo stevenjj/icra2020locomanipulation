@@ -122,8 +122,13 @@ namespace planner{
 
     // Update the robot model with the starting node initial configuration
     robot_model->updateFullKinematics(begin_lmv->q_init);
+    // Set the starting pelvis height
+    nn_starting_pelvis_height = begin_lmv->q_init[2]; // Get the z height of the pelvis
+
     Eigen::Vector3d foot_pos;
     Eigen::Quaterniond foot_ori;
+
+
 
     // Set the right foot position 
     robot_model->getFrameWorldPose("rightCOP_Frame", foot_pos, foot_ori);
@@ -183,18 +188,26 @@ namespace planner{
 
   // Converts the input position and orientation 
   // from the world frame to the planner frame
-  void LocomanipulationPlanner::convertWorldToPlannerOrigin(const Eigen::Vector3d & pos_in, const Eigen::Quaterniond ori_in,
+  void LocomanipulationPlanner::convertWorldToPlannerOrigin(const Eigen::Vector3d & pos_in, const Eigen::Quaterniond & ori_in,
                                                             Eigen::Vector3d & pos_out, Eigen::Quaterniond & ori_out){
     pos_out = R_planner_origin_transpose*(pos_in - planner_origin_pos);
     ori_out = planner_origin_ori.inverse()*ori_in;
   }
   // Converts the input position and orientation 
   // from the planner frame to the world frame
-  void LocomanipulationPlanner::convertPlannerToWorldOrigin(const Eigen::Vector3d & pos_in, const Eigen::Quaterniond ori_in,
+  void LocomanipulationPlanner::convertPlannerToWorldOrigin(const Eigen::Vector3d & pos_in, const Eigen::Quaterniond & ori_in,
                                                             Eigen::Vector3d & pos_out, Eigen::Quaterniond & ori_out){
 
     pos_out = R_planner_origin*pos_in + planner_origin_pos;
     ori_out = planner_origin_ori*ori_in;
+  }
+
+
+  // Convert world to stance frame defined by feasibility_stance_foot_pos and feasibility_stance_foot_ori
+  void LocomanipulationPlanner::convertWorldToStanceOrigin(const Eigen::Vector3d & pos_in, const Eigen::Quaterniond & ori_in,
+                                                            Eigen::Vector3d & pos_out, Eigen::Quaterniond & ori_out){
+    pos_out = R_stance_origin_transpose*(pos_in - feasibility_stance_foot_pos);
+    ori_out = feasibility_stance_foot_ori.inverse()*ori_in;
   }
 
 
@@ -316,11 +329,16 @@ namespace planner{
       nn_stance_origin = CONTACT_TRANSITION_DATA_LEFT_FOOT_STANCE;
       feasibility_stance_foot_pos = from_node->left_foot.position;
       feasibility_stance_foot_ori = from_node->left_foot.orientation;
+      // Set the rotation matrix
+      R_stance_origin = from_node->left_foot.R_ori;
     }else if (robot_side == RIGHT_FOOTSTEP){
       nn_stance_origin = CONTACT_TRANSITION_DATA_RIGHT_FOOT_STANCE; 
       feasibility_stance_foot_pos = from_node->right_foot.position;
       feasibility_stance_foot_ori = from_node->right_foot.orientation;
+      // Set the rotation matrix
+      R_stance_origin = from_node->right_foot.R_ori;
     }
+      R_stance_origin_transpose = R_stance_origin.transpose();
   }
 
   void LocomanipulationPlanner::setSwingFoot(const shared_ptr<LMVertex> & from_node, const shared_ptr<LMVertex> & to_node, const int robot_side){
@@ -339,6 +357,24 @@ namespace planner{
     }
   }
 
+  void LocomanipulationPlanner::setHandPoses(double s_value){
+    // manipulation function f_s sets the manipulation type
+    if (nn_manipulation_type == CONTACT_TRANSITION_DATA_RIGHT_HAND){
+      f_s->getPose(s_value, nn_right_hand_start_pos, nn_right_hand_start_ori);
+      nn_left_hand_start_pos.setZero();
+      nn_left_hand_start_ori.setIdentity();
+    }else if (nn_manipulation_type == CONTACT_TRANSITION_DATA_LEFT_HAND){
+      f_s->getPose(s_value, nn_left_hand_start_pos, nn_left_hand_start_ori);      
+      nn_right_hand_start_pos.setZero();
+      nn_right_hand_start_ori.setIdentity();
+    }else if (nn_manipulation_type == CONTACT_TRANSITION_DATA_BOTH_HANDS){
+      // not implemented
+      // f_s->getPose(s_value, nn_left_hand_start_pos, nn_left_hand_start_ori,
+      //                            nn_right_hand_start_pos, nn_right_hand_start_ori);      
+ 
+    }
+  }
+
   // compute the feasibility score depending on edge type
   double LocomanipulationPlanner::getFeasibility(shared_ptr<LMVertex> from_node, shared_ptr<LMVertex> to_node){
     bool left_step_taken = edgeHasStepTaken(from_node, to_node, LEFT_FOOTSTEP);
@@ -350,8 +386,10 @@ namespace planner{
     nn_stance_origin = CONTACT_TRANSITION_DATA_RIGHT_FOOT_STANCE; 
     nn_manipulation_type = CONTACT_TRANSITION_DATA_RIGHT_HAND; 
 
-    // Set starting pelvis pos and ori to the midfoot position
-    nn_pelvis_pos = from_node->mid_foot.position;
+    // Add constant height offset for the pelvis z direction from the midfoot:
+    Eigen::Vector3d pelvis_dz(0.0, 0.0, nn_starting_pelvis_height);
+    nn_pelvis_pos = from_node->mid_foot.position + from_node->mid_foot.R_ori*pelvis_dz;
+    // Set starting pelvis ori to the midfoot orientation
     nn_pelvis_ori = from_node->mid_foot.orientation;
 
     // Which step is taken sets the stance and swing feet
@@ -363,33 +401,21 @@ namespace planner{
       setStanceFoot(from_node, LEFT_FOOTSTEP);
     }
 
-    // TODO: Make this a function
-    // manipulation function f_s sets the manipulation type
-    if (nn_manipulation_type == CONTACT_TRANSITION_DATA_RIGHT_HAND){
-      f_s->getPose(from_node->s, nn_right_hand_start_pos, nn_right_hand_start_ori);
-      nn_left_hand_start_pos.setZero();
-      nn_left_hand_start_ori.setIdentity();
-    }else if (nn_manipulation_type == CONTACT_TRANSITION_DATA_LEFT_HAND){
-      f_s->getPose(from_node->s, nn_left_hand_start_pos, nn_left_hand_start_ori);      
-      nn_right_hand_start_pos.setZero();
-      nn_right_hand_start_ori.setIdentity();
-    }else if (nn_manipulation_type == CONTACT_TRANSITION_DATA_BOTH_HANDS){
-      // not implemented
-      // f_s->getPose(from_node->s, nn_left_hand_start_pos, nn_left_hand_start_ori,
-      //                            nn_right_hand_start_pos, nn_right_hand_start_ori);      
- 
-    }
+    // set the hand poses
+    setHandPoses(from_node->s);
 
+    // initialize the feasibility score, prediction score and delta_s
     nn_feasibility_score = 1.0;
     nn_prediction_score = 1.0;
     nn_delta_s = 0.0;
 
+    // Cartesian Product between whether or not there are steps and whether or not s has moved.
+    //    do not consider the case when there are no footsteps and no s changes 
     // cases = {step_taken, no_steps} X {s_moved, s_constant} \ {(no_steps, s_constant)}
 
     // Case 1: Step has been taken and the s variable did not move
     if ((step_taken) && (!s_var_moved)){
       // Convert all data to the stance frame
-
       // Query the neural network classifier as normal
       // nn_prediction_score =srv.response.y
       nn_feasibility_score = nn_prediction_score;

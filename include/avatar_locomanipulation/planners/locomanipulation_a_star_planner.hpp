@@ -150,11 +150,11 @@ namespace planner{
     private:
         // Converts the input position and orientation 
         // from the world frame to the planner frame
-        void convertWorldToPlannerOrigin(const Eigen::Vector3d & pos_in, const Eigen::Quaterniond ori_in,
+        void convertWorldToPlannerOrigin(const Eigen::Vector3d & pos_in, const Eigen::Quaterniond & ori_in,
                                     Eigen::Vector3d & pos_out, Eigen::Quaterniond & ori_out);
         // Converts the input position and orientation 
         // from the planner frame to the world frame
-        void convertPlannerToWorldOrigin(const Eigen::Vector3d & pos_in, const Eigen::Quaterniond ori_in,
+        void convertPlannerToWorldOrigin(const Eigen::Vector3d & pos_in, const Eigen::Quaterniond & ori_in,
                                     Eigen::Vector3d & pos_out, Eigen::Quaterniond & ori_out);
 
         bool withinKinematicBounds(Footstep & stance_foot, Eigen::Vector3d & landing_pos, Eigen::Quaterniond & landing_ori);
@@ -177,17 +177,29 @@ namespace planner{
         double getFeasibility(shared_ptr<LMVertex> from_node, shared_ptr<LMVertex> to_node);
 
 
-        // Sets the swing foot
+        // Sets the stance foot for the neural network input 
         void setStanceFoot(const shared_ptr<LMVertex> & from_node, const int robot_side);
+        // Sets the swing foot for the neural network input
         void setSwingFoot(const shared_ptr<LMVertex> & from_node, const shared_ptr<LMVertex> & to_node, const int robot_side);
 
+        // Sets the hand poses for the neural network input based on the manipulation function and an input s
+        // assumes that nn_manipulation_type has already been set
+        void setHandPoses(double s_value);
+
+     // Convert world to stance frame defined by feasibility_stance_foot_pos and feasibility_stance_foot_ori
+        void convertWorldToStanceOrigin(const Eigen::Vector3d & pos_in, const Eigen::Quaterniond & ori_in,
+                                                                       Eigen::Vector3d & pos_out, Eigen::Quaterniond & ori_out);
 
         // Feasibility function temporary variables 
         Eigen::Vector3d feasibility_stance_foot_pos;
         Eigen::Quaterniond feasibility_stance_foot_ori;
+        Eigen::Matrix3d R_stance_origin;
+        Eigen::Matrix3d R_stance_origin_transpose;      
 
-        double nn_stance_origin;
-        double nn_manipulation_type;
+        double nn_starting_pelvis_height = 0.0;
+
+        int nn_stance_origin;
+        int nn_manipulation_type;
 
         Eigen::Vector3d nn_swing_foot_start_pos;
         Eigen::Quaterniond nn_swing_foot_start_ori;
