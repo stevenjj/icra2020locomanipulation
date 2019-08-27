@@ -311,6 +311,34 @@ namespace planner{
 
   }
 
+  void LocomanipulationPlanner::setStanceFoot(const shared_ptr<LMVertex> & from_node, const int robot_side){
+    if (robot_side == LEFT_FOOTSTEP){
+      nn_stance_origin = CONTACT_TRANSITION_DATA_LEFT_FOOT_STANCE;
+      feasibility_stance_foot_pos = from_node->left_foot.position;
+      feasibility_stance_foot_ori = from_node->left_foot.orientation;
+    }else if (robot_side == RIGHT_FOOTSTEP){
+      nn_stance_origin = CONTACT_TRANSITION_DATA_RIGHT_FOOT_STANCE; 
+      feasibility_stance_foot_pos = from_node->right_foot.position;
+      feasibility_stance_foot_ori = from_node->right_foot.orientation;
+    }
+  }
+
+  void LocomanipulationPlanner::setSwingFoot(const shared_ptr<LMVertex> & from_node, const shared_ptr<LMVertex> & to_node, const int robot_side){
+    if (robot_side == LEFT_FOOTSTEP){
+      // Set the left foot swing start and landing poses
+      nn_swing_foot_start_pos = from_node->left_foot.position;
+      nn_swing_foot_start_ori = from_node->left_foot.orientation;
+      nn_landing_foot_pos = to_node->left_foot.position;
+      nn_landing_foot_ori = to_node->left_foot.orientation;
+    }else if (robot_side == RIGHT_FOOTSTEP){
+      // Set the right foot swing start and landing poses
+      nn_swing_foot_start_pos = from_node->right_foot.position;
+      nn_swing_foot_start_ori = from_node->right_foot.orientation;
+      nn_landing_foot_pos = to_node->right_foot.position;
+      nn_landing_foot_ori = to_node->right_foot.orientation;
+    }
+  }
+
   // compute the feasibility score depending on edge type
   double LocomanipulationPlanner::getFeasibility(shared_ptr<LMVertex> from_node, shared_ptr<LMVertex> to_node){
     bool left_step_taken = edgeHasStepTaken(from_node, to_node, LEFT_FOOTSTEP);
@@ -326,34 +354,14 @@ namespace planner{
     nn_pelvis_pos = from_node->mid_foot.position;
     nn_pelvis_ori = from_node->mid_foot.orientation;
 
-    // Which step is taken sets the stance origin
+    // Which step is taken sets the stance and swing feet
     if (left_step_taken){
-      // TODO: Make this a function which sets the stance, swing, and landing position
-      // Set right foot stance origin
-      nn_stance_origin = CONTACT_TRANSITION_DATA_RIGHT_FOOT_STANCE; 
-      feasibility_stance_foot_pos = from_node->right_foot.position;
-      feasibility_stance_foot_ori = from_node->right_foot.orientation;
-
-      // Set the left foot swing start and landing poses
-      nn_swing_foot_start_pos = from_node->left_foot.position;
-      nn_swing_foot_start_ori = from_node->left_foot.orientation;
-      nn_landing_foot_pos = to_node->left_foot.position;
-      nn_landing_foot_ori = to_node->left_foot.orientation;
-
+      setSwingFoot(from_node, to_node, LEFT_FOOTSTEP);
+      setStanceFoot(from_node, RIGHT_FOOTSTEP);
     }else if (right_step_taken){
-      // Set left foot stance origin
-      nn_stance_origin = CONTACT_TRANSITION_DATA_LEFT_FOOT_STANCE;
-      feasibility_stance_foot_pos = from_node->left_foot.position;
-      feasibility_stance_foot_ori = from_node->left_foot.orientation;
-
-      // Set the right foot swing start and landing poses
-      nn_swing_foot_start_pos = from_node->right_foot.position;
-      nn_swing_foot_start_ori = from_node->right_foot.orientation;
-      nn_landing_foot_pos = to_node->right_foot.position;
-      nn_landing_foot_ori = to_node->right_foot.orientation;
-
+      setSwingFoot(from_node, to_node, RIGHT_FOOTSTEP);
+      setStanceFoot(from_node, LEFT_FOOTSTEP);
     }
-
 
     // TODO: Make this a function
     // manipulation function f_s sets the manipulation type
@@ -427,8 +435,8 @@ namespace planner{
 
       nn_swing_foot_start_pos = from_node->left_foot.position;
       nn_swing_foot_start_ori = from_node->left_foot.orientation;
-      nn_landing_foot_pos = to_node->left_foot.position;
-      nn_landing_foot_ori = to_node->left_foot.orientation;
+      nn_landing_foot_pos = from_node->left_foot.position;
+      nn_landing_foot_ori = from_node->left_foot.orientation;
 
     }
 

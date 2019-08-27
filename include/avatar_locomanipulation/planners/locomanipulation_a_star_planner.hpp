@@ -177,6 +177,10 @@ namespace planner{
         double getFeasibility(shared_ptr<LMVertex> from_node, shared_ptr<LMVertex> to_node);
 
 
+        // Sets the swing foot
+        void setStanceFoot(const shared_ptr<LMVertex> & from_node, const int robot_side);
+        void setSwingFoot(const shared_ptr<LMVertex> & from_node, const shared_ptr<LMVertex> & to_node, const int robot_side);
+
 
         // Feasibility function temporary variables 
         Eigen::Vector3d feasibility_stance_foot_pos;
