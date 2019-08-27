@@ -326,8 +326,8 @@ namespace planner{
       nn_swing_foot_start_pos = from_node->left_foot.position;
       nn_swing_foot_start_ori = from_node->left_foot.orientation;
       nn_landing_foot_pos = to_node->left_foot.position;
-      nn_landing_foot_ori = to_node->left_foot.orientation;
-
+      nn_landing_foot_ori = to_node->left_foot.orientation
+;
     }else if (right_step_taken){
       // Set left foot stance origin
       nn_stance_origin = CONTACT_TRANSITION_DATA_LEFT_FOOT_STANCE;
@@ -342,8 +342,6 @@ namespace planner{
 
 
     // manipulation function f_s sets the manipulation type
-
-
     if (nn_manipulation_type == CONTACT_TRANSITION_DATA_RIGHT_HAND){
       f_s->getPose(from_node->s, nn_right_hand_start_pos, nn_right_hand_start_ori);
     }else if (nn_manipulation_type == CONTACT_TRANSITION_DATA_LEFT_HAND){
@@ -352,13 +350,19 @@ namespace planner{
       // not implemented
     }
 
-
-
+    nn_feasibility_score = 0.0;
+    nn_prediction_score = 0.0;
+    nn_delta_s = 0.0;
     // If the hand moves for this trajectory
     if (s_var_moved){
+      nn_delta_s =  (to_node->s - from_node->s);
       // discretize 
+      // send query to the neural network classifier
 
     }else{ // else, the hand has been kept in place during this stepping trajectory.
+
+      // send query to the neural network classifier.
+      // score = feasibility
 
     }
 
