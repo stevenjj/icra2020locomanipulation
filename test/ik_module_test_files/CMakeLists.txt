@@ -4,9 +4,9 @@
 # add_executable(test_ik_selfcollision test_ik_selfcollision.cpp ${PROJECT_SOURCES})
 # add_executable(test_prioritized_ik test_prioritized_ik.cpp ${PROJECT_SOURCES})
 # add_executable(test_walking_pattern_generator test_walking_pattern_generator.cpp ${PROJECT_SOURCES})
-add_executable(test_ik_multipleobject test_ik_multipleobject.cpp ${PROJECT_SOURCES})
+# add_executable(test_ik_multipleobject test_ik_multipleobject.cpp ${PROJECT_SOURCES})
 # add_executable(test_ik_multipleobject_idea1 test_ik_multipleobject_idea1.cpp ${PROJECT_SOURCES})
-
+add_executable(test_ik_self_object test_ik_self_object.cpp ${PROJECT_SOURCES})
 
 # target_link_libraries(test_config_trajectory_generator ${PROJECT_LIBRARIES})
 # target_link_libraries(test_ik_module ${PROJECT_LIBRARIES})
@@ -14,5 +14,6 @@ add_executable(test_ik_multipleobject test_ik_multipleobject.cpp ${PROJECT_SOURC
 # target_link_libraries(test_ik_selfcollision ${PROJECT_LIBRARIES})
 # target_link_libraries(test_prioritized_ik ${PROJECT_LIBRARIES})
 # target_link_libraries(test_walking_pattern_generator ${PROJECT_LIBRARIES})
-target_link_libraries(test_ik_multipleobject ${PROJECT_LIBRARIES})
+#target_link_libraries(test_ik_multipleobject ${PROJECT_LIBRARIES})
 # target_link_libraries(test_ik_multipleobject_idea1 ${PROJECT_LIBRARIES})
+target_link_libraries(test_ik_self_object ${PROJECT_LIBRARIES})

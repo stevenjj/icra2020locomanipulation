@@ -173,10 +173,14 @@ void CollisionEnvironment::build_self_directed_vectors(const std::string & frame
   Eigen::Vector3d difference;
 
   std::string to_link = frame_name + "_0"; // Pinocchio Convention has _0 after collision links
-
+  // std::cout << "ce1\n";
+  // std::cout << object_q_counter << std::endl;
+  // std::cout << "appended->model.nq: " << appended->model.nq << std::endl;
   // Update the robot config for the given step of IK iteration
+  int l=0;
   for(int j=object_q_counter; j<appended->q_current.size(); ++j){
-    appended->q_current[j] = q_update[j];
+    appended->q_current[j] = q_update[l];
+    ++l;
   }
   // Update full kinematics
   appended->enableUpdateGeomOnKinematicsUpdate(true);

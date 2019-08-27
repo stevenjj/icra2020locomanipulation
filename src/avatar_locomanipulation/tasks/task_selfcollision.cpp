@@ -120,11 +120,10 @@ void TaskSelfCollision::computeError(){
  	collision_env->directed_vectors.clear();
 
  	collision_env->build_self_directed_vectors(frame_name, robot_model->q_current);
-	
+
  	double V = collision_env->get_collision_potential();
 
 	error_[0] = kp_task_gain_*V;
-	std::cout << "error_[0]: " << error_[0] << std::endl;
 
 }
 
