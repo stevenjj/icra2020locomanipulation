@@ -108,7 +108,6 @@ void TaskObjectCollision::computeError(){
  	double V = collision_env->get_collision_potential();
 
 	error_[0] = kp_task_gain_*V;
-	std::cout << "error_[0]: " << error_[0] << std::endl;
 }
 
 // Computes the error for a given reference
