@@ -1,6 +1,9 @@
 #ifndef ALM_LOCOMANIPULATION_A_STAR_PLANNER_H
 #define ALM_LOCOMANIPULATION_A_STAR_PLANNER_H
 
+#include <ros/ros.h>
+#include <avatar_locomanipulation/BinaryClassifierQuery.h>
+
 #include <avatar_locomanipulation/planners/a_star_planner.hpp>
 #include <avatar_locomanipulation/walking/config_trajectory_generator.hpp>
 #include <avatar_locomanipulation/data_types/manipulation_function.hpp>
@@ -74,6 +77,9 @@ namespace planner{
 
         void initializeLocomanipulationVariables(std::shared_ptr<RobotModel> robot_model_in, std::shared_ptr<ManipulationFunction> f_s_in, std::shared_ptr<ConfigTrajectoryGenerator> ctg_in);
         
+        void setClassifierClient(ros::ServiceClient & classifier_client_in);
+        bool print_classifier_results = false;
+        bool use_classifier = false;
 
         std::shared_ptr<RobotModel> robot_model;
         std::shared_ptr<ManipulationFunction> f_s;
@@ -130,6 +136,8 @@ namespace planner{
         double w_s = 100.0;     
         double w_step = 10;
         double w_transition_distance = 10.0;
+
+        double w_feasibility = 1e4;
 
         int N_s = 10; // number of discretizations to make for the s variable when checking with the neural network
 
@@ -224,6 +232,29 @@ namespace planner{
         double nn_feasibility_score = 0.0;
         double nn_prediction_score = 0.0;
         double nn_delta_s = 0.0;
+
+        // Define client to neural network
+        ros::ServiceClient classifier_client;
+    
+        // Prepare classifier service request
+        avatar_locomanipulation::BinaryClassifierQuery classifier_srv;
+
+        // 
+        double getClassifierResult();
+
+        // Helpers for setting up classifier input
+        double prediction_result = 0.0;
+        int classifier_input_dim = 32;
+        Eigen::Vector3d tmp_ori_vec3;
+
+        void addToXVector(const Eigen::Vector3d & pos, const Eigen::Quaterniond & ori, std::vector<double> & x);
+        void populateXVector(std::vector<double> & x, 
+            const double & stance_origin_in, const double & manipulation_type_in,
+            const Eigen::Vector3d & swing_foot_start_pos_in, const Eigen::Quaterniond & swing_foot_start_ori_in,  
+            const Eigen::Vector3d & pelvis_pos_in, const Eigen::Quaterniond & pelvis_ori_in,  
+            const Eigen::Vector3d & landing_foot_pos_in, const Eigen::Quaterniond & landing_foot_ori_in,  
+            const Eigen::Vector3d & right_hand_start_pos_in, const Eigen::Quaterniond & right_hand_start_ori_in,  
+            const Eigen::Vector3d & left_hand_start_pos_in, const Eigen::Quaterniond & left_hand_start_ori_in);
 
     };
 

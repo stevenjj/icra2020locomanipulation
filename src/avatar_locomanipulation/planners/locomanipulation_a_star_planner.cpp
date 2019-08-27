@@ -71,6 +71,20 @@ namespace planner{
   // Constructor
   LocomanipulationPlanner::LocomanipulationPlanner(){
     generateDiscretization();    
+  }
+  void LocomanipulationPlanner::initializeLocomanipulationVariables(std::shared_ptr<RobotModel> robot_model_in, std::shared_ptr<ManipulationFunction> f_s_in, std::shared_ptr<ConfigTrajectoryGenerator> ctg_in){
+    std::cout << "[LocomanipulationPlanner] Initialized robot model, f_s, and trajectory generation module" << std::endl;
+    robot_model = robot_model_in;
+
+    // To Do: check that we don't have to run updateFullKinematics before calling getDimQ()
+    q_tmp = Eigen::VectorXd::Zero(robot_model->getDimQ());
+    f_s = f_s_in;
+    ctg = ctg_in;
+
+
+    // Initialize tmp variables
+    tmp_pos.setZero();
+    tmp_ori.setIdentity();    
 
     nn_stance_origin = CONTACT_TRANSITION_DATA_RIGHT_FOOT_STANCE; 
     nn_manipulation_type = CONTACT_TRANSITION_DATA_RIGHT_HAND; 
@@ -93,20 +107,7 @@ namespace planner{
     nn_left_hand_start_pos.setZero();
     nn_left_hand_start_ori.setIdentity();
 
-  }
-  void LocomanipulationPlanner::initializeLocomanipulationVariables(std::shared_ptr<RobotModel> robot_model_in, std::shared_ptr<ManipulationFunction> f_s_in, std::shared_ptr<ConfigTrajectoryGenerator> ctg_in){
-    std::cout << "[LocomanipulationPlanner] Initialized robot model, f_s, and trajectory generation module" << std::endl;
-    robot_model = robot_model_in;
-
-    // To Do: check that we don't have to run updateFullKinematics before calling getDimQ()
-    q_tmp = Eigen::VectorXd::Zero(robot_model->getDimQ());
-    f_s = f_s_in;
-    ctg = ctg_in;
-
-
-    // Initialize tmp variables
-    tmp_pos.setZero();
-    tmp_ori.setIdentity();    
+    tmp_ori_vec3.setZero();
   }
 
   // Destructor
@@ -441,7 +442,7 @@ namespace planner{
       setHandPoses(s_local);
 
       // Query the neural network classifier 
-      // nn_prediction_score =srv.response.y
+      nn_prediction_score = getClassifierResult();
 
       // Keep track of the lowest result
       if (nn_prediction_score < nn_feasibility_score){
@@ -478,7 +479,7 @@ namespace planner{
       // set the hand pose to the start
       setHandPoses(from_node->s);
       // Query the neural network classifier as normal
-      // nn_prediction_score =srv.response.y
+      nn_prediction_score = getClassifierResult();
       nn_feasibility_score = nn_prediction_score;
     }
 
@@ -513,11 +514,15 @@ namespace planner{
       std::cout << "Error. No step has been taken and the s variable did not move. Something must be wrong with the neighbor generation or the edge type transition checks " << std::endl;
     }
 
-
-
     return nn_feasibility_score;
   }
 
+
+  void LocomanipulationPlanner::setClassifierClient(ros::ServiceClient & classifier_client_in){
+    classifier_client = classifier_client_in;
+    print_classifier_results = true;
+    use_classifier = true;
+  }
 
   // Locomanipulation gscore
   double LocomanipulationPlanner::gScore(const shared_ptr<Node> current, const shared_ptr<Node> neighbor){
@@ -862,4 +867,64 @@ namespace planner{
     }
   }
 
+  // Helpers for setting up classifier input
+  void LocomanipulationPlanner::addToXVector(const Eigen::Vector3d & pos, const Eigen::Quaterniond & ori, std::vector<double> & x){
+    //Eigen::AngleAxisd tmp_aa(ori.normalized()); // gets the normalized version of ori and sets it to an angle axis representation
+    tmp_aa = ori.normalized(); // gets the normalized version of ori and sets it to an angle axis representation
+    tmp_ori_vec3 = tmp_aa.axis()*tmp_aa.angle();
+
+    for(int i = 0; i < pos.size(); i++){
+      x.push_back(pos[i]);
+    }
+    for(int i = 0; i < tmp_ori_vec3.size(); i++){
+      x.push_back(tmp_ori_vec3[i]);
+    }
+  }
+
+  void LocomanipulationPlanner::populateXVector(std::vector<double> & x, 
+    const double & stance_origin_in, const double & manipulation_type_in,
+    const Eigen::Vector3d & swing_foot_start_pos_in, const Eigen::Quaterniond & swing_foot_start_ori_in,  
+    const Eigen::Vector3d & pelvis_pos_in, const Eigen::Quaterniond & pelvis_ori_in,  
+    const Eigen::Vector3d & landing_foot_pos_in, const Eigen::Quaterniond & landing_foot_ori_in,  
+    const Eigen::Vector3d & right_hand_start_pos_in, const Eigen::Quaterniond & right_hand_start_ori_in,  
+    const Eigen::Vector3d & left_hand_start_pos_in, const Eigen::Quaterniond & left_hand_start_ori_in){
+
+    x.push_back(stance_origin_in);
+    x.push_back(manipulation_type_in);
+    addToXVector(swing_foot_start_pos_in, swing_foot_start_ori_in, x);
+    addToXVector(pelvis_pos_in, pelvis_ori_in, x);
+    addToXVector(landing_foot_pos_in, landing_foot_ori_in, x);
+    addToXVector(right_hand_start_pos_in, right_hand_start_ori_in, x);
+    addToXVector(left_hand_start_pos_in, left_hand_start_ori_in, x);
+  }
+
+
+  double LocomanipulationPlanner::getClassifierResult(){
+    // Prepare classifier input
+    classifier_srv.request.x.clear();
+    classifier_srv.request.x.reserve(classifier_input_dim);
+    populateXVector(classifier_srv.request.x, nn_stance_origin, nn_manipulation_type,
+                                              nn_swing_foot_start_pos, nn_swing_foot_start_ori,
+                                              nn_pelvis_pos, nn_pelvis_ori,
+                                              nn_landing_foot_pos, nn_landing_foot_ori,
+                                              nn_right_hand_start_pos, nn_right_hand_start_ori,
+                                              nn_left_hand_start_pos, nn_left_hand_start_ori);
+    // Reset prediction result to a negative value
+    prediction_result = -1.0;
+    
+    // Call the classifier client
+    if (classifier_client.call(classifier_srv)){
+      prediction_result = classifier_srv.response.y;
+      // ROS_INFO("Prediction: %0.4f", srv.response.y);
+    }else{
+        ROS_ERROR("Failed to call service locomanipulation_feasibility_classifier");
+    }
+
+    return prediction_result;
+
+
+  }
+
+
 }
+
