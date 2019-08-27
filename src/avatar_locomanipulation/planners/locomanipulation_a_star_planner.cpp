@@ -289,6 +289,82 @@ namespace planner{
 
   }
 
+  // compute the feasibility score depending on edge type
+  double LocomanipulationPlanner::getFeasibility(shared_ptr<LMVertex> from_node, shared_ptr<LMVertex> to_node){
+    bool left_step_taken = edgeHasStepTaken(from_node, to_node, LEFT_FOOTSTEP);
+    bool right_step_taken = edgeHasStepTaken(from_node, to_node, RIGHT_FOOTSTEP);
+    bool s_var_moved = edgeHasSVarMoved(from_node, to_node);
+
+    nn_stance_origin = CONTACT_TRANSITION_DATA_RIGHT_FOOT_STANCE; 
+    nn_manipulation_type = CONTACT_TRANSITION_DATA_RIGHT_HAND; 
+
+    nn_swing_foot_start_pos.setZero();
+    nn_swing_foot_start_ori.setIdentity();
+
+    nn_pelvis_pos.setZero();
+    nn_pelvis_ori.setIdentity();
+
+    nn_landing_foot_pos.setZero();
+    nn_landing_foot_ori.setIdentity();
+
+    nn_right_hand_start_pos.setZero();
+    nn_right_hand_start_ori.setIdentity();
+
+    nn_left_hand_start_pos.setZero();
+    nn_left_hand_start_ori.setIdentity();
+
+    // Set starting pelvis pos and ori to the midfoot position
+    nn_pelvis_pos = from_node->mid_foot.position;
+    nn_pelvis_ori = from_node->mid_foot.orientation;
+
+    // Which step is taken sets the stance origin
+    if (left_step_taken){
+      // Set right foot stance origin
+      nn_stance_origin = CONTACT_TRANSITION_DATA_RIGHT_FOOT_STANCE; 
+
+      // Set the left foot swing start and landing poses
+      nn_swing_foot_start_pos = from_node->left_foot.position;
+      nn_swing_foot_start_ori = from_node->left_foot.orientation;
+      nn_landing_foot_pos = to_node->left_foot.position;
+      nn_landing_foot_ori = to_node->left_foot.orientation;
+
+    }else if (right_step_taken){
+      // Set left foot stance origin
+      nn_stance_origin = CONTACT_TRANSITION_DATA_LEFT_FOOT_STANCE;
+
+      // Set the right foot swing start and landing poses
+      nn_swing_foot_start_pos = from_node->right_foot.position;
+      nn_swing_foot_start_ori = from_node->right_foot.orientation;
+      nn_landing_foot_pos = to_node->right_foot.position;
+      nn_landing_foot_ori = to_node->right_foot.orientation;
+    }
+    // Remember to convert all the data to the stance frame
+
+
+    // manipulation function f_s sets the manipulation type
+
+
+    if (nn_manipulation_type == CONTACT_TRANSITION_DATA_RIGHT_HAND){
+      f_s->getPose(from_node->s, nn_right_hand_start_pos, nn_right_hand_start_ori);
+    }else if (nn_manipulation_type == CONTACT_TRANSITION_DATA_LEFT_HAND){
+      f_s->getPose(from_node->s, nn_left_hand_start_pos, nn_left_hand_start_ori);      
+    }else if (nn_manipulation_type == CONTACT_TRANSITION_DATA_BOTH_HANDS){
+      // not implemented
+    }
+
+
+
+    // If the hand moves for this trajectory
+    if (s_var_moved){
+      // discretize 
+
+    }else{ // else, the hand has been kept in place during this stepping trajectory.
+
+    }
+
+    return 0.0;
+  }
+
 
   // Locomanipulation gscore
   double LocomanipulationPlanner::gScore(const shared_ptr<Node> current, const shared_ptr<Node> neighbor){
@@ -343,6 +419,8 @@ namespace planner{
     std::cout << "  testing if we got to the goal for (goal_s, current_s) = (" << goal_->s << ", " << current_->s << ")" << std::endl;
     bool s_satisfaction = (fabs(goal_->s - current_->s) <= goal_tol);
     bool convergence = false;
+
+    // TODO: Change condition if we are using the neural network.
 
     // If s is within tolerance, actually check if we can perform this trajectory
     if (s_satisfaction){
@@ -426,14 +504,18 @@ namespace planner{
   void LocomanipulationPlanner::generateNonFootstepNeighbors(){
     // Generate no step neighbors. Only varies with delta_s
     for(int i = 0; i < delta_s_vals.size(); i++){
-      // Create the neighbor.
-      // ensure that s is bounded between 0 and 1.
-      shared_ptr<Node> neighbor (std::make_shared<LMVertex>( clamp_s_variable(current_->s + delta_s_vals[i]), current_->left_foot, current_->right_foot));
-      // Update the neighbor (probably make this a function to call)
-      neighbor_change = static_pointer_cast<LMVertex>(neighbor);
-      neighbor_change->parent = static_pointer_cast<Node>(current_);
-      // neighbor = static_pointer_cast<Node>(neighbor_change);
-      neighbors.push_back(neighbor);
+     // Create the neighbor only if the proposed s is not close to 0.0.
+      if ( fabs(delta_s_vals[i]) > 1e-6){
+        // ensure that s is bounded between 0 and 1.
+        shared_ptr<Node> neighbor (std::make_shared<LMVertex>( clamp_s_variable(current_->s + delta_s_vals[i]), current_->left_foot, current_->right_foot));
+        // Update the neighbor (probably make this a function to call)
+        neighbor_change = static_pointer_cast<LMVertex>(neighbor);
+        neighbor_change->parent = static_pointer_cast<Node>(current_);
+        // neighbor = static_pointer_cast<Node>(neighbor_change);
+
+        // TODO: Add feasibility check here and only add to neighbors if it's greater than our threshold
+        neighbors.push_back(neighbor);
+      }
     }
     
   }
@@ -505,6 +587,9 @@ namespace planner{
               // Update the neighbor's parent
               neighbor_change = static_pointer_cast<LMVertex>(neighbor);
               neighbor_change->parent = static_pointer_cast<Node>(current_);
+
+              // TODO: Add feasibility check here and only add to neighbors if it's greater than our threshold
+
               // Add landing foot 
               neighbors.push_back(neighbor);
 

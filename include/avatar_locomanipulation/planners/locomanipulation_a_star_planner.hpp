@@ -6,6 +6,13 @@
 #include <avatar_locomanipulation/data_types/manipulation_function.hpp>
 #include <avatar_locomanipulation/data_types/footstep.hpp>
 
+#define CONTACT_TRANSITION_DATA_LEFT_FOOT_STANCE 0
+#define CONTACT_TRANSITION_DATA_RIGHT_FOOT_STANCE 1
+
+#define CONTACT_TRANSITION_DATA_LEFT_HAND 0
+#define CONTACT_TRANSITION_DATA_RIGHT_HAND 1
+#define CONTACT_TRANSITION_DATA_BOTH_HANDS 2
+
 namespace planner{
 	class LMVertex: public Node{
 	public:
@@ -153,8 +160,6 @@ namespace planner{
 		double getAngle(const Eigen::Quaterniond & quat_in);
 		Eigen::AngleAxisd tmp_aa;
 
-
-
 		// Creates the footstep neighbors
 		void generateNonFootstepNeighbors();
 		void generateFootstepNeighbors(int footstep_side);
@@ -165,6 +170,26 @@ namespace planner{
 		// Edge identification between the current node and its parent
 		bool edgeHasStepTaken(shared_ptr<LMVertex> from_node, shared_ptr<LMVertex> to_node, int footstep_side);
 		bool edgeHasSVarMoved(shared_ptr<LMVertex> from_node, shared_ptr<LMVertex> to_node);
+
+		// Computes the feasibility between two nodes
+		double getFeasibility(shared_ptr<LMVertex> from_node, shared_ptr<LMVertex> to_node);
+
+
+
+		// Feasibility function temporary variables 
+		double nn_stance_origin;
+		double nn_manipulation_type;
+
+		Eigen::Vector3d nn_swing_foot_start_pos;
+		Eigen::Quaterniond nn_swing_foot_start_ori;
+		Eigen::Vector3d nn_pelvis_pos;
+		Eigen::Quaterniond nn_pelvis_ori;
+		Eigen::Vector3d nn_landing_foot_pos;
+		Eigen::Quaterniond nn_landing_foot_ori;
+		Eigen::Vector3d nn_right_hand_start_pos;
+		Eigen::Quaterniond nn_right_hand_start_ori;
+		Eigen::Vector3d nn_left_hand_start_pos;
+		Eigen::Quaterniond nn_left_hand_start_ori;
 
 	};
 
