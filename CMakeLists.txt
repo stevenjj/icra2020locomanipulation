@@ -8,7 +8,9 @@ find_package(catkin REQUIRED COMPONENTS eigenpy pinocchio urdf hpp-fcl
 	roscpp
 	sensor_msgs
 	tf
-	rviz)
+	rviz
+	std_msgs
+	message_generation)
 
 add_definitions(-Wno-deprecated-declarations)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
@@ -17,6 +19,18 @@ find_package(Eigen3 3.2 REQUIRED)
 #message("eigen version:" ${EIGEN3_VERSION})
 find_package(Boost 1.58 REQUIRED COMPONENTS system)
 find_package(YamlCpp 0.5.2 REQUIRED) # Using a custom FindYamlcpp.cmake
+
+
+add_service_files(
+  FILES
+  AddTwoInts.srv
+  BinaryClassifierQuery.srv
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -142,3 +156,4 @@ SET(PROJECT_LIBRARIES
 	${YAML_CPP_LIBRARIES})
 
 add_subdirectory(test)
+add_subdirectory(nodes)

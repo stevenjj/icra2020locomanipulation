@@ -1,0 +1,4 @@
+*.h5
+checkpoints/
+training_1/
+*.pyc
