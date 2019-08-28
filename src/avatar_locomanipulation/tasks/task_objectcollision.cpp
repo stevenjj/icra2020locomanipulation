@@ -26,7 +26,9 @@ TaskObjectCollision::~TaskObjectCollision(){
 }
 
 void TaskObjectCollision::getTaskJacobian(Eigen::MatrixXd & J_task){
+	std::cout << "ot1\n";
 	robot_model->get6DTaskJacobian(frame_name, J_tmp);
+	std::cout << "ot2\n";
 	J_task = Eigen::MatrixXd::Zero(1, robot_model->getDimQdot());
 
 	// If the links are in collision then we want higher safety distance

@@ -406,8 +406,6 @@ void CollisionEnvironment::set_safety_distance_collision(double safety_dist_coll
 void CollisionEnvironment::get_dvector_collision_links(const std::string & from_name, const std::string & to_name){
   Eigen::Vector3d cur_pos_to, cur_pos_from, difference; 
   Eigen::Quaternion<double> cur_ori;
-  
-  std::cout << "collision_to_frame.find(from_name)->second: " << collision_to_frame.find(from_name)->second << std::endl;
 
   appended->getFrameWorldPose(collision_to_frame.find(to_name)->second, cur_pos_to, cur_ori);
   appended->getFrameWorldPose(collision_to_frame.find(from_name)->second, cur_pos_from, cur_ori);

@@ -29,11 +29,12 @@ void TaskSelfCollision::getTaskJacobian(Eigen::MatrixXd & J_task){
 
 	Eigen::MatrixXd Jp_tmp = Eigen::MatrixXd::Zero(6, robot_model->getDimQdot());
 
-
+	std::cout << "st1\n";
 	robot_model->get6DTaskJacobian(frame_name, J_tmp);
+	std::cout << "st2\n";
 	J_task = Eigen::MatrixXd::Zero(1, robot_model->getDimQdot());
 
-	
+	std::cout << "collision_env->directed_vectors[collision_env->closest].from: " << collision_env->directed_vectors[collision_env->closest].from << std::endl;
 	robot_model->get6DTaskJacobian(collision_env->directed_vectors[collision_env->closest].from, Jp_tmp);
 
 	// If the links are in collision then we want higher safety distance
