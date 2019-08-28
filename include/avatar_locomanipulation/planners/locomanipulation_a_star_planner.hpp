@@ -131,7 +131,7 @@ namespace planner{
         double goal_tol = 0.01;
 
         // planner parameters
-        double w_heuristic = 2000;
+        double w_heuristic = 2000.0;
         double w_distance = 1e-3;
         double w_s = 100.0;     
         double w_step = 10;

@@ -601,6 +601,17 @@ namespace planner{
         input_footstep_list.push_back(current_->right_foot);        
       }
 
+      if (use_classifier){
+        double feas_score = getFeasibility(parent_, current_);
+        if (print_classifier_results){
+          std::cout << "Feasibility Score = " << feas_score << std::endl;
+        }
+        // If the score is less than the treshold, don't bother with the computation
+        if (feas_score < 0.5){
+          return false;
+        }      
+      }
+
       convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
                                                                   parent_->s, delta_s, 
                                                                   parent_->q_init, 
@@ -799,7 +810,7 @@ namespace planner{
       if (use_classifier){
         double feas_score = getFeasibility(parent_, current_);
         if (print_classifier_results){
-          std::cout << "Feasibility Score = " << getFeasibility(parent_, current_) << std::endl;
+          std::cout << "Feasibility Score = " << feas_score << std::endl;
         }
         // If the score is less than the treshold, don't bother with the computation
         if (feas_score < feasibility_threshold){
