@@ -278,7 +278,9 @@ namespace planner{
       current_ = static_pointer_cast<LMVertex>(forward_order_optimal_path[i]);
       parent_ = static_pointer_cast<LMVertex>(current_->parent);
 
-      std::cout << "Feasibility Score = " << getFeasibility(parent_, current_) << std::endl;
+      if (use_classifier){
+        std::cout << "Feasibility Score = " << getFeasibility(parent_, current_) << std::endl;
+      }
 
       // Update the input footstep list
       input_footstep_list.clear();
@@ -607,7 +609,7 @@ namespace planner{
           std::cout << "Feasibility Score = " << feas_score << std::endl;
         }
         // If the score is less than the treshold, don't bother with the computation
-        if (feas_score < 0.5){
+        if (feas_score < feasibility_threshold){
           return false;
         }      
       }
@@ -631,7 +633,7 @@ namespace planner{
 
 
   void LocomanipulationPlanner::generateDiscretization(){
-    delta_s_vals = {0.01, 0.04};
+    delta_s_vals = {0.01, 0.04, 0.08};
 
     //number of bins for the local lattice
     int num_x_lattice_pts = int(abs(2*max_lattice_translation)/dx) + 1;

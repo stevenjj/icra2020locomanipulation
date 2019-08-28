@@ -369,6 +369,11 @@ void test_LM_planner_with_NN(){
   LocomanipulationPlanner lm_planner;
   // Initialize
   lm_planner.initializeLocomanipulationVariables(valkyrie_model, f_s_manipulate_door, ctg);
+  // Set the classifier client:
+  std::cout << "Setting the classifier client" << std::endl;
+  lm_planner.setClassifierClient(client);
+
+
 
   double s_init = 0.0;
   double s_goal = 0.16; //0.20; //0.12;//0.08;
@@ -424,6 +429,7 @@ int main(int argc, char ** argv){
 
   // test_final_configuration();
   test_LM_planner();
+  // test_LM_planner_with_NN();
   // test_planner();
   // test_door_open_config_trajectory();
  
