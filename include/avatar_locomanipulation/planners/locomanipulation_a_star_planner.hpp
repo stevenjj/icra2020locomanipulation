@@ -1,8 +1,16 @@
 #ifndef ALM_LOCOMANIPULATION_A_STAR_PLANNER_H
 #define ALM_LOCOMANIPULATION_A_STAR_PLANNER_H
 
+// ROS related files
 #include <ros/ros.h>
 #include <avatar_locomanipulation/BinaryClassifierQuery.h>
+
+// Lib for loading environment variables
+#include <stdlib.h>
+// Parameter Loader and Saver
+#include <avatar_locomanipulation/helpers/yaml_data_saver.hpp>
+#include <avatar_locomanipulation/helpers/param_handler.hpp>
+#include <fstream>
 
 #include <avatar_locomanipulation/planners/a_star_planner.hpp>
 #include <avatar_locomanipulation/walking/config_trajectory_generator.hpp>
@@ -256,6 +264,10 @@ namespace planner{
             const Eigen::Vector3d & landing_foot_pos_in, const Eigen::Quaterniond & landing_foot_ori_in,  
             const Eigen::Vector3d & right_hand_start_pos_in, const Eigen::Quaterniond & right_hand_start_ori_in,  
             const Eigen::Vector3d & left_hand_start_pos_in, const Eigen::Quaterniond & left_hand_start_ori_in);
+
+        // Store the data
+        void storeTransitionDatawithTaskSpaceInfo(bool result);
+
 
     };
 

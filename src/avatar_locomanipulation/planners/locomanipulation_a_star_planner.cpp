@@ -957,6 +957,53 @@ namespace planner{
 
   }
 
+  void LocomanipulationPlanner::storeTransitionDatawithTaskSpaceInfo(bool result){    
+    // Add transition data
+
+    // Define the save path
+    std::string userhome = std::string("/home/") + std::string(std::getenv("USER")) + std::string("/");
+    std::cout << "User home path: " << userhome << std::endl;
+
+    /*
+    std::string result_folder = result ? "positive_examples/" : "negative_examples/";
+    int counter_to_use = result ? positive_transition_data_counter : negative_transition_data_counter;
+
+    // generate HASH instead of integer counter
+
+    std::string save_path = userhome + parent_folder_path + "transitions_data_with_task_space_info/" + result_folder + manipulation_type + "_" + stance_foot + "_" + "s" + std::to_string(loaded_seed_number) + "_" + std::to_string(counter_to_use) + ".yaml";
+    std::cout << "saving to: " << save_path << std::endl;
+
+    // Define the yaml emitter
+    YAML::Emitter out;
+    
+    // Begin map creation
+    out << YAML::BeginMap;
+    data_saver::emit_string(out, "result", (result ? "success" : "failure"));
+    data_saver::emit_joint_configuration(out, "q_init", q_start);
+
+    data_saver::emit_string(out, "stance_origin", stance_foot);
+    data_saver::emit_position(out, "swing_foot_starting_position", swing_foot_pos);
+    data_saver::emit_orientation(out, "swing_foot_starting_orientation", swing_foot_ori);
+    data_saver::emit_position(out, "pelvis_starting_position", pelvis_pos);
+    data_saver::emit_orientation(out, "pelvis_starting_orientation", pelvis_ori);
+
+    data_saver::emit_string(out, "manipulation_type", manipulation_type);
+    data_saver::emit_position(out, "left_hand_starting_position", starting_lhand_pos);
+    data_saver::emit_orientation(out, "left_hand_starting_orientation", starting_lhand_ori);
+    data_saver::emit_position(out, "right_hand_starting_position", starting_rhand_pos);
+    data_saver::emit_orientation(out, "right_hand_starting_orientation", starting_rhand_ori);
+
+    data_saver::emit_position(out, "landing_foot_position", landing_foot_pos);
+    data_saver::emit_orientation(out, "landing_foot_orientation", landing_foot_ori);
+    out << YAML::EndMap;
+
+    // Store the data
+    std::ofstream file_output_stream(save_path);
+    file_output_stream << out.c_str();
+  */
+  }
+  
+
 
 }
 
