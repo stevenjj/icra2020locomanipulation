@@ -5,7 +5,7 @@ export IS_GAZEBO=true
 source ~/.bashrc
 
 Terminal 1
-roslaunch ihmc_valkyrie_ros val_wholebody_control_gazebo.launch
+roslaunch val_gazebo val_sim_gazebo_sync.launch
 
 Terminal 2
 roslaunch ihmc_valkyrie_ros val_wholebody_control_gazebo.launch
