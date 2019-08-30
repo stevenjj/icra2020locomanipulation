@@ -89,6 +89,8 @@ namespace planner{
         void setClassifierClient(ros::ServiceClient & classifier_client_in);
         bool print_classifier_results = false;
         bool use_classifier = false;
+        bool classifier_store_mistakes = false;
+
 
         std::shared_ptr<RobotModel> robot_model;
         std::shared_ptr<ManipulationFunction> f_s;
@@ -249,7 +251,7 @@ namespace planner{
         // Prepare classifier service request
         avatar_locomanipulation::BinaryClassifierQuery classifier_srv;
 
-        // 
+        //        
         double getClassifierResult();
 
         // Helpers for setting up classifier input
@@ -267,8 +269,13 @@ namespace planner{
             const Eigen::Vector3d & left_hand_start_pos_in, const Eigen::Quaterniond & left_hand_start_ori_in);
 
         // Store the data
+        std::string str_stance_origin;
+        std::string str_manipulation_type;
         void storeTransitionDatawithTaskSpaceInfo(const shared_ptr<LMVertex> & start_node_traj, bool result);
 
+        void appendPosString(const Eigen::Vector3d & pos, std::string & str_in_out);
+        void appendOriString(const Eigen::Quaterniond & ori, std::string & str_in_out);
+        std::size_t getDataHash();
 
     };
 

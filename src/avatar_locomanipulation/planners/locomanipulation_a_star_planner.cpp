@@ -808,7 +808,7 @@ namespace planner{
         input_footstep_list.push_back(current_->right_foot);        
       }
 
-
+      bool transition_possible = true;
       if (use_classifier){
         double feas_score = getFeasibility(parent_, current_);
         if (print_classifier_results){
@@ -816,16 +816,32 @@ namespace planner{
         }
         // If the score is less than the treshold, don't bother with the computation
         if (feas_score < feasibility_threshold){
-          return neighbors;
+          transition_possible = false;
+          // If we are not storing possible mistakes, proceed with ignoring the computation checl
+          if (!classifier_store_mistakes){
+            return neighbors;
+          }
         }      
       }
-
 
       convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
                                                                   parent_->s, delta_s, 
                                                                   parent_->q_init, 
                                                                   input_footstep_list);
       std::cout << "Converged? " << (convergence ? "True" : "False") << std::endl;       
+
+      if ((use_classifier) && (classifier_store_mistakes)){
+          // Store the data if the classifier made a mistake.
+          // False Positive.
+          if ((transition_possible) && (!convergence)){
+            storeTransitionDatawithTaskSpaceInfo(parent_, false);
+          } 
+          // False Negatives
+          else if ((!transition_possible) && (convergence)){
+            storeTransitionDatawithTaskSpaceInfo(parent_, true);
+          }
+
+      }
 
       // If it converges, update the configuration of the current node
       if (convergence){
@@ -836,7 +852,6 @@ namespace planner{
         current_->setRobotConfig(q_tmp);
       }else{
         // If it does not converge, 
-        // store the negative example
         storeTransitionDatawithTaskSpaceInfo(parent_, false);
         // return an empty neighbor list       
         return neighbors;       
@@ -978,7 +993,8 @@ namespace planner{
     data_saver::emit_joint_configuration(out, "q_init", start_node_traj->q_init);
 
     // Stance origin
-    std::string str_stance_origin;
+    str_stance_origin = "";
+    str_manipulation_type = "";
     if (nn_stance_origin == CONTACT_TRANSITION_DATA_LEFT_FOOT_STANCE){
       str_stance_origin = "left_foot";
     }
@@ -986,7 +1002,6 @@ namespace planner{
       str_stance_origin = "right_foot";
     }
 
-    std::string str_manipulation_type;
     // Manipulation Type
     if (nn_manipulation_type == CONTACT_TRANSITION_DATA_RIGHT_HAND){
       str_manipulation_type = "right_hand";
@@ -1000,7 +1015,7 @@ namespace planner{
 
 
     // // generate HASH instead of integer counter
-    std::size_t hash_number = 0;
+    std::size_t hash_number = getDataHash();
     std::string result_folder = result ? "positive_examples/" : "negative_examples/";
     std::string save_path = userhome + parent_folder_path + str_manipulation_type + "/transitions_data_with_task_space_info/" + result_folder + str_manipulation_type + "_" + str_stance_origin + "_" + std::to_string(hash_number) + ".yaml";
     std::cout << "saving to: " << save_path << std::endl;
@@ -1026,7 +1041,36 @@ namespace planner{
     std::cout << out.c_str() << std::endl;
     file_output_stream << out.c_str(); 
   }
-  
+
+
+  void LocomanipulationPlanner::appendPosString(const Eigen::Vector3d & pos, std::string & str_in_out){
+    double factor = 1000.0;  
+    str_in_out = str_in_out + std::to_string((int)round(pos[0] * factor)) + "_" + 
+                              std::to_string((int)round(pos[1] * factor)) + "_" + 
+                              std::to_string((int)round(pos[2] * factor));
+  }
+  void LocomanipulationPlanner::appendOriString(const Eigen::Quaterniond & ori, std::string & str_in_out){
+    double factor = 1000.0;  
+    str_in_out = str_in_out + std::to_string((int)round(ori.x() * factor)) + "_" + 
+                              std::to_string((int)round(ori.y() * factor)) + "_" +
+                              std::to_string((int)round(ori.z() * factor)) + "_" +
+                              std::to_string((int)round(ori.w() * factor));                               
+  }  
+  std::size_t LocomanipulationPlanner::getDataHash(){
+    std::string hash_string;
+    // Begin creating hash string for this data
+    hash_string = str_stance_origin + str_manipulation_type;
+    appendPosString(nn_swing_foot_start_pos, hash_string); appendOriString(nn_swing_foot_start_ori, hash_string);
+    appendPosString(nn_pelvis_pos, hash_string); appendOriString(nn_pelvis_ori, hash_string);
+    appendPosString(nn_left_hand_start_pos, hash_string); appendOriString(nn_left_hand_start_ori, hash_string);
+    appendPosString(nn_right_hand_start_pos, hash_string); appendOriString(nn_right_hand_start_ori, hash_string);
+    appendPosString(nn_landing_foot_pos, hash_string); appendOriString(nn_landing_foot_ori, hash_string);
+
+    std::cout << "hash string = " << std::endl;
+    std::cout << hash_string << std::endl;
+
+    return std::hash<std::string>{}(hash_string);
+  }
 
 
 }
