@@ -278,8 +278,17 @@ namespace planner{
       current_ = static_pointer_cast<LMVertex>(forward_order_optimal_path[i]);
       parent_ = static_pointer_cast<LMVertex>(current_->parent);
 
+      // Check classifier result for this transition
+      bool transition_possible = true;
       if (use_classifier){
-        std::cout << "Feasibility Score = " << getFeasibility(parent_, current_) << std::endl;
+        double feas_score = getFeasibility(parent_, current_);
+        if (print_classifier_results){
+          std::cout << "Feasibility Score = " << feas_score << std::endl;
+        }
+        // If score is below the threshold, this transition is not possible
+        if (feas_score < feasibility_threshold){
+          transition_possible = false;
+        }
       }
 
       // Update the input footstep list
@@ -302,6 +311,20 @@ namespace planner{
       // Get the final configuration
       std::cout << "getting the final configuration" << std::endl;
       ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_end);
+
+      // Store the data if the classifier made a mistake.
+      if (use_classifier){
+        if ((classifier_store_mistakes_during_reconstruction) || (classifier_store_mistakes)){
+            // False Positive.
+            if ((transition_possible) && (!convergence)){
+              storeTransitionDatawithTaskSpaceInfo(parent_, false);
+            } 
+            // False Negatives
+            else if ((!transition_possible) && (convergence)){
+              storeTransitionDatawithTaskSpaceInfo(parent_, true);
+            }
+        }        
+      }
 
       // Check for convergence. This should work however.
       if (convergence){
@@ -603,21 +626,38 @@ namespace planner{
         input_footstep_list.push_back(current_->right_foot);        
       }
 
+      // Check the classifier result
+      bool transition_possible = true;
       if (use_classifier){
         double feas_score = getFeasibility(parent_, current_);
         if (print_classifier_results){
           std::cout << "Feasibility Score = " << feas_score << std::endl;
         }
-        // If the score is less than the treshold, don't bother with the computation
+        // If the score is less than the treshold
         if (feas_score < feasibility_threshold){
-          return false;
-        }      
+          transition_possible = false;
+          if (!classifier_store_mistakes){
+            return false;
+          }
+        }
       }
 
       convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
                                                                   parent_->s, delta_s, 
                                                                   parent_->q_init, 
                                                                  input_footstep_list);
+
+      if ((use_classifier) && (classifier_store_mistakes)){
+          // Store the data if the classifier made a mistake.
+          // False Positive.
+          if ((transition_possible) && (!convergence)){
+            storeTransitionDatawithTaskSpaceInfo(parent_, false);
+          } 
+          // False Negatives
+          else if ((!transition_possible) && (convergence)){
+            storeTransitionDatawithTaskSpaceInfo(parent_, true);
+          }
+      }
 
       if (convergence){
         ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_tmp);
@@ -851,9 +891,7 @@ namespace planner{
         // std::cout << "q_tmp = " << q_tmp.transpose() << std::endl;
         current_->setRobotConfig(q_tmp);
       }else{
-        // If it does not converge, 
-        storeTransitionDatawithTaskSpaceInfo(parent_, false);
-        // return an empty neighbor list       
+        // If it does not converge, return an empty neighbor list       
         return neighbors;       
       }
 

@@ -90,6 +90,7 @@ namespace planner{
         bool print_classifier_results = false;
         bool use_classifier = false;
         bool classifier_store_mistakes = false;
+        bool classifier_store_mistakes_during_reconstruction = false;
 
 
         std::shared_ptr<RobotModel> robot_model;
