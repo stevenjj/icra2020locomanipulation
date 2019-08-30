@@ -835,7 +835,10 @@ namespace planner{
         // std::cout << "q_tmp = " << q_tmp.transpose() << std::endl;
         current_->setRobotConfig(q_tmp);
       }else{
-        // If it does not converge, return an empty neighbor list       
+        // If it does not converge, 
+        // store the negative example
+        storeTransitionDatawithTaskSpaceInfo(parent_, false);
+        // return an empty neighbor list       
         return neighbors;       
       }
 
@@ -957,21 +960,14 @@ namespace planner{
 
   }
 
-  void LocomanipulationPlanner::storeTransitionDatawithTaskSpaceInfo(bool result){    
+  void LocomanipulationPlanner::storeTransitionDatawithTaskSpaceInfo(const shared_ptr<LMVertex> & start_node_traj, bool result){
     // Add transition data
-
+    std::cout << "storing transition data..." << std::endl;
     // Define the save path
     std::string userhome = std::string("/home/") + std::string(std::getenv("USER")) + std::string("/");
     std::cout << "User home path: " << userhome << std::endl;
+    std::string parent_folder_path("Data/planner_data/"); 
 
-    /*
-    std::string result_folder = result ? "positive_examples/" : "negative_examples/";
-    int counter_to_use = result ? positive_transition_data_counter : negative_transition_data_counter;
-
-    // generate HASH instead of integer counter
-
-    std::string save_path = userhome + parent_folder_path + "transitions_data_with_task_space_info/" + result_folder + manipulation_type + "_" + stance_foot + "_" + "s" + std::to_string(loaded_seed_number) + "_" + std::to_string(counter_to_use) + ".yaml";
-    std::cout << "saving to: " << save_path << std::endl;
 
     // Define the yaml emitter
     YAML::Emitter out;
@@ -979,28 +975,56 @@ namespace planner{
     // Begin map creation
     out << YAML::BeginMap;
     data_saver::emit_string(out, "result", (result ? "success" : "failure"));
-    data_saver::emit_joint_configuration(out, "q_init", q_start);
+    data_saver::emit_joint_configuration(out, "q_init", start_node_traj->q_init);
 
-    data_saver::emit_string(out, "stance_origin", stance_foot);
-    data_saver::emit_position(out, "swing_foot_starting_position", swing_foot_pos);
-    data_saver::emit_orientation(out, "swing_foot_starting_orientation", swing_foot_ori);
-    data_saver::emit_position(out, "pelvis_starting_position", pelvis_pos);
-    data_saver::emit_orientation(out, "pelvis_starting_orientation", pelvis_ori);
+    // Stance origin
+    std::string str_stance_origin;
+    if (nn_stance_origin == CONTACT_TRANSITION_DATA_LEFT_FOOT_STANCE){
+      str_stance_origin = "left_foot";
+    }
+    else if (nn_stance_origin == CONTACT_TRANSITION_DATA_RIGHT_FOOT_STANCE){
+      str_stance_origin = "right_foot";
+    }
 
-    data_saver::emit_string(out, "manipulation_type", manipulation_type);
-    data_saver::emit_position(out, "left_hand_starting_position", starting_lhand_pos);
-    data_saver::emit_orientation(out, "left_hand_starting_orientation", starting_lhand_ori);
-    data_saver::emit_position(out, "right_hand_starting_position", starting_rhand_pos);
-    data_saver::emit_orientation(out, "right_hand_starting_orientation", starting_rhand_ori);
+    std::string str_manipulation_type;
+    // Manipulation Type
+    if (nn_manipulation_type == CONTACT_TRANSITION_DATA_RIGHT_HAND){
+      str_manipulation_type = "right_hand";
+    }
+    else if (nn_manipulation_type == CONTACT_TRANSITION_DATA_LEFT_HAND){
+      str_manipulation_type = "left_hand";
+    }
+    else if (nn_manipulation_type == CONTACT_TRANSITION_DATA_BOTH_HANDS){
+      str_manipulation_type = "both_hands"; 
+    }
 
-    data_saver::emit_position(out, "landing_foot_position", landing_foot_pos);
-    data_saver::emit_orientation(out, "landing_foot_orientation", landing_foot_ori);
+
+    // // generate HASH instead of integer counter
+    std::size_t hash_number = 0;
+    std::string result_folder = result ? "positive_examples/" : "negative_examples/";
+    std::string save_path = userhome + parent_folder_path + str_manipulation_type + "/transitions_data_with_task_space_info/" + result_folder + str_manipulation_type + "_" + str_stance_origin + "_" + std::to_string(hash_number) + ".yaml";
+    std::cout << "saving to: " << save_path << std::endl;
+
+    data_saver::emit_string(out, "stance_origin", str_stance_origin);
+    data_saver::emit_position(out, "swing_foot_starting_position", nn_swing_foot_start_pos);
+    data_saver::emit_orientation(out, "swing_foot_starting_orientation", nn_swing_foot_start_ori);
+    data_saver::emit_position(out, "pelvis_starting_position", nn_pelvis_pos);
+    data_saver::emit_orientation(out, "pelvis_starting_orientation", nn_pelvis_ori);
+
+    data_saver::emit_string(out, "manipulation_type", str_manipulation_type);
+    data_saver::emit_position(out, "left_hand_starting_position", nn_left_hand_start_pos);
+    data_saver::emit_orientation(out, "left_hand_starting_orientation", nn_left_hand_start_ori);
+    data_saver::emit_position(out, "right_hand_starting_position", nn_right_hand_start_pos);
+    data_saver::emit_orientation(out, "right_hand_starting_orientation", nn_right_hand_start_ori);
+
+    data_saver::emit_position(out, "landing_foot_position", nn_landing_foot_pos);
+    data_saver::emit_orientation(out, "landing_foot_orientation", nn_landing_foot_ori);
     out << YAML::EndMap;
 
     // Store the data
-    std::ofstream file_output_stream(save_path);
-    file_output_stream << out.c_str();
-  */
+    std::ofstream file_output_stream(save_path);     
+    std::cout << out.c_str() << std::endl;
+    file_output_stream << out.c_str(); 
   }
   
 

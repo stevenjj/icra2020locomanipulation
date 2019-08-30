@@ -1,4 +1,5 @@
 <launch>
+	<node name="$(anon generate_folders)" pkg="avatar_locomanipulation" type="generate_folders.sh" />
     <node name="test_planner_with_trajectories" pkg="avatar_locomanipulation" type="test_planner_with_trajectories" output="screen" /> 
     
     <include file="$(find avatar_locomanipulation)/launch/launch_viz_robot_simple_collisions.launch">

@@ -10,6 +10,7 @@
 // Parameter Loader and Saver
 #include <avatar_locomanipulation/helpers/yaml_data_saver.hpp>
 #include <avatar_locomanipulation/helpers/param_handler.hpp>
+#include <iostream>
 #include <fstream>
 
 #include <avatar_locomanipulation/planners/a_star_planner.hpp>
@@ -227,15 +228,15 @@ namespace planner{
         int nn_stance_origin;
         int nn_manipulation_type;
 
-        Eigen::Vector3d nn_swing_foot_start_pos;
+        Eigen::Vector3d    nn_swing_foot_start_pos;
         Eigen::Quaterniond nn_swing_foot_start_ori;
-        Eigen::Vector3d nn_pelvis_pos;
+        Eigen::Vector3d    nn_pelvis_pos;
         Eigen::Quaterniond nn_pelvis_ori;
-        Eigen::Vector3d nn_landing_foot_pos;
+        Eigen::Vector3d    nn_landing_foot_pos;
         Eigen::Quaterniond nn_landing_foot_ori;
-        Eigen::Vector3d nn_right_hand_start_pos;
+        Eigen::Vector3d    nn_right_hand_start_pos;
         Eigen::Quaterniond nn_right_hand_start_ori;
-        Eigen::Vector3d nn_left_hand_start_pos;
+        Eigen::Vector3d    nn_left_hand_start_pos;
         Eigen::Quaterniond nn_left_hand_start_ori;
 
         double nn_feasibility_score = 0.0;
@@ -266,7 +267,7 @@ namespace planner{
             const Eigen::Vector3d & left_hand_start_pos_in, const Eigen::Quaterniond & left_hand_start_ori_in);
 
         // Store the data
-        void storeTransitionDatawithTaskSpaceInfo(bool result);
+        void storeTransitionDatawithTaskSpaceInfo(const shared_ptr<LMVertex> & start_node_traj, bool result);
 
 
     };
