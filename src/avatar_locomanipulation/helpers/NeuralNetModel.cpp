@@ -22,7 +22,7 @@ Eigen::MatrixXd Layer::GetOutput(const Eigen::MatrixXd& input) {
         aug_bias.block(i, 0, 1, num_output_) = bias_;
     }
     Eigen::MatrixXd ret = Eigen::MatrixXd::Zero(num_data, num_output_);
-    std::cout << "weight: " << weight_ << std::endl;
+    // std::cout << "weight: " << weight_ << std::endl;
     // std::cout << "input: " << input.rows() << " " << input.cols() << std::endl;
     // std::cout << "num_output: " << num_output_ << std::endl;
     ret = input * weight_ + aug_bias;

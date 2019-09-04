@@ -32,7 +32,7 @@ Eigen::Vector3d quatToVec(const Eigen::Quaterniond & ori){
 }
 
 void normalizeInputCalculate(const Eigen::VectorXd & x_in, const Eigen::VectorXd & data_mean, const Eigen::VectorXd & data_std_dev, Eigen::VectorXd & x_normalized) {
-  std::cout << x_in.rows() << " " << data_mean.rows() << " " << data_std_dev.rows() << std::endl;
+  // std::cout << x_in.rows() << " " << data_mean.rows() << " " << data_std_dev.rows() << std::endl;
   x_normalized = (x_in - data_mean).cwiseQuotient(data_std_dev);
 }
 
@@ -65,6 +65,7 @@ int main(int argc, char ** argv){
 
   Eigen::VectorXd rawDatum(32);
   Eigen::VectorXd datum(32);
+	Eigen::MatrixXd data(5,32);
 
   rawDatum << stance_origin, manipulation_type,
     swing_foot_start_pos, quatToVec(swing_foot_start_ori),
@@ -88,9 +89,14 @@ int main(int argc, char ** argv){
   }
 
   normalizeInputCalculate(rawDatum, mean, std_dev, datum);
+	data.row(0) = datum;
+	data.row(1) = datum;
+	data.row(2) = datum;
+	data.row(3) = datum;
+	data.row(4) = datum;
 	// std::cout << "datum: " << datum << std::endl;
-  Eigen::MatrixXd pred(1,1);
-  pred = nn_transition.GetOutput(datum.transpose());
+  Eigen::MatrixXd pred(5,1);
+  pred = nn_transition.GetOutput(data);
   std::cout << "Prediction: " << pred << std::endl;
 
   return 0;
