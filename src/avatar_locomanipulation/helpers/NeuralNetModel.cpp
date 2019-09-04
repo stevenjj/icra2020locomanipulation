@@ -22,6 +22,9 @@ Eigen::MatrixXd Layer::GetOutput(const Eigen::MatrixXd& input) {
         aug_bias.block(i, 0, 1, num_output_) = bias_;
     }
     Eigen::MatrixXd ret = Eigen::MatrixXd::Zero(num_data, num_output_);
+    std::cout << "weight: " << weight_ << std::endl;
+    // std::cout << "input: " << input.rows() << " " << input.cols() << std::endl;
+    // std::cout << "num_output: " << num_output_ << std::endl;
     ret = input * weight_ + aug_bias;
     switch (act_fn_) {
         case ActivationFunction::None:
@@ -48,7 +51,7 @@ Eigen::MatrixXd Layer::GetOutput(const Eigen::MatrixXd& input) {
         case ActivationFunction::Sigmoid:
             for (int row(0); row < num_data; ++row) {
                 for (int col(0); col < num_output_; ++col) {
-                    ret(row, col) = std::exp(ret(row,col))/(std::exp(ret(row,col))+1);
+                    ret(row, col) = 1/(std::exp(-1*ret(row,col))+1);
                 }
             }
             return ret;

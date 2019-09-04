@@ -31,6 +31,11 @@ Eigen::Vector3d quatToVec(const Eigen::Quaterniond & ori){
   return ori_vec;
 }
 
+void normalizeInputCalculate(const Eigen::VectorXd & x_in, const Eigen::VectorXd & data_mean, const Eigen::VectorXd & data_std_dev, Eigen::VectorXd & x_normalized) {
+  std::cout << x_in.rows() << " " << data_mean.rows() << " " << data_std_dev.rows() << std::endl;
+  x_normalized = (x_in - data_mean).cwiseQuotient(data_std_dev);
+}
+
 int main(int argc, char ** argv){
   ParamHandler param_handler;
   std::string model_path = "/home/mihir/locomanipulation_ws/src/avatar_locomanipulation/src/python_src/rh_transitions/learned_model/model.yaml";
@@ -65,7 +70,7 @@ int main(int argc, char ** argv){
     swing_foot_start_pos, quatToVec(swing_foot_start_ori),
     pelvis_pos, quatToVec(pelvis_ori),
     landing_foot_pos, quatToVec(landing_foot_ori),
-    right_hand_start_pos, quatToVec(landing_foot_ori),
+    right_hand_start_pos, quatToVec(right_hand_start_ori),
     left_hand_start_pos, quatToVec(left_hand_start_ori);
 
   //Normalization Params
@@ -82,11 +87,11 @@ int main(int argc, char ** argv){
     std_dev[ii] = vstd_dev[ii];
   }
 
-  std::cout << "Mean: " << mean <<std::endl;
-  std::cout << "Std Dev: " << std_dev << std::endl;
-
-  // double pred = nn_transition.GetOutput(datum);
-  // std::cout << "Prediction: " << pred << std::endl;
+  normalizeInputCalculate(rawDatum, mean, std_dev, datum);
+	// std::cout << "datum: " << datum << std::endl;
+  Eigen::MatrixXd pred(1,1);
+  pred = nn_transition.GetOutput(datum.transpose());
+  std::cout << "Prediction: " << pred << std::endl;
 
   return 0;
 }
