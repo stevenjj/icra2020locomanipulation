@@ -46,7 +46,7 @@ for layer_idx in range(num_layers):
     data['w'+str(layer_idx)] = w[layer_idx].tolist()
     data['b'+str(layer_idx)] = b[layer_idx].reshape(1, b[layer_idx].shape[0]).tolist()
     if (layer_idx == num_layers-1):
-        data['act_fn'+str(layer_idx)] = 3
+        data['act_fn'+str(layer_idx)] = 4
     else:
         data['act_fn'+str(layer_idx)] = 2
 

@@ -67,7 +67,7 @@ NeuralNetModel::NeuralNetModel(const myYAML::Node& node, bool b_stochastic) {
     layers.clear();
     int act_fn;
 
-    std::cout << "hello!" << std::endl;
+    //std::cout << "hello!" << std::endl;
     try {
         myUtils::readParameter(node, "num_layer", num_layer);
         for (int idx_layer = 0; idx_layer < num_layer; ++idx_layer) {
@@ -75,14 +75,14 @@ NeuralNetModel::NeuralNetModel(const myYAML::Node& node, bool b_stochastic) {
             myUtils::readParameter(node, "b" + std::to_string(idx_layer), b);
             myUtils::readParameter(node, "act_fn" + std::to_string(idx_layer),
                                    act_fn);
-           std::cout << "i = " << idx_layer << std::endl;
+           //std::cout << "i = " << idx_layer << std::endl;
 
             layers.push_back(
                 Layer(w, b, static_cast<ActivationFunction>(act_fn)));
 
-           std::cout << "after i" << std::endl;
+           //std::cout << "after i" << std::endl;
         }
-        std::cout << "num_layer = " << num_layer << std::endl;
+        //std::cout << "num_layer = " << num_layer << std::endl;
 
         if (b_stochastic) {
             myUtils::readParameter(node, "logstd", logstd);
@@ -92,7 +92,7 @@ NeuralNetModel::NeuralNetModel(const myYAML::Node& node, bool b_stochastic) {
                   << __FILE__ << "]" << std::endl
                   << std::endl;
     }
-    std::cout << "before initialize" << std::endl;
+    //std::cout << "before initialize" << std::endl;
 
 
     Initialize_(layers, b_stochastic, logstd);
@@ -200,7 +200,7 @@ void NeuralNetModel::GetOutput(const Eigen::MatrixXd& _input,
 
 void NeuralNetModel::Initialize_(std::vector<Layer> layers, bool b_stoch,
                                  Eigen::VectorXd logstd) {
-    std::cout << "initialize" << std::endl;
+    //std::cout << "initialize" << std::endl;
     layers_ = layers;
     num_layer_ = layers.size();
     num_input_ = layers[0].GetNumInput();
@@ -209,13 +209,13 @@ void NeuralNetModel::Initialize_(std::vector<Layer> layers, bool b_stoch,
     if (b_stochastic_) {
         logstd_ = logstd;
         std_ = logstd;
-         std::cout << "num_output_ = " << num_output_ << std::endl;
+         //std::cout << "num_output_ = " << num_output_ << std::endl;
         for (int i = 0; i < num_output_; ++i) {
             std_(i) = std::exp(logstd_(i));
             std::cout << "i = " << i << std::endl;
         }
     }
-    std::cout << "initialize done " << std::endl;
+    //std::cout << "initialize done " << std::endl;
 }
 
 void NeuralNetModel::PrintInfo() {
