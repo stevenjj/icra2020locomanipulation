@@ -65,7 +65,11 @@ int main(int argc, char ** argv){
 
   Eigen::VectorXd rawDatum(32);
   Eigen::VectorXd datum(32);
-	Eigen::MatrixXd data(5,32);
+
+  int input_size = 10;
+
+
+	Eigen::MatrixXd data(input_size, 32);
 
   rawDatum << stance_origin, manipulation_type,
     swing_foot_start_pos, quatToVec(swing_foot_start_ori),
@@ -89,13 +93,13 @@ int main(int argc, char ** argv){
   }
 
   normalizeInputCalculate(rawDatum, mean, std_dev, datum);
-	data.row(0) = datum;
-	data.row(1) = datum;
-	data.row(2) = datum;
-	data.row(3) = datum;
-	data.row(4) = datum;
+  for (int i = 0; i < input_size; i++){
+    data.row(i) = datum;
+
+  }
 	// std::cout << "datum: " << datum << std::endl;
-  Eigen::MatrixXd pred(5,1);
+
+  Eigen::MatrixXd pred(input_size,1);
   pred = nn_transition.GetOutput(data);
   std::cout << "Prediction: " << pred << std::endl;
 
@@ -125,7 +129,7 @@ int main(int argc, char ** argv){
     t2 = Clock::now();
 
     time_span = std::chrono::duration_cast< std::chrono::duration<double> >(t2 - t1).count();
-    std::cout << " 5 pred = " << pred.transpose() << std::endl;
+    std::cout << "  " << input_size << " pred = " << pred.transpose() << std::endl;
     std::cout << " inference time = " << time_span << " seconds" << std::endl;
     std::cout << " freq = " << (1.0/time_span) << " Hz" << std::endl;
     std::cout << " " << std::endl;
