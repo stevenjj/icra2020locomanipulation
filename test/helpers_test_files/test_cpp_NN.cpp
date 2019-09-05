@@ -38,7 +38,7 @@ void normalizeInputCalculate(const Eigen::VectorXd & x_in, const Eigen::VectorXd
 
 int main(int argc, char ** argv){
   ParamHandler param_handler;
-  std::string model_path = "/home/mihir/locomanipulation_ws/src/avatar_locomanipulation/src/python_src/rh_transitions/learned_model/model.yaml";
+  std::string model_path = "/home/stevenjj/nasa_ws/src/avatar_locomanipulation/nn_models/cpp_models/model_baseline_11500pts.yaml";
 
   std::cout << "Loading Model..." << std::endl;
   myYAML::Node model = myYAML::LoadFile(model_path);
@@ -75,7 +75,7 @@ int main(int argc, char ** argv){
     left_hand_start_pos, quatToVec(left_hand_start_ori);
 
   //Normalization Params
-  param_handler.load_yaml_file("/home/mihir/locomanipulation_ws/src/avatar_locomanipulation/nn_models/baseline_11500pts/lh_rflh_lfrh_lfrh_rfbh_rfbh_lf/normalization_params.yaml");
+  param_handler.load_yaml_file("/home/stevenjj/nasa_ws/src/avatar_locomanipulation/nn_models/cpp_models/normalization_params.yaml");
   std::vector<double> vmean;
   param_handler.getVector("x_train_mean", vmean);
   std::vector<double> vstd_dev;
@@ -98,6 +98,40 @@ int main(int argc, char ** argv){
   Eigen::MatrixXd pred(5,1);
   pred = nn_transition.GetOutput(data);
   std::cout << "Prediction: " << pred << std::endl;
+
+  // Test Inference speed:
+  auto t1 = Clock::now();
+  auto t2 = Clock::now();
+  double time_span;
+
+  Eigen::MatrixXd x_vec(1,32);
+  Eigen::MatrixXd y_vec(1,1);
+  x_vec.row(0) = datum;
+
+
+  while(true){
+    t1 = Clock::now();
+    y_vec = nn_transition.GetOutput(x_vec);
+    t2 = Clock::now();
+    time_span = std::chrono::duration_cast< std::chrono::duration<double> >(t2 - t1).count();
+
+    std::cout << " 1 pred = " << y_vec << std::endl;
+    std::cout << " inference time = " << time_span << " seconds" << std::endl;
+    std::cout << " freq = " << (1.0/time_span) << " Hz" << std::endl;
+    std::cout << " " << std::endl;
+
+    t1 = Clock::now();    
+    pred = nn_transition.GetOutput(data);
+    t2 = Clock::now();
+
+    time_span = std::chrono::duration_cast< std::chrono::duration<double> >(t2 - t1).count();
+    std::cout << " 5 pred = " << pred.transpose() << std::endl;
+    std::cout << " inference time = " << time_span << " seconds" << std::endl;
+    std::cout << " freq = " << (1.0/time_span) << " Hz" << std::endl;
+    std::cout << " " << std::endl;
+
+  }
+
 
   return 0;
 }
