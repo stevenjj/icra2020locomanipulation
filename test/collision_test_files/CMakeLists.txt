@@ -23,3 +23,15 @@
 # target_link_libraries(test_simpleboxes ${PROJECT_LIBRARIES})
 # target_link_libraries(test_minimal_working_example ${PROJECT_LIBRARIES})
 # target_link_libraries(test_buildModel_append ${PROJECT_LIBRARIES})
+
+# add_dependencies(test_appendGeometry ${${PROJECT_NAME}_EXPORTED_TARGETS})
+# add_dependencies(test_boxbox_computeDistance ${${PROJECT_NAME}_EXPORTED_TARGETS})
+# add_dependencies(test_boxrobot ${${PROJECT_NAME}_EXPORTED_TARGETS})
+# add_dependencies(test_collision_environment ${${PROJECT_NAME}_EXPORTED_TARGETS})
+# add_dependencies(test_computeCollision ${${PROJECT_NAME}_EXPORTED_TARGETS})
+# add_dependencies(test_computeDistance ${${PROJECT_NAME}_EXPORTED_TARGETS})
+# add_dependencies(test_directedvectors_case_incollision ${${PROJECT_NAME}_EXPORTED_TARGETS})
+# add_dependencies(test_multiple_selfcollision ${${PROJECT_NAME}_EXPORTED_TARGETS})
+# add_dependencies(test_removeCollisionPairs ${${PROJECT_NAME}_EXPORTED_TARGETS})
+# add_dependencies(test_simpleboxes ${${PROJECT_NAME}_EXPORTED_TARGETS})
+

@@ -1,8 +1,17 @@
 #ifndef ALM_LOCOMANIPULATION_A_STAR_PLANNER_H
 #define ALM_LOCOMANIPULATION_A_STAR_PLANNER_H
 
+// ROS related files
 #include <ros/ros.h>
 #include <avatar_locomanipulation/BinaryClassifierQuery.h>
+
+// Lib for loading environment variables
+#include <stdlib.h>
+// Parameter Loader and Saver
+#include <avatar_locomanipulation/helpers/yaml_data_saver.hpp>
+#include <avatar_locomanipulation/helpers/param_handler.hpp>
+#include <iostream>
+#include <fstream>
 
 #include <avatar_locomanipulation/planners/a_star_planner.hpp>
 #include <avatar_locomanipulation/walking/config_trajectory_generator.hpp>
@@ -80,6 +89,9 @@ namespace planner{
         void setClassifierClient(ros::ServiceClient & classifier_client_in);
         bool print_classifier_results = false;
         bool use_classifier = false;
+        bool classifier_store_mistakes = false;
+        bool classifier_store_mistakes_during_reconstruction = false;
+
 
         std::shared_ptr<RobotModel> robot_model;
         std::shared_ptr<ManipulationFunction> f_s;
@@ -219,15 +231,15 @@ namespace planner{
         int nn_stance_origin;
         int nn_manipulation_type;
 
-        Eigen::Vector3d nn_swing_foot_start_pos;
+        Eigen::Vector3d    nn_swing_foot_start_pos;
         Eigen::Quaterniond nn_swing_foot_start_ori;
-        Eigen::Vector3d nn_pelvis_pos;
+        Eigen::Vector3d    nn_pelvis_pos;
         Eigen::Quaterniond nn_pelvis_ori;
-        Eigen::Vector3d nn_landing_foot_pos;
+        Eigen::Vector3d    nn_landing_foot_pos;
         Eigen::Quaterniond nn_landing_foot_ori;
-        Eigen::Vector3d nn_right_hand_start_pos;
+        Eigen::Vector3d    nn_right_hand_start_pos;
         Eigen::Quaterniond nn_right_hand_start_ori;
-        Eigen::Vector3d nn_left_hand_start_pos;
+        Eigen::Vector3d    nn_left_hand_start_pos;
         Eigen::Quaterniond nn_left_hand_start_ori;
 
         double nn_feasibility_score = 0.0;
@@ -240,7 +252,7 @@ namespace planner{
         // Prepare classifier service request
         avatar_locomanipulation::BinaryClassifierQuery classifier_srv;
 
-        // 
+        //        
         double getClassifierResult();
 
         // Helpers for setting up classifier input
@@ -256,6 +268,15 @@ namespace planner{
             const Eigen::Vector3d & landing_foot_pos_in, const Eigen::Quaterniond & landing_foot_ori_in,  
             const Eigen::Vector3d & right_hand_start_pos_in, const Eigen::Quaterniond & right_hand_start_ori_in,  
             const Eigen::Vector3d & left_hand_start_pos_in, const Eigen::Quaterniond & left_hand_start_ori_in);
+
+        // Store the data
+        std::string str_stance_origin;
+        std::string str_manipulation_type;
+        void storeTransitionDatawithTaskSpaceInfo(const shared_ptr<LMVertex> & start_node_traj, bool result);
+
+        void appendPosString(const Eigen::Vector3d & pos, std::string & str_in_out);
+        void appendOriString(const Eigen::Quaterniond & ori, std::string & str_in_out);
+        std::size_t getDataHash();
 
     };
 

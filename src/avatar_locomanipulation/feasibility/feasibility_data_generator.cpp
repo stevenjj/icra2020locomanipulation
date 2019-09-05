@@ -292,11 +292,20 @@ bool FeasibilityDataGenerator::randomizeStartingConfiguration(){
 
   // Set pelvis orientation to be the midfoot frame orientation
   pelvis_ori = Eigen::AngleAxisd( swing_foot_theta_angle/2.0, Eigen::Vector3d(0.0, 0.0, 1.0) );
+  pelvis_pos = 0.5*(stance_foot_pos + swing_foot_pos); // Now always using midfeet frame
+  pelvis_pos[2] = generateRandMinMax(pelvis_height_min, pelvis_height_max); // set pelvis height
+
   // Randomize pelvis location based on swing and stance feet location
-  getRandomPelvisLocation(pelvis_pos);
+  // getRandomPelvisLocation(pelvis_pos);
 
   // randomize joint configuration
   q_rand = (pinocchio::randomConfiguration(robot_model->model, q_min, q_max));
+
+  // Set Torso to 0.0
+  q_rand[robot_model->getJointIndex("torsoYaw")] = 0.0;
+  q_rand[robot_model->getJointIndex("torsoPitch")] = 0.0;
+  q_rand[robot_model->getJointIndex("torsoRoll")] = 0.0;    
+
   // Set Neck to 0.0
   q_rand[robot_model->getJointIndex("lowerNeckPitch")] = 0.0;
   q_rand[robot_model->getJointIndex("neckYaw")] = 0.0;
