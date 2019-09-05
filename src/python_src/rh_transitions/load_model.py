@@ -70,7 +70,7 @@ def create_model(dataset_dim, num_hidden_layers = 3, units_per_layer=64, l2_reg=
 	return model
 
 # Get the data
-dataset_folder = "/home/sjorgen1/Data/param_set_1/"
+dataset_folder = "/home/ryan/Data/param_set_1/"
 dataset = transition_dataset.ContactTransitionDataset(num_positive_data)
 
 x_test, y_test = get_data(dataset, dataset_folder, contact_transition_types)
@@ -103,6 +103,8 @@ print model.summary()
 # Evaluate
 print "Evaluating test set:"
 model.evaluate(x_test, y_test)
+
+#model.predict(x_train[:])
 
 
 
