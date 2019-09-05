@@ -1,0 +1,50 @@
+Terminal 0
+# add line at the bottom of ~/.bashrc 
+export IS_GAZEBO=true
+# Then in a new terminal:
+source ~/.bashrc
+
+Terminal 1
+roslaunch val_gazebo val_sim_gazebo_sync.launch
+
+Terminal 2
+roslaunch ihmc_valkyrie_ros val_wholebody_control_gazebo.launch
+
+Terminal 3
+source ~/.ihmc_bridge_config
+
+Terminal 4
+ros2 run ros1_bridge valkyrie_static_bridge /home/$USER/ihmc_bridge_ws/install/yaml_configs/valkyrie_bridged_topics.yaml 
+
+Terminal 5
+~/valkyrie/runNetworkProcessor.sh
+
+Press Play. With for robot to finish moving
+
+Terminal 6
+Lower Harness:
+rostopic pub -1 /valkyrie/harness/velocity std_msgs/Float32 "data: -0.1"
+
+Stop Harness
+rostopic pub -1 /valkyrie/harness/velocity std_msgs/Float32 "data: -0.0"
+
+Go Walking:
+rostopic pub /ihmc/valkyrie/humanoid_control/input/high_level_state controller_msgs/HighLevelStateMessage "sequence_id: 0
+high_level_controller_name: 4" 
+
+Release Harness:
+rostopic pub -1 /valkyrie/harness/detach std_msgs/Bool "data: true"
+
+Terminal 7: Lidar Spin
+rostopic pub /multisense/set_spindle_speed std_msgs/Float64 "data: 5.0" 
+
+Terminal 8
+roslaunch val_viz ihmc_viz_robot.launch 
+
+
+Terminal 9
+rosrun valkyrie_navigation ValManipulateHandWhileWalkingActionServer.py 
+
+Terminal 10
+roscd valkyrie_navigation/scripts
+python ClientManipulateHandWhileWalkingTest.py

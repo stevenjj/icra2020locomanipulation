@@ -7,3 +7,8 @@
 # target_link_libraries(test_load_urdf_model ${PROJECT_LIBRARIES})
 # target_link_libraries(test_rviz_valkyrie ${PROJECT_LIBRARIES})
 # target_link_libraries(test_valkyrie_model  ${PROJECT_LIBRARIES})
+
+# add_dependencies(test_load_and_viz ${${PROJECT_NAME}_EXPORTED_TARGETS})
+# add_dependencies(test_load_urdf_model ${${PROJECT_NAME}_EXPORTED_TARGETS})
+# add_dependencies(test_rviz_valkyrie ${${PROJECT_NAME}_EXPORTED_TARGETS})
+# add_dependencies(test_valkyrie_model ${${PROJECT_NAME}_EXPORTED_TARGETS})

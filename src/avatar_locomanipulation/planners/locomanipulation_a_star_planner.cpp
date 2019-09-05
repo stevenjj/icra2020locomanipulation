@@ -278,8 +278,17 @@ namespace planner{
       current_ = static_pointer_cast<LMVertex>(forward_order_optimal_path[i]);
       parent_ = static_pointer_cast<LMVertex>(current_->parent);
 
+      // Check classifier result for this transition
+      bool transition_possible = true;
       if (use_classifier){
-        std::cout << "Feasibility Score = " << getFeasibility(parent_, current_) << std::endl;
+        double feas_score = getFeasibility(parent_, current_);
+        if (print_classifier_results){
+          std::cout << "Feasibility Score = " << feas_score << std::endl;
+        }
+        // If score is below the threshold, this transition is not possible
+        if (feas_score < feasibility_threshold){
+          transition_possible = false;
+        }
       }
 
       // Update the input footstep list
@@ -302,6 +311,20 @@ namespace planner{
       // Get the final configuration
       std::cout << "getting the final configuration" << std::endl;
       ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_end);
+
+      // Store the data if the classifier made a mistake.
+      if (use_classifier){
+        if ((classifier_store_mistakes_during_reconstruction) || (classifier_store_mistakes)){
+            // False Positive.
+            if ((transition_possible) && (!convergence)){
+              storeTransitionDatawithTaskSpaceInfo(parent_, false);
+            } 
+            // False Negatives
+            else if ((!transition_possible) && (convergence)){
+              storeTransitionDatawithTaskSpaceInfo(parent_, true);
+            }
+        }        
+      }
 
       // Check for convergence. This should work however.
       if (convergence){
@@ -603,21 +626,38 @@ namespace planner{
         input_footstep_list.push_back(current_->right_foot);        
       }
 
+      // Check the classifier result
+      bool transition_possible = true;
       if (use_classifier){
         double feas_score = getFeasibility(parent_, current_);
         if (print_classifier_results){
           std::cout << "Feasibility Score = " << feas_score << std::endl;
         }
-        // If the score is less than the treshold, don't bother with the computation
+        // If the score is less than the treshold
         if (feas_score < feasibility_threshold){
-          return false;
-        }      
+          transition_possible = false;
+          if (!classifier_store_mistakes){
+            return false;
+          }
+        }
       }
 
       convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
                                                                   parent_->s, delta_s, 
                                                                   parent_->q_init, 
                                                                  input_footstep_list);
+
+      if ((use_classifier) && (classifier_store_mistakes)){
+          // Store the data if the classifier made a mistake.
+          // False Positive.
+          if ((transition_possible) && (!convergence)){
+            storeTransitionDatawithTaskSpaceInfo(parent_, false);
+          } 
+          // False Negatives
+          else if ((!transition_possible) && (convergence)){
+            storeTransitionDatawithTaskSpaceInfo(parent_, true);
+          }
+      }
 
       if (convergence){
         ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_tmp);
@@ -808,7 +848,7 @@ namespace planner{
         input_footstep_list.push_back(current_->right_foot);        
       }
 
-
+      bool transition_possible = true;
       if (use_classifier){
         double feas_score = getFeasibility(parent_, current_);
         if (print_classifier_results){
@@ -816,16 +856,32 @@ namespace planner{
         }
         // If the score is less than the treshold, don't bother with the computation
         if (feas_score < feasibility_threshold){
-          return neighbors;
+          transition_possible = false;
+          // If we are not storing possible mistakes, proceed with ignoring the computation checl
+          if (!classifier_store_mistakes){
+            return neighbors;
+          }
         }      
       }
-
 
       convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
                                                                   parent_->s, delta_s, 
                                                                   parent_->q_init, 
                                                                   input_footstep_list);
       std::cout << "Converged? " << (convergence ? "True" : "False") << std::endl;       
+
+      if ((use_classifier) && (classifier_store_mistakes)){
+          // Store the data if the classifier made a mistake.
+          // False Positive.
+          if ((transition_possible) && (!convergence)){
+            storeTransitionDatawithTaskSpaceInfo(parent_, false);
+          } 
+          // False Negatives
+          else if ((!transition_possible) && (convergence)){
+            storeTransitionDatawithTaskSpaceInfo(parent_, true);
+          }
+
+      }
 
       // If it converges, update the configuration of the current node
       if (convergence){
@@ -955,6 +1011,103 @@ namespace planner{
     return prediction_result;
 
 
+  }
+
+  void LocomanipulationPlanner::storeTransitionDatawithTaskSpaceInfo(const shared_ptr<LMVertex> & start_node_traj, bool result){
+    // Add transition data
+    std::cout << "storing transition data..." << std::endl;
+    // Define the save path
+    std::string userhome = std::string("/home/") + std::string(std::getenv("USER")) + std::string("/");
+    std::cout << "User home path: " << userhome << std::endl;
+    std::string parent_folder_path("Data/planner_data/"); 
+
+
+    // Define the yaml emitter
+    YAML::Emitter out;
+    
+    // Begin map creation
+    out << YAML::BeginMap;
+    data_saver::emit_string(out, "result", (result ? "success" : "failure"));
+    data_saver::emit_joint_configuration(out, "q_init", start_node_traj->q_init);
+
+    // Stance origin
+    str_stance_origin = "";
+    str_manipulation_type = "";
+    if (nn_stance_origin == CONTACT_TRANSITION_DATA_LEFT_FOOT_STANCE){
+      str_stance_origin = "left_foot";
+    }
+    else if (nn_stance_origin == CONTACT_TRANSITION_DATA_RIGHT_FOOT_STANCE){
+      str_stance_origin = "right_foot";
+    }
+
+    // Manipulation Type
+    if (nn_manipulation_type == CONTACT_TRANSITION_DATA_RIGHT_HAND){
+      str_manipulation_type = "right_hand";
+    }
+    else if (nn_manipulation_type == CONTACT_TRANSITION_DATA_LEFT_HAND){
+      str_manipulation_type = "left_hand";
+    }
+    else if (nn_manipulation_type == CONTACT_TRANSITION_DATA_BOTH_HANDS){
+      str_manipulation_type = "both_hands"; 
+    }
+
+
+    // // generate HASH instead of integer counter
+    std::size_t hash_number = getDataHash();
+    std::string result_folder = result ? "positive_examples/" : "negative_examples/";
+    std::string save_path = userhome + parent_folder_path + str_manipulation_type + "/transitions_data_with_task_space_info/" + result_folder + str_manipulation_type + "_" + str_stance_origin + "_" + std::to_string(hash_number) + ".yaml";
+    std::cout << "saving to: " << save_path << std::endl;
+
+    data_saver::emit_string(out, "stance_origin", str_stance_origin);
+    data_saver::emit_position(out, "swing_foot_starting_position", nn_swing_foot_start_pos);
+    data_saver::emit_orientation(out, "swing_foot_starting_orientation", nn_swing_foot_start_ori);
+    data_saver::emit_position(out, "pelvis_starting_position", nn_pelvis_pos);
+    data_saver::emit_orientation(out, "pelvis_starting_orientation", nn_pelvis_ori);
+
+    data_saver::emit_string(out, "manipulation_type", str_manipulation_type);
+    data_saver::emit_position(out, "left_hand_starting_position", nn_left_hand_start_pos);
+    data_saver::emit_orientation(out, "left_hand_starting_orientation", nn_left_hand_start_ori);
+    data_saver::emit_position(out, "right_hand_starting_position", nn_right_hand_start_pos);
+    data_saver::emit_orientation(out, "right_hand_starting_orientation", nn_right_hand_start_ori);
+
+    data_saver::emit_position(out, "landing_foot_position", nn_landing_foot_pos);
+    data_saver::emit_orientation(out, "landing_foot_orientation", nn_landing_foot_ori);
+    out << YAML::EndMap;
+
+    // Store the data
+    std::ofstream file_output_stream(save_path);     
+    std::cout << out.c_str() << std::endl;
+    file_output_stream << out.c_str(); 
+  }
+
+
+  void LocomanipulationPlanner::appendPosString(const Eigen::Vector3d & pos, std::string & str_in_out){
+    double factor = 1000.0;  
+    str_in_out = str_in_out + std::to_string((int)round(pos[0] * factor)) + "_" + 
+                              std::to_string((int)round(pos[1] * factor)) + "_" + 
+                              std::to_string((int)round(pos[2] * factor));
+  }
+  void LocomanipulationPlanner::appendOriString(const Eigen::Quaterniond & ori, std::string & str_in_out){
+    double factor = 1000.0;  
+    str_in_out = str_in_out + std::to_string((int)round(ori.x() * factor)) + "_" + 
+                              std::to_string((int)round(ori.y() * factor)) + "_" +
+                              std::to_string((int)round(ori.z() * factor)) + "_" +
+                              std::to_string((int)round(ori.w() * factor));                               
+  }  
+  std::size_t LocomanipulationPlanner::getDataHash(){
+    std::string hash_string;
+    // Begin creating hash string for this data
+    hash_string = str_stance_origin + str_manipulation_type;
+    appendPosString(nn_swing_foot_start_pos, hash_string); appendOriString(nn_swing_foot_start_ori, hash_string);
+    appendPosString(nn_pelvis_pos, hash_string); appendOriString(nn_pelvis_ori, hash_string);
+    appendPosString(nn_left_hand_start_pos, hash_string); appendOriString(nn_left_hand_start_ori, hash_string);
+    appendPosString(nn_right_hand_start_pos, hash_string); appendOriString(nn_right_hand_start_ori, hash_string);
+    appendPosString(nn_landing_foot_pos, hash_string); appendOriString(nn_landing_foot_ori, hash_string);
+
+    std::cout << "hash string = " << std::endl;
+    std::cout << hash_string << std::endl;
+
+    return std::hash<std::string>{}(hash_string);
   }
 
 

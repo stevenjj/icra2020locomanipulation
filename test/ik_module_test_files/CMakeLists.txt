@@ -17,3 +17,11 @@
 #target_link_libraries(test_ik_multipleobject ${PROJECT_LIBRARIES})
 # target_link_libraries(test_ik_multipleobject_idea1 ${PROJECT_LIBRARIES})
 # target_link_libraries(test_ik_self_object ${PROJECT_LIBRARIES})
+
+# add_dependencies(test_config_trajectory_generator ${${PROJECT_NAME}_EXPORTED_TARGETS})
+# add_dependencies(test_ik_module ${${PROJECT_NAME}_EXPORTED_TARGETS})
+# add_dependencies(test_ik_objectcollision ${${PROJECT_NAME}_EXPORTED_TARGETS})
+# add_dependencies(test_ik_selfcollision ${${PROJECT_NAME}_EXPORTED_TARGETS})
+# add_dependencies(test_prioritized_ik ${${PROJECT_NAME}_EXPORTED_TARGETS})
+# add_dependencies(test_walking_pattern_generator ${${PROJECT_NAME}_EXPORTED_TARGETS})
+

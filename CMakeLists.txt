@@ -21,7 +21,7 @@ find_package(Boost 1.58 REQUIRED COMPONENTS system)
 find_package(YamlCpp 0.5.2 REQUIRED) # Using a custom FindYamlcpp.cmake
 
 
-add_service_files(
+add_service_files(DIRECTORY srv
   FILES
   AddTwoInts.srv
   BinaryClassifierQuery.srv
@@ -42,7 +42,7 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  CATKIN_DEPENDS eigenpy pinocchio urdf roscpp sensor_msgs tf rviz
+  CATKIN_DEPENDS eigenpy pinocchio urdf roscpp sensor_msgs tf rviz std_msgs message_runtime
 )
 
 ###########
@@ -95,7 +95,7 @@ SET (ROS_BRIDGE_SOURCES
 SET (FEASIBILITY_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/feasibility/feasibility.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/feasibility/feasibility_data_generator.cpp
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/feasibility/feasibility_data_playback.cpp	
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/feasibility/feasibility_data_playback.cpp
 	)
 
 SET (TASK_SOURCES
@@ -104,13 +104,13 @@ SET (TASK_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_6dpose.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_xdpose.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_6dpose_wrt_midfoot.cpp
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_6dpose_wrt_frame.cpp	
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_6dpose_no_rxry.cpp	
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_6dpose_wrt_frame.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_6dpose_no_rxry.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_xyrzpose_wrt_frame.cpp
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_xdpose_wrt_frame.cpp		
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_xdpose_wrt_frame.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_6dcontact_normal.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_4dcontact_normal.cpp
-	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_contact_normal.cpp	
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_contact_normal.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_3dorientation.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_joint_config.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/tasks/task_stack.cpp

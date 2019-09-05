@@ -5,3 +5,7 @@
 # target_link_libraries(test_rkf45 ${PROJECT_LIBRARIES})
 # target_link_libraries(test_data_saver ${PROJECT_LIBRARIES})
 # target_link_libraries(test_yaml_emitter ${PROJECT_LIBRARIES})
+
+# add_dependencies(test_rkf45 ${${PROJECT_NAME}_EXPORTED_TARGETS})
+# add_dependencies(test_data_saver ${${PROJECT_NAME}_EXPORTED_TARGETS})
+# add_dependencies(test_yaml_emitter ${${PROJECT_NAME}_EXPORTED_TARGETS})
