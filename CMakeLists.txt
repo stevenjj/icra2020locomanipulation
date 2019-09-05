@@ -85,6 +85,8 @@ SET (HELPER_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/yaml_data_saver.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/gmm_fit.cpp
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/orientation_utils.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/IOUtilities.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/helpers/NeuralNetModel.cpp
 )
 
 SET (ROS_BRIDGE_SOURCES
@@ -148,12 +150,18 @@ SET(PROJECT_SOURCES
 	${COLLISION_ENVIRONMENT_SOURCES}
 	${IK_MODULE_SOURCES}
 	${CUBIC_INTERPOLATION_MODULE_SOURCES}
-	${PLANNER_SOURCES})
+	${PLANNER_SOURCES}
+	)
+
+# Compile the custom yaml parser
+add_subdirectory(customYamlParser)
 
 # Grab all the libraries
 SET(PROJECT_LIBRARIES
 	${catkin_LIBRARIES}
-	${YAML_CPP_LIBRARIES})
+	${YAML_CPP_LIBRARIES}
+	myYaml)
+
 
 add_subdirectory(test)
 add_subdirectory(nodes)
