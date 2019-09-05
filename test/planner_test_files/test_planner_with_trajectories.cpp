@@ -367,11 +367,24 @@ void test_LM_planner_with_NN(){
 
   // End of initialization ---------------------------------------------------------------------------------------
   LocomanipulationPlanner lm_planner;
+
+  // Set whether to learn from mistakes or not
+  // Regenerate the discretizations
+  bool learn_from_mistakes = false;
+  if (learn_from_mistakes){ 
+    lm_planner.classifier_store_mistakes = true;  
+    std::cout << "Storing classifier mistakes? " << lm_planner.classifier_store_mistakes << std::endl;
+    lm_planner.generateDiscretization();
+  }
+  // ----------
+
   // Initialize
   lm_planner.initializeLocomanipulationVariables(valkyrie_model, f_s_manipulate_door, ctg);
   // Set the classifier client:
   std::cout << "Setting the classifier client" << std::endl;
   lm_planner.setClassifierClient(client);
+
+
 
 
 

@@ -312,15 +312,18 @@ namespace planner{
       std::cout << "getting the final configuration" << std::endl;
       ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_end);
 
-      // Store the data if the classifier made a mistake.
-      if (use_classifier){
+      // Store the data if the classifier made a mistake during reconstruction.
+      // only look at mistakes in which the s variable did not move as this is the only thing we can learn
+      if (use_classifier && (!edgeHasSVarMoved(parent_, current_)) ){
         if ((classifier_store_mistakes_during_reconstruction) || (classifier_store_mistakes)){
             // False Positive.
             if ((transition_possible) && (!convergence)){
+              std::cout << "  False Positive" << std::endl;
               storeTransitionDatawithTaskSpaceInfo(parent_, false);
             } 
             // False Negatives
             else if ((!transition_possible) && (convergence)){
+              std::cout << "  False Negative" << std::endl;
               storeTransitionDatawithTaskSpaceInfo(parent_, true);
             }
         }        
@@ -607,7 +610,7 @@ namespace planner{
     goal_ = static_pointer_cast<LMVertex>(goal);
 
     // check if s is within 0.05 of goal_s
-    std::cout << "  testing if we got to the goal for (goal_s, current_s) = (" << goal_->s << ", " << current_->s << ")" << std::endl;
+    std::cout << "    Goal Check (goal_s, current_s) = (" << goal_->s << ", " << current_->s << ")" << std::endl;
     bool s_satisfaction = (fabs(goal_->s - current_->s) <= goal_tol);
     bool convergence = false;
 
@@ -631,12 +634,13 @@ namespace planner{
       if (use_classifier){
         double feas_score = getFeasibility(parent_, current_);
         if (print_classifier_results){
-          std::cout << "Feasibility Score = " << feas_score << std::endl;
+          std::cout << "  Feasibility Score = " << feas_score << std::endl;
         }
         // If the score is less than the treshold
         if (feas_score < feasibility_threshold){
           transition_possible = false;
-          if (!classifier_store_mistakes){
+          // proceed with returning false if we are not storing mistakes or the s variable has moved
+          if ((!classifier_store_mistakes) || edgeHasSVarMoved(parent_, current_)) {
             return false;
           }
         }
@@ -647,14 +651,17 @@ namespace planner{
                                                                   parent_->q_init, 
                                                                  input_footstep_list);
 
-      if ((use_classifier) && (classifier_store_mistakes)){
+      // Store mistakes if the s variable did not move
+      if ((use_classifier) && (classifier_store_mistakes) && (!edgeHasSVarMoved(parent_, current_)) ){
           // Store the data if the classifier made a mistake.
           // False Positive.
           if ((transition_possible) && (!convergence)){
+            std::cout << "  False Positive" << std::endl;
             storeTransitionDatawithTaskSpaceInfo(parent_, false);
           } 
           // False Negatives
           else if ((!transition_possible) && (convergence)){
+            std::cout << "  False Negative" << std::endl;
             storeTransitionDatawithTaskSpaceInfo(parent_, true);
           }
       }
@@ -673,7 +680,11 @@ namespace planner{
 
 
   void LocomanipulationPlanner::generateDiscretization(){
-    delta_s_vals = {0.01, 0.04, 0.08};
+    if (classifier_store_mistakes)
+      delta_s_vals = {0.0};
+    else{
+      delta_s_vals = {0.01, 0.04, 0.08};
+    }
 
     //number of bins for the local lattice
     int num_x_lattice_pts = int(abs(2*max_lattice_translation)/dx) + 1;
@@ -740,7 +751,7 @@ namespace planner{
   }
 
   void LocomanipulationPlanner::generateFootstepNeighbors(int footstep_side){
-    std::cout << "Generating " << (footstep_side == RIGHT_FOOTSTEP ? "right" : "left") << " landing foot neighbors" << std::endl;
+    // std::cout << "Generating " << (footstep_side == RIGHT_FOOTSTEP ? "right" : "left") << " landing foot neighbors" << std::endl;
 
     //  Initialize footstep landing location object and stance foot location.
     //  These are both in the planner origin frame.
@@ -852,15 +863,19 @@ namespace planner{
       if (use_classifier){
         double feas_score = getFeasibility(parent_, current_);
         if (print_classifier_results){
-          std::cout << "Feasibility Score = " << feas_score << std::endl;
+          std::cout << "  Feasibility Score = " << feas_score << std::endl;
         }
         // If the score is less than the treshold, don't bother with the computation
         if (feas_score < feasibility_threshold){
           transition_possible = false;
-          // If we are not storing possible mistakes, proceed with ignoring the computation checl
-          if (!classifier_store_mistakes){
+          std::cout << "  Transition Possible: " << (transition_possible ? "True" : "False") << std::endl; 
+          // If we are not storing possible mistakes, proceed with ignoring the computation check
+          // if the s variable has moved, we cannot learn from this example so ignore the computation check
+          if ((!classifier_store_mistakes) || edgeHasSVarMoved(parent_, current_)){
             return neighbors;
           }
+        }else{
+          std::cout << "  Transition Possible: " << (transition_possible ? "True" : "False") << std::endl;           
         }      
       }
 
@@ -868,16 +883,22 @@ namespace planner{
                                                                   parent_->s, delta_s, 
                                                                   parent_->q_init, 
                                                                   input_footstep_list);
-      std::cout << "Converged? " << (convergence ? "True" : "False") << std::endl;       
 
-      if ((use_classifier) && (classifier_store_mistakes)){
+      std::cout << "  Converged: " << (convergence ? "True" : "False") << std::endl;       
+
+      // Store the transition if we are using the classifier, storing the mistakes and
+      // the s variable has not moved
+
+      if ((use_classifier) && (classifier_store_mistakes) && (!edgeHasSVarMoved(parent_, current_)) ){
           // Store the data if the classifier made a mistake.
           // False Positive.
           if ((transition_possible) && (!convergence)){
+            std::cout << "  False Positive" << std::endl;
             storeTransitionDatawithTaskSpaceInfo(parent_, false);
           } 
           // False Negatives
           else if ((!transition_possible) && (convergence)){
+            std::cout << "  False Negative" << std::endl;
             storeTransitionDatawithTaskSpaceInfo(parent_, true);
           }
 
@@ -1076,7 +1097,7 @@ namespace planner{
 
     // Store the data
     std::ofstream file_output_stream(save_path);     
-    std::cout << out.c_str() << std::endl;
+    // std::cout << out.c_str() << std::endl;
     file_output_stream << out.c_str(); 
   }
 
