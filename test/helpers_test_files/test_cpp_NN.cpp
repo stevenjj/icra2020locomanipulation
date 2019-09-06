@@ -38,7 +38,7 @@ void normalizeInputCalculate(const Eigen::VectorXd & x_in, const Eigen::VectorXd
 
 int main(int argc, char ** argv){
   ParamHandler param_handler;
-  std::string model_path = "/home/stevenjj/nasa_ws/src/avatar_locomanipulation/nn_models/cpp_models/model_baseline_11500pts.yaml";
+  std::string model_path = THIS_PACKAGE_PATH"nn_models/layer3_20000pts/cpp_model/layer3_model.yaml";
 
   std::cout << "Loading Model..." << std::endl;
   myYAML::Node model = myYAML::LoadFile(model_path);
@@ -79,7 +79,7 @@ int main(int argc, char ** argv){
     left_hand_start_pos, quatToVec(left_hand_start_ori);
 
   //Normalization Params
-  param_handler.load_yaml_file("/home/stevenjj/nasa_ws/src/avatar_locomanipulation/nn_models/cpp_models/normalization_params.yaml");
+  param_handler.load_yaml_file(THIS_PACKAGE_PATH"nn_models/layer3_20000pts/cpp_model/normalization_params.yaml");
   std::vector<double> vmean;
   param_handler.getVector("x_train_mean", vmean);
   std::vector<double> vstd_dev;

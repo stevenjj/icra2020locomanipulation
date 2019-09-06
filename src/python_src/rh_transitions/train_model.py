@@ -82,9 +82,9 @@ def save_model(save_directory, dataset, model, model_hyper_params):
 	return
 
 # Load data
-dataset_folder = "/home/sjorgen1/Data/param_set_1/"
+dataset_folder = "/home/stevenjj/Data/param_set_1/"
 
-num_positive_data = 11500 #10000 # per transition_type
+num_positive_data = 20000 #10000 # per transition_type
 dataset = transition_dataset.ContactTransitionDataset(num_positive_data)
 
 contact_transition_types = [ ("left_hand", "right_foot"), ("left_hand", "left_foot"), ("right_hand", "left_foot"), ("right_hand", "right_foot"), ("both_hands", "right_foot"), ("both_hands", "left_foot") ]# [ ("right_hand", "right_foot"), ("right_hand", "left_foot") ]
@@ -111,8 +111,8 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,
                                                  save_weights_only=True,
                                                  verbose=1)
 # Create model and print summary
-n_hidden_layers = 5
-n_units_per_layer = 512 #128
+n_hidden_layers = 3
+n_units_per_layer = 100	 #128
 l2_regularization = 0.001
 
 # best so far
@@ -163,12 +163,12 @@ print "baseline f1 score = ", baseline_f1
 
 # Number of models to generate
 random.seed(10)
-num_models = 20
+num_models = 0
 
 for i in range(num_models):
-	n_hidden_layers = random.randint(2,10)
-	n_units_per_layer = 100*random.randint(1, 10)
-	l2_regularization = 10**(-1*random.randint(2,10))
+	n_hidden_layers = random.randint(2,3)
+	n_units_per_layer = 10*random.randint(6, 12)
+	l2_regularization = 10**(-1*random.randint(3,7))
 
 	model_name = "nh_" + str(n_hidden_layers) + "upl_" + str(n_units_per_layer) + "l2r_" + str(l2_regularization)
 

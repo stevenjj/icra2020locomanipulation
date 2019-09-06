@@ -69,40 +69,41 @@ def create_model(dataset_dim, num_hidden_layers = 3, units_per_layer=64, l2_reg=
 
 	return model
 
-# Get the data
-dataset_folder = "/home/sjorgen1/Data/param_set_1/"
-dataset = transition_dataset.ContactTransitionDataset(num_positive_data)
+if __name__ == "__main__":
+	# Get the data
+	dataset_folder = "/home/stevenjj/Data/param_set_1/"
+	dataset = transition_dataset.ContactTransitionDataset(num_positive_data)
 
-x_test, y_test = get_data(dataset, dataset_folder, contact_transition_types)
-dataset_dim = x_test.shape[1]
+	x_test, y_test = get_data(dataset, dataset_folder, contact_transition_types)
+	dataset_dim = x_test.shape[1]
 
-# Identify the load path
-load_folder = ""
-for type in contact_transition_types:
-	load_folder = load_folder + shorthand[type[0]] + "_" + shorthand[type[1]]
-load_path = "./learned_model/" + load_folder + "/"
+	# Identify the load path
+	load_folder = ""
+	for type in contact_transition_types:
+		load_folder = load_folder + shorthand[type[0]] + "_" + shorthand[type[1]]
+	load_path = "./learned_model/" + load_folder + "/"
 
-# Load the normalization parameters
-x_train_mean, x_train_std = load_normalization_params(load_path+'normalization_params.yaml')
-# Normalize the dataset
-x_test = (x_test - x_train_mean) / x_train_std
+	# Load the normalization parameters
+	x_train_mean, x_train_std = load_normalization_params(load_path+'normalization_params.yaml')
+	# Normalize the dataset
+	x_test = (x_test - x_train_mean) / x_train_std
 
-# Load and create the model
-hyper_params = load_hyper_params(load_path+'hyper_params.yaml')
-n_hidden_layers = hyper_params['n_hidden_layers']
-n_units_per_layer = hyper_params['n_units_per_layer']
-l2_regularization = hyper_params['l2_regularization']
+	# Load and create the model
+	hyper_params = load_hyper_params(load_path+'hyper_params.yaml')
+	n_hidden_layers = hyper_params['n_hidden_layers']
+	n_units_per_layer = hyper_params['n_units_per_layer']
+	l2_regularization = hyper_params['l2_regularization']
 
-print "hyperparams = ", hyper_params
+	print "hyperparams = ", hyper_params
 
-# best so far
-model = create_model(dataset_dim, num_hidden_layers=n_hidden_layers, units_per_layer=n_units_per_layer, l2_reg=l2_regularization)
-model.load_weights(load_path)
-print model.summary()
+	# best so far
+	model = create_model(dataset_dim, num_hidden_layers=n_hidden_layers, units_per_layer=n_units_per_layer, l2_reg=l2_regularization)
+	model.load_weights(load_path)
+	print model.summary()
 
-# Evaluate
-print "Evaluating test set:"
-model.evaluate(x_test, y_test)
+	# Evaluate
+	print "Evaluating test set:"
+	model.evaluate(x_test, y_test)
 
 
 

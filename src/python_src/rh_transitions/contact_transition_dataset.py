@@ -15,7 +15,7 @@ dataset_folder = "/home/sjorgen1/Data/param_set_1/right_hand/transitions_data_wi
 
 
 class ContactTransitionDataset:
-    def __init__(self, num_in = 100, trainset_percentage_in=0.8, valset_percentage_in=0.2):
+    def __init__(self, num_in = 100, trainset_percentage_in=0.9, valset_percentage_in=0.1):
         self.num = num_in # Total number of training data
 
         self.x = np.array([])
