@@ -584,9 +584,9 @@ namespace planner{
 
     double feasibility_cost = 0.0; 
 
-    // if (use_classifier){
-    //   feasibility_cost =  w_feasibility*(1.0 - getFeasibility(current_, neighbor_));      
-    // }
+    if (use_classifier){
+      feasibility_cost =  w_feasibility*(1.0 - getFeasibility(current_, neighbor_));      
+    }
 
     double delta_g = s_cost + distance_cost + step_cost + transition_distance_cost + feasibility_cost;
 
@@ -611,7 +611,7 @@ namespace planner{
     goal_ = static_pointer_cast<LMVertex>(goal);
 
     // check if s is within 0.05 of goal_s
-    std::cout << "    Goal Check (goal_s, current_s) = (" << goal_->s << ", " << current_->s << ")" << std::endl;
+    std::cout << "  Goal Check (goal_s, current_s) = (" << goal_->s << ", " << current_->s << ")" << std::endl;
     bool s_satisfaction = (fabs(goal_->s - current_->s) <= goal_tol);
     bool convergence = false;
 
@@ -690,6 +690,7 @@ namespace planner{
     if (classifier_store_mistakes)
       delta_s_vals = {0.0};
     else{
+      // delta_s_vals = {0.01, 0.04, 0.08};
       delta_s_vals = {0.01, 0.04, 0.08};
     }
 
@@ -929,17 +930,38 @@ namespace planner{
       // END ----
 
     }else{  
-      std::cout << "first node evaluated is true" << std::endl;
+      // std::cout << "first node evaluated is true" << std::endl;
       first_node_evaluated = true;      
+
+      // Generate neighbors with lazy evaluation ie: All neighbors are valid unless it has been attempted
+      // std::cout << " -- gen. non footstep neighbors --" << std::endl;
+      // generateNonFootstepNeighbors();
+      std::cout << " -- gen. left footstep neighbors --" << std::endl;
+      generateFootstepNeighbors(LEFT_FOOTSTEP);
+      std::cout << " -- gen. right footstep neighbors --" << std::endl;
+      generateFootstepNeighbors(RIGHT_FOOTSTEP);
+      std::cout << "num neighbors generated: " << neighbors.size() << std::endl;
+
+      return neighbors;
     }
 
-    std::cout << "generating neighbors for the current neighbor" << std::endl;
-
+    // std::cout << "generating neighbors for the current neighbor" << std::endl;
 
     // Generate neighbors with lazy evaluation ie: All neighbors are valid unless it has been attempted
+    std::cout << " -- gen. non footstep neighbors --" << std::endl;
     generateNonFootstepNeighbors();
-    generateFootstepNeighbors(LEFT_FOOTSTEP);
-    generateFootstepNeighbors(RIGHT_FOOTSTEP);
+    // Force alternating footsteps
+    parent_ = static_pointer_cast<LMVertex>(current_->parent);
+    if (edgeHasStepTaken(parent_, current_, RIGHT_FOOTSTEP)){
+      std::cout << " -- gen. left footstep neighbors --" << std::endl;
+      generateFootstepNeighbors(LEFT_FOOTSTEP);
+    }else if (edgeHasStepTaken(parent_, current_, LEFT_FOOTSTEP)){
+      std::cout << " -- gen. right footstep neighbors --" << std::endl;
+      generateFootstepNeighbors(RIGHT_FOOTSTEP);
+      std::cout << "num neighbors generated: " << neighbors.size() << std::endl;
+    }
+
+
 
     return neighbors;
   }

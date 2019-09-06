@@ -118,7 +118,7 @@ namespace planner{
         double dy = 0.05; // dy translation discretization
         double dtheta = 10.0*M_PI/180.0; // 10 degrees of discretization
 
-        double max_lattice_translation = 0.4;
+        double max_lattice_translation = 0.2;
         double max_lattice_theta = M_PI*7.0/8.0;
         double min_lattice_theta = -M_PI*7.0/8.0;
 
@@ -145,7 +145,7 @@ namespace planner{
         double goal_tol = 0.01;
 
         // planner parameters
-        double w_heuristic = 2000.0;
+        double w_heuristic = 2000.0; //2000.0;
         double w_distance = 1e-3;
         double w_s = 100.0;     
         double w_step = 10;
@@ -154,7 +154,7 @@ namespace planner{
         double w_feasibility = 1e5;
         double feasibility_threshold= 0.5;
 
-        int N_s = 10; // number of discretizations to make for the s variable when checking with the neural network
+        int N_s = 5; // number of discretizations to make for the s variable when checking with the neural network
 
         // robot_config temp 
         Eigen::VectorXd q_tmp;
