@@ -92,6 +92,8 @@ namespace planner{
         bool classifier_store_mistakes = false;
         bool classifier_store_mistakes_during_reconstruction = false;
 
+        bool trust_classifier = false;
+
 
         std::shared_ptr<RobotModel> robot_model;
         std::shared_ptr<ManipulationFunction> f_s;
@@ -149,7 +151,7 @@ namespace planner{
         double w_step = 10;
         double w_transition_distance = 10.0;
 
-        double w_feasibility = 1e4;
+        double w_feasibility = 1e5;
         double feasibility_threshold= 0.5;
 
         int N_s = 10; // number of discretizations to make for the s variable when checking with the neural network

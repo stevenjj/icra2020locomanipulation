@@ -311,6 +311,7 @@ namespace planner{
       // Get the final configuration
       std::cout << "getting the final configuration" << std::endl;
       ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_end);
+      current_->setRobotConfig(q_end);
 
       // Store the data if the classifier made a mistake during reconstruction.
       // only look at mistakes in which the s variable did not move as this is the only thing we can learn
@@ -646,31 +647,37 @@ namespace planner{
         }
       }
 
-      convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
-                                                                  parent_->s, delta_s, 
-                                                                  parent_->q_init, 
-                                                                 input_footstep_list);
+      // If we do not trust the classifier, run a configuration checl
+      if (!trust_classifier){
+        convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
+                                                                    parent_->s, delta_s, 
+                                                                    parent_->q_init, 
+                                                                   input_footstep_list);
 
-      // Store mistakes if the s variable did not move
-      if ((use_classifier) && (classifier_store_mistakes) && (!edgeHasSVarMoved(parent_, current_)) ){
-          // Store the data if the classifier made a mistake.
-          // False Positive.
-          if ((transition_possible) && (!convergence)){
-            std::cout << "  False Positive" << std::endl;
-            storeTransitionDatawithTaskSpaceInfo(parent_, false);
-          } 
-          // False Negatives
-          else if ((!transition_possible) && (convergence)){
-            std::cout << "  False Negative" << std::endl;
-            storeTransitionDatawithTaskSpaceInfo(parent_, true);
-          }
-      }
+        // Store mistakes if the s variable did not move
+        if ((use_classifier) && (classifier_store_mistakes) && (!edgeHasSVarMoved(parent_, current_)) ){
+            // Store the data if the classifier made a mistake.
+            // False Positive.
+            if ((transition_possible) && (!convergence)){
+              std::cout << "  False Positive" << std::endl;
+              storeTransitionDatawithTaskSpaceInfo(parent_, false);
+            } 
+            // False Negatives
+            else if ((!transition_possible) && (convergence)){
+              std::cout << "  False Negative" << std::endl;
+              storeTransitionDatawithTaskSpaceInfo(parent_, true);
+            }
+        }
 
-      if (convergence){
-        ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_tmp);
-        // std::cout << "goal q_tmp = " << q_tmp.transpose() << std::endl;
-        current_->setRobotConfig(q_tmp);       
+        if (convergence){
+          ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_tmp);
+          // std::cout << "goal q_tmp = " << q_tmp.transpose() << std::endl;
+          current_->setRobotConfig(q_tmp);       
+        }
       }
+      else{
+        convergence = true;
+      }// End classifier trust check
 
     }
 
@@ -879,42 +886,47 @@ namespace planner{
         }      
       }
 
-      convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
-                                                                  parent_->s, delta_s, 
-                                                                  parent_->q_init, 
-                                                                  input_footstep_list);
+      // Start -- IF we don't trust the classifier, run a config trajectory check
+      if (!trust_classifier){
 
-      std::cout << "  Converged: " << (convergence ? "True" : "False") << std::endl;       
+        convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
+                                                                    parent_->s, delta_s, 
+                                                                    parent_->q_init, 
+                                                                    input_footstep_list);
 
-      // Store the transition if we are using the classifier, storing the mistakes and
-      // the s variable has not moved
+        std::cout << "  Converged: " << (convergence ? "True" : "False") << std::endl;       
 
-      if ((use_classifier) && (classifier_store_mistakes) && (!edgeHasSVarMoved(parent_, current_)) ){
-          // Store the data if the classifier made a mistake.
-          // False Positive.
-          if ((transition_possible) && (!convergence)){
-            std::cout << "  False Positive" << std::endl;
-            storeTransitionDatawithTaskSpaceInfo(parent_, false);
-          } 
-          // False Negatives
-          else if ((!transition_possible) && (convergence)){
-            std::cout << "  False Negative" << std::endl;
-            storeTransitionDatawithTaskSpaceInfo(parent_, true);
-          }
+        // Store the transition if we are using the classifier, storing the mistakes and
+        // the s variable has not moved
 
+        if ((use_classifier) && (classifier_store_mistakes) && (!edgeHasSVarMoved(parent_, current_)) ){
+            // Store the data if the classifier made a mistake.
+            // False Positive.
+            if ((transition_possible) && (!convergence)){
+              std::cout << "  False Positive" << std::endl;
+              storeTransitionDatawithTaskSpaceInfo(parent_, false);
+            } 
+            // False Negatives
+            else if ((!transition_possible) && (convergence)){
+              std::cout << "  False Negative" << std::endl;
+              storeTransitionDatawithTaskSpaceInfo(parent_, true);
+            }
+
+        }
+
+        // If it converges, update the configuration of the current node
+        if (convergence){
+          // Get the final configuration.
+          // std::cout << "Current node is feasible. Updating q_tmp" << std::endl;     
+          ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_tmp);
+          // std::cout << "q_tmp = " << q_tmp.transpose() << std::endl;
+          current_->setRobotConfig(q_tmp);
+        }else{
+          // If it does not converge, return an empty neighbor list       
+          return neighbors;       
+        }
       }
-
-      // If it converges, update the configuration of the current node
-      if (convergence){
-        // Get the final configuration.
-        // std::cout << "Current node is feasible. Updating q_tmp" << std::endl;     
-        ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_tmp);
-        // std::cout << "q_tmp = " << q_tmp.transpose() << std::endl;
-        current_->setRobotConfig(q_tmp);
-      }else{
-        // If it does not converge, return an empty neighbor list       
-        return neighbors;       
-      }
+      // END ----
 
     }else{  
       std::cout << "first node evaluated is true" << std::endl;
