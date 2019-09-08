@@ -246,9 +246,7 @@ namespace planner{
     }
     // Add the parent
     optimal_path.push_back(current_node);
-
-    std::cout << "Path has size: " << optimal_path.size() << std::endl;
-    std::cout << "Found potential path reconstructing the trajectory..." << std::endl;
+    std::cout << "Found potential path with size " << optimal_path.size() << ". Reconstructing the trajectory..." << std::endl;
 
     return reconstructConfigurationTrajectory();
   }
@@ -308,8 +306,8 @@ namespace planner{
                                                                   parent_->s, delta_s, 
                                                                   parent_->q_init, 
                                                                  input_footstep_list);
-      // Get the final configuration
-      std::cout << "getting the final configuration" << std::endl;
+      // Get the final configuration and set to current
+      // std::cout << "getting the final configuration" << std::endl;
       ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_end);
       current_->setRobotConfig(q_end);
 
@@ -465,6 +463,7 @@ namespace planner{
     // Check feasibility for each s along the trajectory 
     double s_local = 0.0;
     nn_delta_s =  (to_node->s - from_node->s);
+    double s_local_min = 0.0;
 
     // For each s, check the neural network for feasibility. 
     for(int i = 0; i < (N_s+1); i++){
@@ -477,9 +476,13 @@ namespace planner{
 
       // Keep track of the lowest result
       if (nn_prediction_score < nn_feasibility_score){
+        s_local_min = s_local;
         nn_feasibility_score = nn_prediction_score;
       }
-    }    
+    }
+    // Set the hand poses to the minimum classifier result.
+    setHandPoses(s_local_min);
+
   }
 
   // compute the feasibility score depending on edge type
@@ -688,7 +691,8 @@ namespace planner{
 
   void LocomanipulationPlanner::generateDiscretization(){
     if (classifier_store_mistakes)
-      delta_s_vals = {0.0};
+      delta_s_vals = {0.01, 0.04, 0.08};
+      // delta_s_vals = {0.0};
     else{
       // delta_s_vals = {0.01, 0.04, 0.08};
       delta_s_vals = {0.01, 0.04, 0.08};
@@ -781,6 +785,11 @@ namespace planner{
 
     int counter = 0;
 
+    // Get the hand pose from the manipulation function
+    Eigen::Vector3d tmp_hand_pos; 
+    Eigen::Quaterniond tmp_hand_ori;
+    f_s->getPose(current_->s, tmp_hand_pos, tmp_hand_ori);
+
     for(int i = 0; i < delta_s_vals.size(); i++){
       for(int j = 0; j < dx_vals.size(); j++){
         for (int k = 0; k < dy_vals.size(); k++){
@@ -796,7 +805,14 @@ namespace planner{
 
             // Compute delta x,y, theta w.r.t the stance
             landing_pos = stance_foot.position + delta_translate;
+
+            // Skip if this landing position is greater than the maximum lattice radius
+            if (landing_pos.norm() >= max_lattice_radius){
+              std::cout << " potential neighbor is greater than the max lattice radius" << std::endl;
+              continue;
+            }
             landing_quat = stance_foot.orientation*delta_quat;
+
 
             // Check if the landing foot is within the kinematic bounds w.r.t. the stance foot
             if (withinKinematicBounds(stance_foot, landing_pos, landing_quat)){
@@ -810,6 +826,14 @@ namespace planner{
               // Convert landing location back to the world frame
               convertPlannerToWorldOrigin(landing_pos, landing_quat, tmp_pos, tmp_ori);
               landing_foot.setPosOriSide(tmp_pos, tmp_ori, footstep_side);                
+
+              // TODO: Check if hand position is within the kinematic bounds from the pelvis position.
+              if ((landing_foot.position - tmp_hand_pos).norm() >= max_foot_to_hand_radius) {
+                std::cout << "  potential neighbor has foot-to-hand-distance greater than the kinematic limits" << std::endl;
+                continue;
+              } 
+
+
 
               shared_ptr<Node> neighbor;
               // Landing foot should go to the correct footstep. the stance foot remains unchanged
@@ -879,7 +903,9 @@ namespace planner{
           std::cout << "  Transition Possible: " << (transition_possible ? "True" : "False") << std::endl; 
           // If we are not storing possible mistakes, proceed with ignoring the computation check
           // if the s variable has moved, we cannot learn from this example so ignore the computation check
-          if ((!classifier_store_mistakes) || edgeHasSVarMoved(parent_, current_)){
+          // if ((!classifier_store_mistakes) || edgeHasSVarMoved(parent_, current_)){
+
+          if (!classifier_store_mistakes){
             return neighbors;
           }
         }else{
@@ -900,7 +926,8 @@ namespace planner{
         // Store the transition if we are using the classifier, storing the mistakes and
         // the s variable has not moved
 
-        if ((use_classifier) && (classifier_store_mistakes) && (!edgeHasSVarMoved(parent_, current_)) ){
+        // if ((use_classifier) && (classifier_store_mistakes) && (!edgeHasSVarMoved(parent_, current_)) ){
+        if (use_classifier && classifier_store_mistakes){
             // Store the data if the classifier made a mistake.
             // False Positive.
             if ((transition_possible) && (!convergence)){
@@ -958,9 +985,13 @@ namespace planner{
     }else if (edgeHasStepTaken(parent_, current_, LEFT_FOOTSTEP)){
       std::cout << " -- gen. right footstep neighbors --" << std::endl;
       generateFootstepNeighbors(RIGHT_FOOTSTEP);
-      std::cout << "num neighbors generated: " << neighbors.size() << std::endl;
+    }else{
+      std::cout << " -- gen. left footstep neighbors --" << std::endl;
+      generateFootstepNeighbors(LEFT_FOOTSTEP);      
+      std::cout << " -- gen. right footstep neighbors --" << std::endl;
+      generateFootstepNeighbors(RIGHT_FOOTSTEP);
     }
-
+    std::cout << "num neighbors generated: " << neighbors.size() << std::endl;
 
 
     return neighbors;

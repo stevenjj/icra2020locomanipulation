@@ -347,15 +347,15 @@ bool ConfigTrajectoryGenerator::computeInitialConfigForFlatGround(const Eigen::V
 }
 
 
-void ConfigTrajectoryGenerator::printIntermediateIKTrajectoryresult(int & index, bool & primary_task_converge_result, double & total_error_norm, std::vector<double> & task_error_norms){
+void ConfigTrajectoryGenerator::printIntermediateIKTrajectoryresult(int & index, bool & primary_task_converge_result, double & total_error_norm, std::vector<double> & task_error_norms_in){
 	if (index == 0){
 		std::cout << "[ConfigTrajectoryGenerator]" << std::endl;
 		std::cout << "index | 1st task converged? | Acceptable? | total error norm | task error norms " << std::endl;	
 	}
 	std::cout << index << " | " << (primary_task_converge_result ? "True" : "False") << " | " << (didTrajectoryConverge()? "True" : "False") << " | " << total_error_norm << " | ";
 
-	for(int i = 0; i < task_error_norms.size(); i++){
-		std::cout << task_error_norms[i] << " ";
+	for(int i = 0; i < task_error_norms_in.size(); i++){
+		std::cout << task_error_norms_in[i] << " ";
 	}
 	std::cout << std::endl;
 
@@ -454,7 +454,8 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 
 	// Prepare IK solver
     int solve_result;
-    std::vector<double> task_error_norms;
+    // std::vector<double> task_error_norms;
+	task_error_norms.clear();
     double total_error_norm;
     Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(robot_model->getDimQdot());	
     bool primary_task_convergence = false;

@@ -370,7 +370,7 @@ void test_LM_planner_with_NN(){
 
   // Set whether to learn from mistakes or not
   // Regenerate the discretizations
-  bool learn_from_mistakes = false;
+  bool learn_from_mistakes = true;
   if (learn_from_mistakes){ 
     lm_planner.classifier_store_mistakes = true;  
     std::cout << "Storing classifier mistakes? " << lm_planner.classifier_store_mistakes << std::endl;
@@ -379,9 +379,7 @@ void test_LM_planner_with_NN(){
   // ----------
 
   // Set to trust the classifier
-  lm_planner.trust_classifier = true;
-
-
+  lm_planner.trust_classifier = false;
 
   // Initialize
   lm_planner.initializeLocomanipulationVariables(valkyrie_model, f_s_manipulate_door, ctg);
@@ -389,12 +387,8 @@ void test_LM_planner_with_NN(){
   std::cout << "Setting the classifier client" << std::endl;
   lm_planner.setClassifierClient(client);
 
-
-
-
-
   double s_init = 0.0;
-  double s_goal = 0.16; //0.32; //0.16; //0.20; //0.12;//0.08;
+  double s_goal = 1.0; //0.32; //0.16; //0.20; //0.12;//0.08;
   shared_ptr<Node> starting_vertex (std::make_shared<LMVertex>(s_init, q_start_door));    
   shared_ptr<Node> goal_vertex (std::make_shared<LMVertex>(s_goal, q_final_door));
 
@@ -446,8 +440,8 @@ int main(int argc, char ** argv){
   ros::init(argc, argv, "test_planner_with_trajectories");
 
   // test_final_configuration();
-  test_LM_planner();
-  // test_LM_planner_with_NN();
+  // test_LM_planner();
+  test_LM_planner_with_NN();
   // test_planner();
   // test_door_open_config_trajectory();
  

@@ -565,7 +565,7 @@ namespace planner{
 
                 //current node = goal node
                 if (goalReached(current_node, goal) == true){
-                    cout << "goal reached" << endl;
+                    // cout << "goal reached" << endl;
                     //reproduce path
                     achieved_goal = current_node;
                     // Construct the path. return true if path reconstruction succeeds

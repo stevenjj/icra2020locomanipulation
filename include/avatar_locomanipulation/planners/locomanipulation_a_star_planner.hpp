@@ -122,6 +122,9 @@ namespace planner{
         double max_lattice_theta = M_PI*7.0/8.0;
         double min_lattice_theta = -M_PI*7.0/8.0;
 
+        double max_lattice_radius = 1.5; // meters from the origin
+        double max_foot_to_hand_radius = 1.5; // meters from the landiing foot
+
         // swing foot kinematic limits w.r.t the stance frame
         double max_reach = 0.4;
         double min_reach = -0.3;
@@ -151,7 +154,7 @@ namespace planner{
         double w_step = 10;
         double w_transition_distance = 10.0;
 
-        double w_feasibility = 1e5;
+        double w_feasibility = 1e2;
         double feasibility_threshold= 0.5;
 
         int N_s = 5; // number of discretizations to make for the s variable when checking with the neural network
