@@ -5,7 +5,7 @@
 
     <arg name="use_static_transform" default="True" />  
 
-    <group ns="val_ik_robot">
+<!--     <group ns="val_ik_robot">
       <param name="robot_description" textfile="$(find avatar_locomanipulation)/models/valkyrie_simplified_collisions.urdf" />        
       <param name="use_gui" value="$(arg gui)"/>
 
@@ -16,7 +16,7 @@
       <node pkg="robot_state_publisher" type="state_publisher" name="robot_state_publisher">
         <param name="tf_prefix" type="string" value="val_ik_robot" />  
       </node>
-    </group>
+    </group> -->
 
 
     <group ns="val_robot">
