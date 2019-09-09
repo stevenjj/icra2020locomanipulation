@@ -104,7 +104,7 @@ class MyModelSaveCallback(tf.keras.callbacks.Callback):
 dataset_folder_1 = "/home/stevenjj/Data/param_set_1/"
 dataset_folder_2 = "/home/stevenjj/Data/planner_data/"
 
-num_positive_data = 10 #50000 #10000 # per transition_type
+num_positive_data = 50000 #10 # per transition_type
 dataset = transition_dataset.ContactTransitionDataset(num_positive_data)
 
 #contact_transition_types = [ ("left_hand", "right_foot"), ("left_hand", "left_foot"), ("right_hand", "left_foot"), ("right_hand", "right_foot"), ("both_hands", "right_foot"), ("both_hands", "left_foot") ]# [ ("right_hand", "right_foot"), ("right_hand", "left_foot") ]
@@ -141,7 +141,7 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,
                                                  save_weights_only=True,
                                                  verbose=1)
 
-num_epochs=10
+num_epochs=200
 
 # best so far
 model = create_model(dataset_dim, num_hidden_layers=n_hidden_layers, units_per_layer=n_units_per_layer, l2_reg=l2_regularization)
