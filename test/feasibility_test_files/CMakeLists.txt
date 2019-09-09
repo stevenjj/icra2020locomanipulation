@@ -4,6 +4,8 @@
 # add_executable(test_generate_visualization_feasibility_data test_generate_visualization_feasibility_data.cpp ${PROJECT_SOURCES})
 # add_executable(test_standardize_viz_data test_standardize_viz_data.cpp ${PROJECT_SOURCES})
 # add_executable(test_visualize_stand_feas_data test_visualize_stand_feas_data.cpp ${PROJECT_SOURCES})
+# add_executable(test_cpp_nn_generate_standardize_viz_data test_cpp_nn_generate_standardize_viz_data.cpp ${PROJECT_SOURCES})
+add_executable(test_viz_swing_foot_feas_region_with_val test_viz_swing_foot_feas_region_with_val.cpp ${PROJECT_SOURCES})
 
 # target_link_libraries(test_feasibility_data_generation ${PROJECT_LIBRARIES})
 # target_link_libraries(test_generate_data ${PROJECT_LIBRARIES})
@@ -11,7 +13,8 @@
 # target_link_libraries(test_generate_visualization_feasibility_data ${PROJECT_LIBRARIES})
 # target_link_libraries(test_standardize_viz_data ${PROJECT_LIBRARIES})
 # target_link_libraries(test_visualize_stand_feas_data ${PROJECT_LIBRARIES})
-
+# target_link_libraries(test_cpp_nn_generate_standardize_viz_data ${PROJECT_LIBRARIES})
+target_link_libraries(test_viz_swing_foot_feas_region_with_val ${PROJECT_LIBRARIES})
 
 # add_dependencies(test_feasibility_data_generation ${${PROJECT_NAME}_EXPORTED_TARGETS})
 # add_dependencies(test_generate_data ${${PROJECT_NAME}_EXPORTED_TARGETS})
