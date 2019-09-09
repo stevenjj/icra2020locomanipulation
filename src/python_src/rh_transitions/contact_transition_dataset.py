@@ -61,7 +61,7 @@ class ContactTransitionDataset:
             if (count < max_load):
                 # Load the yaml file and add the training data
                 if self.obj.load_yaml_file(filepath + "/" + yaml_files[i], stance_type, manipulation_type):
-                    print "Loading", count+1 , "/", max_load,  filepath, "/", yaml_files[i] 
+                    print "Loading", count+1 , "/", min(max_load, len(yaml_files)+1),  filepath, "/", yaml_files[i] 
                     # self.obj.printData()
                     data_x.append(self.obj.get_x())
                     data_y.append(self.obj.get_y())
