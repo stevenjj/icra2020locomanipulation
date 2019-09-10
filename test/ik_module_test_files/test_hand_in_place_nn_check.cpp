@@ -90,10 +90,12 @@ void test_hand_in_place_config_trajectory_generator(){
   Eigen::AngleAxis<double> aa(theta, Eigen::Vector3d(0.0, 0.0, 1.0));
   Eigen::Quaternion<double> quat_angleaxis(aa); //Initialized to remember the w component comes first
 
-  footstep_1.position[0] -= 0.2;
-  footstep_2.position[0] -= 0.1;
+  footstep_1.position[0] -= 0.4;
+  footstep_1.position[1] += 0.1;
+  // footstep_2.position[0] -= 0.1;
 
   footstep_1.setPosOri(footstep_1.position, quat_angleaxis);
+  footstep_2.setPosOri(footstep_2.position, quat_angleaxis);
 
   // std::vector<Footstep> input_footstep_list = {footstep_2, footstep_1};
   std::vector<Footstep> input_footstep_list = {footstep_1};

@@ -13,16 +13,9 @@ import load_model
 from tensorflow.keras.backend import set_session
 
 
-# contact_transition_types = [ ("left_hand", "right_foot"), ("left_hand", "left_foot"), ("right_hand", "left_foot"), ("right_hand", "right_foot"), ("both_hands", "right_foot"), ("both_hands", "left_foot") ]# [ ("right_hand", "right_foot"), ("right_hand", "left_foot") ]
-# shorthand = {"right_hand" : "rh", "left_hand" : "lh", "both_hands" : "bh", "right_foot": "rf", "left_foot": "lf"}
+# load_path = "./learned_model/lh_rflh_lfrh_lfrh_rfbh_rfbh_lf/"
+load_path = "./learned_model/rh_rfrh_lf/"
 
-# # Identify the load path
-# load_folder = ""
-# for type in contact_transition_types:
-# 	load_folder = load_folder + shorthand[type[0]] + "_" + shorthand[type[1]]
-# load_path = "./learned_model/" + load_folder + "/"
-
-load_path = "./learned_model/lh_rflh_lfrh_lfrh_rfbh_rfbh_lf/"
 
 # Load and create the model
 hyper_params = load_model.load_hyper_params(load_path+'hyper_params.yaml')
@@ -85,10 +78,7 @@ with session.graph.as_default():
 num_layers = int_layer+1
 data['num_layer'] = num_layers
 
-# print('weight 5 = ')
-# print(w[5])
-# print('bias 5 = ')
-# print(b[5])
+print('num_layers = ', num_layers)
 
 for layer_idx in range(num_layers):
     data['w'+str(layer_idx)] = w[layer_idx].tolist()

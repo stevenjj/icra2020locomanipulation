@@ -638,13 +638,13 @@ namespace planner{
       if (use_classifier){
         double feas_score = getFeasibility(parent_, current_);
         if (print_classifier_results){
-          std::cout << "  Feasibility Score = " << feas_score << std::endl;
+          std::cout << "  GC Feasibility Score = " << feas_score << std::endl;
         }
         // If the score is less than the treshold
         if (feas_score < feasibility_threshold){
           transition_possible = false;
-          // proceed with returning false if we are not storing mistakes or the s variable has moved
-          if ((!classifier_store_mistakes) || edgeHasSVarMoved(parent_, current_)) {
+          // proceed with returning false if we are not storing classifier mistakes
+          if (!classifier_store_mistakes) {
             return false;
           }
         }
@@ -657,8 +657,8 @@ namespace planner{
                                                                     parent_->q_init, 
                                                                    input_footstep_list);
 
-        // Store mistakes if the s variable did not move
-        if ((use_classifier) && (classifier_store_mistakes) && (!edgeHasSVarMoved(parent_, current_)) ){
+        // if store mistakes
+        if ((use_classifier) && (classifier_store_mistakes)){
             // Store the data if the classifier made a mistake.
             // False Positive.
             if ((transition_possible) && (!convergence)){
@@ -684,7 +684,7 @@ namespace planner{
 
     }
 
-    // std::cout << "goal reached? " << (s_satisfaction && convergence) << std::endl;
+    std::cout << "  Goal Reached: " << ((s_satisfaction && convergence) ? "True" : "False") << std::endl;
     return (s_satisfaction && convergence);
   }
 
@@ -888,7 +888,7 @@ namespace planner{
 
 
   std::vector< std::shared_ptr<Node> > LocomanipulationPlanner::getNeighbors(shared_ptr<Node> & current){
-    // std::cout << "Getting Neighbors" << std::endl;
+    std::cout << "Getting Neighbors" << std::endl;
     current_ = static_pointer_cast<LMVertex>(current);  
     // Clear previous neighbor list
     neighbors.clear();
