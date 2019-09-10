@@ -81,6 +81,18 @@ namespace planner{
     f_s = f_s_in;
     ctg = ctg_in;
 
+    // Init feet position w.r.t hand 
+    lf_pos_wrt_hand.setZero();
+    rf_pos_wrt_hand.setZero();
+
+    lf_ori_wrt_hand.setIdentity();
+    rf_ori_wrt_hand.setIdentity();
+
+    lf_guess_pos.setZero();
+    lf_guess_ori.setIdentity();
+
+    rf_guess_pos.setZero();
+    rf_guess_ori.setIdentity();
 
     // Initialize tmp variables
     tmp_pos.setZero();
@@ -108,6 +120,7 @@ namespace planner{
     nn_left_hand_start_ori.setIdentity();
 
     tmp_ori_vec3.setZero();
+
   }
 
   // Destructor
@@ -116,25 +129,23 @@ namespace planner{
   void LocomanipulationPlanner::setStartNode(const shared_ptr<Node> begin_input){
     std::cout << "[LocomanipulationPlanner] Setting the starting node" << std::endl;
     begin = begin_input;
-    std::shared_ptr<LMVertex> begin_lmv = static_pointer_cast<LMVertex>(begin);
+    begin_ = static_pointer_cast<LMVertex>(begin);
 
     // Set flag that this is a start node
-    begin_lmv->isStartNode = true;
+    begin_->isStartNode = true;
 
     // Update the robot model with the starting node initial configuration
-    robot_model->updateFullKinematics(begin_lmv->q_init);
+    robot_model->updateFullKinematics(begin_->q_init);
     // Set the starting pelvis height
-    nn_starting_pelvis_height = begin_lmv->q_init[2]; // Get the z height of the pelvis
+    nn_starting_pelvis_height = begin_->q_init[2]; // Get the z height of the pelvis
 
     Eigen::Vector3d foot_pos;
     Eigen::Quaterniond foot_ori;
 
-
-
     // Set the right foot position 
     robot_model->getFrameWorldPose("rightCOP_Frame", foot_pos, foot_ori);
-    begin_lmv->right_foot.setPosOriSide(foot_pos, foot_ori, RIGHT_FOOTSTEP);
-    // begin_lmv->right_foot.printInfo();
+    begin_->right_foot.setPosOriSide(foot_pos, foot_ori, RIGHT_FOOTSTEP);
+    // begin_->right_foot.printInfo();
 
     // Set the planner origin to be the starting right foot frame
     planner_origin_pos = foot_pos;
@@ -143,17 +154,27 @@ namespace planner{
     R_planner_origin = planner_origin_ori.toRotationMatrix();
     R_planner_origin_transpose = R_planner_origin.transpose();
 
-
     // Set the left position as well
     robot_model->getFrameWorldPose("leftCOP_Frame", foot_pos, foot_ori);
-    begin_lmv->left_foot.setPosOriSide(foot_pos, foot_ori, LEFT_FOOTSTEP);
-    // begin_lmv->left_foot.printInfo();
+    begin_->left_foot.setPosOriSide(foot_pos, foot_ori, LEFT_FOOTSTEP);
+    // begin_->left_foot.printInfo();
 
     // Compute the midfoot 
-    begin_lmv->mid_foot.computeMidfeet(begin_lmv->left_foot, begin_lmv->right_foot, begin_lmv->mid_foot);
-    begin_lmv->mid_foot.setMidFoot();
-    // begin_lmv->mid_foot.printInfo();
+    begin_->mid_foot.computeMidfeet(begin_->left_foot, begin_->right_foot, begin_->mid_foot);
+    begin_->mid_foot.setMidFoot();
+    // begin_->mid_foot.printInfo();
 
+    // Set Feet position w.r.t hand 
+    std::cout << "normal start node finished" << std::endl;
+    double s_init = 0.0;
+    f_s->getPose(s_init, tmp_pos, tmp_ori);
+    Eigen::Matrix3d R_hand_ori_T = tmp_ori.toRotationMatrix().transpose();
+
+    lf_pos_wrt_hand = R_hand_ori_T*(begin_->left_foot.position - tmp_pos);
+    rf_pos_wrt_hand = R_hand_ori_T*(begin_->right_foot.position - tmp_pos);
+
+    lf_ori_wrt_hand = tmp_ori.inverse()*begin_->left_foot.orientation;
+    rf_ori_wrt_hand = tmp_ori.inverse()*begin_->right_foot.orientation;
   }
 
   void LocomanipulationPlanner::setGoalNode(const shared_ptr<Node> goal_input){
@@ -179,6 +200,7 @@ namespace planner{
 
     // Get a copy of the goal node s variable
     goal_s = goal_lmv->s;
+
   }
 
   double LocomanipulationPlanner::getAngle(const Eigen::Quaterniond & quat_in){
@@ -564,9 +586,28 @@ namespace planner{
     current_ = std::static_pointer_cast<LMVertex>(current);
     neighbor_ = std::static_pointer_cast<LMVertex>(neighbor);
 
+    // Get Hand position and orientation at the neighbor's s.
+    f_s->getPose(neighbor_->s, tmp_pos, tmp_ori);    
+    
+    // Compute the estimated left and right foot landing locations
+    lf_guess_pos = tmp_ori.toRotationMatrix()*lf_pos_wrt_hand + tmp_pos;
+    lf_guess_ori = tmp_ori*lf_ori_wrt_hand;
+
+    rf_guess_pos = tmp_ori.toRotationMatrix()*rf_pos_wrt_hand + tmp_pos;
+    rf_guess_ori = tmp_ori*rf_ori_wrt_hand;
+    
+    double lf_distance_cost = (lf_guess_pos - current_->left_foot.position).norm() + fabs( getAngle(lf_guess_ori) - getAngle(current_->left_foot.orientation) );
+    double rf_distance_cost = (rf_guess_pos - current_->right_foot.position).norm() + fabs( getAngle(rf_guess_ori) - getAngle(current_->right_foot.orientation) );
+
+
     double s_cost = w_s*(neighbor_->s - current_->s);
-    double distance_cost = w_distance*((neighbor_->mid_foot.position - current_->mid_foot.position).norm() 
-                                        + fabs(getAngle(neighbor_->mid_foot.orientation) - getAngle(current_->mid_foot.orientation)) );
+    // Midfoot cost
+    // double distance_cost = w_distance*((neighbor_->mid_foot.position - current_->mid_foot.position).norm() 
+    //                                     + fabs(getAngle(neighbor_->mid_foot.orientation) - getAngle(current_->mid_foot.orientation)) );
+
+    // Foot landing cost on guess
+    double distance_cost = w_distance*(lf_distance_cost + rf_distance_cost);
+
    
     bool left_step_taken = edgeHasStepTaken(current_, neighbor_, LEFT_FOOTSTEP);
     bool right_step_taken = edgeHasStepTaken(current_, neighbor_, RIGHT_FOOTSTEP);
@@ -601,8 +642,27 @@ namespace planner{
     goal_ = static_pointer_cast<LMVertex>(goal);
 
     double s_cost = w_s*(goal_->s - neighbor_->s);
-    double distance_cost = w_distance*((goal_->mid_foot.position - neighbor_->mid_foot.position).norm() 
-                                        + fabs(getAngle(goal_->mid_foot.orientation) - getAngle(neighbor_->mid_foot.orientation)) );
+
+    // Get Hand position and orientation at the neighbor's s.
+    f_s->getPose(goal_->s, tmp_pos, tmp_ori);    
+ 
+    // Compute the estimated left and right foot landing locations
+    lf_guess_pos = tmp_ori.toRotationMatrix()*lf_pos_wrt_hand + tmp_pos;
+    lf_guess_ori = tmp_ori*lf_ori_wrt_hand;
+
+    rf_guess_pos = tmp_ori.toRotationMatrix()*rf_pos_wrt_hand + tmp_pos;
+    rf_guess_ori = tmp_ori*rf_ori_wrt_hand;
+    
+    double lf_distance_cost = (lf_guess_pos - neighbor_->left_foot.position).norm() + fabs( getAngle(lf_guess_ori) - getAngle(neighbor_->left_foot.orientation) );
+    double rf_distance_cost = (rf_guess_pos - neighbor_->right_foot.position).norm() + fabs( getAngle(rf_guess_ori) - getAngle(neighbor_->right_foot.orientation) );
+
+
+    // Mid feet frame heuristic
+    // double distance_cost = w_distance*((goal_->mid_foot.position - neighbor_->mid_foot.position).norm() 
+    //                                     + fabs(getAngle(goal_->mid_foot.orientation) - getAngle(neighbor_->mid_foot.orientation)) );
+
+    // Footstep landing heuristic
+    double distance_cost = w_distance*(lf_distance_cost + rf_distance_cost);
 
     // Linear distance to the manipulation goal. if w_heuristic = 1.0, we get the true A* result 
     return w_heuristic*(s_cost + distance_cost); 
