@@ -756,6 +756,15 @@ namespace planner{
         // neighbor = static_pointer_cast<Node>(neighbor_change);
 
         // TODO: Add feasibility check here and only add to neighbors if it's greater than our threshold
+
+        if (trust_classifier){
+          // Skip this neighbor if it is not within the threshold
+          double feas_score = getFeasibility(current_, neighbor_change);
+          if (feas_score < feasibility_threshold){
+            continue;
+          }
+        }
+
         neighbors.push_back(neighbor);
       }
     }
@@ -790,6 +799,7 @@ namespace planner{
     Eigen::Quaterniond tmp_hand_ori;
     f_s->getPose(current_->s, tmp_hand_pos, tmp_hand_ori);
 
+    double feas_score = 0.0;
     for(int i = 0; i < delta_s_vals.size(); i++){
       for(int j = 0; j < dx_vals.size(); j++){
         for (int k = 0; k < dy_vals.size(); k++){
@@ -851,6 +861,14 @@ namespace planner{
               neighbor_change->parent = static_pointer_cast<Node>(current_);
 
               // TODO: Add feasibility check here and only add to neighbors if it's greater than our threshold
+
+              if (trust_classifier){
+                // Skip this neighbor if it is not within the threshold
+                double feas_score = getFeasibility(current_, neighbor_change);
+                if (feas_score < feasibility_threshold){
+                  continue;
+                }
+              }
 
               // Add landing foot 
               neighbors.push_back(neighbor);
@@ -1086,13 +1104,25 @@ namespace planner{
     // Reset prediction result to a negative value
     prediction_result = -1.0;
     
-    // Call the classifier client
-    if (classifier_client.call(classifier_srv)){
-      prediction_result = classifier_srv.response.y;
-      // ROS_INFO("Prediction: %0.4f", srv.response.y);
-    }else{
-        ROS_ERROR("Failed to call service locomanipulation_feasibility_classifier");
+    while (true){
+      // Try to call the classifier
+      try {  
+        // Call the classifier client
+        if (classifier_client.call(classifier_srv)){
+          prediction_result = classifier_srv.response.y;
+          break;
+          // ROS_INFO("Prediction: %0.4f", srv.response.y);
+        }else{
+            ROS_ERROR("Failed to call service locomanipulation_feasibility_classifier");
+        }
+      }
+      catch(...){
+      // Catch all exceptions
+        std::cout << "Error exception occurred when calling service locomanipulation_feasibility_classifier" << std::endl;
+      }
+
     }
+
 
     return prediction_result;
 

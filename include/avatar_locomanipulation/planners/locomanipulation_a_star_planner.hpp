@@ -154,7 +154,7 @@ namespace planner{
         double w_step = 10;
         double w_transition_distance = 10.0;
 
-        double w_feasibility = 1e2;
+        double w_feasibility = 1e2; //1e2;
         double feasibility_threshold= 0.5;
 
         int N_s = 5; // number of discretizations to make for the s variable when checking with the neural network

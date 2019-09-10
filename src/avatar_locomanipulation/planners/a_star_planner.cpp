@@ -541,6 +541,7 @@ namespace planner{
         double epsilon_p = 0.0;
 
         while (!OpenSet.empty()){        
+                std::cout << "Open set size = " << OpenSet.size() << std::endl;
                 // Randomly select a node from the open set epsilon_greedy % of the time
                 epsilon_p = u_distribution_double(generator);
                 if (epsilon_p <= epsilon_greedy){
