@@ -1,5 +1,5 @@
 <launch>
-    <node name="generate_rfoot_pretty_pictures" pkg="avatar_locomanipulation" type="test_viz_swing_foot_feas_region_with_val" output="screen" /> 
+    <node name="generate_rfoot_pretty_pictures" pkg="avatar_locomanipulation" type="test_python_classifier_viz_swing_foot_feas_region_with_val" output="screen" /> 
     
     <include file="$(find avatar_locomanipulation)/launch/launch_viz_robot_and_ik.launch">
       <arg name="use_static_transform" value="False"/>

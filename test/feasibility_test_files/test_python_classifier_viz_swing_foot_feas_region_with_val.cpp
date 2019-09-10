@@ -28,14 +28,17 @@
 #include <Eigen/Dense>
 #include <avatar_locomanipulation/BinaryClassifierQuery.h>
 #include <chrono>
-typedef std::chrono::high_resolution_clock Clock;
-
 #define CONTACT_TRANSITION_DATA_LEFT_FOOT_STANCE 0
 #define CONTACT_TRANSITION_DATA_RIGHT_FOOT_STANCE 1
 
 #define CONTACT_TRANSITION_DATA_LEFT_HAND 0
 #define CONTACT_TRANSITION_DATA_RIGHT_HAND 1
 #define CONTACT_TRANSITION_DATA_BOTH_HANDS 2
+
+struct PositionScore{
+	double f_score;
+	Eigen::Vector3d position;
+};
 
 void visualize_robot_and_markers(Eigen::VectorXd & q_start, visualization_msgs::MarkerArray & foot_markers){
   // Initialize ROS node for publishing joint messages
@@ -82,25 +85,7 @@ void visualize_robot_and_markers(Eigen::VectorXd & q_start, visualization_msgs::
 		loop_rate.sleep();
   }
 }
-
-struct PositionScore{
-	double f_score;
-	Eigen::Vector3d position;
-};
-
-
 void fill_hand_position_markers(visualization_msgs::MarkerArray & foot_markers, std::vector<PositionScore> & ps);
-
-Eigen::Vector3d quatToVec(const Eigen::Quaterniond & ori){
-	Eigen::AngleAxisd tmp_ori(ori.normalized()); // gets the normalized version of ori and sets it to an angle axis representation
-  Eigen::Vector3d ori_vec = tmp_ori.axis()*tmp_ori.angle();
-  return ori_vec;
-}
-
-void normalizeInputCalculate(const Eigen::VectorXd & x_in, const Eigen::VectorXd & data_mean, const Eigen::VectorXd & data_std_dev, Eigen::VectorXd & x_normalized) {
-  // std::cout << x_in.rows() << " " << data_mean.rows() << " " << data_std_dev.rows() << std::endl;
-  x_normalized = (x_in - data_mean).cwiseQuotient(data_std_dev);
-}
 
 
 void initialize_config(Eigen::VectorXd & q_init){
@@ -146,21 +131,20 @@ void initialize_config(Eigen::VectorXd & q_init){
   q_init = q_start;
 }
 
-int main(int argc, char **argv){
+int main(int argc, char ** argv){
 
-	// Find and load the model
-  ParamHandler param_handler;
-  std::string model_path = "/home/ryan/nasa_ws/src/avatar_locomanipulation/src/python_src/rh_transitions/learned_model/model.yaml";
-  
-  std::cout << "Loading Model..." << std::endl;
-  myYAML::Node model = myYAML::LoadFile(model_path);
-  NeuralNetModel nn_transition(model, false);
-  std::cout << "Loaded" << std::endl;
-
-  // Create the structures which will hold the position and score
-  std::vector<PositionScore> original;
-  PositionScore temp;
-  //Define feature vector members
+	// Initialize ros
+	ros::init(argc, argv, "generate_rfoot_pretty_pictures");
+	//Service name for neural network
+	std::string service_name = "locomanipulation_feasibility_classifier";
+	std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
+	// Define client to neural network
+	ros::ServiceClient classifier_client;   
+	classifier_client = ros_node->serviceClient<avatar_locomanipulation::BinaryClassifierQuery>(service_name);
+	// Prepare classifier service request
+	avatar_locomanipulation::BinaryClassifierQuery classifier_srv;
+	int classifier_input_dim = 32;
+	//Define feature vector members
 	Eigen::Vector3d nn_swing_foot_start_pos;
 	Eigen::Quaterniond nn_swing_foot_start_ori;
 	Eigen::Vector3d nn_pelvis_pos;
@@ -168,17 +152,22 @@ int main(int argc, char **argv){
 	Eigen::Vector3d nn_landing_foot_pos;
 	Eigen::Quaterniond nn_landing_foot_ori;
 	Eigen::Vector3d nn_right_hand_start_pos;
-	Eigen::Vector3d nn_right_hand_start_ori;
+	Eigen::Quaterniond nn_right_hand_start_ori;
 	Eigen::Vector3d nn_left_hand_start_pos;
 	Eigen::Quaterniond nn_left_hand_start_ori;
-	double nn_stance_origin;
-	double nn_manipulation_type;
+	int nn_stance_origin;
+	int nn_manipulation_type;
+	// Singular prediction result, which will be added to the sum before generating the avg over 100 points per position
+	double prediction_result;
+	// Create the structures which will hold the position and score
+	std::vector<PositionScore> original;
+	PositionScore temp;
+
+	// X Vector
+	std::vector<double> x;
 	// For addToXVector
 	Eigen::AngleAxisd tmp_aa;
 	Eigen::Vector3d tmp_ori_vec3;
-	// For getting the results 
-	double prediction_sum, prediction_avg;
-	prediction_sum = 0;
 
 	// Initialize all of our values
 	nn_stance_origin = CONTACT_TRANSITION_DATA_RIGHT_FOOT_STANCE; 
@@ -194,7 +183,7 @@ int main(int argc, char **argv){
 	nn_landing_foot_ori.setIdentity();
 
 	nn_right_hand_start_pos.setZero();
-	nn_right_hand_start_ori.setZero();
+	nn_right_hand_start_ori.setIdentity();
 
 	nn_left_hand_start_pos.setZero();
 	nn_left_hand_start_ori.setIdentity();
@@ -210,89 +199,120 @@ int main(int argc, char **argv){
 
 	nn_pelvis_pos[0] = 0.0; nn_pelvis_pos[1] = 0.15; nn_pelvis_pos[2] = 0.9;
 
-	Eigen::Quaterniond rhand_door_start_ori;
-	rhand_door_start_ori.x() = 0.0;
-	rhand_door_start_ori.y() = -0.707;
-	rhand_door_start_ori.z() = 0.0;
-	rhand_door_start_ori.w() = 0.707;
-	tmp_ori_vec3 = quatToVec(rhand_door_start_ori);
+	double xmin, xmax, ymin, ymax;
+	double dx = 0.05;
+	int N, M;
+	N = 16;
+	M = 20;
+	xmin = -0.4; xmax = 0.4; ymin = -0.2; ymax = 0.8;
 
-	// Create the blank feature vectors 
-  Eigen::VectorXd rawDatum(32);
-  Eigen::VectorXd datum(32);
-	Eigen::MatrixXd data(357,32);
-	// Blank vector for prediction f_scores
-	Eigen::MatrixXd pred(357,1);
-	std::vector<Eigen::Vector3d> rfoot_position;
+	for(int i=0; i<N+1; ++i){
+		// x landing position
+		nn_landing_foot_pos[0] = xmin + (static_cast<double>(i))*dx;///static_cast<double>(N)
 
-	 //Normalization Params
-  param_handler.load_yaml_file("/home/ryan/nasa_ws/src/avatar_locomanipulation/nn_models/baseline_11500pts/lh_rflh_lfrh_lfrh_rfbh_rfbh_lf/normalization_params.yaml");
-  std::vector<double> vmean;
-  param_handler.getVector("x_train_mean", vmean);
-  std::vector<double> vstd_dev;
-  param_handler.getVector("x_train_std", vstd_dev);
+		for(int j=0; j<M+1; ++j){
+			// y landing position 
+			nn_landing_foot_pos[1] = ymin + (static_cast<double>(j))*dx;///static_cast<double>(M)
 
-  Eigen::VectorXd mean(32);
-  Eigen::VectorXd std_dev(32);
-  for (int ii = 0; ii < 32; ii++){
-    mean[ii] = vmean[ii];
-    std_dev[ii] = vstd_dev[ii];
-  }
-
-  rawDatum << 0, nn_manipulation_type, 
-		nn_swing_foot_start_pos, quatToVec(nn_swing_foot_start_ori),
-		nn_pelvis_pos, quatToVec(nn_pelvis_ori),
-		nn_landing_foot_pos, quatToVec(nn_landing_foot_ori),
-		nn_right_hand_start_pos, tmp_ori_vec3,
-		nn_left_hand_start_pos, quatToVec(nn_left_hand_start_ori);
-
-	int i=0;
-	for(int q=-40; q<=40; q+=5){
-		// Set the x position
-		nn_landing_foot_pos[0] = static_cast<double>(q) / 100.0;
-
-		for(int r=-20; r<=80; r+=5){
-			// Set the y position
-			nn_landing_foot_pos[1] = static_cast<double>(r) / 100.0;
-
-			rfoot_position.push_back(nn_landing_foot_pos);
-
-			// Set the current right hand position and orientation in the rawDatum
-			rawDatum[14] = nn_landing_foot_pos[0]; rawDatum[15] = nn_landing_foot_pos[1]; rawDatum[16] = nn_landing_foot_pos[2];
-
-			normalizeInputCalculate(rawDatum, mean, std_dev, datum);
-
-			data.row(i) = datum;
-			++i;
-		} // close y pos loop
-	}// close x pos loop
+			std::cout << "nn_landing_foot_pos[0] = " <<  nn_landing_foot_pos[0] << std::endl;
+			std::cout << "nn_landing_foot_pos[1] = " <<  nn_landing_foot_pos[1] << std::endl;
 
 
-	std::cout << "before\n";
-	pred = nn_transition.GetOutput(data);
-	std::cout << "after\n";
-	// Set the position for our struct
-	for(int p=0; p<rfoot_position.size(); ++p){
-		temp.position = rfoot_position[p];
-		temp.f_score = pred(p,0);
-		original.push_back(temp);
-	}
+			// Prepare x vector
+			x.clear();
+			// Prepare classifier input
+			classifier_srv.request.x.clear();
+			classifier_srv.request.x.reserve(classifier_input_dim);
 
-  ros::init(argc, argv, "generate_rfoot_pretty_pictures");
+			// Populate the X Vector
+			x.push_back(nn_stance_origin);
+			x.push_back(nn_manipulation_type);
 
-  Eigen::VectorXd q_init;
-  initialize_config(q_init);
+			// Swing Foot Start
+			tmp_aa = nn_swing_foot_start_ori.normalized(); // gets the normalized version of ori and sets it to an angle axis representation
+			tmp_ori_vec3 = tmp_aa.axis()*tmp_aa.angle();
 
-  // Define MarkerArray (Hand Positions)
+			for(int i = 0; i < nn_swing_foot_start_pos.size(); i++){
+				x.push_back(nn_swing_foot_start_pos[i]);
+			}
+			for(int i = 0; i < tmp_ori_vec3.size(); i++){
+				x.push_back(tmp_ori_vec3[i]);
+			}
+
+			// Pelvis
+			tmp_aa = nn_pelvis_ori.normalized(); // gets the normalized version of ori and sets it to an angle axis representation
+			tmp_ori_vec3 = tmp_aa.axis()*tmp_aa.angle();
+
+			for(int i = 0; i < nn_pelvis_pos.size(); i++){
+				x.push_back(nn_pelvis_pos[i]);
+			}
+			for(int i = 0; i < tmp_ori_vec3.size(); i++){
+				x.push_back(tmp_ori_vec3[i]);
+			}
+
+			// Swing Foot Land
+			tmp_aa = nn_landing_foot_ori.normalized(); // gets the normalized version of ori and sets it to an angle axis representation
+			tmp_ori_vec3 = tmp_aa.axis()*tmp_aa.angle();
+
+			for(int i = 0; i < nn_landing_foot_pos.size(); i++){
+				x.push_back(nn_landing_foot_pos[i]);
+			}
+			for(int i = 0; i < tmp_ori_vec3.size(); i++){
+				x.push_back(tmp_ori_vec3[i]);
+			}
+
+			// Right hand
+			tmp_aa = nn_right_hand_start_ori.normalized(); // gets the normalized version of ori and sets it to an angle axis representation
+			tmp_ori_vec3 = tmp_aa.axis()*tmp_aa.angle();
+
+			for(int i = 0; i < nn_right_hand_start_pos.size(); i++){
+				x.push_back(nn_right_hand_start_pos[i]);
+			}
+			for(int i = 0; i < tmp_ori_vec3.size(); i++){
+				x.push_back(tmp_ori_vec3[i]);
+			}
+
+			// Left Hand
+			tmp_aa = nn_left_hand_start_ori.normalized(); // gets the normalized version of ori and sets it to an angle axis representation
+			tmp_ori_vec3 = tmp_aa.axis()*tmp_aa.angle();
+
+			for(int i = 0; i < nn_left_hand_start_pos.size(); i++){
+				x.push_back(nn_left_hand_start_pos[i]);
+			}
+			for(int i = 0; i < tmp_ori_vec3.size(); i++){
+				x.push_back(tmp_ori_vec3[i]);
+			}	
+			// Reset prediction result to a negative value
+			prediction_result = -1.0;
+
+			classifier_srv.request.x = x;
+			// Call the classifier client
+			if (classifier_client.call(classifier_srv)){
+				prediction_result = classifier_srv.response.y;
+				std::cout << "classifier_srv.response.y: " << classifier_srv.response.y << std::endl;
+			}else{
+				ROS_ERROR("Failed to call service locomanipulation_feasibility_classifier");
+			}
+			temp.f_score = prediction_result;
+			temp.position = nn_landing_foot_pos;
+			original.push_back(temp);
+		}// end y for loop
+	}// end x for loop
+
+	Eigen::VectorXd q_init;
+	initialize_config(q_init);
+
+	// Define MarkerArray (Hand Positions)
 	visualization_msgs::MarkerArray foot_markers;
 	foot_markers.markers[original.size()];
+	std::cout << "s1\n";
 
 	fill_hand_position_markers(foot_markers, original);
+	std::cout << "s2\n";
 
 	visualize_robot_and_markers(q_init, foot_markers);
 
-  return 0;
-
+	return 0;
 }
 
 
@@ -300,6 +320,7 @@ void fill_hand_position_markers(visualization_msgs::MarkerArray & foot_markers, 
 	// Define the marker for filling up array
 	visualization_msgs::Marker temp;
 	double f_score;
+	std::cout << "ps.size(): " << ps.size() << std::endl;
 
 	// Build a marker for each of the points in space 
 	for(int w=0; w<=ps.size(); ++w){
@@ -326,9 +347,17 @@ void fill_hand_position_markers(visualization_msgs::MarkerArray & foot_markers, 
 		// 	temp.color.b = 0.5;
 		// 	temp.color.g = 0.5;
 		// }else{
+		if(f_score > 0.5){
+			temp.color.g = 1.0f;
+			temp.color.b = 0.0f;
+			temp.color.r = 0.0f;
+		}
+		// else{
 			temp.color.r = (1.0-f_score);
 			temp.color.b = 0.0f;
 			temp.color.g = (f_score);
+		// }
+			
 		// }
 		
 		temp.color.a = 0.3;
