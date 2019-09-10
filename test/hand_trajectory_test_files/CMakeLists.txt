@@ -1,0 +1,5 @@
+add_executable(test_generate_general_hand_trajectory test_generate_general_hand_trajectory.cpp ${PROJECT_SOURCES})
+add_executable(test_visualize_val_and_custom_trajectory test_visualize_val_and_custom_trajectory.cpp ${PROJECT_SOURCES})
+
+target_link_libraries(test_generate_general_hand_trajectory ${PROJECT_LIBRARIES})
+target_link_libraries(test_visualize_val_and_custom_trajectory ${PROJECT_LIBRARIES})
