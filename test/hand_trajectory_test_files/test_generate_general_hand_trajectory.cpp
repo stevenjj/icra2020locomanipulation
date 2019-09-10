@@ -41,14 +41,16 @@ int main(int argc, char **argv){
 	double r = 0.8; // radius of arc
 	double theta = 6.28; // arc angle
 	double l = 1.0; // length of line leading into arc
+	int N = 20;// Number of wps to describe the arc
 	Eigen::Vector3d hand_init;
 	hand_init[0] = 0.2; hand_init[1] = -0.5; hand_init[2] = 0.95;
 	Eigen::Quaternion<double> q_init;
-	q_init.x() = 0.0; q_init.y() = 0.0;
-	q_init.z() = 0.707; q_init.w() = 0.707;
+	q_init.x() = 0.11781; q_init.y() = 0.39669;
+	q_init.z() = 0.60298; q_init.w() = 0.68204;
+	q_init.normalize();
 
 	// Helper variables
-	double dtheta = theta / 10.;
+	double dtheta = theta / static_cast<double>(N);
 	double dl = l / 5.;
 	Eigen::Quaternion<double> q; // The quaternion (0, 0, sin(theta/2), cos(theta/2))
 																// to be post multiplied by q_init
@@ -64,9 +66,9 @@ int main(int argc, char **argv){
 
   if(l == 0.0){
   	// When l=0 we only have 10 waypoints for the arc
-  	data_saver::emit_value(out, "num_waypoints", 11);
+  	data_saver::emit_value(out, "num_waypoints", N+1);
   	// Generate the waypoints around the arc
-  	for(int i=0; i<=10; ++i){
+  	for(int i=0; i<=N; ++i){
   		waypoint_string = "waypoint_" + std::to_string(i+1);
 
   		// x position = original_x + cos(i*dtheta)*radius
@@ -77,7 +79,7 @@ int main(int argc, char **argv){
   		values[2] = hand_init[2];
   		// Get the updated quaternion
   		q.x() = 0; q.y() = 0; q.z() = sin((static_cast<double>(i)*dtheta) / 2); q.w() = cos((static_cast<double>(i)*dtheta) / 2);
-  		q_i = q_init * q;
+  		q_i = q*q_init;
 
   		values[3] = q_i.x(); values[4] = q_i.y(); values[5] = q_i.z(); values[6] = q_i.w();
 
@@ -86,7 +88,7 @@ int main(int argc, char **argv){
 
   }else{
   	// When l!=0 we have 5 additional waypoints for the length
-  	data_saver::emit_value(out, "num_waypoints", 16);
+  	data_saver::emit_value(out, "num_waypoints", 5+N+1);
   	// Generate waypoints fo the line 
   	for(int i=0; i<5; ++i){
   		waypoint_string = "waypoint_" + std::to_string(i+1);
@@ -100,7 +102,7 @@ int main(int argc, char **argv){
   		emit_7dof(out, waypoint_string, values);
   	}
   	// Generate waypoints for the arc
-  	for(int i=0; i<=10; ++i){
+  	for(int i=0; i<=N; ++i){
   		waypoint_string = "waypoint_" + std::to_string(i+6);
 
   		// x position = original_x + cos(i*dtheta)*radius
@@ -111,7 +113,7 @@ int main(int argc, char **argv){
   		values[2] = hand_init[2];
   		// Get the updated quaternion
   		q.x() = 0; q.y() = 0; q.z() = sin((static_cast<double>(i)*dtheta) / 2); q.w() = cos((static_cast<double>(i)*dtheta) / 2);
-  		q_i = q_init * q;
+  		q_i = q * q_init;
 
   		values[3] = q_i.x(); values[4] = q_i.y(); values[5] = q_i.z(); values[6] = q_i.w();
 
