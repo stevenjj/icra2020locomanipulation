@@ -76,8 +76,9 @@ namespace planner{
         bool reconstructConfigurationTrajectory();
         void printPath();
 
-        std::shared_ptr<LMVertex> current_;
+        std::shared_ptr<LMVertex> current_;        
         std::shared_ptr<LMVertex> goal_;
+        std::shared_ptr<LMVertex> begin_;        
         std::shared_ptr<LMVertex> neighbor_;        
         std::shared_ptr<LMVertex> opt_node_;
 
@@ -94,11 +95,23 @@ namespace planner{
 
         bool trust_classifier = false;
 
-
         std::shared_ptr<RobotModel> robot_model;
         std::shared_ptr<ManipulationFunction> f_s;
         std::shared_ptr<ConfigTrajectoryGenerator> ctg;
         std::vector<Footstep> input_footstep_list;
+
+        // Body Path heuristic. Feet positions w.r.t hand pose
+        Eigen::Vector3d lf_pos_wrt_hand;
+        Eigen::Vector3d rf_pos_wrt_hand;
+
+        Eigen::Quaterniond lf_ori_wrt_hand;
+        Eigen::Quaterniond rf_ori_wrt_hand;
+
+        Eigen::Vector3d lf_guess_pos;
+        Eigen::Quaterniond lf_guess_ori;
+
+        Eigen::Vector3d rf_guess_pos;
+        Eigen::Quaterniond rf_guess_ori;
 
         // Set the planner origin
         Eigen::Vector3d planner_origin_pos;
@@ -149,7 +162,7 @@ namespace planner{
 
         // planner parameters
         double w_heuristic = 2000.0; //2000.0;
-        double w_distance = 1e-3;
+        double w_distance = 100; //1e-3;
         double w_s = 100.0;     
         double w_step = 10;
         double w_transition_distance = 10.0;
