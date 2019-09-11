@@ -43,6 +43,7 @@ int main(int argc, char **argv){
 	// Get our Configuration parameters
 	double r; // radius of arc
 	param_handler.getValue("radius", r);
+	r = r*0.9;
 
 	double theta;
 	param_handler.getValue("door_open_angle", theta);
@@ -63,8 +64,6 @@ int main(int argc, char **argv){
   	param_handler.getNestedValue({"hand_initial_orientation", "z"}, rz);
   	param_handler.getNestedValue({"hand_initial_orientation", "w"}, rw);
 
-  	Eigen::Vector3d hand_init;
-	hand_init[0] = 0.0; hand_init[1] = 0.0; hand_init[2] = 0.0;
 	Eigen::Quaternion<double> q_init;
 	q_init.x() = rx; q_init.y() = ry;
 	q_init.z() = rz; q_init.w() = rw;
