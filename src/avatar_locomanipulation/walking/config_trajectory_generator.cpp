@@ -190,9 +190,13 @@ void ConfigTrajectoryGenerator::createTaskStack(){
 	if (use_right_hand){
 		vec_task_stack.push_back(rhand_task);
 		vec_manip_stack_1.push_back(rhand_task);
+		vec_posture_task_stack.push_back(rarm_posture_task);
 	}else{
 		vec_posture_task_stack.push_back(rarm_posture_task);
 	}
+	
+	double rarm_task_gain = 1.5;
+	rarm_posture_task->setTaskGain(rarm_task_gain);
 
 	// Check whether to use a left hand SE(3) task or a left arm joint position task
 	if (use_left_hand){
@@ -429,6 +433,9 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 	q_posture[robot_model->getJointIndex("torsoYaw")] = 0.0;
 	q_posture[robot_model->getJointIndex("torsoPitch")] = 0.0;
 	q_posture[robot_model->getJointIndex("torsoRoll")] = 0.0;
+
+	q_posture[robot_model->getJointIndex("rightWristRoll")] = 0.0;
+	q_posture[robot_model->getJointIndex("rightWristPitch")] = 0.0;
 
 	setPostureTaskReference(torso_posture_task, q_posture);
 	setPostureTaskReference(neck_posture_task, q_posture);
