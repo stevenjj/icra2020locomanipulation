@@ -1,0 +1,9 @@
+radius: 0.8
+door_open_angle: 1.57
+handle_height: 1.0
+pose_spacing: 0.05
+hand_initial_orientation:
+  x: 0.5
+  y: -0.5
+  z: 0.5
+  w: 0.5
