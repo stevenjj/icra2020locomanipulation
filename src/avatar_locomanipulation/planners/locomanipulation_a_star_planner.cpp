@@ -879,7 +879,7 @@ namespace planner{
 
             // Skip if this landing position is greater than the maximum lattice radius
             if (landing_pos.norm() >= max_lattice_radius){
-              std::cout << " potential neighbor is greater than the max lattice radius" << std::endl;
+              // std::cout << " potential neighbor is greater than the max lattice radius" << std::endl;
               continue;
             }
             landing_quat = stance_foot.orientation*delta_quat;

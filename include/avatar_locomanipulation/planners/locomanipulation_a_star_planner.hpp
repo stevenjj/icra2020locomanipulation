@@ -135,7 +135,7 @@ namespace planner{
         double max_lattice_theta = M_PI*7.0/8.0;
         double min_lattice_theta = -M_PI*7.0/8.0;
 
-        double max_lattice_radius = 1.5; // meters from the origin
+        double max_lattice_radius = 2.0; // meters from the origin
         double max_foot_to_hand_radius = 1.5; // meters from the landiing foot
 
         // swing foot kinematic limits w.r.t the stance frame
