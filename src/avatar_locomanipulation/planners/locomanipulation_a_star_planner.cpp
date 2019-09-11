@@ -45,7 +45,8 @@ namespace planner{
 
   double LMVertex::getAngle(const Eigen::Quaterniond & quat_in){
     tmp_aa = quat_in;
-    return tmp_aa.angle();
+    // Return z axis of omega_hat*angle
+    return (tmp_aa.axis()*tmp_aa.angle())[2];
   }
 
   // Common Initialization
@@ -205,7 +206,7 @@ namespace planner{
 
   double LocomanipulationPlanner::getAngle(const Eigen::Quaterniond & quat_in){
     tmp_aa = quat_in;
-    return tmp_aa.angle();
+    return (tmp_aa.axis()*tmp_aa.angle())[2];
   }
 
 
@@ -596,8 +597,8 @@ namespace planner{
     rf_guess_pos = tmp_ori.toRotationMatrix()*rf_pos_wrt_hand + tmp_pos;
     rf_guess_ori = tmp_ori*rf_ori_wrt_hand;
     
-    double lf_distance_cost = (lf_guess_pos - current_->left_foot.position).norm() + fabs( getAngle(lf_guess_ori) - getAngle(current_->left_foot.orientation) );
-    double rf_distance_cost = (rf_guess_pos - current_->right_foot.position).norm() + fabs( getAngle(rf_guess_ori) - getAngle(current_->right_foot.orientation) );
+    double lf_distance_cost = (lf_guess_pos - neighbor_->left_foot.position).norm() + fabs( getAngle(lf_guess_ori) - getAngle(neighbor_->left_foot.orientation) );
+    double rf_distance_cost = (rf_guess_pos - neighbor_->right_foot.position).norm() + fabs( getAngle(rf_guess_ori) - getAngle(neighbor_->right_foot.orientation) );
 
 
     double s_cost = w_s*(neighbor_->s - current_->s);
@@ -643,29 +644,30 @@ namespace planner{
 
     double s_cost = w_s*(goal_->s - neighbor_->s);
 
-    // Get Hand position and orientation at the neighbor's s.
-    f_s->getPose(goal_->s, tmp_pos, tmp_ori);    
+    // // Get Hand position and orientation at the neighbor's s.
+    // f_s->getPose(goal_->s, tmp_pos, tmp_ori);    
  
-    // Compute the estimated left and right foot landing locations
-    lf_guess_pos = tmp_ori.toRotationMatrix()*lf_pos_wrt_hand + tmp_pos;
-    lf_guess_ori = tmp_ori*lf_ori_wrt_hand;
+    // // Compute the estimated left and right foot landing locations
+    // lf_guess_pos = tmp_ori.toRotationMatrix()*lf_pos_wrt_hand + tmp_pos;
+    // lf_guess_ori = tmp_ori*lf_ori_wrt_hand;
 
-    rf_guess_pos = tmp_ori.toRotationMatrix()*rf_pos_wrt_hand + tmp_pos;
-    rf_guess_ori = tmp_ori*rf_ori_wrt_hand;
+    // rf_guess_pos = tmp_ori.toRotationMatrix()*rf_pos_wrt_hand + tmp_pos;
+    // rf_guess_ori = tmp_ori*rf_ori_wrt_hand;
     
-    double lf_distance_cost = (lf_guess_pos - neighbor_->left_foot.position).norm() + fabs( getAngle(lf_guess_ori) - getAngle(neighbor_->left_foot.orientation) );
-    double rf_distance_cost = (rf_guess_pos - neighbor_->right_foot.position).norm() + fabs( getAngle(rf_guess_ori) - getAngle(neighbor_->right_foot.orientation) );
+    // double lf_distance_cost = (lf_guess_pos - neighbor_->left_foot.position).norm() + fabs( getAngle(lf_guess_ori) - getAngle(neighbor_->left_foot.orientation) );
+    // double rf_distance_cost = (rf_guess_pos - neighbor_->right_foot.position).norm() + fabs( getAngle(rf_guess_ori) - getAngle(neighbor_->right_foot.orientation) );
 
 
-    // Mid feet frame heuristic
-    // double distance_cost = w_distance*((goal_->mid_foot.position - neighbor_->mid_foot.position).norm() 
-    //                                     + fabs(getAngle(goal_->mid_foot.orientation) - getAngle(neighbor_->mid_foot.orientation)) );
+    // // Mid feet frame heuristic
+    // // double distance_cost = w_distance*((goal_->mid_foot.position - neighbor_->mid_foot.position).norm() 
+    // //                                     + fabs(getAngle(goal_->mid_foot.orientation) - getAngle(neighbor_->mid_foot.orientation)) );
 
-    // Footstep landing heuristic
-    double distance_cost = w_distance*(lf_distance_cost + rf_distance_cost);
+    // // Footstep landing heuristic
+    // double distance_cost = w_distance*(lf_distance_cost + rf_distance_cost);
 
     // Linear distance to the manipulation goal. if w_heuristic = 1.0, we get the true A* result 
-    return w_heuristic*(s_cost + distance_cost); 
+    // return w_heuristic*(s_cost + distance_cost); 
+    return w_heuristic*(s_cost);
   }
 
   // Locomanipulation whether or not the goal was reached
@@ -751,11 +753,10 @@ namespace planner{
 
   void LocomanipulationPlanner::generateDiscretization(){
     if (classifier_store_mistakes)
-      delta_s_vals = {0.01, 0.04, 0.08};
+      delta_s_vals = {0.01, 0.04};
       // delta_s_vals = {0.0};
     else{
-      // delta_s_vals = {0.01, 0.04, 0.08};
-      delta_s_vals = {0.01, 0.04, 0.08};
+      delta_s_vals = {0.01, 0.04};
     }
 
     //number of bins for the local lattice
