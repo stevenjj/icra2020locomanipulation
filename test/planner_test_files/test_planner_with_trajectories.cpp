@@ -285,7 +285,7 @@ void test_LM_planner(){
 
   // 
   double s_init = 0.0;
-  double s_goal = 0.16; //0.20; //0.12;//0.08;
+  double s_goal = 0.56; //0.20; //0.12;//0.08;
   shared_ptr<Node> starting_vertex (std::make_shared<LMVertex>(s_init, q_start_door));    
   shared_ptr<Node> goal_vertex (std::make_shared<LMVertex>(s_goal, q_final_door));
 
@@ -440,8 +440,8 @@ int main(int argc, char ** argv){
   ros::init(argc, argv, "test_planner_with_trajectories");
 
   // test_final_configuration();
-  // test_LM_planner();
-  test_LM_planner_with_NN();
+  test_LM_planner();
+  // test_LM_planner_with_NN();
   // test_planner();
   // test_door_open_config_trajectory();
  

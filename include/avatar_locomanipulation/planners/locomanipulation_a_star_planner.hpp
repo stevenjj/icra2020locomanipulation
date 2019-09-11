@@ -127,9 +127,9 @@ namespace planner{
 
         // lattice discretization to be used. with orientation aligned with the starting origin frame but 
         // the translation origin is aligned with the stance frame
-        double dx = 0.05; // dx translation discretization
-        double dy = 0.05; // dy translation discretization
-        double dtheta = 10.0*M_PI/180.0; // 10 degrees of discretization
+        double dx = 0.025; // dx translation discretization
+        double dy = 0.025; // dy translation discretization
+        double dtheta = 10.0*M_PI/180.0; //10.0*M_PI/180.0; // 10 degrees of discretization
 
         double max_lattice_translation = 0.2;
         double max_lattice_theta = M_PI*7.0/8.0;

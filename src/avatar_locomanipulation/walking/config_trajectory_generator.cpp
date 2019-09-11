@@ -425,10 +425,15 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 	robot_model->getFrameWorldPose("pelvis", tmp_pelvis_pos, tmp_pelvis_ori);	
 
 	// set joint position task reference.
-	setPostureTaskReference(torso_posture_task, q_start);
-	setPostureTaskReference(neck_posture_task, q_start);
-	setPostureTaskReference(rarm_posture_task, q_start);
-	setPostureTaskReference(larm_posture_task, q_start);
+	Eigen::VectorXd q_posture = q_start;
+	q_posture[robot_model->getJointIndex("torsoYaw")] = 0.0;
+	q_posture[robot_model->getJointIndex("torsoPitch")] = 0.0;
+	q_posture[robot_model->getJointIndex("torsoRoll")] = 0.0;
+
+	setPostureTaskReference(torso_posture_task, q_posture);
+	setPostureTaskReference(neck_posture_task, q_posture);
+	setPostureTaskReference(rarm_posture_task, q_posture);
+	setPostureTaskReference(larm_posture_task, q_posture);
 
 	// If there are footsteps in the list construct the task space trajectories.
 	if (input_footstep_list.size() > 0){
