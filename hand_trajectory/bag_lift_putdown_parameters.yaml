@@ -1,0 +1,4 @@
+radius: 0.8
+rotation_angle: 3.14
+lift_height: 0.2
+pose_spacing: 0.05

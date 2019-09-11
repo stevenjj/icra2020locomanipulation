@@ -37,16 +37,31 @@ void emit_7dof(YAML::Emitter & out, std::string & waypoint_name, std::vector<dou
 
 
 int main(int argc, char **argv){
-	// Set our Configuration values
-	double r = 0.8; // radius of arc
-  // ** If we change theta, then the third for loop - for putdown - x,y,z pos will need to be changed
-  // But note that the putdown ori matches the ori for the final wp of the arc and does not need
-  // to be changed
-	double theta = 3.14; // arc angle
-  // **
-	double l = 0.2; // length of line leading into arc
-	int N = 20;// Number of wps to describe the arc
-  int M = 5; // Number of wps to describe each of the up and down motions
+	ParamHandler param_handler;
+
+	param_handler.load_yaml_file(THIS_PACKAGE_PATH"hand_trajectory/bag_lift_putdown_parameters.yaml");
+
+	// Get our Configuration parameters
+	double r; // radius of arc
+	param_handler.getValue("radius", r);
+
+	double theta;
+	param_handler.getValue("rotation_angle", theta);
+
+	double l;
+	param_handler.getValue("lift_height", l);
+
+	double pose_spacing;
+	param_handler.getValue("pose_spacing", pose_spacing);
+
+	double arc_length = theta / r;
+	int N = static_cast<int>(arc_length / 0.05);// Number of wps to describe the arc
+
+  	int M = static_cast<int>(l / 0.05); // Number of wps to describe each of the up and down motions
+	
+  	std::cout << "M = " << M << std::endl;
+  	std::cout << "N = " << N << std::endl;
+
 	Eigen::Vector3d hand_init;
 	hand_init[0] = 0.0; hand_init[1] = 0.0; hand_init[2] = 0.75;
 	Eigen::Quaternion<double> q_init;
@@ -104,8 +119,8 @@ int main(int argc, char **argv){
       waypoint_string = "waypoint_" + std::to_string(i+M+N+1);
 
       // x position = original_x + i*dl
-      values[0] = hand_init[0] - r;
-      values[1] = hand_init[1];
+      values[0] = hand_init[0] + cos(theta)*r;
+      values[1] = hand_init[1] + sin(theta)*r;
       values[2] = hand_init[2] + l - i*dl;
       values[3] = q_i.x(); values[4] = q_i.y(); values[5] = q_i.z(); values[6] = q_i.w();
 
@@ -114,6 +129,6 @@ int main(int argc, char **argv){
 
 
   out << YAML::EndMap;
-	std::ofstream file_output_stream("custom_hand_lift_turn_trajectory.yaml");
+	std::ofstream file_output_stream("bag_lift_turn_putdown_trajectory.yaml");
   file_output_stream << out.c_str();
 }
