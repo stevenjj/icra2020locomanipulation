@@ -43,8 +43,6 @@ public:
 
 	void getParameters();
 
-	void sCallback(std_msgs::Float64 & msg);
-
 	void getVizInformation(visualization_msgs::Marker & door_msg, tf::Transform & tf_world_wp1, tf::Transform & tf_wp1_hinge);
 
 

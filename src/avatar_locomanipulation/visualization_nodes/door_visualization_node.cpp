@@ -58,10 +58,7 @@ void DoorVisualizationNode::getParameters(){
 
 void DoorVisualizationNode::getVizInformation(visualization_msgs::Marker & door_msg, tf::Transform & tf_world_wp1, tf::Transform & tf_wp1_hinge){
 
-	Eigen::Quaternion<double> q, q_i;
-
-	// Add the Hinge frame
-
+	Eigen::Quaternion<double> q, q_i, q_fixed;
 
 	tf_world_wp1.setOrigin(tf::Vector3(wp1_pos[0], wp1_pos[1], wp1_pos[2]));
 	tf_world_wp1.setRotation(tf::Quaternion(0.5, -0.5, 0.5, 0.5));
@@ -72,7 +69,6 @@ void DoorVisualizationNode::getVizInformation(visualization_msgs::Marker & door_
 	// q_i.x() = 0.0; q_i.y() = 0.0; q_i.z() = sin((s_current*door_open_angle) / 2); q_i.w() = cos((s_current*door_open_angle) / 2);
 	q_i.x() = sin((s_current*door_open_angle) / 2); q_i.y() = 0.0; q_i.z() = 0.0; q_i.w() = cos((s_current*door_open_angle) / 2);
 	
-	Eigen::Quaternion<double> q_fixed;
 	q_fixed.x() = 0.5; q_fixed.y() = -0.5; q_fixed.z() = 0.5; q_fixed.w() = 0.5;
 	q = q_i * q_fixed;
 	// Fill the Door marker msg
