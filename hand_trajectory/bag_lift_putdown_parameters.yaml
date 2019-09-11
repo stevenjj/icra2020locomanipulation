@@ -2,6 +2,7 @@ radius: 0.8
 rotation_angle: 3.14
 lift_height: 0.2
 pose_spacing: 0.05
+initial_height: 0.75
 hand_initial_orientation:
   x: 0.11781
   y: 0.39669

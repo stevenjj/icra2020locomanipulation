@@ -45,6 +45,9 @@ int main(int argc, char **argv){
 	double r; // radius of arc
 	param_handler.getValue("radius", r);
 
+	double h;
+	param_handler.getValue("initial_height", h);
+
 	double theta;
 	param_handler.getValue("rotation_angle", theta);
 
@@ -66,8 +69,6 @@ int main(int argc, char **argv){
   	param_handler.getNestedValue({"hand_initial_orientation", "z"}, rz);
   	param_handler.getNestedValue({"hand_initial_orientation", "w"}, rw);
 
-	Eigen::Vector3d hand_init;
-	hand_init[0] = 0.0; hand_init[1] = 0.0; hand_init[2] = 0.75;
 	Eigen::Quaternion<double> q_init;
 	q_init.x() = 0.11781; q_init.y() = 0.39669;
 	q_init.z() = 0.60298; q_init.w() = 0.68204;
@@ -93,9 +94,9 @@ int main(int argc, char **argv){
 		waypoint_string = "waypoint_" + std::to_string(i+1);
 
 		// x position = original_x + i*dl
-		values[0] = hand_init[0] + r;
-		values[1] = hand_init[1];
-		values[2] = hand_init[2] + i*dl;
+		values[0] = r;
+		values[1] = 0.0;
+		values[2] = h + i*dl;
 		values[3] = q_init.x(); values[4] = q_init.y(); values[5] = q_init.z(); values[6] = q_init.w();
 
 		emit_7dof(out, waypoint_string, values);
@@ -105,11 +106,11 @@ int main(int argc, char **argv){
 		waypoint_string = "waypoint_" + std::to_string(i+M+1);
 
 		// x position = original_x + cos(i*dtheta)*radius
-		values[0] = hand_init[0] + cos(static_cast<double>(i)*dtheta)*r;
+		values[0] = cos(static_cast<double>(i)*dtheta)*r;
 		// y position = original_y + cos(i*dtheta)*radius
-		values[1] = hand_init[1] + sin(static_cast<double>(i)*dtheta)*r;
+		values[1] = sin(static_cast<double>(i)*dtheta)*r;
 		// z position = original_z
-		values[2] = hand_init[2] + l;
+		values[2] = h + l;
 		// Get the updated quaternion
 		q.x() = 0; q.y() = 0; q.z() = sin((static_cast<double>(i)*dtheta) / 2); q.w() = cos((static_cast<double>(i)*dtheta) / 2);
 		q_i = q * q_init;
@@ -123,9 +124,9 @@ int main(int argc, char **argv){
       waypoint_string = "waypoint_" + std::to_string(i+M+N+1);
 
       // x position = original_x + i*dl
-      values[0] = hand_init[0] + cos(theta)*r;
-      values[1] = hand_init[1] + sin(theta)*r;
-      values[2] = hand_init[2] + l - i*dl;
+      values[0] = cos(theta)*r;
+      values[1] = sin(theta)*r;
+      values[2] = h + l - i*dl;
       values[3] = q_i.x(); values[4] = q_i.y(); values[5] = q_i.z(); values[6] = q_i.w();
 
       emit_7dof(out, waypoint_string, values);

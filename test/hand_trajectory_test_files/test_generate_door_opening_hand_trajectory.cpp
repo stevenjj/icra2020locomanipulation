@@ -90,11 +90,11 @@ int main(int argc, char **argv){
 		waypoint_string = "waypoint_" + std::to_string(i+1);
 
 		// x position = original_x + cos(i*dtheta)*radius
-		values[0] = hand_init[0] + cos(1.57 + static_cast<double>(i)*dtheta)*r;
+		values[0] = cos(1.57 + static_cast<double>(i)*dtheta)*r;
 		// y position = original_y + cos(i*dtheta)*radius
 		values[1] = sin(1.57 +  static_cast<double>(i)*dtheta)*r;
 		// z position = original_z
-		values[2] = hand_init[2] + l;
+		values[2] = l;
 		// Get the updated quaternion
 		q.x() = 0; q.y() = 0; q.z() = sin((static_cast<double>(i)*dtheta) / 2); q.w() = cos((static_cast<double>(i)*dtheta) / 2);
 		q_i = q * q_init;
