@@ -122,7 +122,7 @@ int main(int argc, char **argv){
 	initialize_config(q_start);
 
 	// Load the yaml file
-	param_handler.load_yaml_file(THIS_PACKAGE_PATH"custom_hand_lift_turn_trajectory.yaml");
+	param_handler.load_yaml_file(THIS_PACKAGE_PATH"bag_lift_turn_putdown_trajectory.yaml");
 
 	int num_wps;
 	param_handler.getInteger("num_waypoints", num_wps);
