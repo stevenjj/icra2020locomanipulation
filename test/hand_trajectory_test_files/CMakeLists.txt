@@ -13,3 +13,4 @@ target_link_libraries(test_generate_door_opening_hand_trajectory ${PROJECT_LIBRA
 target_link_libraries(test_visualize_val_and_door_open_trajectory ${PROJECT_LIBRARIES})
 
 add_dependencies(test_generate_door_opening_hand_trajectory ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(test_visualize_val_and_door_open_trajectory ${${PROJECT_NAME}_EXPORTED_TARGETS})

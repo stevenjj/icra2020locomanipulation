@@ -19,6 +19,7 @@
 
 #include <math.h>
 
+#include <avatar_locomanipulation/visualization_nodes/door_visualization_node.hpp>
 
 void initialize_config(Eigen::VectorXd & q_init){
 
@@ -94,9 +95,33 @@ void visualize_robot_and_waypoints(Eigen::VectorXd & q_start, geometry_msgs::Pos
   // Visualize q_start and q_end in RVIZ
   rviz_translator.populate_joint_state_msg(valkyrie.model, q_start, tf_world_pelvis_init, joint_msg_init);
 
+  double s = 1.0;
+
+  DoorVisualizationNode door_obj;
+
+  door_obj.s_current = s;
+
+  ros::Publisher door_viz_pub = n.advertise<visualization_msgs::Marker>("door_visualization", 1000);
+
+  visualization_msgs::Marker door_msg;
+
+  // Transform Broadcasters for getting the wp1 in world then hinge in wp1
+  tf::TransformBroadcaster br_wp1;
+  tf::TransformBroadcaster br_hinge;  
+  // The transforms
+  tf::Transform tf_world_wp1;
+  tf::Transform tf_wp1_hinge;
+  
+  door_obj.getVizInformation(door_msg, tf_world_wp1, tf_wp1_hinge);
+
   while (ros::ok()){
       br_robot.sendTransform(tf::StampedTransform(tf_world_pelvis_init, ros::Time::now(), "world",  "val_robot/pelvis"));
       robot_joint_state_pub.publish(joint_msg_init);
+
+      br_wp1.sendTransform(tf::StampedTransform(tf_world_wp1, ros::Time::now(), "world", "wp1_frame"));
+      br_hinge.sendTransform(tf::StampedTransform(tf_wp1_hinge, ros::Time::now(), "wp1_frame", "hinge_frame"));
+
+      door_viz_pub.publish(door_msg);
 
       hand_pose_pub.publish(waypoints);
 
