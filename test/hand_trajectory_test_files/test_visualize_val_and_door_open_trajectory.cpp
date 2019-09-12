@@ -21,7 +21,6 @@
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 #include <avatar_locomanipulation/visualization_nodes/door_visualization_node.hpp>
-boost::mutex state_mutex;
 
 
 double s_global = 0.0;
