@@ -25,7 +25,7 @@ using namespace planner;
 
 void load_initial_robot_door_configuration(Eigen::VectorXd & q_out, Eigen::Vector3d & hinge_pos_out, Eigen::Quaterniond & hinge_ori_out){
   ParamHandler param_handler;
-  param_handler.load_yaml_file(THIS_PACKAGE_PATH"stored_configurations/robot_door_initial_configuration.yaml");  
+  param_handler.load_yaml_file(THIS_PACKAGE_PATH"stored_configurations/robot_door_initial_configuration_v2.yaml");  
 
   // Get the robot configuration vector
   std::vector<double> robot_q;
@@ -265,7 +265,8 @@ void test_LM_planner(){
 
   // Initialize Trajectory Generation Module
   ctg->setUseRightHand(true);
-  ctg->setUseTorsoJointPosition(false);
+  ctg->setUseTorsoJointPosition(true);
+  // ctg->setUseTorsoJointPosition(false);
   ctg->reinitializeTaskStack();
   // timer
   //PinocchioTicToc timer = PinocchioTicToc(PinocchioTicToc::MS);
@@ -285,7 +286,7 @@ void test_LM_planner(){
 
   // 
   double s_init = 0.0;
-  double s_goal = 0.16; //0.20; //0.12;//0.08;
+  double s_goal = 0.99; //0.20; //0.12;//0.08;
   shared_ptr<Node> starting_vertex (std::make_shared<LMVertex>(s_init, q_start_door));    
   shared_ptr<Node> goal_vertex (std::make_shared<LMVertex>(s_goal, q_final_door));
 
@@ -353,7 +354,8 @@ void test_LM_planner_with_NN(){
 
   // Initialize Trajectory Generation Module
   ctg->setUseRightHand(true);
-  ctg->setUseTorsoJointPosition(false);
+  // ctg->setUseTorsoJointPosition(false);
+  ctg->setUseTorsoJointPosition(true);
   ctg->reinitializeTaskStack();
   // timer
   //PinocchioTicToc timer = PinocchioTicToc(PinocchioTicToc::MS);
@@ -367,16 +369,28 @@ void test_LM_planner_with_NN(){
 
   // End of initialization ---------------------------------------------------------------------------------------
   LocomanipulationPlanner lm_planner;
+
+  // Set whether to learn from mistakes or not
+  // Regenerate the discretizations
+  bool learn_from_mistakes = true;
+  if (learn_from_mistakes){ 
+    lm_planner.classifier_store_mistakes = true;  
+    std::cout << "Storing classifier mistakes? " << lm_planner.classifier_store_mistakes << std::endl;
+    lm_planner.generateDiscretization();
+  }
+  // ----------
+
+  // Set to trust the classifier
+  lm_planner.trust_classifier = false;
+
   // Initialize
   lm_planner.initializeLocomanipulationVariables(valkyrie_model, f_s_manipulate_door, ctg);
   // Set the classifier client:
   std::cout << "Setting the classifier client" << std::endl;
   lm_planner.setClassifierClient(client);
 
-
-
   double s_init = 0.0;
-  double s_goal = 0.16; //0.20; //0.12;//0.08;
+  double s_goal = 0.32; //0.32; //0.16; //0.20; //0.12;//0.08;
   shared_ptr<Node> starting_vertex (std::make_shared<LMVertex>(s_init, q_start_door));    
   shared_ptr<Node> goal_vertex (std::make_shared<LMVertex>(s_goal, q_final_door));
 

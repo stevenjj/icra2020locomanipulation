@@ -45,7 +45,8 @@ namespace planner{
 
   double LMVertex::getAngle(const Eigen::Quaterniond & quat_in){
     tmp_aa = quat_in;
-    return tmp_aa.angle();
+    // Return z axis of omega_hat*angle
+    return (tmp_aa.axis()*tmp_aa.angle())[2];
   }
 
   // Common Initialization
@@ -81,6 +82,18 @@ namespace planner{
     f_s = f_s_in;
     ctg = ctg_in;
 
+    // Init feet position w.r.t hand 
+    lf_pos_wrt_hand.setZero();
+    rf_pos_wrt_hand.setZero();
+
+    lf_ori_wrt_hand.setIdentity();
+    rf_ori_wrt_hand.setIdentity();
+
+    lf_guess_pos.setZero();
+    lf_guess_ori.setIdentity();
+
+    rf_guess_pos.setZero();
+    rf_guess_ori.setIdentity();
 
     // Initialize tmp variables
     tmp_pos.setZero();
@@ -108,6 +121,7 @@ namespace planner{
     nn_left_hand_start_ori.setIdentity();
 
     tmp_ori_vec3.setZero();
+
   }
 
   // Destructor
@@ -116,25 +130,23 @@ namespace planner{
   void LocomanipulationPlanner::setStartNode(const shared_ptr<Node> begin_input){
     std::cout << "[LocomanipulationPlanner] Setting the starting node" << std::endl;
     begin = begin_input;
-    std::shared_ptr<LMVertex> begin_lmv = static_pointer_cast<LMVertex>(begin);
+    begin_ = static_pointer_cast<LMVertex>(begin);
 
     // Set flag that this is a start node
-    begin_lmv->isStartNode = true;
+    begin_->isStartNode = true;
 
     // Update the robot model with the starting node initial configuration
-    robot_model->updateFullKinematics(begin_lmv->q_init);
+    robot_model->updateFullKinematics(begin_->q_init);
     // Set the starting pelvis height
-    nn_starting_pelvis_height = begin_lmv->q_init[2]; // Get the z height of the pelvis
+    nn_starting_pelvis_height = begin_->q_init[2]; // Get the z height of the pelvis
 
     Eigen::Vector3d foot_pos;
     Eigen::Quaterniond foot_ori;
 
-
-
     // Set the right foot position 
     robot_model->getFrameWorldPose("rightCOP_Frame", foot_pos, foot_ori);
-    begin_lmv->right_foot.setPosOriSide(foot_pos, foot_ori, RIGHT_FOOTSTEP);
-    // begin_lmv->right_foot.printInfo();
+    begin_->right_foot.setPosOriSide(foot_pos, foot_ori, RIGHT_FOOTSTEP);
+    // begin_->right_foot.printInfo();
 
     // Set the planner origin to be the starting right foot frame
     planner_origin_pos = foot_pos;
@@ -143,17 +155,27 @@ namespace planner{
     R_planner_origin = planner_origin_ori.toRotationMatrix();
     R_planner_origin_transpose = R_planner_origin.transpose();
 
-
     // Set the left position as well
     robot_model->getFrameWorldPose("leftCOP_Frame", foot_pos, foot_ori);
-    begin_lmv->left_foot.setPosOriSide(foot_pos, foot_ori, LEFT_FOOTSTEP);
-    // begin_lmv->left_foot.printInfo();
+    begin_->left_foot.setPosOriSide(foot_pos, foot_ori, LEFT_FOOTSTEP);
+    // begin_->left_foot.printInfo();
 
     // Compute the midfoot 
-    begin_lmv->mid_foot.computeMidfeet(begin_lmv->left_foot, begin_lmv->right_foot, begin_lmv->mid_foot);
-    begin_lmv->mid_foot.setMidFoot();
-    // begin_lmv->mid_foot.printInfo();
+    begin_->mid_foot.computeMidfeet(begin_->left_foot, begin_->right_foot, begin_->mid_foot);
+    begin_->mid_foot.setMidFoot();
+    // begin_->mid_foot.printInfo();
 
+    // Set Feet position w.r.t hand 
+    std::cout << "normal start node finished" << std::endl;
+    double s_init = 0.0;
+    f_s->getPose(s_init, tmp_pos, tmp_ori);
+    Eigen::Matrix3d R_hand_ori_T = tmp_ori.toRotationMatrix().transpose();
+
+    lf_pos_wrt_hand = R_hand_ori_T*(begin_->left_foot.position - tmp_pos);
+    rf_pos_wrt_hand = R_hand_ori_T*(begin_->right_foot.position - tmp_pos);
+
+    lf_ori_wrt_hand = tmp_ori.inverse()*begin_->left_foot.orientation;
+    rf_ori_wrt_hand = tmp_ori.inverse()*begin_->right_foot.orientation;
   }
 
   void LocomanipulationPlanner::setGoalNode(const shared_ptr<Node> goal_input){
@@ -179,11 +201,12 @@ namespace planner{
 
     // Get a copy of the goal node s variable
     goal_s = goal_lmv->s;
+
   }
 
   double LocomanipulationPlanner::getAngle(const Eigen::Quaterniond & quat_in){
     tmp_aa = quat_in;
-    return tmp_aa.angle();
+    return (tmp_aa.axis()*tmp_aa.angle())[2];
   }
 
 
@@ -246,9 +269,7 @@ namespace planner{
     }
     // Add the parent
     optimal_path.push_back(current_node);
-
-    std::cout << "Path has size: " << optimal_path.size() << std::endl;
-    std::cout << "Found potential path reconstructing the trajectory..." << std::endl;
+    std::cout << "Found potential path with size " << optimal_path.size() << ". Reconstructing the trajectory..." << std::endl;
 
     return reconstructConfigurationTrajectory();
   }
@@ -308,19 +329,23 @@ namespace planner{
                                                                   parent_->s, delta_s, 
                                                                   parent_->q_init, 
                                                                  input_footstep_list);
-      // Get the final configuration
-      std::cout << "getting the final configuration" << std::endl;
+      // Get the final configuration and set to current
+      // std::cout << "getting the final configuration" << std::endl;
       ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_end);
+      current_->setRobotConfig(q_end);
 
-      // Store the data if the classifier made a mistake.
-      if (use_classifier){
+      // Store the data if the classifier made a mistake during reconstruction.
+      // only look at mistakes in which the s variable did not move as this is the only thing we can learn
+      if (use_classifier && (!edgeHasSVarMoved(parent_, current_)) ){
         if ((classifier_store_mistakes_during_reconstruction) || (classifier_store_mistakes)){
             // False Positive.
             if ((transition_possible) && (!convergence)){
+              std::cout << "  False Positive" << std::endl;
               storeTransitionDatawithTaskSpaceInfo(parent_, false);
             } 
             // False Negatives
             else if ((!transition_possible) && (convergence)){
+              std::cout << "  False Negative" << std::endl;
               storeTransitionDatawithTaskSpaceInfo(parent_, true);
             }
         }        
@@ -461,6 +486,7 @@ namespace planner{
     // Check feasibility for each s along the trajectory 
     double s_local = 0.0;
     nn_delta_s =  (to_node->s - from_node->s);
+    double s_local_min = 0.0;
 
     // For each s, check the neural network for feasibility. 
     for(int i = 0; i < (N_s+1); i++){
@@ -473,9 +499,13 @@ namespace planner{
 
       // Keep track of the lowest result
       if (nn_prediction_score < nn_feasibility_score){
+        s_local_min = s_local;
         nn_feasibility_score = nn_prediction_score;
       }
-    }    
+    }
+    // Set the hand poses to the minimum classifier result.
+    setHandPoses(s_local_min);
+
   }
 
   // compute the feasibility score depending on edge type
@@ -557,9 +587,28 @@ namespace planner{
     current_ = std::static_pointer_cast<LMVertex>(current);
     neighbor_ = std::static_pointer_cast<LMVertex>(neighbor);
 
+    // Get Hand position and orientation at the neighbor's s.
+    f_s->getPose(neighbor_->s, tmp_pos, tmp_ori);    
+    
+    // Compute the estimated left and right foot landing locations
+    lf_guess_pos = tmp_ori.toRotationMatrix()*lf_pos_wrt_hand + tmp_pos;
+    lf_guess_ori = tmp_ori*lf_ori_wrt_hand;
+
+    rf_guess_pos = tmp_ori.toRotationMatrix()*rf_pos_wrt_hand + tmp_pos;
+    rf_guess_ori = tmp_ori*rf_ori_wrt_hand;
+    
+    double lf_distance_cost = (lf_guess_pos - neighbor_->left_foot.position).norm() + fabs( getAngle(lf_guess_ori) - getAngle(neighbor_->left_foot.orientation) );
+    double rf_distance_cost = (rf_guess_pos - neighbor_->right_foot.position).norm() + fabs( getAngle(rf_guess_ori) - getAngle(neighbor_->right_foot.orientation) );
+
+
     double s_cost = w_s*(neighbor_->s - current_->s);
-    double distance_cost = w_distance*((neighbor_->mid_foot.position - current_->mid_foot.position).norm() 
-                                        + fabs(getAngle(neighbor_->mid_foot.orientation) - getAngle(current_->mid_foot.orientation)) );
+    // Midfoot cost
+    // double distance_cost = w_distance*((neighbor_->mid_foot.position - current_->mid_foot.position).norm() 
+    //                                     + fabs(getAngle(neighbor_->mid_foot.orientation) - getAngle(current_->mid_foot.orientation)) );
+
+    // Foot landing cost on guess
+    double distance_cost = w_distance*(lf_distance_cost + rf_distance_cost);
+
    
     bool left_step_taken = edgeHasStepTaken(current_, neighbor_, LEFT_FOOTSTEP);
     bool right_step_taken = edgeHasStepTaken(current_, neighbor_, RIGHT_FOOTSTEP);
@@ -580,9 +629,9 @@ namespace planner{
 
     double feasibility_cost = 0.0; 
 
-    // if (use_classifier){
-    //   feasibility_cost =  w_feasibility*(1.0 - getFeasibility(current_, neighbor_));      
-    // }
+    if (use_classifier){
+      feasibility_cost =  w_feasibility*(1.0 - getFeasibility(current_, neighbor_));      
+    }
 
     double delta_g = s_cost + distance_cost + step_cost + transition_distance_cost + feasibility_cost;
 
@@ -594,11 +643,31 @@ namespace planner{
     goal_ = static_pointer_cast<LMVertex>(goal);
 
     double s_cost = w_s*(goal_->s - neighbor_->s);
-    double distance_cost = w_distance*((goal_->mid_foot.position - neighbor_->mid_foot.position).norm() 
-                                        + fabs(getAngle(goal_->mid_foot.orientation) - getAngle(neighbor_->mid_foot.orientation)) );
+
+    // // Get Hand position and orientation at the neighbor's s.
+    // f_s->getPose(goal_->s, tmp_pos, tmp_ori);    
+ 
+    // // Compute the estimated left and right foot landing locations
+    // lf_guess_pos = tmp_ori.toRotationMatrix()*lf_pos_wrt_hand + tmp_pos;
+    // lf_guess_ori = tmp_ori*lf_ori_wrt_hand;
+
+    // rf_guess_pos = tmp_ori.toRotationMatrix()*rf_pos_wrt_hand + tmp_pos;
+    // rf_guess_ori = tmp_ori*rf_ori_wrt_hand;
+    
+    // double lf_distance_cost = (lf_guess_pos - neighbor_->left_foot.position).norm() + fabs( getAngle(lf_guess_ori) - getAngle(neighbor_->left_foot.orientation) );
+    // double rf_distance_cost = (rf_guess_pos - neighbor_->right_foot.position).norm() + fabs( getAngle(rf_guess_ori) - getAngle(neighbor_->right_foot.orientation) );
+
+
+    // // Mid feet frame heuristic
+    // // double distance_cost = w_distance*((goal_->mid_foot.position - neighbor_->mid_foot.position).norm() 
+    // //                                     + fabs(getAngle(goal_->mid_foot.orientation) - getAngle(neighbor_->mid_foot.orientation)) );
+
+    // // Footstep landing heuristic
+    // double distance_cost = w_distance*(lf_distance_cost + rf_distance_cost);
 
     // Linear distance to the manipulation goal. if w_heuristic = 1.0, we get the true A* result 
-    return w_heuristic*(s_cost + distance_cost); 
+    // return w_heuristic*(s_cost + distance_cost); 
+    return w_heuristic*(s_cost);
   }
 
   // Locomanipulation whether or not the goal was reached
@@ -607,7 +676,7 @@ namespace planner{
     goal_ = static_pointer_cast<LMVertex>(goal);
 
     // check if s is within 0.05 of goal_s
-    std::cout << "  testing if we got to the goal for (goal_s, current_s) = (" << goal_->s << ", " << current_->s << ")" << std::endl;
+    std::cout << "  Goal Check (goal_s, current_s) = (" << goal_->s << ", " << current_->s << ")" << std::endl;
     bool s_satisfaction = (fabs(goal_->s - current_->s) <= goal_tol);
     bool convergence = false;
 
@@ -631,49 +700,64 @@ namespace planner{
       if (use_classifier){
         double feas_score = getFeasibility(parent_, current_);
         if (print_classifier_results){
-          std::cout << "Feasibility Score = " << feas_score << std::endl;
+          std::cout << "  GC Feasibility Score = " << feas_score << std::endl;
         }
         // If the score is less than the treshold
         if (feas_score < feasibility_threshold){
           transition_possible = false;
-          if (!classifier_store_mistakes){
+          // proceed with returning false if we are not storing classifier mistakes
+          if (!classifier_store_mistakes) {
             return false;
           }
         }
       }
 
-      convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
-                                                                  parent_->s, delta_s, 
-                                                                  parent_->q_init, 
-                                                                 input_footstep_list);
+      // If we do not trust the classifier, run a configuration checl
+      if (!trust_classifier){
+        convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
+                                                                    parent_->s, delta_s, 
+                                                                    parent_->q_init, 
+                                                                   input_footstep_list);
 
-      if ((use_classifier) && (classifier_store_mistakes)){
-          // Store the data if the classifier made a mistake.
-          // False Positive.
-          if ((transition_possible) && (!convergence)){
-            storeTransitionDatawithTaskSpaceInfo(parent_, false);
-          } 
-          // False Negatives
-          else if ((!transition_possible) && (convergence)){
-            storeTransitionDatawithTaskSpaceInfo(parent_, true);
-          }
-      }
+        // if store mistakes
+        if ((use_classifier) && (classifier_store_mistakes)){
+            // Store the data if the classifier made a mistake.
+            // False Positive.
+            if ((transition_possible) && (!convergence)){
+              std::cout << "  False Positive" << std::endl;
+              storeTransitionDatawithTaskSpaceInfo(parent_, false);
+            } 
+            // False Negatives
+            else if ((!transition_possible) && (convergence)){
+              std::cout << "  False Negative" << std::endl;
+              storeTransitionDatawithTaskSpaceInfo(parent_, true);
+            }
+        }
 
-      if (convergence){
-        ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_tmp);
-        // std::cout << "goal q_tmp = " << q_tmp.transpose() << std::endl;
-        current_->setRobotConfig(q_tmp);       
+        if (convergence){
+          ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_tmp);
+          // std::cout << "goal q_tmp = " << q_tmp.transpose() << std::endl;
+          current_->setRobotConfig(q_tmp);       
+        }
       }
+      else{
+        convergence = true;
+      }// End classifier trust check
 
     }
 
-    // std::cout << "goal reached? " << (s_satisfaction && convergence) << std::endl;
+    std::cout << "  Goal Reached: " << ((s_satisfaction && convergence) ? "True" : "False") << std::endl;
     return (s_satisfaction && convergence);
   }
 
 
   void LocomanipulationPlanner::generateDiscretization(){
-    delta_s_vals = {0.01, 0.04, 0.08};
+    // if (classifier_store_mistakes)
+    //   delta_s_vals = {0.01, 0.04};
+    // else{
+    //   delta_s_vals = {0.01, 0.04};
+    // }
+    delta_s_vals = {0.01, 0.04, 0.08, 0.10};
 
     //number of bins for the local lattice
     int num_x_lattice_pts = int(abs(2*max_lattice_translation)/dx) + 1;
@@ -733,6 +817,15 @@ namespace planner{
         // neighbor = static_pointer_cast<Node>(neighbor_change);
 
         // TODO: Add feasibility check here and only add to neighbors if it's greater than our threshold
+
+        if (trust_classifier){
+          // Skip this neighbor if it is not within the threshold
+          double feas_score = getFeasibility(current_, neighbor_change);
+          if (feas_score < feasibility_threshold){
+            continue;
+          }
+        }
+
         neighbors.push_back(neighbor);
       }
     }
@@ -740,7 +833,7 @@ namespace planner{
   }
 
   void LocomanipulationPlanner::generateFootstepNeighbors(int footstep_side){
-    std::cout << "Generating " << (footstep_side == RIGHT_FOOTSTEP ? "right" : "left") << " landing foot neighbors" << std::endl;
+    // std::cout << "Generating " << (footstep_side == RIGHT_FOOTSTEP ? "right" : "left") << " landing foot neighbors" << std::endl;
 
     //  Initialize footstep landing location object and stance foot location.
     //  These are both in the planner origin frame.
@@ -762,6 +855,12 @@ namespace planner{
 
     int counter = 0;
 
+    // Get the hand pose from the manipulation function
+    Eigen::Vector3d tmp_hand_pos; 
+    Eigen::Quaterniond tmp_hand_ori;
+    f_s->getPose(current_->s, tmp_hand_pos, tmp_hand_ori);
+
+    double feas_score = 0.0;
     for(int i = 0; i < delta_s_vals.size(); i++){
       for(int j = 0; j < dx_vals.size(); j++){
         for (int k = 0; k < dy_vals.size(); k++){
@@ -777,7 +876,14 @@ namespace planner{
 
             // Compute delta x,y, theta w.r.t the stance
             landing_pos = stance_foot.position + delta_translate;
+
+            // Skip if this landing position is greater than the maximum lattice radius
+            if (landing_pos.norm() >= max_lattice_radius){
+              // std::cout << " potential neighbor is greater than the max lattice radius" << std::endl;
+              continue;
+            }
             landing_quat = stance_foot.orientation*delta_quat;
+
 
             // Check if the landing foot is within the kinematic bounds w.r.t. the stance foot
             if (withinKinematicBounds(stance_foot, landing_pos, landing_quat)){
@@ -791,6 +897,14 @@ namespace planner{
               // Convert landing location back to the world frame
               convertPlannerToWorldOrigin(landing_pos, landing_quat, tmp_pos, tmp_ori);
               landing_foot.setPosOriSide(tmp_pos, tmp_ori, footstep_side);                
+
+              // TODO: Check if hand position is within the kinematic bounds from the pelvis position.
+              if ((landing_foot.position - tmp_hand_pos).norm() >= max_foot_to_hand_radius) {
+                std::cout << "  potential neighbor has foot-to-hand-distance greater than the kinematic limits" << std::endl;
+                continue;
+              } 
+
+
 
               shared_ptr<Node> neighbor;
               // Landing foot should go to the correct footstep. the stance foot remains unchanged
@@ -808,6 +922,14 @@ namespace planner{
               neighbor_change->parent = static_pointer_cast<Node>(current_);
 
               // TODO: Add feasibility check here and only add to neighbors if it's greater than our threshold
+
+              if (trust_classifier){
+                // Skip this neighbor if it is not within the threshold
+                double feas_score = getFeasibility(current_, neighbor_change);
+                if (feas_score < feasibility_threshold){
+                  continue;
+                }
+              }
 
               // Add landing foot 
               neighbors.push_back(neighbor);
@@ -827,7 +949,7 @@ namespace planner{
 
 
   std::vector< std::shared_ptr<Node> > LocomanipulationPlanner::getNeighbors(shared_ptr<Node> & current){
-    // std::cout << "Getting Neighbors" << std::endl;
+    std::cout << "Getting Neighbors" << std::endl;
     current_ = static_pointer_cast<LMVertex>(current);  
     // Clear previous neighbor list
     neighbors.clear();
@@ -852,61 +974,104 @@ namespace planner{
       if (use_classifier){
         double feas_score = getFeasibility(parent_, current_);
         if (print_classifier_results){
-          std::cout << "Feasibility Score = " << feas_score << std::endl;
+          std::cout << "  Feasibility Score = " << feas_score << std::endl;
         }
         // If the score is less than the treshold, don't bother with the computation
         if (feas_score < feasibility_threshold){
           transition_possible = false;
-          // If we are not storing possible mistakes, proceed with ignoring the computation checl
+          std::cout << "  Transition Possible: " << (transition_possible ? "True" : "False") << std::endl; 
+          // If we are not storing possible mistakes, proceed with ignoring the computation check
+          // if the s variable has moved, we cannot learn from this example so ignore the computation check
+          // if ((!classifier_store_mistakes) || edgeHasSVarMoved(parent_, current_)){
+
           if (!classifier_store_mistakes){
             return neighbors;
           }
+        }else{
+          std::cout << "  Transition Possible: " << (transition_possible ? "True" : "False") << std::endl;           
         }      
       }
 
-      convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
-                                                                  parent_->s, delta_s, 
-                                                                  parent_->q_init, 
-                                                                  input_footstep_list);
-      std::cout << "Converged? " << (convergence ? "True" : "False") << std::endl;       
+      // Start -- IF we don't trust the classifier, run a config trajectory check
+      if (!trust_classifier){
 
-      if ((use_classifier) && (classifier_store_mistakes)){
-          // Store the data if the classifier made a mistake.
-          // False Positive.
-          if ((transition_possible) && (!convergence)){
-            storeTransitionDatawithTaskSpaceInfo(parent_, false);
-          } 
-          // False Negatives
-          else if ((!transition_possible) && (convergence)){
-            storeTransitionDatawithTaskSpaceInfo(parent_, true);
-          }
+        convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
+                                                                    parent_->s, delta_s, 
+                                                                    parent_->q_init, 
+                                                                    input_footstep_list);
 
+        std::cout << "  Converged: " << (convergence ? "True" : "False") << std::endl;       
+
+        // Store the transition if we are using the classifier, storing the mistakes and
+        // the s variable has not moved
+
+        // if ((use_classifier) && (classifier_store_mistakes) && (!edgeHasSVarMoved(parent_, current_)) ){
+        if (use_classifier && classifier_store_mistakes){
+            // Store the data if the classifier made a mistake.
+            // False Positive.
+            if ((transition_possible) && (!convergence)){
+              std::cout << "  False Positive" << std::endl;
+              storeTransitionDatawithTaskSpaceInfo(parent_, false);
+            } 
+            // False Negatives
+            else if ((!transition_possible) && (convergence)){
+              std::cout << "  False Negative" << std::endl;
+              storeTransitionDatawithTaskSpaceInfo(parent_, true);
+            }
+
+        }
+
+        // If it converges, update the configuration of the current node
+        if (convergence){
+          // Get the final configuration.
+          // std::cout << "Current node is feasible. Updating q_tmp" << std::endl;     
+          ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_tmp);
+          // std::cout << "q_tmp = " << q_tmp.transpose() << std::endl;
+          current_->setRobotConfig(q_tmp);
+        }else{
+          // If it does not converge, return an empty neighbor list       
+          return neighbors;       
+        }
       }
-
-      // If it converges, update the configuration of the current node
-      if (convergence){
-        // Get the final configuration.
-        // std::cout << "Current node is feasible. Updating q_tmp" << std::endl;     
-        ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_tmp);
-        // std::cout << "q_tmp = " << q_tmp.transpose() << std::endl;
-        current_->setRobotConfig(q_tmp);
-      }else{
-        // If it does not converge, return an empty neighbor list       
-        return neighbors;       
-      }
+      // END ----
 
     }else{  
-      std::cout << "first node evaluated is true" << std::endl;
+      // std::cout << "first node evaluated is true" << std::endl;
       first_node_evaluated = true;      
+
+      // Generate neighbors with lazy evaluation ie: All neighbors are valid unless it has been attempted
+      // std::cout << " -- gen. non footstep neighbors --" << std::endl;
+      // generateNonFootstepNeighbors();
+      std::cout << " -- gen. left footstep neighbors --" << std::endl;
+      generateFootstepNeighbors(LEFT_FOOTSTEP);
+      std::cout << " -- gen. right footstep neighbors --" << std::endl;
+      generateFootstepNeighbors(RIGHT_FOOTSTEP);
+      std::cout << "num neighbors generated: " << neighbors.size() << std::endl;
+
+      return neighbors;
     }
 
-    std::cout << "generating neighbors for the current neighbor" << std::endl;
-
+    // std::cout << "generating neighbors for the current neighbor" << std::endl;
 
     // Generate neighbors with lazy evaluation ie: All neighbors are valid unless it has been attempted
+    std::cout << " -- gen. non footstep neighbors --" << std::endl;
     generateNonFootstepNeighbors();
-    generateFootstepNeighbors(LEFT_FOOTSTEP);
-    generateFootstepNeighbors(RIGHT_FOOTSTEP);
+    // Force alternating footsteps
+    parent_ = static_pointer_cast<LMVertex>(current_->parent);
+    if (edgeHasStepTaken(parent_, current_, RIGHT_FOOTSTEP)){
+      std::cout << " -- gen. left footstep neighbors --" << std::endl;
+      generateFootstepNeighbors(LEFT_FOOTSTEP);
+    }else if (edgeHasStepTaken(parent_, current_, LEFT_FOOTSTEP)){
+      std::cout << " -- gen. right footstep neighbors --" << std::endl;
+      generateFootstepNeighbors(RIGHT_FOOTSTEP);
+    }else{
+      std::cout << " -- gen. left footstep neighbors --" << std::endl;
+      generateFootstepNeighbors(LEFT_FOOTSTEP);      
+      std::cout << " -- gen. right footstep neighbors --" << std::endl;
+      generateFootstepNeighbors(RIGHT_FOOTSTEP);
+    }
+    std::cout << "num neighbors generated: " << neighbors.size() << std::endl;
+
 
     return neighbors;
   }
@@ -1000,13 +1165,25 @@ namespace planner{
     // Reset prediction result to a negative value
     prediction_result = -1.0;
     
-    // Call the classifier client
-    if (classifier_client.call(classifier_srv)){
-      prediction_result = classifier_srv.response.y;
-      // ROS_INFO("Prediction: %0.4f", srv.response.y);
-    }else{
-        ROS_ERROR("Failed to call service locomanipulation_feasibility_classifier");
+    while (true){
+      // Try to call the classifier
+      try {  
+        // Call the classifier client
+        if (classifier_client.call(classifier_srv)){
+          prediction_result = classifier_srv.response.y;
+          break;
+          // ROS_INFO("Prediction: %0.4f", srv.response.y);
+        }else{
+            ROS_ERROR("Failed to call service locomanipulation_feasibility_classifier");
+        }
+      }
+      catch(...){
+      // Catch all exceptions
+        std::cout << "Error exception occurred when calling service locomanipulation_feasibility_classifier" << std::endl;
+      }
+
     }
+
 
     return prediction_result;
 
@@ -1076,7 +1253,7 @@ namespace planner{
 
     // Store the data
     std::ofstream file_output_stream(save_path);     
-    std::cout << out.c_str() << std::endl;
+    // std::cout << out.c_str() << std::endl;
     file_output_stream << out.c_str(); 
   }
 

@@ -99,7 +99,7 @@ public:
     void setConstantLeftHandTrajectory(const Eigen::Vector3d & des_pos, const Eigen::Quaterniond & des_quat);
 
     // Print Trajectory Result
-    void printIntermediateIKTrajectoryresult(int & index, bool & primary_task_converge_result, double & total_error_norm, std::vector<double> & task_error_norms);
+    void printIntermediateIKTrajectoryresult(int & index, bool & primary_task_converge_result, double & total_error_norm, std::vector<double> & task_error_norms_in);
     // Prints the final trajectory result
     void printIKTrajectoryresult();
 
@@ -154,6 +154,10 @@ public:
 
 	int N_size = 100;
 
+	// Task error norms
+	std::vector<double> task_error_norms;
+
+
 	// Store full IK data?
 
 	// Checks whether the latest trajectory converged.
@@ -203,6 +207,7 @@ private:
 	int verbosity_level = CONFIG_TRAJECTORY_VERBOSITY_LEVEL_2;
 
 	double max_first_task_ik_error = -1e3;
+	double max_manipulation_task_ik_error = 1e-2;
 
 	bool solve_with_partial_divergence = false;
 

@@ -1,0 +1,7 @@
+<launch>
+    <node name="test_hand_in_place_nn_check" pkg="avatar_locomanipulation" type="test_hand_in_place_nn_check" output="screen" /> 
+    
+    <include file="$(find avatar_locomanipulation)/launch/launch_viz_robot_simple_collisions.launch">
+      <arg name="use_static_transform" value="False"/>
+    </include>    
+</launch>
