@@ -48,9 +48,6 @@ int main(int argc, char **argv){
 	double theta;
 	param_handler.getValue("door_open_angle", theta);
 
-	double l;
-	param_handler.getValue("handle_height", l);
-
 	double pose_spacing;
 	param_handler.getValue("pose_spacing", pose_spacing);
 
@@ -71,7 +68,6 @@ int main(int argc, char **argv){
 
 	// Helper variables
 	double dtheta = theta / static_cast<double>(N);
-	double dl = l / 5.;
 	Eigen::Quaternion<double> q; // The quaternion (0, 0, sin(theta/2), cos(theta/2))
 																// to be post multiplied by q_init
 	Eigen::Quaternion<double> q_i; // q_i = q_init * q
@@ -93,7 +89,7 @@ int main(int argc, char **argv){
 		// y position = original_y + cos(i*dtheta)*radius
 		values[1] = sin(1.57 +  static_cast<double>(i)*dtheta)*r;
 		// z position = original_z
-		values[2] = l;
+		values[2] = 0.0;
 		// Get the updated quaternion
 		q.x() = 0; q.y() = 0; q.z() = sin((static_cast<double>(i)*dtheta) / 2); q.w() = cos((static_cast<double>(i)*dtheta) / 2);
 		q_i = q * q_init;

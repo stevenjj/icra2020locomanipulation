@@ -25,17 +25,24 @@
 
 #include <math.h>
 
+
 class DoorVisualizationNode{
 public:
+	ros::NodeHandle* nh;
+
+	ros::Subscriber s_sub;
+
+	void s_callback(const std_msgs::Float64ConstPtr & msg);
+
 	double s_current; // curent s for determining door angle
 	double radius; // door radius
 	double door_open_angle; // angle when door is fully open
-	double handle_height; // height of handle (assumed 1/2 of door size)
+	Eigen::Vector3d hinge_frame_pos; // height of handle (assumed 1/2 of door size)
 	double pose_spacing; // spacing b/w each wp
 	Eigen::Quaternion<double> q_init; // initial orientation for wp1
-	Eigen::Vector3d wp1_pos; // initial position for wp1
+	Eigen::Quaternion<double> q_fixed; // orientation of fixed hinge fram wrt world
 
-	DoorVisualizationNode();
+	DoorVisualizationNode(ros::NodeHandle* n_input);
 
 	DoorVisualizationNode(int & s_begin);
 
@@ -43,10 +50,12 @@ public:
 
 	void getParameters();
 
-	void getVizInformation(visualization_msgs::Marker & door_msg, tf::Transform & tf_world_wp1, tf::Transform & tf_wp1_hinge);
+	void getVizInformation(visualization_msgs::Marker & door_msg, tf::Transform & tf_world_wp1);
 
 
 };
+
+extern boost::mutex state_mutex;
 
 
 #endif
