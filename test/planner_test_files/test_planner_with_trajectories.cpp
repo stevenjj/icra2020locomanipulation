@@ -25,7 +25,7 @@ using namespace planner;
 
 void load_initial_robot_door_configuration(Eigen::VectorXd & q_out, Eigen::Vector3d & hinge_pos_out, Eigen::Quaterniond & hinge_ori_out){
   ParamHandler param_handler;
-  param_handler.load_yaml_file(THIS_PACKAGE_PATH"stored_configurations/robot_door_initial_configuration_v2.yaml");  
+  param_handler.load_yaml_file(THIS_PACKAGE_PATH"stored_configurations/robot_door_initial_configuration_v3.yaml");  
 
   // Get the robot configuration vector
   std::vector<double> robot_q;
@@ -86,7 +86,7 @@ void test_door_open_config_trajectory(){
   load_initial_robot_door_configuration(q_start_door, hinge_position, hinge_orientation);
 
   // Initialize the manipulation function for manipulating the door
-  std::string door_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/door_trajectory.yaml";
+  std::string door_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/door_open_trajectory_v3.yaml";
   std::shared_ptr<ManipulationFunction> f_s_manipulate_door(new ManipulationFunction(door_yaml_file));
   // Set hinge location as waypoints are with respect to the hinge
   hinge_orientation.normalize();
@@ -165,7 +165,7 @@ void test_final_configuration(){
   valkyrie_model->updateFullKinematics(q_start_door);
 
   // Initialize the manipulation function for manipulating the door
-  std::string door_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/door_trajectory.yaml";
+  std::string door_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/door_open_trajectory_v3.yaml";
   std::shared_ptr<ManipulationFunction> f_s_manipulate_door(new ManipulationFunction(door_yaml_file));
   // Set hinge location as waypoints are with respect to the hinge
   hinge_orientation.normalize();
@@ -252,7 +252,7 @@ void test_LM_planner(){
   load_final_robot_door_configuration(q_final_door);
 
   // Initialize the manipulation function for manipulating the door ----------------------------------
-  std::string door_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/door_trajectory.yaml";
+  std::string door_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/door_open_trajectory_v3.yaml";
   std::shared_ptr<ManipulationFunction> f_s_manipulate_door(new ManipulationFunction(door_yaml_file));
   // Set hinge location as waypoints are with respect to the hinge
   hinge_orientation.normalize();
