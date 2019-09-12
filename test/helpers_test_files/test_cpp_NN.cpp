@@ -38,7 +38,7 @@ void normalizeInputCalculate(const Eigen::VectorXd & x_in, const Eigen::VectorXd
 
 int main(int argc, char ** argv){
   ParamHandler param_handler;
-  std::string model_path = "/home/mihir/locomanipulation_ws/src/avatar_locomanipulation/src/python_src/rh_transitions/learned_model/model.yaml";
+  std::string model_path = THIS_PACKAGE_PATH"nn_models/layer3_20000pts/cpp_model/layer3_model.yaml";
 
   std::cout << "Loading Model..." << std::endl;
   myYAML::Node model = myYAML::LoadFile(model_path);
@@ -65,7 +65,11 @@ int main(int argc, char ** argv){
 
   Eigen::VectorXd rawDatum(32);
   Eigen::VectorXd datum(32);
-	Eigen::MatrixXd data(5,32);
+
+  int input_size = 10;
+
+
+	Eigen::MatrixXd data(input_size, 32);
 
   rawDatum << stance_origin, manipulation_type,
     swing_foot_start_pos, quatToVec(swing_foot_start_ori),
@@ -75,7 +79,7 @@ int main(int argc, char ** argv){
     left_hand_start_pos, quatToVec(left_hand_start_ori);
 
   //Normalization Params
-  param_handler.load_yaml_file("/home/mihir/locomanipulation_ws/src/avatar_locomanipulation/nn_models/baseline_11500pts/lh_rflh_lfrh_lfrh_rfbh_rfbh_lf/normalization_params.yaml");
+  param_handler.load_yaml_file(THIS_PACKAGE_PATH"nn_models/layer3_20000pts/cpp_model/normalization_params.yaml");
   std::vector<double> vmean;
   param_handler.getVector("x_train_mean", vmean);
   std::vector<double> vstd_dev;
@@ -89,15 +93,49 @@ int main(int argc, char ** argv){
   }
 
   normalizeInputCalculate(rawDatum, mean, std_dev, datum);
-	data.row(0) = datum;
-	data.row(1) = datum;
-	data.row(2) = datum;
-	data.row(3) = datum;
-	data.row(4) = datum;
+  for (int i = 0; i < input_size; i++){
+    data.row(i) = datum;
+
+  }
 	// std::cout << "datum: " << datum << std::endl;
-  Eigen::MatrixXd pred(5,1);
+
+  Eigen::MatrixXd pred(input_size,1);
   pred = nn_transition.GetOutput(data);
   std::cout << "Prediction: " << pred << std::endl;
+
+  // Test Inference speed:
+  auto t1 = Clock::now();
+  auto t2 = Clock::now();
+  double time_span;
+
+  Eigen::MatrixXd x_vec(1,32);
+  Eigen::MatrixXd y_vec(1,1);
+  x_vec.row(0) = datum;
+
+
+  while(true){
+    t1 = Clock::now();
+    y_vec = nn_transition.GetOutput(x_vec);
+    t2 = Clock::now();
+    time_span = std::chrono::duration_cast< std::chrono::duration<double> >(t2 - t1).count();
+
+    std::cout << " 1 pred = " << y_vec << std::endl;
+    std::cout << " inference time = " << time_span << " seconds" << std::endl;
+    std::cout << " freq = " << (1.0/time_span) << " Hz" << std::endl;
+    std::cout << " " << std::endl;
+
+    t1 = Clock::now();    
+    pred = nn_transition.GetOutput(data);
+    t2 = Clock::now();
+
+    time_span = std::chrono::duration_cast< std::chrono::duration<double> >(t2 - t1).count();
+    std::cout << "  " << input_size << " pred = " << pred.transpose() << std::endl;
+    std::cout << " inference time = " << time_span << " seconds" << std::endl;
+    std::cout << " freq = " << (1.0/time_span) << " Hz" << std::endl;
+    std::cout << " " << std::endl;
+
+  }
+
 
   return 0;
 }

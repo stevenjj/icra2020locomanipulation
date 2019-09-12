@@ -15,7 +15,7 @@ dataset_folder = "/home/sjorgen1/Data/param_set_1/right_hand/transitions_data_wi
 
 
 class ContactTransitionDataset:
-    def __init__(self, num_in = 100, trainset_percentage_in=0.8, valset_percentage_in=0.2):
+    def __init__(self, num_in = 100, trainset_percentage_in=0.9, valset_percentage_in=0.1):
         self.num = num_in # Total number of training data
 
         self.x = np.array([])
@@ -61,7 +61,7 @@ class ContactTransitionDataset:
             if (count < max_load):
                 # Load the yaml file and add the training data
                 if self.obj.load_yaml_file(filepath + "/" + yaml_files[i], stance_type, manipulation_type):
-                    print "Loading", count+1 , "/", max_load,  filepath, "/", yaml_files[i] 
+                    print "Loading", count+1 , "/", min(max_load, len(yaml_files)+1),  filepath, "/", yaml_files[i] 
                     # self.obj.printData()
                     data_x.append(self.obj.get_x())
                     data_y.append(self.obj.get_y())
