@@ -274,6 +274,52 @@ namespace planner{
     return reconstructConfigurationTrajectory();
   }
 
+  bool LocomanipulationPlanner::reconstructConfigurationTrajectoryv2(){
+    // Iterate through optimal path backwards. to construct the forward path
+    forward_order_optimal_path.clear();
+    for(int i = (optimal_path.size() - 1); i >= 0; i--){
+      forward_order_optimal_path.push_back( optimal_path[i] );
+    }
+
+    // Reconstruct the configuration trajectory
+    Eigen::VectorXd q_begin = Eigen::VectorXd::Zero(robot_model->getDimQ());
+    Eigen::VectorXd q_end = Eigen::VectorXd::Zero(robot_model->getDimQ());
+//    int N_size = ctg->getDiscretizationSize();
+    int N_size_per_edge = 60;
+
+    // Create s vector as function of i.
+    std::vector<double> s_vec;
+    double s_current = 0.0;
+    for(int i = 1; i < forward_order_optimal_path.size(); i++){
+      // Cast Pointers
+      current_ = static_pointer_cast<LMVertex>(forward_order_optimal_path[i]);
+      parent_ = static_pointer_cast<LMVertex>(current_->parent);
+
+      // Get the current and total delta_s 
+      s_current = current_->s;
+      delta_s =  (current_->s - parent_->s);
+      // Populate s vector with linear change
+      for(int j = 0; j < N_size_per_edge; j++){
+        s_vec.push_back(s_current + (delta_s / static_cast<double>(N_size_per_edge))*j); 
+      }
+
+    }
+    // Populate desired hand configurations 
+
+
+
+    // Populate footstep list
+
+ 
+    // Compute entire configuration trajectory
+    // ctg->initializeDiscretization(N_size_per_edge*(optimal_path.size()-1));
+    // ctg->computeConfigurationTrajectory(parent_->q_init, input_footstep_list);
+
+    // // Reset discretization
+    // ctg->initializeDiscretization(N_size_per_edge);
+
+  }
+
 
   bool LocomanipulationPlanner::reconstructConfigurationTrajectory(){
     // Iterate through optimal path backwards. to construct the forward path
