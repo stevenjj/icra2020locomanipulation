@@ -21,6 +21,8 @@ private:
   //          double magnitude - magnitude of the vector for use with potential
   DirectedVectors dvector;
 
+  // Vector containing the names of all object collision links
+  std::vector<std::string> object_links;
 
   // a map from collision body names to frame names
   std::map<std::string, std::string> collision_to_frame;
@@ -31,6 +33,10 @@ private:
   // If we input an object RobotModel into the environment, then this is true and 
   //  map_collision_names_to_frame_names also includes the object frame names
   bool object_flag = false;
+
+  // String holding the prefix given to frame names
+  // Used in creating map from collision to frame names
+  std::string prefix_;
 
 
   // appends the models internally
@@ -43,6 +49,9 @@ private:
   // Input: empty map string to string
   // fills the map with key being the collision body names and value being the corresponding frame name
   void map_collision_names_to_frame_names();
+
+  // Makes a list of frame names of interest for build_point_list_directed_vectors
+  std::vector<std::string> make_point_collision_list();
 
   
   // Create map for self collision to generakize self directed vectors
@@ -58,11 +67,14 @@ private:
   void get_dvector_collision_links(const std::string & from_name, const std::string & to_name);
 
   
-  std::vector<std::string> get_object_links();
+  void get_object_links();
 
 public:
   // Potential function scaling distance
   double eta;
+
+  // Variable used to keep track of the length of the combined q_currents for every added object
+  double object_q_counter = 0;
 
   // The tolerance distance for avoiding collisions
   double safety_dist_normal = 0.075;
@@ -104,19 +116,18 @@ public:
 
   // Given a frame name from a task it will build the directed vectors to that link
   // Input: - Relevant frame name from the task_selfcollision
-  void build_self_directed_vectors(const std::string & frame_name);
+  //        - q_update, the current robot config
+  void build_self_directed_vectors(const std::string & frame_name, Eigen::VectorXd & q_update);
 
+  // Given a list of points in space, this builds directed vectors from these points to set of links
+  //  to avoid those points
+  // Inputs: - list of 3D points from which to build dvectors
+  //         - q_update, the current robot config 
+  void build_point_list_directed_vectors(const std::vector<Eigen::Vector3d> & point_list_in, Eigen::VectorXd & q_update, std::string & frame);
 
-  // Given a frame name from a task it will build directed vectors to that link from all object links
-  // Input: - Relevant frame name from the task_objectcollision
-  void build_object_directed_vectors(std::string & frame_name);
-
-
+ 
   // Used by self collision and object collision tasks to calculate the potential field
   double get_collision_potential();
-
-  // Given an object RobotModel and its q_start, appends this and adds it to appended
-  void add_new_object(std::shared_ptr<RobotModel> & obj, const Eigen::VectorXd & q_start);
   
 
   // Sets the safety distance between links when not in collision
@@ -125,8 +136,12 @@ public:
   // Sets the safety distance between links when in collision
   void set_safety_distance_collision(double safety_dist_collision_in);
 
+  // Given a frame name from a task it will build directed vectors to that link from all object links
+  // Input: - Relevant frame name from the task_objectcollision
+  void build_object_directed_vectors(std::string & frame_name, Eigen::VectorXd & q_update);
 
-  void update_appended_model(Eigen::VectorXd & q_update);
+  // Given an object RobotModel and its q_start, appends this and adds it to appended
+  void add_new_object(std::shared_ptr<RobotModel> & obj, const Eigen::VectorXd & q_start, std::string & prefix);
 
 
   // // computes collision and outputs any contacts

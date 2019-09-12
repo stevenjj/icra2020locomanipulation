@@ -78,7 +78,8 @@ std::shared_ptr<RobotModel> initialize_config(Eigen::VectorXd & q_init, Eigen::V
   // Define the configuration of the cart
   Eigen::VectorXd cart_config;
   cart_config = Eigen::VectorXd::Zero(cart->getDimQ());
-  cart_config[0] = 0.0;  cart_config[1] = 0.0;  cart_config[2] = -0.05;
+  cart_config[0] = 0.2;  cart_config[1] = -0.25;  cart_config[2] = 0.0;
+  // cart_config[0] = -0.06;  cart_config[1] = -0.0085;  cart_config[2] = -0.04;
   double theta1 = 0;//M_PI/4.0;	
   Eigen::AngleAxis<double> bb(theta1, Eigen::Vector3d(0.0, 0.0, 1.0)); // yaw pi/4 to the left	
   Eigen::Quaternion<double> quat_init; quat_init =  bb;
@@ -116,7 +117,8 @@ void testIK_module(){
 
   std::shared_ptr<CollisionEnvironment> collision(new CollisionEnvironment(ik_module.robot_model) );
 
-  collision->add_new_object(cart, cart_init);
+  std::string prefix = "cart";
+  collision->add_new_object(cart, cart_init, prefix);
 
   // Create Tasks
   std::shared_ptr<Task> pelvis_task(new Task6DPose(ik_module.robot_model, "pelvis"));
