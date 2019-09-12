@@ -55,7 +55,7 @@ void initialize_config(Eigen::VectorXd & q_init, std::shared_ptr<RobotModel> & v
 
 void generate_good_init_config(){
   // Initialize the manipulation function for manipulating the door
-  std::string door_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/door_trajectory.yaml";
+  std::string door_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/door_open_trajectory_v3.yaml";
   ManipulationFunction manipulate_door(door_yaml_file);
   // Set hinge location as waypoints are with respect to the hinge
   // Eigen::Vector3d hinge_position(1.5, -0.5, 1.125);
@@ -140,7 +140,7 @@ void generate_good_init_config(){
     data_saver::emit_orientation(out, "hinge_orientation", hinge_orientation);
   out << YAML::EndMap;  
   std::cout << "Here's the output YAML:\n" << out.c_str() << "\n" << std::endl;
-  std::ofstream file_output_stream("robot_door_initial_configuration_v2.yaml");
+  std::ofstream file_output_stream("robot_door_initial_configuration_v3.yaml");
   file_output_stream << out.c_str();
 
 }
@@ -222,8 +222,8 @@ void test_hand_in_place_config_trajectory_generator(){
 
 int main(int argc, char ** argv){   
   ros::init(argc, argv, "test_config_trajectory_generator");
-  test_hand_in_place_config_trajectory_generator();
-  // generate_good_init_config();
+  // test_hand_in_place_config_trajectory_generator();
+  generate_good_init_config();
 
   return 0;
 }
