@@ -1,3 +1,4 @@
+
 # Add which test file subdirectory to compile
 add_subdirectory(collision_test_files)
 add_subdirectory(feasibility_test_files)
@@ -8,6 +9,5 @@ add_subdirectory(model_test_files)
 add_subdirectory(interpolation_test_files)
 add_subdirectory(planner_test_files)
 add_subdirectory(task_test_files)
-
-
+add_subdirectory(hand_trajectory_test_files)
 

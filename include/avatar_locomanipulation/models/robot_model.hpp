@@ -47,14 +47,14 @@ private:
   pinocchio::JointIndex tmp_joint_index;
   void buildPinocchioModel(const std::string & filename);
   void buildPinocchioGeomModel(const std::string & filename, const std::string & meshDir);
-  void commonInitialization();
-  void appendedInitialization();
+  void commonInitialization(bool geom_data_flag=false);
 
   bool updateGeomWithKinematics = false;
 
   bool srdf_bool = false;
 
 public:
+
   std::string srdf_filename;
   pinocchio::Model model;
   pinocchio::GeometryModel geomModel;
@@ -92,7 +92,7 @@ public:
   void enableUpdateGeomOnKinematicsUpdate(bool enable);
 
 
-  void appended_initialization();
+  void common_initialization(bool geom_data_flag=false);
 
   /* updateGeometry
   Input: a vector of configuration with dimension model.nq to update the kinematics.   

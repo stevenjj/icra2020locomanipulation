@@ -2,11 +2,13 @@
 # add_executable(test_load_urdf_model test_load_urdf_model.cpp)
 # add_executable(test_rviz_valkyrie test_rviz_valkyrie.cpp ${PROJECT_SOURCES})
 # add_executable(test_valkyrie_model test_valkyrie_model.cpp ${PROJECT_SOURCES})
+# add_executable(test_get_worldframepose_for_nn_classifier test_get_worldframepose_for_nn_classifier.cpp ${PROJECT_SOURCES})
 
 # target_link_libraries(test_load_and_viz ${PROJECT_LIBRARIES})
 # target_link_libraries(test_load_urdf_model ${PROJECT_LIBRARIES})
 # target_link_libraries(test_rviz_valkyrie ${PROJECT_LIBRARIES})
 # target_link_libraries(test_valkyrie_model  ${PROJECT_LIBRARIES})
+# target_link_libraries(test_get_worldframepose_for_nn_classifier ${PROJECT_LIBRARIES})
 
 # add_dependencies(test_load_and_viz ${${PROJECT_NAME}_EXPORTED_TARGETS})
 # add_dependencies(test_load_urdf_model ${${PROJECT_NAME}_EXPORTED_TARGETS})

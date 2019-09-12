@@ -3,7 +3,7 @@
 
 #include <avatar_locomanipulation/tasks/task.hpp>
 #include <avatar_locomanipulation/tasks/task_stack.hpp>
-#include <avatar_locomanipulation/tasks/task_objectcollision.hpp>
+#include <avatar_locomanipulation/tasks/task_pointcollision.hpp>
 #include <avatar_locomanipulation/tasks/task_6dpose.hpp>
 #include <avatar_locomanipulation/tasks/task_6dpose_wrt_midfeet.hpp>
 #include <avatar_locomanipulation/tasks/task_3dorientation.hpp>
@@ -14,6 +14,7 @@
 // Import ROS and Rviz visualization
 #include <ros/ros.h>
 #include <avatar_locomanipulation/bridge/val_rviz_translator.hpp>
+#include "visualization_msgs/Marker.h"
 
 
 void visualize_robot(Eigen::VectorXd & q_start, Eigen::VectorXd & q_end);
@@ -27,14 +28,14 @@ void printVec(const std::string & vec_name, const::Eigen::VectorXd vec){
 }
 
 
-std::shared_ptr<RobotModel> initialize_config(Eigen::VectorXd & q_init, Eigen::VectorXd & cart_init){
+void initialize_config(Eigen::VectorXd & q_init){
 
-	std::string filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
+  std::string filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
   std::string srdf_filename = THIS_PACKAGE_PATH"models/valkyrie_disable_collisions.srdf";
   std::string meshDir  = THIS_PACKAGE_PATH"../val_model/";
 
-	// Initialize Valkyrie RobotModel
-	std::shared_ptr<RobotModel> valkyrie(new RobotModel(filename, meshDir, srdf_filename) );
+  // Initialize Valkyrie RobotModel
+  std::shared_ptr<RobotModel> valkyrie(new RobotModel(filename, meshDir, srdf_filename) );
 
   filename = THIS_PACKAGE_PATH"models/test_cart.urdf";
   meshDir  = THIS_PACKAGE_PATH"models/cart/";
@@ -75,29 +76,13 @@ std::shared_ptr<RobotModel> initialize_config(Eigen::VectorXd & q_init, Eigen::V
 
   q_init = q_start;
 
-  // Define the configuration of the cart
-  Eigen::VectorXd cart_config;
-  cart_config = Eigen::VectorXd::Zero(cart->getDimQ());
-  cart_config[0] = 0.2;  cart_config[1] = -0.25;  cart_config[2] = 0.0;
-  // cart_config[0] = -0.06;  cart_config[1] = -0.0085;  cart_config[2] = -0.04;
-  double theta1 = 0;//M_PI/4.0;	
-  Eigen::AngleAxis<double> bb(theta1, Eigen::Vector3d(0.0, 0.0, 1.0)); // yaw pi/4 to the left	
-  Eigen::Quaternion<double> quat_init; quat_init =  bb;
-  cart_config[3] = quat_init.x();// 0.0;	
-  cart_config[4] = quat_init.y(); //0.0;
-  cart_config[5] = quat_init.z(); //sin(theta/2.0);
-  cart_config[6] = quat_init.w(); //cos(theta/2.0);
-
-  cart_init = cart_config;
-
-  return cart;
   
 }
 
 void testIK_module(){
   std::cout << "[IK Module Test]" << std::endl;
-  Eigen::VectorXd q_init, cart_init;
-  std::shared_ptr<RobotModel> cart = initialize_config(q_init, cart_init);
+  Eigen::VectorXd q_init;
+  initialize_config(q_init);
 
    // Create IK Module
   std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
@@ -112,25 +97,41 @@ void testIK_module(){
   // Update Robot Kinematics
   ik_module.robot_model->enableUpdateGeomOnKinematicsUpdate(true);
   ik_module.robot_model->updateFullKinematics(q_init);
-  cart->enableUpdateGeomOnKinematicsUpdate(true);
-  cart->updateFullKinematics(cart_init);
+
+  // Eigen::Vector3d cur_pos;
+  // Eigen::Quaternion<double> cur_ori;
+  // ik_module.robot_model->getFrameWorldPose("rightPalm", cur_pos, cur_ori);
+  // std::cout << "right palm cur pos:\n" << cur_pos << std::endl;
+  // ik_module.robot_model->getFrameWorldPose("leftPalm", cur_pos, cur_ori);
+  // std::cout << "left palm cur pos:\n" << cur_pos << std::endl;
 
   std::shared_ptr<CollisionEnvironment> collision(new CollisionEnvironment(ik_module.robot_model) );
 
-  std::string prefix = "cart";
-  collision->add_new_object(cart, cart_init, prefix);
+  collision->set_safety_distance_normal(0.15);
+
+  // Define list of points for the pointcollision task
+  std::vector<Eigen::Vector3d> point_list;
+  Eigen::Vector3d point;
+  point[0] = 0.33; point[1] = -0.524; point[2] = 0.813; 
+  point_list.push_back(point);
+  point[0] = 0.83; point[1] = 0.524; point[2] = 0.813; 
+  point_list.push_back(point);
+  std::string frame_name = "rightPalm";
 
   // Create Tasks
   std::shared_ptr<Task> pelvis_task(new Task6DPose(ik_module.robot_model, "pelvis"));
   std::shared_ptr<Task> lfoot_task(new Task6DPose(ik_module.robot_model, "leftCOP_Frame"));
   std::shared_ptr<Task> rfoot_task(new Task6DPose(ik_module.robot_model, "rightCOP_Frame"));
-  std::shared_ptr<Task> rhand_task(new TaskObjectCollision(ik_module.robot_model, "rightPalm", collision, "rhand"));
-
-  rhand_task->setTaskGain(20.0);
+  std::shared_ptr<Task> rhand_task(new TaskPointCollision("pointlist_task_right", ik_module.robot_model, frame_name, collision, point_list));
+  frame_name = "leftPalm";
+  std::shared_ptr<Task> lhand_task(new TaskPointCollision("pointlist_task_left", ik_module.robot_model, frame_name, collision, point_list));
 
   // Stack Tasks in order of priority
-  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {pelvis_task, lfoot_task, rfoot_task}));
-  std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {rhand_task}));
+  // std::shared_ptr<Task> task_stack_priority_2(new TaskStack(ik_module.robot_model, {pelvis_task, lfoot_task, rfoot_task}));
+  std::shared_ptr<Task> task_stack_priority_1(new TaskStack(ik_module.robot_model, {rhand_task, lhand_task, lfoot_task, rfoot_task}));
+
+  rhand_task->setTaskGain(1.0);
+  lhand_task->setTaskGain(1.0);
 
   // Set desired Pelvis configuration
   Eigen::Vector3d pelvis_des_pos;
@@ -166,10 +167,12 @@ void testIK_module(){
   // Get Errors -----------------------------------------------------------------------------
   Eigen::VectorXd task_error;
   rhand_task->getError(task_error);
-  std::cout << "Right Hand Task Error = " << task_error.transpose() << std::endl;
+  std::cout << "Right Point Avoidance Task Error = " << task_error.transpose() << std::endl;
+  lhand_task->getError(task_error);
+  std::cout << "Left Point Avoidance Task Error = " << task_error.transpose() << std::endl;
 
   ik_module.addTasktoHierarchy(task_stack_priority_1);
-  ik_module.addTasktoHierarchy(task_stack_priority_2);
+  // ik_module.addTasktoHierarchy(task_stack_priority_2);
 
   int solve_result;
   double error_norm;
@@ -202,6 +205,8 @@ void visualize_robot(Eigen::VectorXd & q_start, Eigen::VectorXd & q_end){
   // Joint State Publisher
   ros::Publisher robot_ik_joint_state_pub = n.advertise<sensor_msgs::JointState>("robot1/joint_states", 10);
   ros::Publisher robot_joint_state_pub = n.advertise<sensor_msgs::JointState>("robot2/joint_states", 10);
+  ros::Publisher point1_pub = n.advertise<visualization_msgs::Marker>("point1", 100);
+  ros::Publisher point2_pub = n.advertise<visualization_msgs::Marker>("point2", 100);
 
   // Initialize Transforms and Messages
   tf::Transform tf_world_pelvis_init;
@@ -209,6 +214,28 @@ void visualize_robot(Eigen::VectorXd & q_start, Eigen::VectorXd & q_end){
 
   sensor_msgs::JointState joint_msg_init;
   sensor_msgs::JointState joint_msg_end;
+  visualization_msgs::Marker point;
+
+  // Fill the Point marker msg
+  point.pose.position.x = 0.33;
+  point.pose.position.y = -0.524;
+  point.pose.position.z = 0.813;
+  point.pose.orientation.y = 0.;
+  point.pose.orientation.z = 0.;
+  point.pose.orientation.w = 1.;
+  point.scale.x = 0.02;
+  point.scale.y = 0.02;
+  point.scale.z = 0.02;
+  point.header.frame_id = "world";
+  point.text = "point";
+  // point.header.stamp = ros::Time::now();
+  point.color.r = 1.0f;
+  point.color.g = 0.0f;
+  point.color.b = 0.0f;
+  point.color.a = 1.0;
+  // point.lifetime = ros::Duration();
+  point.action = visualization_msgs::Marker::ADD;
+  point.type = visualization_msgs::Marker::CUBE;
 
   // Initialize Robot Model
   std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_simplified_collisions.urdf";
@@ -224,6 +251,8 @@ void visualize_robot(Eigen::VectorXd & q_start, Eigen::VectorXd & q_end){
   while (ros::ok()){
       br_robot.sendTransform(tf::StampedTransform(tf_world_pelvis_init, ros::Time::now(), "world",  "val_robot/pelvis"));
       robot_joint_state_pub.publish(joint_msg_init);
+
+      point_pub.publish(point);
 
       br_ik.sendTransform(tf::StampedTransform(tf_world_pelvis_end, ros::Time::now(), "world", "val_ik_robot/pelvis"));
       robot_ik_joint_state_pub.publish(joint_msg_end);
