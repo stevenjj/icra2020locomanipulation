@@ -5,7 +5,7 @@
 
     <arg name="use_static_transform" default="True" />  
 
-<!--     <group ns="val_ik_robot">
+    <group ns="val_ik_robot">
       <param name="robot_description" textfile="$(find avatar_locomanipulation)/models/valkyrie_simplified_collisions.urdf" />        
       <param name="use_gui" value="$(arg gui)"/>
 
@@ -16,7 +16,7 @@
       <node pkg="robot_state_publisher" type="state_publisher" name="robot_state_publisher">
         <param name="tf_prefix" type="string" value="val_ik_robot" />  
       </node>
-    </group> -->
+    </group>
 
 
     <group ns="val_robot">
@@ -33,14 +33,31 @@
     </group>
 
 
+    <group ns="cart_robot">
+      <param name="robot_description" textfile="$(find avatar_locomanipulation)/models/test_cart.urdf" />        
+      <param name="use_gui" value="$(arg gui)"/>
+
+      <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+            <rosparam param="source_list">[/cart/joint_states]</rosparam>
+      </node> 
+      <node pkg="robot_state_publisher" type="state_publisher" name="robot_state_publisher">
+        <param name="tf_prefix" type="string" value="cart_robot" />  
+      </node>
+
+    </group>
+
+
     <group if="$(arg use_static_transform)">
         <node pkg="tf" type="static_transform_publisher" name="torso_static_transform_pub" 
          args="0.0  0.0 0.0 0.0 0.0 0.0 1.0 world val_robot/pelvis 200" />
         <node pkg="tf" type="static_transform_publisher" name="ik_torso_static_transform_pub" 
          args="0.0  0.0 0.0 0.0 0.0 0.0 1.0 world val_ik_robot/pelvis 200" />
+         <node pkg="tf" type="static_transform_publisher" name="cart_static_transform_pub" 
+         args="0.0  0.0 0.0 0.0 0.0 0.0 1.0 world cart_robot/base_link 200" />
 
     </group>
 
     <node name="rviz_ik" pkg="rviz" type="rviz" args="-d $(find val_viz)/launch/val_robot_and_ik.rviz" required="true" /> 
+    <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find avatar_locomanipulation)/launch/rviz/cart_viz.rviz" required="true" /> -->
 
 </launch>

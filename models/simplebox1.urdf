@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<robot name="box1" xmlns:xacro="http://ros.org/wiki/xacro">
+
+
+	<link name="box1">
+    <inertial>
+      <mass value="3.0"/>
+      <origin rpy="0 0 0" xyz="0.000000 0.000000 -0.010000"/>
+      <inertia ixx="0.000608427" ixy="-1.172e-06" ixz="1.647e-06" iyy="0.000620328" iyz="-2.33e-07" izz="0.001078108"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="0.01 0.01 0.01"/>
+      </geometry>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.01 0.01 0.01"/>
+      </geometry>
+      <origin rpy="0.0 0 1.57" xyz="0.0 0.0 0.0"/>
+    </collision>
+  </link>
+</robot>
