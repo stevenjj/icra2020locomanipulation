@@ -82,6 +82,9 @@ namespace planner{
     f_s = f_s_in;
     ctg = ctg_in;
 
+    // Initialize the config trajectory discretization
+    ctg->initializeDiscretization(N_size_per_edge);    
+
     // Init feet position w.r.t hand 
     lf_pos_wrt_hand.setZero();
     rf_pos_wrt_hand.setZero();
@@ -285,10 +288,10 @@ namespace planner{
     Eigen::VectorXd q_begin = Eigen::VectorXd::Zero(robot_model->getDimQ());
     Eigen::VectorXd q_end = Eigen::VectorXd::Zero(robot_model->getDimQ());
 //    int N_size = ctg->getDiscretizationSize();
-    int N_size_per_edge = 60;
+    int N_total = N_size_per_edge*(optimal_path.size()-1);
 
     // Create s vector as function of i.
-    std::vector<double> s_vec;
+    s_traj.clear();
     double s_current = 0.0;
     for(int i = 1; i < forward_order_optimal_path.size(); i++){
       // Cast Pointers
@@ -300,22 +303,89 @@ namespace planner{
       delta_s =  (current_->s - parent_->s);
       // Populate s vector with linear change
       for(int j = 0; j < N_size_per_edge; j++){
-        s_vec.push_back(s_current + (delta_s / static_cast<double>(N_size_per_edge))*j); 
+        s_traj.push_back(s_current + (delta_s / static_cast<double>(N_size_per_edge))*j); 
+      }
+    }
+
+
+    // We have to go through the optimal path order and identify if it was a manipulation or locomanipulation trajectory
+    std::vector<int> current_edge_sequence;
+    std::vector< std::vector<int> > edge_sequences;
+    int edge_type = EDGE_TYPE_LOCOMANIPULATION;
+    int prev_edge_type = EDGE_TYPE_LOCOMANIPULATION;
+    for(int i = 1; i < forward_order_optimal_path.size(); i++){
+      current_ = static_pointer_cast<LMVertex>(forward_order_optimal_path[i]);
+      parent_ = static_pointer_cast<LMVertex>(current_->parent);
+
+      // Store the previous edge type
+      prev_edge_type = edge_type;
+
+      // Check edge type
+      if ( edgeHasStepTaken(parent_, current_, LEFT_FOOTSTEP) || (edgeHasStepTaken(parent_, current_, RIGHT_FOOTSTEP)) ) {
+        // Current edge is a locomanipulation
+        edge_type = EDGE_TYPE_LOCOMANIPULATION;
+      }else{
+        // Current edge is a manipulation
+        edge_type = EDGE_TYPE_MANIPULATION;
+      }
+
+      // If the sequence has nonzero elements, check if the current edge is different from the previous edge.
+      if (current_edge_sequence.size() > 0){
+        // If the current edge type is different from the previous edge type, we have a new sequence
+        if (edge_type != prev_edge_type){
+          // store the sequence
+          edge_sequences.push_back(current_edge_sequence);
+          // start a new sequence
+          current_edge_sequence.clear();
+        }
+      }
+
+      // Store the edge type to the current sequence
+      current_edge_sequence.push_back(edge_type);
+
+      // If we are at the very end, store the current edge sequence
+      if (i == forward_order_optimal_path.size() - 1){
+        edge_sequences.push_back(current_edge_sequence);
       }
 
     }
+
+
+
+
+    // Initialize the config trajectory discretization
+    ctg->initializeDiscretization(N_total);    
+
     // Populate desired hand configurations 
+    // TO DO: Make this general for left, right or both.
+    for (int i = 0; i < N_total; i++){
+      // Get the desired pose
+      f_s->getPose(s_traj[i], tmp_pos, tmp_ori);
+      // Set the desired trajectory
+      ctg->traj_SE3_right_hand.set_pos(i, tmp_pos, tmp_ori);
+    }
 
     // Populate footstep list
+    input_footstep_list.clear();
+    for(int i = 1; i < forward_order_optimal_path.size(); i++){
+      current_ = static_pointer_cast<LMVertex>(forward_order_optimal_path[i]);
+      parent_ = static_pointer_cast<LMVertex>(current_->parent);
+      // Check if a left or right footstep is taken
+      if (edgeHasStepTaken(parent_, current_, LEFT_FOOTSTEP)) {
+        input_footstep_list.push_back(current_->left_foot);
+      }else if (edgeHasStepTaken(parent_, current_, RIGHT_FOOTSTEP)){
+        input_footstep_list.push_back(current_->right_foot);        
+      }
+    }
+
  
     // Compute entire configuration trajectory
-    // ctg->initializeDiscretization(N_size_per_edge*(optimal_path.size()-1));
     // ctg->computeConfigurationTrajectory(forward_order_optimal_path[0]->q_init, input_footstep_list);
 
     // Store q trajectory configuration
 
-    // // Reset discretization
-    // ctg->initializeDiscretization(N_size_per_edge);
+    // Reset discretization
+    ctg->initializeDiscretization(N_size_per_edge);
 
 
 
