@@ -55,7 +55,6 @@ public:
 
 };
 
-extern boost::mutex state_mutex;
 
 
 #endif
