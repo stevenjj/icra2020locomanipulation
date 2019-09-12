@@ -256,10 +256,20 @@ void test_door_open_config_trajectory(){
 
   valkyrie_model->getFrameWorldPose("leftCOP_Frame", footstep_1.position, footstep_1.orientation);  
   valkyrie_model->getFrameWorldPose("rightCOP_Frame", footstep_2.position, footstep_2.orientation);  
+
+  double theta = 20.0/180.0*M_PI;
+  Eigen::AngleAxis<double> aa(theta, Eigen::Vector3d(0.0, 0.0, 1.0));
+  Eigen::Quaternion<double> quat(aa);
+
   footstep_1.position[0] -= 0.1;
 
   footstep_2.position[0] -= 0.1;
   footstep_2.position[1] -= 0.1;
+
+  footstep_2.orientation = quat;
+  std::cout << "quat w = " << quat.w();
+  footstep_2.R_ori = quat.toRotationMatrix(); 
+
 
   // Try no footsteps
   // std::vector<Footstep> input_footstep_list;
