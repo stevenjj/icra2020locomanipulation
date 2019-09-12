@@ -74,6 +74,7 @@ namespace planner{
         virtual std::vector< shared_ptr<Node> > getNeighbors(shared_ptr<Node> & current);
 
         bool reconstructConfigurationTrajectory();
+        bool reconstructConfigurationTrajectoryv2();
         void printPath();
 
         std::shared_ptr<LMVertex> current_;        

@@ -1,6 +1,6 @@
 <launch>
 	<node name="$(anon generate_folders)" pkg="avatar_locomanipulation" type="generate_folders.sh" />
-    <node name="test_planner_with_trajectories" pkg="avatar_locomanipulation" type="test_planner_with_trajectories" output="screen" /> 
+    <node name="planner_door_open_node" pkg="avatar_locomanipulation" type="planner_door_open_node" output="screen" /> 
 
 	<!-- Visualize the robot -->  
     <include file="$(find avatar_locomanipulation)/launch/robot_and_ik_viz.launch">
