@@ -32,6 +32,8 @@ public:
 
 	ros::Subscriber s_sub;
 
+	std::string parameter_file;
+
 	void s_callback(const std_msgs::Float64ConstPtr & msg);
 
 	double s_current; // curent s for determining door angle
@@ -42,9 +44,7 @@ public:
 	Eigen::Quaternion<double> q_init; // initial orientation for wp1
 	Eigen::Quaternion<double> q_fixed; // orientation of fixed hinge fram wrt world
 
-	DoorVisualizationNode(ros::NodeHandle* n_input);
-
-	DoorVisualizationNode(int & s_begin);
+	DoorVisualizationNode(ros::NodeHandle* n_input, const std::string & parameter_file_input);
 
 	~DoorVisualizationNode();
 

@@ -24,7 +24,9 @@ void visualize_door_and_waypoints(geometry_msgs::PoseArray & waypoints){
   // Initialize ROS node for publishing joint messages
   ros::NodeHandle n;
   ros::Rate loop_rate(20);
-  DoorVisualizationNode door_obj(&n);
+
+  std::string parameter = "hand_trajectory/door_opening_parameters.yaml";
+  DoorVisualizationNode door_obj(&n, parameter);
 
   // Waypoint Pose Publisher
 	ros::Publisher hand_pose_pub = n.advertise<geometry_msgs::PoseArray>("waypoint_poses", 100);

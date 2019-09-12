@@ -1,17 +1,11 @@
 #include <avatar_locomanipulation/visualization_nodes/door_visualization_node.hpp>
 
 
-DoorVisualizationNode::DoorVisualizationNode(ros::NodeHandle* n_input){
+DoorVisualizationNode::DoorVisualizationNode(ros::NodeHandle* n_input, const std::string & parameter_file_input){
 	s_current = 0;
 	nh = n_input;
+	parameter_file = parameter_file_input;
 	std::cout << "DoorVisualizationNode Created\n";
-	getParameters();
-}
-
-
-DoorVisualizationNode::DoorVisualizationNode(int & s_begin){
-	s_current = s_begin;
-	std::cout << "DoorVisualizationNode Created with initial s given\n";
 	getParameters();
 }
 
@@ -31,7 +25,7 @@ void DoorVisualizationNode::s_callback(const std_msgs::Float64ConstPtr & msg){
 void DoorVisualizationNode::getParameters(){
 	ParamHandler param_handler;
 
-	param_handler.load_yaml_file(THIS_PACKAGE_PATH"hand_trajectory/door_opening_parameters.yaml");
+	param_handler.load_yaml_file(THIS_PACKAGE_PATH + parameter_file);
 
 	param_handler.getValue("radius", radius);
 
