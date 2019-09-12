@@ -306,17 +306,18 @@ namespace planner{
     }
     // Populate desired hand configurations 
 
-
-
     // Populate footstep list
-
  
     // Compute entire configuration trajectory
     // ctg->initializeDiscretization(N_size_per_edge*(optimal_path.size()-1));
-    // ctg->computeConfigurationTrajectory(parent_->q_init, input_footstep_list);
+    // ctg->computeConfigurationTrajectory(forward_order_optimal_path[0]->q_init, input_footstep_list);
+
+    // Store q trajectory configuration
 
     // // Reset discretization
     // ctg->initializeDiscretization(N_size_per_edge);
+
+
 
   }
 
