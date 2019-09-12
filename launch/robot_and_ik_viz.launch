@@ -1,0 +1,46 @@
+<launch>
+  <!-- Nice Reference at: http://answers.gazebosim.org/question/9403/multi-robot-controller-manager-for-different-robot_descripion/ -->
+
+    <arg name="gui" default="False" />  
+    <arg name="use_static_transform" default="True" />  
+    <arg name="rviz_config" default="val_robot_and_ik.rviz" />
+
+    <group ns="val_ik_robot">
+      <param name="robot_description" textfile="$(find avatar_locomanipulation)/models/valkyrie_simplified_collisions.urdf" />        
+      <param name="use_gui" value="$(arg gui)"/>
+
+      <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+          <rosparam param="source_list">[/robot1/joint_states]</rosparam> 
+      </node>
+
+      <node pkg="robot_state_publisher" type="state_publisher" name="robot_state_publisher">
+        <param name="tf_prefix" type="string" value="val_ik_robot" />  
+      </node>
+    </group>
+
+
+    <group ns="val_robot">
+      <param name="robot_description" textfile="$(find avatar_locomanipulation)/models/valkyrie_simplified_collisions.urdf" />        
+      <param name="use_gui" value="$(arg gui)"/>
+
+      <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+            <rosparam param="source_list">[/robot2/joint_states]</rosparam>
+      </node> 
+      <node pkg="robot_state_publisher" type="state_publisher" name="robot_state_publisher">
+        <param name="tf_prefix" type="string" value="val_robot" />  
+      </node>
+
+    </group>
+
+
+    <group if="$(arg use_static_transform)">
+        <node pkg="tf" type="static_transform_publisher" name="torso_static_transform_pub" 
+         args="0.0  0.0 0.0 0.0 0.0 0.0 1.0 world val_robot/pelvis 200" />
+        <node pkg="tf" type="static_transform_publisher" name="ik_torso_static_transform_pub" 
+         args="0.0  0.0 0.0 0.0 0.0 0.0 1.0 world val_ik_robot/pelvis 200" />
+
+    </group>
+
+    <node name="rviz_ik" pkg="rviz" type="rviz" args="-d $(find avatar_locomanipulation)/launch/rviz/$(arg rviz_config)" required="true" /> 
+
+</launch>
