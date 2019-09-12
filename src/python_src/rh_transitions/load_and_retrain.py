@@ -15,8 +15,10 @@ print(tf.version.VERSION)
 print(tf.keras.__version__)
 
 num_positive_data = 100
-# contact_transition_types = [ ("left_hand", "right_foot"), ("left_hand", "left_foot"), ("right_hand", "left_foot"), ("right_hand", "right_foot"), ("both_hands", "right_foot"), ("both_hands", "left_foot") ]# [ ("right_hand", "right_foot"), ("right_hand", "left_foot") ]
-contact_transition_types =  [ ("right_hand", "right_foot"), ("right_hand", "left_foot") ] #[ ("both_hands", "left_foot") ]
+num_retrain_data = 1000
+
+contact_transition_types = [ ("left_hand", "right_foot"), ("left_hand", "left_foot"), ("right_hand", "left_foot"), ("right_hand", "right_foot"), ("both_hands", "right_foot"), ("both_hands", "left_foot") ]# [ ("right_hand", "right_foot"), ("right_hand", "left_foot") ]
+# contact_transition_types = [ ("both_hands", "left_foot") ]
 shorthand = {"right_hand" : "rh", "left_hand" : "lh", "both_hands" : "bh", "right_foot": "rf", "left_foot": "lf"}
 
 
@@ -105,6 +107,14 @@ if __name__ == "__main__":
 	print "Evaluating test set:"
 	model.evaluate(x_test, y_test)
 
+
+	# Load retraining data:
+	dataset_folder_retrain = "/home/stevenjj/Data/planner_data/"
+	dataset_retrain = transition_dataset.ContactTransitionDataset(num_retrain_data)
+	x_retrain, y_retrain = get_data(dataset_retrain, dataset_folder_retrain, contact_transition_types)
+	x_retrain = (x_retrain - x_train_mean) / x_train_std
+
+	model_history = model.fit(x_retrain, y_retrain, epochs=2, batch_size=32, validation_data=(x_test, y_test), verbose=2)
 
 
 

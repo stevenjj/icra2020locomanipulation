@@ -347,15 +347,15 @@ bool ConfigTrajectoryGenerator::computeInitialConfigForFlatGround(const Eigen::V
 }
 
 
-void ConfigTrajectoryGenerator::printIntermediateIKTrajectoryresult(int & index, bool & primary_task_converge_result, double & total_error_norm, std::vector<double> & task_error_norms){
+void ConfigTrajectoryGenerator::printIntermediateIKTrajectoryresult(int & index, bool & primary_task_converge_result, double & total_error_norm, std::vector<double> & task_error_norms_in){
 	if (index == 0){
 		std::cout << "[ConfigTrajectoryGenerator]" << std::endl;
 		std::cout << "index | 1st task converged? | Acceptable? | total error norm | task error norms " << std::endl;	
 	}
 	std::cout << index << " | " << (primary_task_converge_result ? "True" : "False") << " | " << (didTrajectoryConverge()? "True" : "False") << " | " << total_error_norm << " | ";
 
-	for(int i = 0; i < task_error_norms.size(); i++){
-		std::cout << task_error_norms[i] << " ";
+	for(int i = 0; i < task_error_norms_in.size(); i++){
+		std::cout << task_error_norms_in[i] << " ";
 	}
 	std::cout << std::endl;
 
@@ -425,10 +425,15 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 	robot_model->getFrameWorldPose("pelvis", tmp_pelvis_pos, tmp_pelvis_ori);	
 
 	// set joint position task reference.
-	setPostureTaskReference(torso_posture_task, q_start);
-	setPostureTaskReference(neck_posture_task, q_start);
-	setPostureTaskReference(rarm_posture_task, q_start);
-	setPostureTaskReference(larm_posture_task, q_start);
+	Eigen::VectorXd q_posture = q_start;
+	q_posture[robot_model->getJointIndex("torsoYaw")] = 0.0;
+	q_posture[robot_model->getJointIndex("torsoPitch")] = 0.0;
+	q_posture[robot_model->getJointIndex("torsoRoll")] = 0.0;
+
+	setPostureTaskReference(torso_posture_task, q_posture);
+	setPostureTaskReference(neck_posture_task, q_posture);
+	setPostureTaskReference(rarm_posture_task, q_posture);
+	setPostureTaskReference(larm_posture_task, q_posture);
 
 	// If there are footsteps in the list construct the task space trajectories.
 	if (input_footstep_list.size() > 0){
@@ -454,7 +459,8 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 
 	// Prepare IK solver
     int solve_result;
-    std::vector<double> task_error_norms;
+    // std::vector<double> task_error_norms;
+	task_error_norms.clear();
     double total_error_norm;
     Eigen::VectorXd q_sol = Eigen::VectorXd::Zero(robot_model->getDimQdot());	
     bool primary_task_convergence = false;

@@ -21,6 +21,7 @@
 #include <ostream>
 #include <list>
 
+#include <random>
 
 using namespace std;
 
@@ -74,6 +75,8 @@ namespace planner{
 		shared_ptr<Node> goal;		
 		shared_ptr<Node> achieved_goal;		
 		std::vector< shared_ptr<Node> > optimal_path;	
+
+		double epsilon_greedy = 0.1; // Percentage of time we randomly select a node from the open set
 
 	};
 

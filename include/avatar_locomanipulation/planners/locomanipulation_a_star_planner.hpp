@@ -76,8 +76,9 @@ namespace planner{
         bool reconstructConfigurationTrajectory();
         void printPath();
 
-        std::shared_ptr<LMVertex> current_;
+        std::shared_ptr<LMVertex> current_;        
         std::shared_ptr<LMVertex> goal_;
+        std::shared_ptr<LMVertex> begin_;        
         std::shared_ptr<LMVertex> neighbor_;        
         std::shared_ptr<LMVertex> opt_node_;
 
@@ -92,11 +93,25 @@ namespace planner{
         bool classifier_store_mistakes = false;
         bool classifier_store_mistakes_during_reconstruction = false;
 
+        bool trust_classifier = false;
 
         std::shared_ptr<RobotModel> robot_model;
         std::shared_ptr<ManipulationFunction> f_s;
         std::shared_ptr<ConfigTrajectoryGenerator> ctg;
         std::vector<Footstep> input_footstep_list;
+
+        // Body Path heuristic. Feet positions w.r.t hand pose
+        Eigen::Vector3d lf_pos_wrt_hand;
+        Eigen::Vector3d rf_pos_wrt_hand;
+
+        Eigen::Quaterniond lf_ori_wrt_hand;
+        Eigen::Quaterniond rf_ori_wrt_hand;
+
+        Eigen::Vector3d lf_guess_pos;
+        Eigen::Quaterniond lf_guess_ori;
+
+        Eigen::Vector3d rf_guess_pos;
+        Eigen::Quaterniond rf_guess_ori;
 
         // Set the planner origin
         Eigen::Vector3d planner_origin_pos;
@@ -114,11 +129,14 @@ namespace planner{
         // the translation origin is aligned with the stance frame
         double dx = 0.05; // dx translation discretization
         double dy = 0.05; // dy translation discretization
-        double dtheta = 10.0*M_PI/180.0; // 10 degrees of discretization
+        double dtheta = 10.0*M_PI/180.0; //10.0*M_PI/180.0; // 10 degrees of discretization
 
         double max_lattice_translation = 0.4;
         double max_lattice_theta = M_PI*7.0/8.0;
         double min_lattice_theta = -M_PI*7.0/8.0;
+
+        double max_lattice_radius = 2.0; // meters from the origin
+        double max_foot_to_hand_radius = 1.5; // meters from the landiing foot
 
         // swing foot kinematic limits w.r.t the stance frame
         double max_reach = 0.4;
@@ -143,16 +161,16 @@ namespace planner{
         double goal_tol = 0.01;
 
         // planner parameters
-        double w_heuristic = 2000.0;
-        double w_distance = 1e-3;
+        double w_heuristic = 2000.0; //2000.0;
+        double w_distance = 100; //1e-3;
         double w_s = 100.0;     
         double w_step = 10;
-        double w_transition_distance = 10.0;
+        double w_transition_distance = 0.0; //10.0;
 
-        double w_feasibility = 1e4;
-        double feasibility_threshold= 0.95;
+        double w_feasibility = 0.0;//1e2;
+        double feasibility_threshold= 0.5;
 
-        int N_s = 10; // number of discretizations to make for the s variable when checking with the neural network
+        int N_s = 5; // number of discretizations to make for the s variable when checking with the neural network
 
         // robot_config temp 
         Eigen::VectorXd q_tmp;
