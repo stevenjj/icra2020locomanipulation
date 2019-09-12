@@ -531,12 +531,33 @@ namespace planner{
         
         OpenSet.push_back(begin); //append starting node to open set
 
-        while (!OpenSet.empty()){
-                //sort the open set
-                std::sort(OpenSet.begin(), OpenSet.end(), node_compare_fcost_obj);
 
-                //choose top value of open set as current node;
-                current_node = OpenSet[0];
+        // Create random number generator
+        std::mt19937 generator;
+        unsigned int seed_number = 10;
+        generator.seed(seed_number);
+        std::uniform_real_distribution<double> u_distribution_double(0.0, 1.0);
+        int index_offset = 0;
+        double epsilon_p = 0.0;
+
+        while (!OpenSet.empty()){        
+                std::cout << "Open set size = " << OpenSet.size() << std::endl;
+                // Randomly select a node from the open set epsilon_greedy % of the time
+                epsilon_p = u_distribution_double(generator);
+                if (epsilon_p <= epsilon_greedy){
+                    std:: cout << "** epsilon_p = " << epsilon_p << "  randomly selecting a node from the open set" << std::endl;
+                    std::uniform_int_distribution<int> u_distribution_int(0, OpenSet.size()-1);                    
+                    index_offset = u_distribution_int(generator);
+                    std:: cout << "    index_offset = " << index_offset << std::endl;
+                }else{
+                    // Perform usual method of obtaining the node from the open set
+                    index_offset = 0;
+                    //sort the open set
+                    std::sort(OpenSet.begin(), OpenSet.end(), node_compare_fcost_obj);
+                }
+
+                //choose top value / randomly chosen node of open set as current node;
+                current_node = OpenSet[index_offset];
 
                 // shared_ptr<FootstepNode> current_ = static_pointer_cast<FootstepNode>(current_node);
                 cout << "current node key: " << current_node->key << endl;
@@ -545,7 +566,7 @@ namespace planner{
 
                 //current node = goal node
                 if (goalReached(current_node, goal) == true){
-                    cout << "goal reached" << endl;
+                    // cout << "goal reached" << endl;
                     //reproduce path
                     achieved_goal = current_node;
                     // Construct the path. return true if path reconstruction succeeds
@@ -554,7 +575,7 @@ namespace planner{
                     }else{
                         // This node will have no neighbors, so perform the necessary set operations and continue
                         //pop current node off the open list
-                        node_it = OpenSet.begin();
+                        node_it = OpenSet.begin() + index_offset;
                         *node_it = std::move(OpenSet.back());
                         OpenSet.pop_back();
                         //Erase node from the explored set
@@ -568,7 +589,7 @@ namespace planner{
                 //current node not equal to goal
 
                 //pop current node off the open list
-                node_it = OpenSet.begin();
+                node_it = OpenSet.begin() + index_offset;
                 *node_it = std::move(OpenSet.back());
                 OpenSet.pop_back();
 
