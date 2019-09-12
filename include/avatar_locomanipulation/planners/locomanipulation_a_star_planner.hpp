@@ -25,6 +25,9 @@
 #define CONTACT_TRANSITION_DATA_RIGHT_HAND 1
 #define CONTACT_TRANSITION_DATA_BOTH_HANDS 2
 
+#define EDGE_TYPE_LOCOMANIPULATION 0
+#define EDGE_TYPE_MANIPULATION 1
+
 namespace planner{
     class LMVertex: public Node{
     public:
@@ -172,6 +175,7 @@ namespace planner{
         double feasibility_threshold= 0.5;
 
         int N_s = 5; // number of discretizations to make for the s variable when checking with the neural network
+        int N_size_per_edge = 60;
 
         // robot_config temp 
         Eigen::VectorXd q_tmp;
@@ -185,7 +189,9 @@ namespace planner{
 
         // Full path configuration trajectory
         std::vector< shared_ptr<Node> > forward_order_optimal_path; 
+        std::vector<double> s_traj; // Trajectory of s(i)
         TrajEuclidean   path_traj_q_config;     // Trajectory of configurations q
+
 
     private:
         // Converts the input position and orientation 
