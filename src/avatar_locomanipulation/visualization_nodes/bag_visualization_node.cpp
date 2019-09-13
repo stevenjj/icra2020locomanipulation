@@ -69,15 +69,17 @@ void BagVisualizationNode::fillBagMarkerArray(visualization_msgs::MarkerArray & 
   temp.pose.orientation.y = 0.0;
   temp.pose.orientation.z = 0.0;
   temp.pose.orientation.w = 1.0;
-  temp.scale.x = 0.015;
+  temp.scale.x = 0.01;
   temp.scale.y = 0.08;
-  temp.scale.z = 0.015;
+  temp.scale.z = 0.01;
   temp.header.frame_id = "bag_frame";
-  temp.text = "top_of_handle";
+  temp.text = "handle_top";
+  temp.ns = "ns";
+  temp.id = 1;
   temp.color.r = 0.5f;
   temp.color.g = 0.5f;
   temp.color.b = 0.5f;
-  temp.color.a = 0.8;
+  temp.color.a = 1.0;
   temp.action = visualization_msgs::Marker::ADD;
 	temp.type = visualization_msgs::Marker::CUBE;
 
@@ -91,15 +93,17 @@ void BagVisualizationNode::fillBagMarkerArray(visualization_msgs::MarkerArray & 
   temp.pose.orientation.y = 0.0;
   temp.pose.orientation.z = 0.0;
   temp.pose.orientation.w = 1.0;
-  temp.scale.x = 0.03;
-  temp.scale.y = 0.03;
+  temp.scale.x = 0.01;
+  temp.scale.y = 0.01;
   temp.scale.z = 0.08;
   temp.header.frame_id = "bag_frame";
-  temp.text = "side_of_handle_1";
+  temp.text = "handle_side_1";
+  temp.ns = "ns";
+  temp.id = 2;
   temp.color.r = 0.5f;
   temp.color.g = 0.5f;
   temp.color.b = 0.5f;
-  temp.color.a = 0.8;
+  temp.color.a = 1.0;
   temp.action = visualization_msgs::Marker::ADD;
 	temp.type = visualization_msgs::Marker::CUBE;
 
@@ -113,15 +117,17 @@ void BagVisualizationNode::fillBagMarkerArray(visualization_msgs::MarkerArray & 
   temp.pose.orientation.y = 0.0;
   temp.pose.orientation.z = 0.0;
   temp.pose.orientation.w = 1.0;
-  temp.scale.x = 0.03;
-  temp.scale.y = 0.03;
+  temp.scale.x = 0.01;
+  temp.scale.y = 0.01;
   temp.scale.z = 0.08;
   temp.header.frame_id = "bag_frame";
-  temp.text = "side_of_handle_1";
+  temp.text = "handle_side_2";
+  temp.ns = "ns";
+  temp.id = 3;
   temp.color.r = 0.5f;
   temp.color.g = 0.5f;
   temp.color.b = 0.5f;
-  temp.color.a = 0.8;
+  temp.color.a = 1.0;
   temp.action = visualization_msgs::Marker::ADD;
 	temp.type = visualization_msgs::Marker::CUBE;
 
@@ -141,6 +147,8 @@ void BagVisualizationNode::fillBagMarkerArray(visualization_msgs::MarkerArray & 
   temp.scale.z = 0.20;
   temp.header.frame_id = "bag_frame";
   temp.text = "main_bag";
+	temp.ns = "ns";
+	temp.id = 4;
   temp.color.r = 0.5f;
   temp.color.g = 0.5f;
   temp.color.b = 0.5f;
