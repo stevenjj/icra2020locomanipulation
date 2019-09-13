@@ -522,7 +522,7 @@ void test_LM_planner_with_cpp_NN(){
 
   // Have fast double support times
   ctg->wpg.setDoubleSupportTime(0.2);
-  // ctg->wpg.setSettlingPercentage(0.4); // Percentage to settle. Default 0.999
+  ctg->wpg.setSettlingPercentage(0.4); // Percentage to settle. Default 0.999
   // Set Manipulation Only time to 3 seconds
   ctg->setManipulationOnlyTime(3.0);
   // Set Verbosity
@@ -621,9 +621,9 @@ int main(int argc, char ** argv){
   std::cout<<"num_threads: "<<num_threads<<std::endl;
 
   // test_final_configuration();
-  test_LM_planner();
+  // test_LM_planner();
   // test_LM_planner_with_NN();
-  // test_LM_planner_with_cpp_NN();
+  test_LM_planner_with_cpp_NN();
   // test_planner();
   // test_door_open_config_trajectory();
  
