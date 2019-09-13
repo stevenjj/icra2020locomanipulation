@@ -680,7 +680,8 @@
     <axis xyz="1 0 0"/>
     <parent link="leftForearmLink"/>
     <child link="leftWristRollLink"/>
-    <limit effort="14" lower="-0.62" upper="0.625" velocity="1"/>
+    <!-- <limit effort="14" lower="-0.62" upper="0.625" velocity="1"/> -->
+    <limit effort="14" lower="-3.14" upper="3.14" velocity="1"/>
     <controller_gains Kd="400" Ki="0.0" Kp="20000"/>
     <dynamics damping="0.1" friction="0.0"/>
   </joint>
@@ -693,7 +694,8 @@
     <axis xyz="0 0 1"/>
     <parent link="leftWristRollLink"/>
     <child link="leftPalm"/>
-    <limit effort="14" lower="-0.36" upper="0.49" velocity="1"/>
+    <!-- <limit effort="14" lower="-0.36" upper="0.49" velocity="1"/> -->
+    <limit effort="14" lower="-3.14" upper="3.14" velocity="1"/>
     <controller_gains Kd="400" Ki="0.0" Kp="20000"/>
     <dynamics damping="0.1" friction="0.0"/>
   </joint>

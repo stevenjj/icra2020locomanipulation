@@ -23,8 +23,13 @@
 #include <math.h>
 #include <cassert>
 
+
+// Timer
 #include <chrono>
 typedef std::chrono::high_resolution_clock Clock;
+
+// Enabling multi-threading
+#include <omp.h> 
 
 using namespace planner;
 
@@ -601,10 +606,18 @@ void test_planner(){
 int main(int argc, char ** argv){   
   ros::init(argc, argv, "test_planner_with_trajectories");
 
+  // Enabling multi-threading
+  int num_cores = 4;
+  omp_set_num_threads(num_cores);
+  Eigen::setNbThreads(num_cores);
+  Eigen::initParallel();
+  int num_threads = Eigen::nbThreads();
+  std::cout<<"num_threads: "<<num_threads<<std::endl;
+
   // test_final_configuration();
-  test_LM_planner();
+  // test_LM_planner();
   // test_LM_planner_with_NN();
-  // test_LM_planner_with_cpp_NN();
+  test_LM_planner_with_cpp_NN();
   // test_planner();
   // test_door_open_config_trajectory();
  
