@@ -303,14 +303,14 @@ namespace planner{
       // Populate s vector with linear change
       for(int j = 0; j < N_size_per_edge; j++){
         s_traj.push_back(s_start + (delta_s / static_cast<double>(N_size_per_edge))*j); 
-        std::cout << "s_start + (delta_s / static_cast<double>(N_size_per_edge))*j = " << s_start + (delta_s / static_cast<double>(N_size_per_edge))*j << std::endl;
+        // std::cout << "s_start + (delta_s / static_cast<double>(N_size_per_edge))*j = " << s_start + (delta_s / static_cast<double>(N_size_per_edge))*j << std::endl;
       }
     }
 
     // Debug printouts
-    std::cout << "forward_order_optimal_path.size() = " << forward_order_optimal_path.size() << std::endl;
-    std::cout << "N_size_per_edge * (forward_order_optimal_path.size() - 1) " << N_size_per_edge * (forward_order_optimal_path.size() - 1) << std::endl;
-    std::cout << "s_traj.size() = " << s_traj.size() << std::endl;
+    // std::cout << "forward_order_optimal_path.size() = " << forward_order_optimal_path.size() << std::endl;
+    // std::cout << "N_size_per_edge * (forward_order_optimal_path.size() - 1) " << N_size_per_edge * (forward_order_optimal_path.size() - 1) << std::endl;
+    // std::cout << "s_traj.size() = " << s_traj.size() << std::endl;
 
     // Initialize the full trajectory size
     double dt_dummy = 1e-3;
@@ -355,7 +355,7 @@ namespace planner{
       }
     }
 
-    std::cout << "edge_sequences.size() = " << edge_sequences.size() << std::endl;
+    // std::cout << "edge_sequences.size() = " << edge_sequences.size() << std::endl;
 
     // Construct the trajectory based on the edge sequences.
     int N_sub_total = 0;
@@ -363,7 +363,7 @@ namespace planner{
     int i_run = 0;
 
     for (int i = 0; i < edge_sequences.size(); i++){
-      std::cout << "edge_sequences[" << i << "].size() = " << edge_sequences[i].size() << std::endl;
+      // std::cout << "edge_sequences[" << i << "].size() = " << edge_sequences[i].size() << std::endl;
 
       // Set the discretization value
       N_sub_total = edge_sequences[i].size()*N_size_per_edge;
@@ -373,7 +373,7 @@ namespace planner{
 
       // Populate desired hand configurations 
       // TO DO: Make this general for left, right or both.
-      std::cout << "setting hand poses" << std::endl;
+      // std::cout << "setting hand poses" << std::endl;
       for (int j = 0; j < N_sub_total; j++){
         // Get the desired pose
         f_s->getPose(s_traj[j + edge_number_offset*N_size_per_edge], tmp_pos, tmp_ori);
@@ -387,7 +387,7 @@ namespace planner{
       parent_ = static_pointer_cast<LMVertex>(current_->parent);
 
 
-      std::cout << "creating footsteps" << std::endl;
+      // std::cout << "creating footsteps" << std::endl;
       // Clear the footsteps
       input_footstep_list.clear();      
       // Check if this is a locomanipulation edge. 
@@ -395,7 +395,7 @@ namespace planner{
         // If so, populate footstep list
         for(int j = 0; j < (edge_sequences[i].size()); j++){
           std::cout << "j" << j << std::endl;
-          std::cout << "edge_number_offset" << edge_number_offset << std::endl;
+          // std::cout << "edge_number_offset" << edge_number_offset << std::endl;
 
           std::shared_ptr<LMVertex> local_current = static_pointer_cast<LMVertex>(forward_order_optimal_path[j + edge_number_offset + 1]);
           std::shared_ptr<LMVertex> local_parent = static_pointer_cast<LMVertex>(local_current->parent);;        
@@ -824,10 +824,9 @@ namespace planner{
     }
 
     double feasibility_cost = 0.0; 
-
-    if (use_classifier){
-      feasibility_cost =  w_feasibility*(1.0 - getFeasibility(current_, neighbor_));      
-    }
+    // if (use_classifier){
+    //   feasibility_cost =  w_feasibility*(1.0 - getFeasibility(current_, neighbor_));      
+    // }
 
     double delta_g = s_cost + distance_cost + step_cost + transition_distance_cost + feasibility_cost;
 
