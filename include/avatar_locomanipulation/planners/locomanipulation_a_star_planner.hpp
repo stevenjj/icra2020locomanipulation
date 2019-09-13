@@ -328,6 +328,24 @@ namespace planner{
         void appendOriString(const Eigen::Quaterniond & ori, std::string & str_in_out);
         std::size_t getDataHash();
 
+
+        // Store trajectories
+        void setSaveFileName(std::string save_filename_in);
+        std::string save_filename = "sample_trajectory.yaml";
+        void storeTrajectories();
+
+        std::vector<Eigen::VectorXd> com_pos;
+
+        std::vector<Eigen::VectorXd> left_foot_pos;
+        std::vector<Eigen::VectorXd> right_foot_pos;
+        std::vector<Eigen::VectorXd> left_hand_pos;
+        std::vector<Eigen::VectorXd> right_hand_pos;
+
+        std::vector<Eigen::VectorXd> pelvis_ori;
+        std::vector<Eigen::VectorXd> left_foot_ori;
+        std::vector<Eigen::VectorXd> right_foot_ori;
+        std::vector<Eigen::VectorXd> left_hand_ori;
+        std::vector<Eigen::VectorXd> right_hand_ori;
     };
 
 
