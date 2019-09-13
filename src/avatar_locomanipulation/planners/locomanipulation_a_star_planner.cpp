@@ -287,26 +287,33 @@ namespace planner{
     // Reconstruct the configuration trajectory
     Eigen::VectorXd q_begin = Eigen::VectorXd::Zero(robot_model->getDimQ());
     Eigen::VectorXd q_end = Eigen::VectorXd::Zero(robot_model->getDimQ());
-//    int N_size = ctg->getDiscretizationSize();
-    int N_total = N_size_per_edge*(optimal_path.size()-1);
 
     // Create s vector as function of i.
     s_traj.clear();
-    double s_current = 0.0;
+    double s_start = 0.0;
     for(int i = 1; i < forward_order_optimal_path.size(); i++){
       // Cast Pointers
       current_ = static_pointer_cast<LMVertex>(forward_order_optimal_path[i]);
       parent_ = static_pointer_cast<LMVertex>(current_->parent);
 
       // Get the current and total delta_s 
-      s_current = current_->s;
       delta_s =  (current_->s - parent_->s);
+      s_start = parent_->s;
       // Populate s vector with linear change
       for(int j = 0; j < N_size_per_edge; j++){
-        s_traj.push_back(s_current + (delta_s / static_cast<double>(N_size_per_edge))*j); 
+        s_traj.push_back(s_start + (delta_s / static_cast<double>(N_size_per_edge))*j); 
+        std::cout << "s_start + (delta_s / static_cast<double>(N_size_per_edge))*j = " << s_start + (delta_s / static_cast<double>(N_size_per_edge))*j << std::endl;
       }
     }
 
+    // Debug printouts
+    std::cout << "forward_order_optimal_path.size() = " << forward_order_optimal_path.size() << std::endl;
+    std::cout << "N_size_per_edge * (forward_order_optimal_path.size() - 1) " << N_size_per_edge * (forward_order_optimal_path.size() - 1) << std::endl;
+    std::cout << "s_traj.size() = " << s_traj.size() << std::endl;
+
+    // Initialize the full trajectory size
+    double dt_dummy = 1e-3;
+    path_traj_q_config.set_dim_N_dt(robot_model->getDimQ(), N_size_per_edge*(optimal_path.size()-1), dt_dummy);
 
     // We have to go through the optimal path order and identify if it was a manipulation or locomanipulation trajectory
     std::vector<int> current_edge_sequence;
@@ -339,55 +346,110 @@ namespace planner{
           current_edge_sequence.clear();
         }
       }
-
       // Store the edge type to the current sequence
       current_edge_sequence.push_back(edge_type);
-
       // If we are at the very end, store the current edge sequence
       if (i == forward_order_optimal_path.size() - 1){
         edge_sequences.push_back(current_edge_sequence);
       }
-
     }
 
+    std::cout << "edge_sequences.size() = " << edge_sequences.size() << std::endl;
 
+    // Construct the trajectory based on the edge sequences.
+    int N_sub_total = 0;
+    int edge_number_offset = 0;
+    int i_run = 0;
 
+    for (int i = 0; i < edge_sequences.size(); i++){
+      std::cout << "edge_sequences[" << i << "].size() = " << edge_sequences[i].size() << std::endl;
 
-    // Initialize the config trajectory discretization
-    ctg->initializeDiscretization(N_total);    
+      // Set the discretization value
+      N_sub_total = edge_sequences[i].size()*N_size_per_edge;
 
-    // Populate desired hand configurations 
-    // TO DO: Make this general for left, right or both.
-    for (int i = 0; i < N_total; i++){
-      // Get the desired pose
-      f_s->getPose(s_traj[i], tmp_pos, tmp_ori);
-      // Set the desired trajectory
-      ctg->traj_SE3_right_hand.set_pos(i, tmp_pos, tmp_ori);
-    }
+      // Initialize the config trajectory discretization
+      ctg->initializeDiscretization(N_sub_total);    
 
-    // Populate footstep list
-    input_footstep_list.clear();
-    for(int i = 1; i < forward_order_optimal_path.size(); i++){
-      current_ = static_pointer_cast<LMVertex>(forward_order_optimal_path[i]);
-      parent_ = static_pointer_cast<LMVertex>(current_->parent);
-      // Check if a left or right footstep is taken
-      if (edgeHasStepTaken(parent_, current_, LEFT_FOOTSTEP)) {
-        input_footstep_list.push_back(current_->left_foot);
-      }else if (edgeHasStepTaken(parent_, current_, RIGHT_FOOTSTEP)){
-        input_footstep_list.push_back(current_->right_foot);        
+      // Populate desired hand configurations 
+      // TO DO: Make this general for left, right or both.
+      std::cout << "setting hand poses" << std::endl;
+      for (int j = 0; j < N_sub_total; j++){
+        // Get the desired pose
+        f_s->getPose(s_traj[j + edge_number_offset*N_size_per_edge], tmp_pos, tmp_ori);
+        // Set the desired trajectory
+        ctg->traj_SE3_right_hand.set_pos(j, tmp_pos, tmp_ori);
       }
+
+
+      // Set the current vertex and its parent
+      current_ = static_pointer_cast<LMVertex>(forward_order_optimal_path[edge_number_offset + 1]);
+      parent_ = static_pointer_cast<LMVertex>(current_->parent);
+
+
+      std::cout << "creating footsteps" << std::endl;
+      // Clear the footsteps
+      input_footstep_list.clear();      
+      // Check if this is a locomanipulation edge. 
+      if (edge_sequences[i][0] == EDGE_TYPE_LOCOMANIPULATION){
+        // If so, populate footstep list
+        for(int j = 0; j < (edge_sequences[i].size()); j++){
+          std::cout << "j" << j << std::endl;
+          std::cout << "edge_number_offset" << edge_number_offset << std::endl;
+
+          std::shared_ptr<LMVertex> local_current = static_pointer_cast<LMVertex>(forward_order_optimal_path[j + edge_number_offset + 1]);
+          std::shared_ptr<LMVertex> local_parent = static_pointer_cast<LMVertex>(local_current->parent);;        
+
+          // Check if a left or right footstep is taken
+          if (edgeHasStepTaken(local_parent, local_current, LEFT_FOOTSTEP)) {
+            input_footstep_list.push_back(local_current->left_foot);
+            local_current->left_foot.printInfo();
+          }else if (edgeHasStepTaken(local_parent, local_current, RIGHT_FOOTSTEP)){
+            input_footstep_list.push_back(local_current->right_foot);        
+            local_current->right_foot.printInfo();
+          }
+        }
+
+      }
+      std::cout << "computing the configuration" << std::endl;
+
+      // Compute configuration trajectory for this edge sequence
+      bool convergence = false;
+      convergence = ctg->computeConfigurationTrajectory(parent_->q_init, input_footstep_list);
+
+      std::cout << "convergence = " << convergence << std::endl;
+
+      // Get the final configuration and set to current
+      // std::cout << "getting the final configuration" << std::endl;
+      ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_end);
+      current_->setRobotConfig(q_end);  
+
+      // Store q trajectory configuration
+      // Check for convergence.
+      if (convergence){
+        for(int j = 0; j < N_sub_total; j++){
+          // Get the configuration at this local trajectory
+          ctg->traj_q_config.get_pos(j, q_tmp);
+          // Store the trajectory to the global path
+          path_traj_q_config.set_pos(i_run + j, q_tmp);        
+        }
+        // Update i_run
+        i_run += N_sub_total;        
+      }else{
+        return false;
+      }
+
+      // Update the edge number offset
+      edge_number_offset += edge_sequences[i].size();
     }
 
- 
-    // Compute entire configuration trajectory
-    // ctg->computeConfigurationTrajectory(forward_order_optimal_path[0]->q_init, input_footstep_list);
-
-    // Store q trajectory configuration
+    // To do: update the dt properly for each segment of the trajectory. For now  set a desired dt for visualization
+    path_traj_q_config.set_dt(ctg->wpg.traj_pos_com.get_dt() );  // seconds   
+   // path_traj_q_config.set_dt(0.05);  // seconds   
 
     // Reset discretization
     ctg->initializeDiscretization(N_size_per_edge);
 
-
+    return true;
 
   }
 
@@ -434,8 +496,10 @@ namespace planner{
       // Check if a left or right footstep is taken
       if (edgeHasStepTaken(parent_, current_, LEFT_FOOTSTEP)) {
         input_footstep_list.push_back(current_->left_foot);
+        current_->left_foot.printInfo();
       }else if (edgeHasStepTaken(parent_, current_, RIGHT_FOOTSTEP)){
         input_footstep_list.push_back(current_->right_foot);        
+        current_->right_foot.printInfo();
       }
 
       // Set initial configuration
