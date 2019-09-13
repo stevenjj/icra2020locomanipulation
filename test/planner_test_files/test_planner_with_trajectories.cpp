@@ -426,17 +426,17 @@ void test_LM_planner_with_NN(){
 
 
 void test_LM_planner_with_cpp_NN(){
-  // Service name for neural network
-  std::string service_name = "locomanipulation_feasibility_classifier";
-
-  // Create ROS handle and client
+  // // Create ROS handle and client
   std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
-  ros::ServiceClient client = ros_node->serviceClient<avatar_locomanipulation::BinaryClassifierQuery>(service_name);
 
-  // Wait for the service
-  std::cout << "waiting for " << service_name << " service..." << std::endl;
-  ros::service::waitForService(service_name);
-  std::cout << "service available" << std::endl;
+  // // Service name for neural network
+  // std::string service_name = "locomanipulation_feasibility_classifier";
+  // ros::ServiceClient client = ros_node->serviceClient<avatar_locomanipulation::BinaryClassifierQuery>(service_name);
+
+  // // Wait for the service
+  // std::cout << "waiting for " << service_name << " service..." << std::endl;
+  // ros::service::waitForService(service_name);
+  // std::cout << "service available" << std::endl;
 
   // Initialize the neural network --------------------------------------------------------------
   ParamHandler param_handler;
@@ -444,7 +444,8 @@ void test_LM_planner_with_cpp_NN(){
 
   std::cout << "Loading Model..." << std::endl;
   myYAML::Node model = myYAML::LoadFile(model_path);
-  NeuralNetModel nn_transition(model, false);
+  std::shared_ptr<NeuralNetModel> nn_transition_model(new NeuralNetModel(model, false));
+
   std::cout << "Loaded" << std::endl;
 
   // Load neural network normalization Params
@@ -459,11 +460,9 @@ void test_LM_planner_with_cpp_NN(){
   for (int ii = 0; ii < 32; ii++){
     mean[ii] = vmean[ii];
     std_dev[ii] = vstd_dev[ii];
-  }
+  } 
 
-  // setNeuralNetwork(nn_transition, mean, std_dev);
-
-
+  
   // Initialize the robot ---------------------------------------------------------------------------------------
   std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_no_fingers.urdf";
   std::shared_ptr<RobotModel> valkyrie_model(new RobotModel(urdf_filename));
@@ -522,12 +521,11 @@ void test_LM_planner_with_cpp_NN(){
 
   // Initialize
   lm_planner.initializeLocomanipulationVariables(valkyrie_model, f_s_manipulate_door, ctg);
-  // Set the classifier client:
-  std::cout << "Setting the classifier client" << std::endl;
-  lm_planner.setClassifierClient(client);
+  // Set the nn classifier
+  lm_planner.setNeuralNetwork(nn_transition_model, mean, std_dev);
 
   double s_init = 0.0;
-  double s_goal = 0.99; //0.32; //0.16; //0.20; //0.12;//0.08;
+  double s_goal = 0.2; //0.32; //0.16; //0.20; //0.12;//0.08;
   shared_ptr<Node> starting_vertex (std::make_shared<LMVertex>(s_init, q_start_door));    
   shared_ptr<Node> goal_vertex (std::make_shared<LMVertex>(s_goal, q_final_door));
 
@@ -579,8 +577,9 @@ int main(int argc, char ** argv){
   ros::init(argc, argv, "test_planner_with_trajectories");
 
   // test_final_configuration();
-  test_LM_planner();
+  // test_LM_planner();
   // test_LM_planner_with_NN();
+  test_LM_planner_with_cpp_NN();
   // test_planner();
   // test_door_open_config_trajectory();
  

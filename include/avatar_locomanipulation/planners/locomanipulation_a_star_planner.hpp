@@ -296,8 +296,19 @@ namespace planner{
         int classifier_input_dim = 32;
         Eigen::Vector3d tmp_ori_vec3;
 
+        // CPP Neural network helper functions:
         // Convert quat to vec
         Eigen::Vector3d quatToVec(const Eigen::Quaterniond & ori);
+        void normalizeInputCalculate(const Eigen::VectorXd & x_in, const Eigen::VectorXd & data_mean, const Eigen::VectorXd & data_std_dev, Eigen::VectorXd & x_normalized);
+        // ----
+
+        // CPP Neural Network variables
+        Eigen::VectorXd cpp_nn_rawDatum;
+        Eigen::VectorXd cpp_nn_normalized_datum;
+        int cpp_nn_input_size;
+        Eigen::MatrixXd cpp_nn_data_input;
+        Eigen::MatrixXd cpp_nn_pred;
+
 
         void addToXVector(const Eigen::Vector3d & pos, const Eigen::Quaterniond & ori, std::vector<double> & x);
         void populateXVector(std::vector<double> & x, 
