@@ -272,7 +272,7 @@ void test_LM_planner(){
   //PinocchioTicToc timer = PinocchioTicToc(PinocchioTicToc::MS);
 
   // Have fast double support times
-  ctg->wpg.setDoubleSupportTime(0.2);
+  ctg->wpg.setDoubleSupportTime(0.4);
   // Set Manipulation Only time to 3 seconds
   ctg->setManipulationOnlyTime(3.0);
   // Set Verbosity
@@ -286,7 +286,7 @@ void test_LM_planner(){
 
   // 
   double s_init = 0.0;
-  double s_goal = 0.99; //0.20; //0.12;//0.08;
+  double s_goal = 0.5;//0.99; //0.20; //0.12;//0.08;
   shared_ptr<Node> starting_vertex (std::make_shared<LMVertex>(s_init, q_start_door));    
   shared_ptr<Node> goal_vertex (std::make_shared<LMVertex>(s_goal, q_final_door));
 
@@ -295,17 +295,23 @@ void test_LM_planner(){
   
   bool a_star_success = lm_planner.doAstar();
   if (a_star_success){
-    // Construct the path
-    // std::cout << "Constructing the path" << std::endl;
-    // lm_planner.constructPath();
-    // std::cout << "Path has size: " << lm_planner.optimal_path.size() << std::endl;
-    // std::cout << "reconstructing the total trajectory" << std::endl;
-    // lm_planner.reconstructConfigurationTrajectory();
-
     // Visualize the trajectory:
-    std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
-    RVizVisualizer visualizer(ros_node, valkyrie_model);  
-    visualizer.visualizeConfigurationTrajectory(q_start_door, lm_planner.path_traj_q_config);
+    // std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
+    // RVizVisualizer visualizer(ros_node, valkyrie_model);  
+    // visualizer.visualizeConfigurationTrajectory(q_start_door, lm_planner.path_traj_q_config);
+
+    // Construct the path
+    std::cout << "Constructing the dynamic trajectory" << std::endl;
+    std::cout << "Path has size: " << lm_planner.optimal_path.size() << std::endl;
+    if (lm_planner.reconstructConfigurationTrajectoryv2()){
+      // Visualize the trajectory:
+      std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
+      RVizVisualizer visualizer(ros_node, valkyrie_model);  
+      visualizer.visualizeConfigurationTrajectory(q_start_door, lm_planner.path_traj_q_config);      
+    }else{
+      std::cout << "non convergence" << std::endl;
+    }
+
 
   }
 
