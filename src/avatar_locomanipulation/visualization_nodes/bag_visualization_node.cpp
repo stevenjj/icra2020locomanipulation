@@ -190,7 +190,7 @@ void BagVisualizationNode::getVizInformation(tf::Transform & tf_world_center, tf
   	// x and y constant wrt the fixed frame
   	// z is the final height -                       //s/s_lift*lift_height
   			// Thus when s = s_lift, we are 1*lift_height
-  	tf_center_bag.setOrigin(tf::Vector3(radius * cos(rotation_angle), 0.0, lift_height - (((s_current - percent_turning) / percent_lifting) * lift_height) ));
+  	tf_center_bag.setOrigin(tf::Vector3(radius * cos(rotation_angle), 0.0, lift_height - (((s_current - (1 - percent_lifting)) / percent_lifting) * lift_height) ));
   	// In this portion of the movement, there is no change in angle of the bag
   	tf_center_bag.setRotation(tf::Quaternion(0., 0., 0., 1.));
   }
