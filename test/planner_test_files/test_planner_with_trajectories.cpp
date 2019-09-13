@@ -320,21 +320,21 @@ void test_LM_planner(){
 
   if (a_star_success){
     // Visualize the trajectory:
-    // std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
-    // RVizVisualizer visualizer(ros_node, valkyrie_model);  
-    // visualizer.visualizeConfigurationTrajectory(q_start_door, lm_planner.path_traj_q_config);
+    std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
+    RVizVisualizer visualizer(ros_node, valkyrie_model);  
+    visualizer.visualizeConfigurationTrajectory(q_start_door, lm_planner.path_traj_q_config);
 
-    // Construct the path
-    std::cout << "Constructing the dynamic trajectory" << std::endl;
-    std::cout << "Path has size: " << lm_planner.optimal_path.size() << std::endl;
-    if (lm_planner.reconstructConfigurationTrajectoryv2()){
-      // Visualize the trajectory:
-      std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
-      RVizVisualizer visualizer(ros_node, valkyrie_model);  
-      visualizer.visualizeConfigurationTrajectory(q_start_door, lm_planner.path_traj_q_config);      
-    }else{
-      std::cout << "non convergence" << std::endl;
-    }
+    // // Construct the path
+    // std::cout << "Constructing the dynamic trajectory" << std::endl;
+    // std::cout << "Path has size: " << lm_planner.optimal_path.size() << std::endl;
+    // if (lm_planner.reconstructConfigurationTrajectoryv2()){
+    //   // Visualize the trajectory:
+    //   std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
+    //   RVizVisualizer visualizer(ros_node, valkyrie_model);  
+    //   visualizer.visualizeConfigurationTrajectory(q_start_door, lm_planner.path_traj_q_config);      
+    // }else{
+    //   std::cout << "non convergence" << std::endl;
+    // }
 
 
   }
