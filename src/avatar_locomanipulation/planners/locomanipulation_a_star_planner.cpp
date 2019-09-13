@@ -274,7 +274,8 @@ namespace planner{
     optimal_path.push_back(current_node);
     std::cout << "Found potential path with size " << optimal_path.size() << ". Reconstructing the trajectory..." << std::endl;
 
-    return reconstructConfigurationTrajectory();
+    // return reconstructConfigurationTrajectory();
+    return reconstructConfigurationTrajectoryv2();
   }
 
   bool LocomanipulationPlanner::reconstructConfigurationTrajectoryv2(){
