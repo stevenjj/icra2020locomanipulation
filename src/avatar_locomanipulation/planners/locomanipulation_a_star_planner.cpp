@@ -770,6 +770,12 @@ namespace planner{
     nn_std = nn_std_dev_in;
     use_classifier = true;
     enable_cpp_nn = true;
+
+    cpp_nn_rawDatum = Eigen::VectorXd::Zero(32);
+    cpp_nn_normalized_datum = Eigen::VectorXd::Zero(32);
+    cpp_nn_input_size = 1;
+    cpp_nn_data_input = Eigen::MatrixXd::Zero(cpp_nn_input_size, 32);
+    cpp_nn_pred = Eigen::MatrixXd::Zero(cpp_nn_input_size,1);
   }
 
   // Locomanipulation gscore
@@ -1347,57 +1353,114 @@ namespace planner{
     return ori_vec;
   }
 
+
+  void LocomanipulationPlanner::normalizeInputCalculate(const Eigen::VectorXd & x_in, const Eigen::VectorXd & data_mean, const Eigen::VectorXd & data_std_dev, Eigen::VectorXd & x_normalized) {
+    x_normalized = (x_in - data_mean).cwiseQuotient(data_std_dev);
+  }
+
+
   double LocomanipulationPlanner::getClassifierResult(){
+    // Using CPP neural network
     if (enable_cpp_nn){
-    Eigen::VectorXd rawDatum(32);
-    Eigen::VectorXd datum(32);
+      // std::cout << "constructing input" << std::endl;
+      // Construct the input to the neural network
+      // Stance and Manipulation Type
+      cpp_nn_rawDatum[0] = nn_stance_origin;
+      cpp_nn_rawDatum[1] = nn_manipulation_type;
+      // Swing Foot Pos, Ori
+      cpp_nn_rawDatum[2] = nn_swing_foot_start_pos[0];
+      cpp_nn_rawDatum[3] = nn_swing_foot_start_pos[1];
+      cpp_nn_rawDatum[4] = nn_swing_foot_start_pos[2];
+      tmp_ori_vec3 = quatToVec(nn_swing_foot_start_ori);
+      cpp_nn_rawDatum[5] = tmp_ori_vec3[0];
+      cpp_nn_rawDatum[6] = tmp_ori_vec3[1];
+      cpp_nn_rawDatum[7] = tmp_ori_vec3[2];
+      // Pelvis Pos, Ori
+      cpp_nn_rawDatum[8] = nn_pelvis_pos[0];
+      cpp_nn_rawDatum[9] = nn_pelvis_pos[1];
+      cpp_nn_rawDatum[10] = nn_pelvis_pos[2];
+      tmp_ori_vec3 = quatToVec(nn_pelvis_ori);
+      cpp_nn_rawDatum[11] = tmp_ori_vec3[0];
+      cpp_nn_rawDatum[12] = tmp_ori_vec3[1];
+      cpp_nn_rawDatum[13] = tmp_ori_vec3[2];
+      // Landing Foot Pos, Ori
+      cpp_nn_rawDatum[14] = nn_landing_foot_pos[0];
+      cpp_nn_rawDatum[15] = nn_landing_foot_pos[1];
+      cpp_nn_rawDatum[16] = nn_landing_foot_pos[2];
+      tmp_ori_vec3 = quatToVec(nn_landing_foot_ori);
+      cpp_nn_rawDatum[17] = tmp_ori_vec3[0];
+      cpp_nn_rawDatum[18] = tmp_ori_vec3[1];
+      cpp_nn_rawDatum[19] = tmp_ori_vec3[2];
+      // Right Hand Pos Ori
+      cpp_nn_rawDatum[20] = nn_right_hand_start_pos[0];
+      cpp_nn_rawDatum[21] = nn_right_hand_start_pos[1];
+      cpp_nn_rawDatum[22] = nn_right_hand_start_pos[2];
+      tmp_ori_vec3 = quatToVec(nn_right_hand_start_ori);
+      cpp_nn_rawDatum[23] = tmp_ori_vec3[0];
+      cpp_nn_rawDatum[24] = tmp_ori_vec3[1];
+      cpp_nn_rawDatum[25] = tmp_ori_vec3[2];
+      // Left Hand Pos Ori
+      cpp_nn_rawDatum[26] = nn_left_hand_start_pos[0];
+      cpp_nn_rawDatum[27] = nn_left_hand_start_pos[1];
+      cpp_nn_rawDatum[28] = nn_left_hand_start_pos[2];
+      tmp_ori_vec3 = quatToVec(nn_left_hand_start_ori);
+      cpp_nn_rawDatum[29] = tmp_ori_vec3[0];
+      cpp_nn_rawDatum[30] = tmp_ori_vec3[1];
+      cpp_nn_rawDatum[31] = tmp_ori_vec3[2];
+  
+      // std::cout << "normalizing input input" << std::endl;
+      // Normalize the input  
+      normalizeInputCalculate(cpp_nn_rawDatum, nn_mean, nn_std, cpp_nn_normalized_datum);
 
-    int input_size = 1;
-    Eigen::MatrixXd data(input_size, 32);
+      // std::cout << "placing to a row" << std::endl;      
+      // Put normalized datum as part of the neural net input matrix
+      for (int i = 0; i < cpp_nn_input_size; i++){
+        cpp_nn_data_input.row(i) = cpp_nn_normalized_datum;
+      }
 
-    rawDatum << nn_stance_origin, nn_manipulation_type, 
-                nn_swing_foot_start_pos, quatToVec(nn_swing_foot_start_ori),
-                nn_pelvis_pos, quatToVec(nn_pelvis_ori),
-                nn_landing_foot_pos, quatToVec(nn_landing_foot_ori),
-                nn_right_hand_start_pos, nn_right_hand_start_ori,
-                nn_left_hand_start_pos, quatToVec(nn_left_hand_start_ori);
+      cpp_nn_pred = nn_model->GetOutput(cpp_nn_data_input);
+      // Get the first result only
+      prediction_result = cpp_nn_pred(0,0);
+      // std::cout << "Prediction: " << prediction_result << std::endl;
+      return prediction_result;
 
-    }
+    }else{
+      // Otherwise we must be using the ROS client
 
-    // Prepare classifier input
-    classifier_srv.request.x.clear();
-    classifier_srv.request.x.reserve(classifier_input_dim);
-    populateXVector(classifier_srv.request.x, nn_stance_origin, nn_manipulation_type,
-                                              nn_swing_foot_start_pos, nn_swing_foot_start_ori,
-                                              nn_pelvis_pos, nn_pelvis_ori,
-                                              nn_landing_foot_pos, nn_landing_foot_ori,
-                                              nn_right_hand_start_pos, nn_right_hand_start_ori,
-                                              nn_left_hand_start_pos, nn_left_hand_start_ori);
-    // Reset prediction result to a negative value
-    prediction_result = -1.0;
-    
-    while (true){
-      // Try to call the classifier
-      try {  
-        // Call the classifier client
-        if (classifier_client.call(classifier_srv)){
-          prediction_result = classifier_srv.response.y;
-          break;
-          // ROS_INFO("Prediction: %0.4f", srv.response.y);
-        }else{
-            ROS_ERROR("Failed to call service locomanipulation_feasibility_classifier");
+      // Prepare classifier input
+      classifier_srv.request.x.clear();
+      classifier_srv.request.x.reserve(classifier_input_dim);
+      populateXVector(classifier_srv.request.x, nn_stance_origin, nn_manipulation_type,
+                                                nn_swing_foot_start_pos, nn_swing_foot_start_ori,
+                                                nn_pelvis_pos, nn_pelvis_ori,
+                                                nn_landing_foot_pos, nn_landing_foot_ori,
+                                                nn_right_hand_start_pos, nn_right_hand_start_ori,
+                                                nn_left_hand_start_pos, nn_left_hand_start_ori);
+      // Reset prediction result to a negative value
+      prediction_result = -1.0;
+      
+      while (true){
+        // Try to call the classifier
+        try {  
+          // Call the classifier client
+          if (classifier_client.call(classifier_srv)){
+            prediction_result = classifier_srv.response.y;
+            break;
+            // ROS_INFO("Prediction: %0.4f", srv.response.y);
+          }else{
+              ROS_ERROR("Failed to call service locomanipulation_feasibility_classifier");
+          }
         }
-      }
-      catch(...){
-      // Catch all exceptions
-        std::cout << "Error exception occurred when calling service locomanipulation_feasibility_classifier" << std::endl;
+        catch(...){
+        // Catch all exceptions
+          std::cout << "Error exception occurred when calling service locomanipulation_feasibility_classifier" << std::endl;
+        }
+
       }
 
+
+      return prediction_result;
     }
-
-
-    return prediction_result;
-
 
   }
 

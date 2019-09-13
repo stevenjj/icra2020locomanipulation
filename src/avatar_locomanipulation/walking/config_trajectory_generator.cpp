@@ -195,8 +195,8 @@ void ConfigTrajectoryGenerator::createTaskStack(){
 		vec_task_stack.push_back(rhand_task);
 		vec_manip_stack_1.push_back(rhand_task);
 		if (!use_left_hand){
-			// vec_posture_task_stack.push_back(rarm_posture_task);
-			// rarm_posture_task->setTaskGain(1.5);
+			vec_posture_task_stack.push_back(rarm_posture_task);
+			rarm_posture_task->setTaskGain(1.5);
 		}
 
 	}else{
