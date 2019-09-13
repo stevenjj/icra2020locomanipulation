@@ -55,7 +55,6 @@ namespace data_saver{
     out << YAML::Value;
       out << YAML::Flow;
       out << YAML::BeginSeq;
-      std::cout << "Size of vec_eig_vec = " << vec_eig_vec.size() << std::endl;
       for (int i = 0; i < vec_eig_vec.size(); i++){
         out << vec_eig_vec[i][index] ;
       }

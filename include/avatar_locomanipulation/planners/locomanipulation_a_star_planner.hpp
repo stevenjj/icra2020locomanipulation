@@ -223,6 +223,10 @@ namespace planner{
         std::vector<Eigen::VectorXd> q_vec_traj;
         std::vector<Footstep> footstep_list_trajectory;
 
+        std::vector<Eigen::VectorXd> foot_landing_pos_traj;
+        std::vector<Eigen::VectorXd> foot_landing_ori_traj;
+
+
 
     private:
         // Converts the input position and orientation 

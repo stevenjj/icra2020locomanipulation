@@ -602,7 +602,49 @@ namespace planner{
         left_foot_ori_traj.push_back(quatToVec(tmp_ori));
     }
     // Store Right Foot position and orientation
+    n = ctg->wpg.traj_SE3_right_foot.get_trajectory_length();
+    for(int i = 0; i < n; i++){
+        ctg->wpg.traj_SE3_right_foot.get_pos(i, tmp_pos, tmp_ori);
+        right_foot_pos_traj.push_back(tmp_pos);
+        right_foot_ori_traj.push_back(quatToVec(tmp_ori));
+    }
 
+    // Store Pelvis Orientation
+    n = ctg->wpg.traj_ori_pelvis.get_trajectory_length();
+    for(int i = 0; i < n; i++){
+      ctg->wpg.traj_ori_pelvis.get_quat(i, tmp_ori);
+      pelvis_ori_traj.push_back(quatToVec(tmp_ori));
+    }
+
+    // Store Left Hand positions
+    n = ctg->traj_SE3_left_hand.get_trajectory_length();
+    for(int i = 0; i < n; i++){
+      ctg->traj_SE3_left_hand.get_pos(i, tmp_pos, tmp_ori);
+      left_hand_pos_traj.push_back(tmp_pos);
+      left_hand_ori_traj.push_back(quatToVec(tmp_ori));
+    }
+
+    // Store Right Hand positions
+    n = ctg->traj_SE3_right_hand.get_trajectory_length();
+    for(int i = 0; i < n; i++){
+      ctg->traj_SE3_right_hand.get_pos(i, tmp_pos, tmp_ori);
+      right_hand_pos_traj.push_back(tmp_pos);
+      right_hand_ori_traj.push_back(quatToVec(tmp_ori));
+    }
+
+    // Store Footstep Positions
+    for(int i = 0; i < input_footstep_list.size(); i++){
+      footstep_list_trajectory.push_back(input_footstep_list[i]);
+      foot_landing_pos_traj.push_back(input_footstep_list[i].position);
+      foot_landing_ori_traj.push_back( quatToVec(input_footstep_list[i].orientation) );
+    }
+
+    // Store q trajectory 
+    n = ctg->traj_q_config.get_trajectory_length();
+    for(int i = 0; i < n; i++){
+      ctg->traj_q_config.get_pos(i, q_tmp);
+      q_vec_traj.push_back(q_tmp);
+    }
 
   }
 
@@ -1624,26 +1666,14 @@ namespace planner{
 
     // Construct time vector
     time_vec.clear();
-    int N_total = N_size_per_edge*forward_order_optimal_path.size();
+    int N_total = N_size_per_edge*(forward_order_optimal_path.size() - 1);
       
-    std::cout << "N_total = " << N_total;
+    std::cout << "N_total = " << N_total << std::endl;
 
     dt_out = ctg->wpg.traj_pos_com.get_dt();  // seconds
     for(int i = 0; i < N_total; i++){
       time_vec.push_back(i*dt_out);
     }
-
-    // Output com position
-    // std::vector<double> com_pos_x, com_pos_y, com_pos_z;
-    // com_pos_x.clear(); com_pos_y.clear(); com_pos_z.clear();
-    // for(int i = 0; i < N_total; i++){
-    //   std::cout << i << "i" << std::endl;
-    //   ctg->wpg.traj_pos_com.get_pos(i, tmp_pos);
-    //   com_pos_x.push_back(tmp_pos[0]);
-    //   com_pos_y.push_back(tmp_pos[1]);
-    //   com_pos_z.push_back(tmp_pos[2]);
-    // }
-    
 
     // Define the yaml emitter
     YAML::Emitter out;
@@ -1652,13 +1682,71 @@ namespace planner{
     data_saver::emit_integer(out, "N", N_total);
     data_saver::emit_value(out, "dt", dt_out);
     data_saver::emit_std_vector_double(out, "t",  time_vec);
+
+    data_saver::emit_std_vector_double(out, "s", s_traj);
+
     data_saver::emit_index_vector_eigen_vector(out, "com_x", 0, com_pos_traj);
     data_saver::emit_index_vector_eigen_vector(out, "com_y", 1, com_pos_traj);
     data_saver::emit_index_vector_eigen_vector(out, "com_z", 2, com_pos_traj);
 
-    // data_saver::emit_std_vector_double(out, "com_pos_x",  com_pos_x);
-    // data_saver::emit_std_vector_double(out, "com_pos_y",  com_pos_y);
-    // data_saver::emit_std_vector_double(out, "com_pos_z",  com_pos_z);
+    data_saver::emit_index_vector_eigen_vector(out, "left_foot_pos_x", 0, left_foot_pos_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "left_foot_pos_y", 1, left_foot_pos_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "left_foot_pos_z", 2, left_foot_pos_traj);
+
+    data_saver::emit_index_vector_eigen_vector(out, "left_foot_ori_rx", 0, left_foot_ori_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "left_foot_ori_ry", 1, left_foot_ori_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "left_foot_ori_rz", 2, left_foot_ori_traj);
+
+    data_saver::emit_index_vector_eigen_vector(out, "right_foot_pos_x", 0, right_foot_pos_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "right_foot_pos_y", 1, right_foot_pos_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "right_foot_pos_z", 2, right_foot_pos_traj);
+
+    data_saver::emit_index_vector_eigen_vector(out, "right_foot_ori_rx", 0, right_foot_ori_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "right_foot_ori_ry", 1, right_foot_ori_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "right_foot_ori_rz", 2, right_foot_ori_traj);
+
+    data_saver::emit_index_vector_eigen_vector(out, "pelvis_ori_rx", 0, pelvis_ori_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "pelvis_ori_ry", 1, pelvis_ori_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "pelvis_ori_rz", 2, pelvis_ori_traj);
+
+    data_saver::emit_index_vector_eigen_vector(out, "left_hand_pos_x", 0, left_hand_pos_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "left_hand_pos_y", 1, left_hand_pos_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "left_hand_pos_z", 2, left_hand_pos_traj);
+
+    data_saver::emit_index_vector_eigen_vector(out, "left_hand_ori_rx", 0, left_hand_ori_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "left_hand_ori_ry", 1, left_hand_ori_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "left_hand_ori_rz", 2, left_hand_ori_traj);
+
+    data_saver::emit_index_vector_eigen_vector(out, "right_hand_pos_x", 0, right_hand_pos_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "right_hand_pos_y", 1, right_hand_pos_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "right_hand_pos_z", 2, right_hand_pos_traj);
+
+    data_saver::emit_index_vector_eigen_vector(out, "right_hand_ori_rx", 0, right_hand_ori_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "right_hand_ori_ry", 1, right_hand_ori_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "right_hand_ori_rz", 2, right_hand_ori_traj);
+
+    // Store num footsteps
+    data_saver::emit_integer(out, "num_footsteps", footstep_list_trajectory.size());
+    data_saver::emit_index_vector_eigen_vector(out, "foot_landing_pos_x", 0, foot_landing_pos_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "foot_landing_pos_y", 1, foot_landing_pos_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "foot_landing_pos_z", 2, foot_landing_pos_traj);
+
+    data_saver::emit_index_vector_eigen_vector(out, "foot_landing_ori_rx", 0, foot_landing_ori_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "foot_landing_ori_ry", 1, foot_landing_ori_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "foot_landing_ori_rz", 2, foot_landing_ori_traj);
+
+    // Store configuration trajectory
+    std::string idx_string;
+    std::vector<double> q_vec_double;
+    for(int i = 0; i < q_vec_traj.size(); i++){
+      q_vec_double.clear();
+      for(int j = 0; j < q_vec_traj[i].size(); j++){
+        q_vec_double.push_back(q_vec_traj[i][j]);
+      }
+      idx_string = "q_trajectory_idx" + std::to_string(i);
+      data_saver::emit_std_vector_double(out, idx_string, q_vec_double);
+    }
+
     out << YAML::EndMap;
 
     // Store the data
@@ -1672,18 +1760,29 @@ namespace planner{
   void LocomanipulationPlanner::clearStoredTrajectories(){   
     s_traj.clear();
     time_vec.clear();
+
     com_pos_traj.clear();
+
     left_foot_pos_traj.clear();
     right_foot_pos_traj.clear();
+
     left_hand_pos_traj.clear();
     right_hand_pos_traj.clear();
+
     pelvis_ori_traj.clear();
+
     left_foot_ori_traj.clear();
     right_foot_ori_traj.clear();
+
     left_hand_ori_traj.clear();
     right_hand_ori_traj.clear();
+
     q_vec_traj.clear();
     footstep_list_trajectory.clear();
+
+    foot_landing_pos_traj.clear();
+    foot_landing_ori_traj.clear();
+
   }
 
 
