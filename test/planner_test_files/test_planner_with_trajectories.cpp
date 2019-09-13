@@ -6,6 +6,9 @@
 #include <avatar_locomanipulation/planners/a_star_planner.hpp>
 #include <avatar_locomanipulation/planners/locomanipulation_a_star_planner.hpp>
 
+// CPP version of the neural network
+#include <avatar_locomanipulation/helpers/NeuralNetModel.hpp>
+#include <avatar_locomanipulation/helpers/IOUtilities.hpp>
 
 // YAML
 #include <avatar_locomanipulation/helpers/yaml_data_saver.hpp>
@@ -19,6 +22,14 @@
 #include <iostream>
 #include <math.h>
 #include <cassert>
+
+
+// Timer
+#include <chrono>
+typedef std::chrono::high_resolution_clock Clock;
+
+// Enabling multi-threading
+#include <omp.h> 
 
 using namespace planner;
 
@@ -271,8 +282,10 @@ void test_LM_planner(){
   // timer
   //PinocchioTicToc timer = PinocchioTicToc(PinocchioTicToc::MS);
 
-  // Have fast double support times
-  ctg->wpg.setDoubleSupportTime(0.2);
+  // Set Double support times
+  ctg->wpg.setDoubleSupportTime(0.2); // Sets the desired double support time
+  // ctg->wpg.setSettlingPercentage(0.01); // Percentage to settle. Default 0.999
+  ctg->wpg.setSettlingPercentage(0.99); // Percentage to settle. Default 0.999
   // Set Manipulation Only time to 3 seconds
   ctg->setManipulationOnlyTime(3.0);
   // Set Verbosity
@@ -286,26 +299,43 @@ void test_LM_planner(){
 
   // 
   double s_init = 0.0;
-  double s_goal = 0.99; //0.20; //0.12;//0.08;
+  double s_goal = 0.99;//0.99; //0.20; //0.12;//0.08;
   shared_ptr<Node> starting_vertex (std::make_shared<LMVertex>(s_init, q_start_door));    
   shared_ptr<Node> goal_vertex (std::make_shared<LMVertex>(s_goal, q_final_door));
 
   lm_planner.setStartNode(starting_vertex);
   lm_planner.setGoalNode(goal_vertex);
   
-  bool a_star_success = lm_planner.doAstar();
-  if (a_star_success){
-    // Construct the path
-    // std::cout << "Constructing the path" << std::endl;
-    // lm_planner.constructPath();
-    // std::cout << "Path has size: " << lm_planner.optimal_path.size() << std::endl;
-    // std::cout << "reconstructing the total trajectory" << std::endl;
-    // lm_planner.reconstructConfigurationTrajectory();
+   // Test Planner speed:
+  auto t1 = Clock::now();
+  auto t2 = Clock::now();
+  double time_span;
 
+  t1 = Clock::now();
+  bool a_star_success = lm_planner.doAstar();
+  t2 = Clock::now();
+
+  time_span = std::chrono::duration_cast< std::chrono::duration<double> >(t2 - t1).count();
+  std::cout << " planner time = " << time_span << " seconds" << std::endl;
+
+  if (a_star_success){
     // Visualize the trajectory:
-    std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
-    RVizVisualizer visualizer(ros_node, valkyrie_model);  
-    visualizer.visualizeConfigurationTrajectory(q_start_door, lm_planner.path_traj_q_config);
+    // std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
+    // RVizVisualizer visualizer(ros_node, valkyrie_model);  
+    // visualizer.visualizeConfigurationTrajectory(q_start_door, lm_planner.path_traj_q_config);
+
+    // Construct the path
+    std::cout << "Constructing the dynamic trajectory" << std::endl;
+    std::cout << "Path has size: " << lm_planner.optimal_path.size() << std::endl;
+    if (lm_planner.reconstructConfigurationTrajectoryv2()){
+      // Visualize the trajectory:
+      std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
+      RVizVisualizer visualizer(ros_node, valkyrie_model);  
+      visualizer.visualizeConfigurationTrajectory(q_start_door, lm_planner.path_traj_q_config);      
+    }else{
+      std::cout << "non convergence" << std::endl;
+    }
+
 
   }
 
@@ -341,7 +371,7 @@ void test_LM_planner_with_NN(){
   load_final_robot_door_configuration(q_final_door);
 
   // Initialize the manipulation function for manipulating the door ----------------------------------
-  std::string door_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/door_trajectory.yaml";
+  std::string door_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/door_open_trajectory_v3.yaml";
   std::shared_ptr<ManipulationFunction> f_s_manipulate_door(new ManipulationFunction(door_yaml_file));
   // Set hinge location as waypoints are with respect to the hinge
   hinge_orientation.normalize();
@@ -372,7 +402,7 @@ void test_LM_planner_with_NN(){
 
   // Set whether to learn from mistakes or not
   // Regenerate the discretizations
-  bool learn_from_mistakes = true;
+  bool learn_from_mistakes = false;
   if (learn_from_mistakes){ 
     lm_planner.classifier_store_mistakes = true;  
     std::cout << "Storing classifier mistakes? " << lm_planner.classifier_store_mistakes << std::endl;
@@ -381,7 +411,7 @@ void test_LM_planner_with_NN(){
   // ----------
 
   // Set to trust the classifier
-  lm_planner.trust_classifier = false;
+  lm_planner.trust_classifier = true; //false;
 
   // Initialize
   lm_planner.initializeLocomanipulationVariables(valkyrie_model, f_s_manipulate_door, ctg);
@@ -390,7 +420,7 @@ void test_LM_planner_with_NN(){
   lm_planner.setClassifierClient(client);
 
   double s_init = 0.0;
-  double s_goal = 0.32; //0.32; //0.16; //0.20; //0.12;//0.08;
+  double s_goal = 0.99; //0.32; //0.16; //0.20; //0.12;//0.08;
   shared_ptr<Node> starting_vertex (std::make_shared<LMVertex>(s_init, q_start_door));    
   shared_ptr<Node> goal_vertex (std::make_shared<LMVertex>(s_goal, q_final_door));
 
@@ -398,6 +428,141 @@ void test_LM_planner_with_NN(){
   lm_planner.setGoalNode(goal_vertex);
   
   bool a_star_success = lm_planner.doAstar();
+  if (a_star_success){
+    // Construct the path
+    // std::cout << "Constructing the path" << std::endl;
+    // lm_planner.constructPath();
+    // std::cout << "Path has size: " << lm_planner.optimal_path.size() << std::endl;
+    // std::cout << "reconstructing the total trajectory" << std::endl;
+    // lm_planner.reconstructConfigurationTrajectory();
+
+    // Visualize the trajectory:
+    RVizVisualizer visualizer(ros_node, valkyrie_model);  
+    visualizer.visualizeConfigurationTrajectory(q_start_door, lm_planner.path_traj_q_config);
+
+  }  
+}
+
+
+void test_LM_planner_with_cpp_NN(){
+  // // Create ROS handle and client
+  std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
+
+  // // Service name for neural network
+  // std::string service_name = "locomanipulation_feasibility_classifier";
+  // ros::ServiceClient client = ros_node->serviceClient<avatar_locomanipulation::BinaryClassifierQuery>(service_name);
+
+  // // Wait for the service
+  // std::cout << "waiting for " << service_name << " service..." << std::endl;
+  // ros::service::waitForService(service_name);
+  // std::cout << "service available" << std::endl;
+
+  // Initialize the neural network --------------------------------------------------------------
+  ParamHandler param_handler;
+  std::string model_path = THIS_PACKAGE_PATH"nn_models/layer3_20000pts/cpp_model/layer3_model.yaml";
+
+  std::cout << "Loading Model..." << std::endl;
+  myYAML::Node model = myYAML::LoadFile(model_path);
+  std::shared_ptr<NeuralNetModel> nn_transition_model(new NeuralNetModel(model, false));
+
+  std::cout << "Loaded" << std::endl;
+
+  // Load neural network normalization Params
+  param_handler.load_yaml_file(THIS_PACKAGE_PATH"nn_models/layer3_20000pts/cpp_model/normalization_params.yaml");
+  std::vector<double> vmean;
+  param_handler.getVector("x_train_mean", vmean);
+  std::vector<double> vstd_dev;
+  param_handler.getVector("x_train_std", vstd_dev);
+
+  Eigen::VectorXd mean(32);
+  Eigen::VectorXd std_dev(32);
+  for (int ii = 0; ii < 32; ii++){
+    mean[ii] = vmean[ii];
+    std_dev[ii] = vstd_dev[ii];
+  } 
+
+  
+  // Initialize the robot ---------------------------------------------------------------------------------------
+  std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_no_fingers.urdf";
+  std::shared_ptr<RobotModel> valkyrie_model(new RobotModel(urdf_filename));
+  // Get the Initial Robot and Door Configuration
+  Eigen::VectorXd q_start_door;
+  Eigen::Vector3d hinge_position;
+  Eigen::Quaterniond hinge_orientation;
+  load_initial_robot_door_configuration(q_start_door, hinge_position, hinge_orientation);
+
+  // Get the final guessed robot configuration
+  Eigen::VectorXd q_final_door;
+  load_final_robot_door_configuration(q_final_door);
+
+  // Initialize the manipulation function for manipulating the door ----------------------------------
+  std::string door_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/door_open_trajectory_v3.yaml";
+  std::shared_ptr<ManipulationFunction> f_s_manipulate_door(new ManipulationFunction(door_yaml_file));
+  // Set hinge location as waypoints are with respect to the hinge
+  hinge_orientation.normalize();
+  f_s_manipulate_door->setWorldTransform(hinge_position, hinge_orientation);
+
+  // Initialize Config Trajectory Generator
+  int N_resolution = 60; //single step = 30. two steps = 60// 30* number of footsteps
+  std::shared_ptr<ConfigTrajectoryGenerator> ctg(new ConfigTrajectoryGenerator(valkyrie_model, N_resolution));
+  valkyrie_model->updateFullKinematics(q_start_door);
+
+  // Initialize Trajectory Generation Module
+  ctg->setUseRightHand(true);
+  // ctg->setUseTorsoJointPosition(false);
+  ctg->setUseTorsoJointPosition(true);
+  ctg->reinitializeTaskStack();
+  // timer
+  //PinocchioTicToc timer = PinocchioTicToc(PinocchioTicToc::MS);
+
+  // Have fast double support times
+  ctg->wpg.setDoubleSupportTime(0.2);
+  // Set Manipulation Only time to 3 seconds
+  ctg->setManipulationOnlyTime(3.0);
+  // Set Verbosity
+  ctg->setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_0);
+
+  // End of initialization ---------------------------------------------------------------------------------------
+  LocomanipulationPlanner lm_planner;
+
+  // Set whether to learn from mistakes or not
+  // Regenerate the discretizations
+  bool learn_from_mistakes = false;
+  if (learn_from_mistakes){ 
+    lm_planner.classifier_store_mistakes = true;  
+    std::cout << "Storing classifier mistakes? " << lm_planner.classifier_store_mistakes << std::endl;
+    lm_planner.generateDiscretization();
+  }
+  // ----------
+
+  // Set to trust the classifier
+  lm_planner.trust_classifier = true; //false;
+
+  // Initialize
+  lm_planner.initializeLocomanipulationVariables(valkyrie_model, f_s_manipulate_door, ctg);
+  // Set the nn classifier
+  lm_planner.setNeuralNetwork(nn_transition_model, mean, std_dev);
+
+  double s_init = 0.0;
+  double s_goal = 0.5; //0.99; //0.32; //0.16; //0.20; //0.12;//0.08;
+  shared_ptr<Node> starting_vertex (std::make_shared<LMVertex>(s_init, q_start_door));    
+  shared_ptr<Node> goal_vertex (std::make_shared<LMVertex>(s_goal, q_final_door));
+
+  lm_planner.setStartNode(starting_vertex);
+  lm_planner.setGoalNode(goal_vertex);
+ 
+   // Test Planner speed:
+  auto t1 = Clock::now();
+  auto t2 = Clock::now();
+  double time_span;
+
+  t1 = Clock::now();
+  bool a_star_success = lm_planner.doAstar();
+  t2 = Clock::now();
+
+  time_span = std::chrono::duration_cast< std::chrono::duration<double> >(t2 - t1).count();
+  std::cout << " planner time = " << time_span << " seconds" << std::endl;
+
   if (a_star_success){
     // Construct the path
     // std::cout << "Constructing the path" << std::endl;
@@ -441,9 +606,18 @@ void test_planner(){
 int main(int argc, char ** argv){   
   ros::init(argc, argv, "test_planner_with_trajectories");
 
+  // Enabling multi-threading
+  int num_cores = 4;
+  omp_set_num_threads(num_cores);
+  Eigen::setNbThreads(num_cores);
+  Eigen::initParallel();
+  int num_threads = Eigen::nbThreads();
+  std::cout<<"num_threads: "<<num_threads<<std::endl;
+
   // test_final_configuration();
-  test_LM_planner();
+  // test_LM_planner();
   // test_LM_planner_with_NN();
+  test_LM_planner_with_cpp_NN();
   // test_planner();
   // test_door_open_config_trajectory();
  

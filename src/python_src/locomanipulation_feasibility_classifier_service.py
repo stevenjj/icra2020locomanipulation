@@ -20,7 +20,7 @@ print(tf.version.VERSION)
 print(tf.keras.__version__)
 
 DEBUG = True
-model_path_relative_to_package = '/nn_models/layer3_40000pts/'
+model_path_relative_to_package = '/nn_models/layer3_20000pts/'
 
 class LocomanipulationFeasibilityClassifier:
     def __init__(self):
@@ -141,8 +141,8 @@ if __name__ == "__main__":
  
     # # Load the stored model   
     rospack = rospkg.RosPack()
-    # model_name = 'lh_rflh_lfrh_lfrh_rfbh_rfbh_lf'
-    model_name = 'rh_rfrh_lf'
+    model_name = 'lh_rflh_lfrh_lfrh_rfbh_rfbh_lf'
+    # model_name = 'rh_rfrh_lf'
     stored_model_folder_path = rospack.get_path('avatar_locomanipulation') + model_path_relative_to_package + model_name + '/'
     print stored_model_folder_path  
 
