@@ -108,10 +108,11 @@ void test_LM_planner(){
   // timer
   //PinocchioTicToc timer = PinocchioTicToc(PinocchioTicToc::MS);
 
-  // Have fast double support times
   ctg->wpg.setDoubleSupportTime(0.2);
+  ctg->wpg.setSettlingPercentage(0.4); // Percentage to settle. Default 0.999
   // Set Manipulation Only time to 3 seconds
   ctg->setManipulationOnlyTime(3.0);
+
   // Set Verbosity
   ctg->setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_0);
 

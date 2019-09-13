@@ -2,7 +2,9 @@
 
 
 DoorVisualizationNode::DoorVisualizationNode(ros::NodeHandle* n_input, const std::string & parameter_file_input){
-	s_current = 0;
+	s_offset = -0.1;
+	s_current = s_offset;
+
 	nh = n_input;
 	parameter_file = parameter_file_input;
 	std::cout << "DoorVisualizationNode Created\n";
@@ -17,7 +19,7 @@ DoorVisualizationNode::~DoorVisualizationNode(){
 
 void DoorVisualizationNode::s_callback(const std_msgs::Float64ConstPtr & msg){
 
-	s_current = msg->data;
+	s_current = msg->data + s_offset;
 }
 
 
