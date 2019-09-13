@@ -141,6 +141,7 @@ SET (PLANNER_SOURCES
 
 SET (VISUALIZATION_NODE_SOURCES
 	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/visualization_nodes/door_visualization_node.cpp
+	${PROJECT_SOURCE_DIR}/src/avatar_locomanipulation/visualization_nodes/bag_visualization_node.cpp
 	)
 
 SET(PROJECT_SOURCES
