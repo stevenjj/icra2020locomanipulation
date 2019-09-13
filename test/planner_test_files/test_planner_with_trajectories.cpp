@@ -23,6 +23,9 @@
 #include <math.h>
 #include <cassert>
 
+#include <chrono>
+typedef std::chrono::high_resolution_clock Clock;
+
 using namespace planner;
 
 
@@ -298,7 +301,18 @@ void test_LM_planner(){
   lm_planner.setStartNode(starting_vertex);
   lm_planner.setGoalNode(goal_vertex);
   
+   // Test Planner speed:
+  auto t1 = Clock::now();
+  auto t2 = Clock::now();
+  double time_span;
+
+  t1 = Clock::now();
   bool a_star_success = lm_planner.doAstar();
+  t2 = Clock::now();
+
+  time_span = std::chrono::duration_cast< std::chrono::duration<double> >(t2 - t1).count();
+  std::cout << " planner time = " << time_span << " seconds" << std::endl;
+
   if (a_star_success){
     // Visualize the trajectory:
     // std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
@@ -531,8 +545,19 @@ void test_LM_planner_with_cpp_NN(){
 
   lm_planner.setStartNode(starting_vertex);
   lm_planner.setGoalNode(goal_vertex);
-  
+ 
+   // Test Planner speed:
+  auto t1 = Clock::now();
+  auto t2 = Clock::now();
+  double time_span;
+
+  t1 = Clock::now();
   bool a_star_success = lm_planner.doAstar();
+  t2 = Clock::now();
+
+  time_span = std::chrono::duration_cast< std::chrono::duration<double> >(t2 - t1).count();
+  std::cout << " planner time = " << time_span << " seconds" << std::endl;
+
   if (a_star_success){
     // Construct the path
     // std::cout << "Constructing the path" << std::endl;
@@ -577,9 +602,9 @@ int main(int argc, char ** argv){
   ros::init(argc, argv, "test_planner_with_trajectories");
 
   // test_final_configuration();
-  // test_LM_planner();
+  test_LM_planner();
   // test_LM_planner_with_NN();
-  test_LM_planner_with_cpp_NN();
+  // test_LM_planner_with_cpp_NN();
   // test_planner();
   // test_door_open_config_trajectory();
  
