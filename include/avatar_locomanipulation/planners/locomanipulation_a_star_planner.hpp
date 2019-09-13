@@ -204,6 +204,26 @@ namespace planner{
         TrajEuclidean   path_traj_q_config;     // Trajectory of configurations q
 
 
+        // Data holder for the entire trajectory
+        double dt_out;
+        std::vector<double> time_vec;
+        std::vector<Eigen::VectorXd> com_pos_traj;
+
+        std::vector<Eigen::VectorXd> left_foot_pos_traj;
+        std::vector<Eigen::VectorXd> right_foot_pos_traj;
+        std::vector<Eigen::VectorXd> left_hand_pos_traj;
+        std::vector<Eigen::VectorXd> right_hand_pos_traj;
+
+        std::vector<Eigen::VectorXd> pelvis_ori_traj;
+        std::vector<Eigen::VectorXd> left_foot_ori_traj;
+        std::vector<Eigen::VectorXd> right_foot_ori_traj;
+        std::vector<Eigen::VectorXd> left_hand_ori_traj;
+        std::vector<Eigen::VectorXd> right_hand_ori_traj;
+
+        std::vector<Eigen::VectorXd> q_vec_traj;
+        std::vector<Footstep> footstep_list_trajectory;
+
+
     private:
         // Converts the input position and orientation 
         // from the world frame to the planner frame
@@ -332,20 +352,11 @@ namespace planner{
         // Store trajectories
         void setSaveFileName(std::string save_filename_in);
         std::string save_filename = "sample_trajectory.yaml";
+
         void storeTrajectories();
 
-        std::vector<Eigen::VectorXd> com_pos;
-
-        std::vector<Eigen::VectorXd> left_foot_pos;
-        std::vector<Eigen::VectorXd> right_foot_pos;
-        std::vector<Eigen::VectorXd> left_hand_pos;
-        std::vector<Eigen::VectorXd> right_hand_pos;
-
-        std::vector<Eigen::VectorXd> pelvis_ori;
-        std::vector<Eigen::VectorXd> left_foot_ori;
-        std::vector<Eigen::VectorXd> right_foot_ori;
-        std::vector<Eigen::VectorXd> left_hand_ori;
-        std::vector<Eigen::VectorXd> right_hand_ori;
+        void clearStoredTrajectories();
+        void appendToStoredTrajectories();
     };
 
 

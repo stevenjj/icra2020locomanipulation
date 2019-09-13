@@ -463,6 +463,8 @@ namespace planner{
       forward_order_optimal_path.push_back( optimal_path[i] );
     }
 
+    clearStoredTrajectories();
+
     // Create s vector as function of i.
     s_traj.clear();
     double s_start = 0.0;
@@ -562,8 +564,10 @@ namespace planner{
           // Get the configuration at this local trajectory
           ctg->traj_q_config.get_pos(j, q_tmp);
           // Store the trajectory to the global path
-          path_traj_q_config.set_pos(i_run + j, q_tmp);        
+          path_traj_q_config.set_pos(i_run + j, q_tmp);    
         }
+        // Append other current trajectories for this edge to stored trajectories
+        appendToStoredTrajectories();   
         // Update i_run
         i_run += N_size;        
       }else{
@@ -580,6 +584,28 @@ namespace planner{
     return true;
 
   }
+
+
+  void LocomanipulationPlanner::appendToStoredTrajectories(){
+    // Store COM position
+    int n = ctg->wpg.traj_pos_com.get_trajectory_length();
+    std::cout << "com trajectory length = " << n << std::endl;
+    for(int i = 0; i < n; i++){
+        ctg->wpg.traj_pos_com.get_pos(i, tmp_pos);
+        com_pos_traj.push_back(tmp_pos);
+    }
+    // Store Left Foot position and orientation
+    n = ctg->wpg.traj_SE3_left_foot.get_trajectory_length();
+    for(int i = 0; i < n; i++){
+        ctg->wpg.traj_SE3_left_foot.get_pos(i, tmp_pos, tmp_ori);
+        left_foot_pos_traj.push_back(tmp_pos);
+        left_foot_ori_traj.push_back(quatToVec(tmp_ori));
+    }
+    // Store Right Foot position and orientation
+
+
+  }
+
 
   void LocomanipulationPlanner::setStanceFoot(const shared_ptr<LMVertex> & from_node, const int robot_side){
     if (robot_side == LEFT_FOOTSTEP){
@@ -1035,7 +1061,7 @@ namespace planner{
 
         // TODO: Add feasibility check here and only add to neighbors if it's greater than our threshold
 
-        
+
         // if (trust_classifier){
         //   // Skip this neighbor if it is not within the threshold
         //   double feas_score = getFeasibility(current_, neighbor_change);
@@ -1597,12 +1623,14 @@ namespace planner{
     std::string save_path = std::string(THIS_PACKAGE_PATH"../") + save_filename;
 
     // Construct time vector
-    std::vector<double> time_vec;
     time_vec.clear();
     int N_total = N_size_per_edge*forward_order_optimal_path.size();
-    double dt = ctg->wpg.traj_pos_com.get_dt();  // seconds
+      
+    std::cout << "N_total = " << N_total;
+
+    dt_out = ctg->wpg.traj_pos_com.get_dt();  // seconds
     for(int i = 0; i < N_total; i++){
-      time_vec.push_back(i*dt);
+      time_vec.push_back(i*dt_out);
     }
 
     // Output com position
@@ -1621,8 +1649,13 @@ namespace planner{
     YAML::Emitter out;
     // Begin map creation
     out << YAML::BeginMap;
-    data_saver::emit_value(out, "dt", dt);
+    data_saver::emit_integer(out, "N", N_total);
+    data_saver::emit_value(out, "dt", dt_out);
     data_saver::emit_std_vector_double(out, "t",  time_vec);
+    data_saver::emit_index_vector_eigen_vector(out, "com_x", 0, com_pos_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "com_y", 1, com_pos_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "com_z", 2, com_pos_traj);
+
     // data_saver::emit_std_vector_double(out, "com_pos_x",  com_pos_x);
     // data_saver::emit_std_vector_double(out, "com_pos_y",  com_pos_y);
     // data_saver::emit_std_vector_double(out, "com_pos_z",  com_pos_z);
@@ -1636,7 +1669,22 @@ namespace planner{
   }
 
 
-
+  void LocomanipulationPlanner::clearStoredTrajectories(){   
+    s_traj.clear();
+    time_vec.clear();
+    com_pos_traj.clear();
+    left_foot_pos_traj.clear();
+    right_foot_pos_traj.clear();
+    left_hand_pos_traj.clear();
+    right_hand_pos_traj.clear();
+    pelvis_ori_traj.clear();
+    left_foot_ori_traj.clear();
+    right_foot_ori_traj.clear();
+    left_hand_ori_traj.clear();
+    right_hand_ori_traj.clear();
+    q_vec_traj.clear();
+    footstep_list_trajectory.clear();
+  }
 
 
 
