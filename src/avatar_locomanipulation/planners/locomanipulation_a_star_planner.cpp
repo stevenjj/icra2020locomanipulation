@@ -462,6 +462,24 @@ namespace planner{
       forward_order_optimal_path.push_back( optimal_path[i] );
     }
 
+    // Create s vector as function of i.
+    s_traj.clear();
+    double s_start = 0.0;
+    for(int i = 1; i < forward_order_optimal_path.size(); i++){
+      // Cast Pointers
+      current_ = static_pointer_cast<LMVertex>(forward_order_optimal_path[i]);
+      parent_ = static_pointer_cast<LMVertex>(current_->parent);
+
+      // Get the current and total delta_s 
+      delta_s =  (current_->s - parent_->s);
+      s_start = parent_->s;
+      // Populate s vector with linear change
+      for(int j = 0; j < N_size_per_edge; j++){
+        s_traj.push_back(s_start + (delta_s / static_cast<double>(N_size_per_edge))*j); 
+        // std::cout << "s_start + (delta_s / static_cast<double>(N_size_per_edge))*j = " << s_start + (delta_s / static_cast<double>(N_size_per_edge))*j << std::endl;
+      }
+    }
+
     // Reconstruct the configuration trajectory
     Eigen::VectorXd q_begin = Eigen::VectorXd::Zero(robot_model->getDimQ());
     Eigen::VectorXd q_end = Eigen::VectorXd::Zero(robot_model->getDimQ());
