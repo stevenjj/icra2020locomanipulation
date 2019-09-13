@@ -274,8 +274,8 @@ namespace planner{
     optimal_path.push_back(current_node);
     std::cout << "Found potential path with size " << optimal_path.size() << ". Reconstructing the trajectory..." << std::endl;
 
-    // return reconstructConfigurationTrajectory();
-    return reconstructConfigurationTrajectoryv2();
+    return reconstructConfigurationTrajectory();
+    // return reconstructConfigurationTrajectoryv2();
   }
 
   bool LocomanipulationPlanner::reconstructConfigurationTrajectoryv2(){
@@ -952,7 +952,7 @@ namespace planner{
     // else{
     //   delta_s_vals = {0.01, 0.04};
     // }
-    delta_s_vals = {0.01, 0.04, 0.08, 0.10};
+    delta_s_vals = {0.01, 0.04, 0.08};//{0.01, 0.04, 0.08, 0.10};
 
     //number of bins for the local lattice
     int num_x_lattice_pts = int(abs(2*max_lattice_translation)/dx) + 1;
