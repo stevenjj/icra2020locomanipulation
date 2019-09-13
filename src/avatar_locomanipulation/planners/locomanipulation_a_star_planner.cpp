@@ -764,6 +764,14 @@ namespace planner{
     use_classifier = true;
   }
 
+  void LocomanipulationPlanner::setNeuralNetwork(std::shared_ptr<NeuralNetModel> nn_model_in, const Eigen::VectorXd & nn_mean_in, const Eigen::VectorXd & nn_std_dev_in){
+    nn_model = nn_model_in;
+    nn_mean = nn_mean_in;
+    nn_std = nn_std_dev_in;
+    use_classifier = true;
+    enable_cpp_nn = true;
+  }
+
   // Locomanipulation gscore
   double LocomanipulationPlanner::gScore(const shared_ptr<Node> current, const shared_ptr<Node> neighbor){
     current_ = std::static_pointer_cast<LMVertex>(current);
@@ -1333,8 +1341,29 @@ namespace planner{
     addToXVector(left_hand_start_pos_in, left_hand_start_ori_in, x);
   }
 
+  Eigen::Vector3d LocomanipulationPlanner::quatToVec(const Eigen::Quaterniond & ori){
+    Eigen::AngleAxisd tmp_ori(ori.normalized()); // gets the normalized version of ori and sets it to an angle axis representation
+    Eigen::Vector3d ori_vec = tmp_ori.axis()*tmp_ori.angle();
+    return ori_vec;
+  }
 
   double LocomanipulationPlanner::getClassifierResult(){
+    if (enable_cpp_nn){
+    Eigen::VectorXd rawDatum(32);
+    Eigen::VectorXd datum(32);
+
+    int input_size = 1;
+    Eigen::MatrixXd data(input_size, 32);
+
+    rawDatum << nn_stance_origin, nn_manipulation_type, 
+                nn_swing_foot_start_pos, quatToVec(nn_swing_foot_start_ori),
+                nn_pelvis_pos, quatToVec(nn_pelvis_ori),
+                nn_landing_foot_pos, quatToVec(nn_landing_foot_ori),
+                nn_right_hand_start_pos, nn_right_hand_start_ori,
+                nn_left_hand_start_pos, quatToVec(nn_left_hand_start_ori);
+
+    }
+
     // Prepare classifier input
     classifier_srv.request.x.clear();
     classifier_srv.request.x.reserve(classifier_input_dim);

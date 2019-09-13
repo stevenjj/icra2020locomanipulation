@@ -5,6 +5,10 @@
 #include <ros/ros.h>
 #include <avatar_locomanipulation/BinaryClassifierQuery.h>
 
+// CPP version of the neural network
+#include <avatar_locomanipulation/helpers/NeuralNetModel.hpp>
+#include <avatar_locomanipulation/helpers/IOUtilities.hpp>
+
 // Lib for loading environment variables
 #include <stdlib.h>
 // Parameter Loader and Saver
@@ -99,9 +103,16 @@ namespace planner{
 
         bool trust_classifier = false;
 
+        void setNeuralNetwork(std::shared_ptr<NeuralNetModel> nn_model_in, const Eigen::VectorXd & nn_mean_in, const Eigen::VectorXd & nn_std_dev_in);
+
         std::shared_ptr<RobotModel> robot_model;
         std::shared_ptr<ManipulationFunction> f_s;
         std::shared_ptr<ConfigTrajectoryGenerator> ctg;
+        std::shared_ptr<NeuralNetModel> nn_model;
+        Eigen::VectorXd nn_mean;
+        Eigen::VectorXd nn_std;
+        bool enable_cpp_nn = false;
+
         std::vector<Footstep> input_footstep_list;
 
         // Body Path heuristic. Feet positions w.r.t hand pose
@@ -171,7 +182,7 @@ namespace planner{
         double w_step = 10;
         double w_transition_distance = 0.0; //10.0;
 
-        double w_feasibility = 10; //0.0;//1e2;
+        double w_feasibility = 1.0; //0.0;//1e2;
         double feasibility_threshold= 0.5;
 
         int N_s = 5; // number of discretizations to make for the s variable when checking with the neural network
@@ -284,6 +295,9 @@ namespace planner{
         double prediction_result = 0.0;
         int classifier_input_dim = 32;
         Eigen::Vector3d tmp_ori_vec3;
+
+        // Convert quat to vec
+        Eigen::Vector3d quatToVec(const Eigen::Quaterniond & ori);
 
         void addToXVector(const Eigen::Vector3d & pos, const Eigen::Quaterniond & ori, std::vector<double> & x);
         void populateXVector(std::vector<double> & x, 
