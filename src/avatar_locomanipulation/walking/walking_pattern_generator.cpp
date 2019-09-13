@@ -208,15 +208,15 @@ void WalkingPatternGenerator::initialize_internal_clocks(){
 double WalkingPatternGenerator::get_t_step(const int & step_i){
   // Use transfer time for double support and overall step time for swing types
   if ((rvrp_type_list[step_i]) == DOUBLE_SUPPORT_TRANSFER_VRP_TYPE){
-    return t_ds + t_transfer;
+    return t_ds;
   }else if (rvrp_type_list[step_i] == SWING_VRP_TYPE){
     if (step_i == (rvrp_type_list.size() - 1)){
       return t_ss; // If this is the last step, use the swing time
     }else{
-      return t_ds + t_ss + t_transfer; // Otherwise perform a double support transfer as well
+      return t_ds + t_ss; // Otherwise perform a double support transfer as well
     }
   }else{
-    return t_ds + t_ss + t_transfer;
+    return t_ds + t_ss;
   }
 }
 
