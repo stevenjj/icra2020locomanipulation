@@ -170,6 +170,10 @@ void ConfigTrajectoryGenerator::setUseLeftHand(bool use_left_hand_in){
 void ConfigTrajectoryGenerator::setUseTorsoJointPosition(bool use_torso_joint_position_in){	
 	use_torso_joint_position = use_torso_joint_position_in;
 }
+void ConfigTrajectoryGenerator::setUseArmLowerPriorityTask(bool use_arm_lower_priority_posture_task_in){
+	use_arm_lower_priority_posture_task = use_arm_lower_priority_posture_task_in;
+}
+
 
 void ConfigTrajectoryGenerator::reinitializeTaskStack(){
 	this->createTaskStack();
@@ -194,7 +198,7 @@ void ConfigTrajectoryGenerator::createTaskStack(){
 	if (use_right_hand){
 		vec_task_stack.push_back(rhand_task);
 		vec_manip_stack_1.push_back(rhand_task);
-		if (!use_left_hand){
+		if ((!use_left_hand) && (use_arm_lower_priority_posture_task)){
 			vec_posture_task_stack.push_back(rarm_posture_task);
 			rarm_posture_task->setTaskGain(1.5);
 		}
@@ -207,9 +211,9 @@ void ConfigTrajectoryGenerator::createTaskStack(){
 	if (use_left_hand){
 		vec_task_stack.push_back(lhand_task);
 		vec_manip_stack_1.push_back(lhand_task);
-		if (!use_right_hand){
-			// vec_posture_task_stack.push_back(larm_posture_task);
-			// larm_posture_task->setTaskGain(1.5);			
+		if ((!use_right_hand) && (use_arm_lower_priority_posture_task)){
+			vec_posture_task_stack.push_back(larm_posture_task);
+			larm_posture_task->setTaskGain(1.5);			
 		}
 	}else{
 		vec_posture_task_stack.push_back(larm_posture_task);

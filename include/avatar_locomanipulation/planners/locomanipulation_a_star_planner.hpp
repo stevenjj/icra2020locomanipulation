@@ -146,7 +146,7 @@ namespace planner{
         double dy = 0.05; // dy translation discretization
         double dtheta = 10.0*M_PI/180.0; //10.0*M_PI/180.0; // 10 degrees of discretization
 
-        double max_lattice_translation = 0.3;//0.4;
+        double max_lattice_translation = 0.4; //0.3;//0.4;
         double max_lattice_theta = M_PI*7.0/8.0;
         double min_lattice_theta = -M_PI*7.0/8.0;
 
