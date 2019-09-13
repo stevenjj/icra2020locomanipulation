@@ -349,7 +349,7 @@ void test_LM_planner_with_NN(){
   load_final_robot_door_configuration(q_final_door);
 
   // Initialize the manipulation function for manipulating the door ----------------------------------
-  std::string door_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/door_trajectory.yaml";
+  std::string door_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/door_open_trajectory_v3.yaml";
   std::shared_ptr<ManipulationFunction> f_s_manipulate_door(new ManipulationFunction(door_yaml_file));
   // Set hinge location as waypoints are with respect to the hinge
   hinge_orientation.normalize();
@@ -380,7 +380,7 @@ void test_LM_planner_with_NN(){
 
   // Set whether to learn from mistakes or not
   // Regenerate the discretizations
-  bool learn_from_mistakes = true;
+  bool learn_from_mistakes = false;
   if (learn_from_mistakes){ 
     lm_planner.classifier_store_mistakes = true;  
     std::cout << "Storing classifier mistakes? " << lm_planner.classifier_store_mistakes << std::endl;
@@ -389,7 +389,7 @@ void test_LM_planner_with_NN(){
   // ----------
 
   // Set to trust the classifier
-  lm_planner.trust_classifier = false;
+  lm_planner.trust_classifier = true; //false;
 
   // Initialize
   lm_planner.initializeLocomanipulationVariables(valkyrie_model, f_s_manipulate_door, ctg);
@@ -398,7 +398,7 @@ void test_LM_planner_with_NN(){
   lm_planner.setClassifierClient(client);
 
   double s_init = 0.0;
-  double s_goal = 0.32; //0.32; //0.16; //0.20; //0.12;//0.08;
+  double s_goal = 0.50; //0.32; //0.16; //0.20; //0.12;//0.08;
   shared_ptr<Node> starting_vertex (std::make_shared<LMVertex>(s_init, q_start_door));    
   shared_ptr<Node> goal_vertex (std::make_shared<LMVertex>(s_goal, q_final_door));
 
