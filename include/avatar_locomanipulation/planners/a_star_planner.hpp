@@ -23,9 +23,14 @@
 
 #include <random>
 
+#include <chrono>
+
 using namespace std;
 
 namespace planner{
+	typedef std::chrono::high_resolution_clock Clock;
+
+
 	class NodePtr_Compare_Fcost;
 	class NodePtr_Compare_key;
 
@@ -77,6 +82,19 @@ namespace planner{
 		std::vector< shared_ptr<Node> > optimal_path;	
 
 		double epsilon_greedy = 0.1; // Percentage of time we randomly select a node from the open set
+
+
+		 // Test Planner speed:
+		Clock::time_point start_time;
+		Clock::time_point goal_time; 
+  	  	double goal_time_span = 0;
+
+		Clock::time_point start_path_reconstruction_time; 
+		Clock::time_point end_path_reconstruction_time; 
+  	  	double path_reconstruction_time_span = 0;
+
+		Clock::time_point total_plan_time; 
+  	  	double total_plan_time_span = 0;
 
 	};
 

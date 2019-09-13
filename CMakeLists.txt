@@ -20,6 +20,13 @@ find_package(Eigen3 3.2 REQUIRED)
 find_package(Boost 1.58 REQUIRED COMPONENTS system)
 find_package(YamlCpp 0.5.2 REQUIRED) # Using a custom FindYamlcpp.cmake
 
+find_package(OpenMP REQUIRED) # Find the package
+if (OPENMP_FOUND)
+	message('OPENMP_FOUND')
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif()
 
 add_service_files(DIRECTORY srv
   FILES

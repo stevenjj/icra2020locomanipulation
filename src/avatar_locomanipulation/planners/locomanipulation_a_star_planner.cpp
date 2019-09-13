@@ -82,6 +82,9 @@ namespace planner{
     f_s = f_s_in;
     ctg = ctg_in;
 
+    // Initialize the config trajectory discretization
+    ctg->initializeDiscretization(N_size_per_edge);    
+
     // Init feet position w.r.t hand 
     lf_pos_wrt_hand.setZero();
     rf_pos_wrt_hand.setZero();
@@ -271,7 +274,185 @@ namespace planner{
     optimal_path.push_back(current_node);
     std::cout << "Found potential path with size " << optimal_path.size() << ". Reconstructing the trajectory..." << std::endl;
 
-    return reconstructConfigurationTrajectory();
+    if (reconstructConfigurationTrajectory()){
+    // if(reconstructConfigurationTrajectoryv2()){
+      storeTrajectories();
+      return true;
+    }
+
+  }
+
+  bool LocomanipulationPlanner::reconstructConfigurationTrajectoryv2(){
+    // Iterate through optimal path backwards. to construct the forward path
+    forward_order_optimal_path.clear();
+    for(int i = (optimal_path.size() - 1); i >= 0; i--){
+      forward_order_optimal_path.push_back( optimal_path[i] );
+    }
+
+    // Reconstruct the configuration trajectory
+    Eigen::VectorXd q_begin = Eigen::VectorXd::Zero(robot_model->getDimQ());
+    Eigen::VectorXd q_end = Eigen::VectorXd::Zero(robot_model->getDimQ());
+
+    // Create s vector as function of i.
+    s_traj.clear();
+    double s_start = 0.0;
+    for(int i = 1; i < forward_order_optimal_path.size(); i++){
+      // Cast Pointers
+      current_ = static_pointer_cast<LMVertex>(forward_order_optimal_path[i]);
+      parent_ = static_pointer_cast<LMVertex>(current_->parent);
+
+      // Get the current and total delta_s 
+      delta_s =  (current_->s - parent_->s);
+      s_start = parent_->s;
+      // Populate s vector with linear change
+      for(int j = 0; j < N_size_per_edge; j++){
+        s_traj.push_back(s_start + (delta_s / static_cast<double>(N_size_per_edge))*j); 
+        // std::cout << "s_start + (delta_s / static_cast<double>(N_size_per_edge))*j = " << s_start + (delta_s / static_cast<double>(N_size_per_edge))*j << std::endl;
+      }
+    }
+
+    // Debug printouts
+    // std::cout << "forward_order_optimal_path.size() = " << forward_order_optimal_path.size() << std::endl;
+    // std::cout << "N_size_per_edge * (forward_order_optimal_path.size() - 1) " << N_size_per_edge * (forward_order_optimal_path.size() - 1) << std::endl;
+    // std::cout << "s_traj.size() = " << s_traj.size() << std::endl;
+
+    // Initialize the full trajectory size
+    double dt_dummy = 1e-3;
+    path_traj_q_config.set_dim_N_dt(robot_model->getDimQ(), N_size_per_edge*(optimal_path.size()-1), dt_dummy);
+
+    // We have to go through the optimal path order and identify if it was a manipulation or locomanipulation trajectory
+    std::vector<int> current_edge_sequence;
+    std::vector< std::vector<int> > edge_sequences;
+    int edge_type = EDGE_TYPE_LOCOMANIPULATION;
+    int prev_edge_type = EDGE_TYPE_LOCOMANIPULATION;
+    for(int i = 1; i < forward_order_optimal_path.size(); i++){
+      current_ = static_pointer_cast<LMVertex>(forward_order_optimal_path[i]);
+      parent_ = static_pointer_cast<LMVertex>(current_->parent);
+
+      // Store the previous edge type
+      prev_edge_type = edge_type;
+
+      // Check edge type
+      if ( edgeHasStepTaken(parent_, current_, LEFT_FOOTSTEP) || (edgeHasStepTaken(parent_, current_, RIGHT_FOOTSTEP)) ) {
+        // Current edge is a locomanipulation
+        edge_type = EDGE_TYPE_LOCOMANIPULATION;
+      }else{
+        // Current edge is a manipulation
+        edge_type = EDGE_TYPE_MANIPULATION;
+      }
+
+      // If the sequence has nonzero elements, check if the current edge is different from the previous edge.
+      if (current_edge_sequence.size() > 0){
+        // If the current edge type is different from the previous edge type, we have a new sequence
+        if (edge_type != prev_edge_type){
+          // store the sequence
+          edge_sequences.push_back(current_edge_sequence);
+          // start a new sequence
+          current_edge_sequence.clear();
+        }
+      }
+      // Store the edge type to the current sequence
+      current_edge_sequence.push_back(edge_type);
+      // If we are at the very end, store the current edge sequence
+      if (i == forward_order_optimal_path.size() - 1){
+        edge_sequences.push_back(current_edge_sequence);
+      }
+    }
+
+    // std::cout << "edge_sequences.size() = " << edge_sequences.size() << std::endl;
+
+    // Construct the trajectory based on the edge sequences.
+    int N_sub_total = 0;
+    int edge_number_offset = 0;
+    int i_run = 0;
+
+    for (int i = 0; i < edge_sequences.size(); i++){
+      // std::cout << "edge_sequences[" << i << "].size() = " << edge_sequences[i].size() << std::endl;
+
+      // Set the discretization value
+      N_sub_total = edge_sequences[i].size()*N_size_per_edge;
+
+      // Initialize the config trajectory discretization
+      ctg->initializeDiscretization(N_sub_total);    
+
+      // Populate desired hand configurations 
+      // TO DO: Make this general for left, right or both.
+      // std::cout << "setting hand poses" << std::endl;
+      for (int j = 0; j < N_sub_total; j++){
+        // Get the desired pose
+        f_s->getPose(s_traj[j + edge_number_offset*N_size_per_edge], tmp_pos, tmp_ori);
+        // Set the desired trajectory
+        ctg->traj_SE3_right_hand.set_pos(j, tmp_pos, tmp_ori);
+      }
+
+
+      // Set the current vertex and its parent
+      current_ = static_pointer_cast<LMVertex>(forward_order_optimal_path[edge_number_offset + 1]);
+      parent_ = static_pointer_cast<LMVertex>(current_->parent);
+
+
+      // std::cout << "creating footsteps" << std::endl;
+      // Clear the footsteps
+      input_footstep_list.clear();      
+      // Check if this is a locomanipulation edge. 
+      if (edge_sequences[i][0] == EDGE_TYPE_LOCOMANIPULATION){
+        // If so, populate footstep list
+        for(int j = 0; j < (edge_sequences[i].size()); j++){
+          std::cout << "j" << j << std::endl;
+          // std::cout << "edge_number_offset" << edge_number_offset << std::endl;
+
+          std::shared_ptr<LMVertex> local_current = static_pointer_cast<LMVertex>(forward_order_optimal_path[j + edge_number_offset + 1]);
+          std::shared_ptr<LMVertex> local_parent = static_pointer_cast<LMVertex>(local_current->parent);;        
+
+          // Check if a left or right footstep is taken
+          if (edgeHasStepTaken(local_parent, local_current, LEFT_FOOTSTEP)) {
+            input_footstep_list.push_back(local_current->left_foot);
+            local_current->left_foot.printInfo();
+          }else if (edgeHasStepTaken(local_parent, local_current, RIGHT_FOOTSTEP)){
+            input_footstep_list.push_back(local_current->right_foot);        
+            local_current->right_foot.printInfo();
+          }
+        }
+
+      }
+      std::cout << "computing the configuration" << std::endl;
+
+      // Compute configuration trajectory for this edge sequence
+      bool convergence = false;
+      convergence = ctg->computeConfigurationTrajectory(parent_->q_init, input_footstep_list);
+
+      std::cout << "convergence = " << convergence << std::endl;
+
+      // Get the final configuration and set to current
+      // std::cout << "getting the final configuration" << std::endl;
+      ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_end);
+      current_->setRobotConfig(q_end);  
+
+      // Store q trajectory configuration
+      // Check for convergence.
+      if (convergence){
+        for(int j = 0; j < N_sub_total; j++){
+          // Get the configuration at this local trajectory
+          ctg->traj_q_config.get_pos(j, q_tmp);
+          // Store the trajectory to the global path
+          path_traj_q_config.set_pos(i_run + j, q_tmp);        
+        }
+        // Update i_run
+        i_run += N_sub_total;        
+      }else{
+        return false;
+      }
+
+      // Update the edge number offset
+      edge_number_offset += edge_sequences[i].size();
+    }
+
+    // To do: update the dt properly for each segment of the trajectory. For now  set a desired dt for visualization
+    path_traj_q_config.set_dt(ctg->wpg.traj_pos_com.get_dt() );  // seconds   
+   // path_traj_q_config.set_dt(0.05);  // seconds   
+
+    return true;
+
   }
 
 
@@ -282,9 +463,32 @@ namespace planner{
       forward_order_optimal_path.push_back( optimal_path[i] );
     }
 
+    clearStoredTrajectories();
+
+    // Create s vector as function of i.
+    s_traj.clear();
+    double s_start = 0.0;
+    for(int i = 1; i < forward_order_optimal_path.size(); i++){
+      // Cast Pointers
+      current_ = static_pointer_cast<LMVertex>(forward_order_optimal_path[i]);
+      parent_ = static_pointer_cast<LMVertex>(current_->parent);
+
+      // Get the current and total delta_s 
+      delta_s =  (current_->s - parent_->s);
+      s_start = parent_->s;
+      // Populate s vector with linear change
+      for(int j = 0; j < N_size_per_edge; j++){
+        s_traj.push_back(s_start + (delta_s / static_cast<double>(N_size_per_edge))*j); 
+        // std::cout << "s_start + (delta_s / static_cast<double>(N_size_per_edge))*j = " << s_start + (delta_s / static_cast<double>(N_size_per_edge))*j << std::endl;
+      }
+    }
+
     // Reconstruct the configuration trajectory
     Eigen::VectorXd q_begin = Eigen::VectorXd::Zero(robot_model->getDimQ());
     Eigen::VectorXd q_end = Eigen::VectorXd::Zero(robot_model->getDimQ());
+
+    // Reset discretization
+    ctg->initializeDiscretization(N_size_per_edge);
     int N_size = ctg->getDiscretizationSize();
 
 
@@ -317,8 +521,10 @@ namespace planner{
       // Check if a left or right footstep is taken
       if (edgeHasStepTaken(parent_, current_, LEFT_FOOTSTEP)) {
         input_footstep_list.push_back(current_->left_foot);
+        current_->left_foot.printInfo();
       }else if (edgeHasStepTaken(parent_, current_, RIGHT_FOOTSTEP)){
         input_footstep_list.push_back(current_->right_foot);        
+        current_->right_foot.printInfo();
       }
 
       // Set initial configuration
@@ -358,8 +564,10 @@ namespace planner{
           // Get the configuration at this local trajectory
           ctg->traj_q_config.get_pos(j, q_tmp);
           // Store the trajectory to the global path
-          path_traj_q_config.set_pos(i_run + j, q_tmp);        
+          path_traj_q_config.set_pos(i_run + j, q_tmp);    
         }
+        // Append other current trajectories for this edge to stored trajectories
+        appendToStoredTrajectories();   
         // Update i_run
         i_run += N_size;        
       }else{
@@ -369,13 +577,35 @@ namespace planner{
     }
 
     // To do: update the dt properly for each segment of the trajectory. For now  set a desired dt for visualization
-    path_traj_q_config.set_dt(0.05);  // seconds   
-
+    // path_traj_q_config.set_dt(0.025);  // seconds   
+    path_traj_q_config.set_dt(ctg->wpg.traj_pos_com.get_dt() );  // seconds   
 
     std::cout << "Configuration Path Reconstruction success " << std::endl;
     return true;
 
   }
+
+
+  void LocomanipulationPlanner::appendToStoredTrajectories(){
+    // Store COM position
+    int n = ctg->wpg.traj_pos_com.get_trajectory_length();
+    std::cout << "com trajectory length = " << n << std::endl;
+    for(int i = 0; i < n; i++){
+        ctg->wpg.traj_pos_com.get_pos(i, tmp_pos);
+        com_pos_traj.push_back(tmp_pos);
+    }
+    // Store Left Foot position and orientation
+    n = ctg->wpg.traj_SE3_left_foot.get_trajectory_length();
+    for(int i = 0; i < n; i++){
+        ctg->wpg.traj_SE3_left_foot.get_pos(i, tmp_pos, tmp_ori);
+        left_foot_pos_traj.push_back(tmp_pos);
+        left_foot_ori_traj.push_back(quatToVec(tmp_ori));
+    }
+    // Store Right Foot position and orientation
+
+
+  }
+
 
   void LocomanipulationPlanner::setStanceFoot(const shared_ptr<LMVertex> & from_node, const int robot_side){
     if (robot_side == LEFT_FOOTSTEP){
@@ -582,6 +812,20 @@ namespace planner{
     use_classifier = true;
   }
 
+  void LocomanipulationPlanner::setNeuralNetwork(std::shared_ptr<NeuralNetModel> nn_model_in, const Eigen::VectorXd & nn_mean_in, const Eigen::VectorXd & nn_std_dev_in){
+    nn_model = nn_model_in;
+    nn_mean = nn_mean_in;
+    nn_std = nn_std_dev_in;
+    use_classifier = true;
+    enable_cpp_nn = true;
+
+    cpp_nn_rawDatum = Eigen::VectorXd::Zero(32);
+    cpp_nn_normalized_datum = Eigen::VectorXd::Zero(32);
+    cpp_nn_input_size = 1;
+    cpp_nn_data_input = Eigen::MatrixXd::Zero(cpp_nn_input_size, 32);
+    cpp_nn_pred = Eigen::MatrixXd::Zero(cpp_nn_input_size,1);
+  }
+
   // Locomanipulation gscore
   double LocomanipulationPlanner::gScore(const shared_ptr<Node> current, const shared_ptr<Node> neighbor){
     current_ = std::static_pointer_cast<LMVertex>(current);
@@ -628,10 +872,9 @@ namespace planner{
     }
 
     double feasibility_cost = 0.0; 
-
-    if (use_classifier){
-      feasibility_cost =  w_feasibility*(1.0 - getFeasibility(current_, neighbor_));      
-    }
+    // if (use_classifier){
+    //   feasibility_cost =  w_feasibility*(1.0 - getFeasibility(current_, neighbor_));      
+    // }
 
     double delta_g = s_cost + distance_cost + step_cost + transition_distance_cost + feasibility_cost;
 
@@ -757,7 +1000,7 @@ namespace planner{
     // else{
     //   delta_s_vals = {0.01, 0.04};
     // }
-    delta_s_vals = {0.01, 0.04, 0.08, 0.10};
+    delta_s_vals = {0.01, 0.04, 0.08};//{0.01, 0.04, 0.08, 0.10};
 
     //number of bins for the local lattice
     int num_x_lattice_pts = int(abs(2*max_lattice_translation)/dx) + 1;
@@ -818,13 +1061,14 @@ namespace planner{
 
         // TODO: Add feasibility check here and only add to neighbors if it's greater than our threshold
 
-        if (trust_classifier){
-          // Skip this neighbor if it is not within the threshold
-          double feas_score = getFeasibility(current_, neighbor_change);
-          if (feas_score < feasibility_threshold){
-            continue;
-          }
-        }
+
+        // if (trust_classifier){
+        //   // Skip this neighbor if it is not within the threshold
+        //   double feas_score = getFeasibility(current_, neighbor_change);
+        //   if (feas_score < feasibility_threshold){
+        //     continue;
+        //   }
+        // }
 
         neighbors.push_back(neighbor);
       }
@@ -923,13 +1167,13 @@ namespace planner{
 
               // TODO: Add feasibility check here and only add to neighbors if it's greater than our threshold
 
-              if (trust_classifier){
-                // Skip this neighbor if it is not within the threshold
-                double feas_score = getFeasibility(current_, neighbor_change);
-                if (feas_score < feasibility_threshold){
-                  continue;
-                }
-              }
+              // if (trust_classifier){
+              //   // Skip this neighbor if it is not within the threshold
+              //   double feas_score = getFeasibility(current_, neighbor_change);
+              //   if (feas_score < feasibility_threshold){
+              //     continue;
+              //   }
+              // }
 
               // Add landing foot 
               neighbors.push_back(neighbor);
@@ -1151,43 +1395,125 @@ namespace planner{
     addToXVector(left_hand_start_pos_in, left_hand_start_ori_in, x);
   }
 
+  Eigen::Vector3d LocomanipulationPlanner::quatToVec(const Eigen::Quaterniond & ori){
+    Eigen::AngleAxisd tmp_ori(ori.normalized()); // gets the normalized version of ori and sets it to an angle axis representation
+    Eigen::Vector3d ori_vec = tmp_ori.axis()*tmp_ori.angle();
+    return ori_vec;
+  }
+
+
+  void LocomanipulationPlanner::normalizeInputCalculate(const Eigen::VectorXd & x_in, const Eigen::VectorXd & data_mean, const Eigen::VectorXd & data_std_dev, Eigen::VectorXd & x_normalized) {
+    x_normalized = (x_in - data_mean).cwiseQuotient(data_std_dev);
+  }
+
 
   double LocomanipulationPlanner::getClassifierResult(){
-    // Prepare classifier input
-    classifier_srv.request.x.clear();
-    classifier_srv.request.x.reserve(classifier_input_dim);
-    populateXVector(classifier_srv.request.x, nn_stance_origin, nn_manipulation_type,
-                                              nn_swing_foot_start_pos, nn_swing_foot_start_ori,
-                                              nn_pelvis_pos, nn_pelvis_ori,
-                                              nn_landing_foot_pos, nn_landing_foot_ori,
-                                              nn_right_hand_start_pos, nn_right_hand_start_ori,
-                                              nn_left_hand_start_pos, nn_left_hand_start_ori);
-    // Reset prediction result to a negative value
-    prediction_result = -1.0;
-    
-    while (true){
-      // Try to call the classifier
-      try {  
-        // Call the classifier client
-        if (classifier_client.call(classifier_srv)){
-          prediction_result = classifier_srv.response.y;
-          break;
-          // ROS_INFO("Prediction: %0.4f", srv.response.y);
-        }else{
-            ROS_ERROR("Failed to call service locomanipulation_feasibility_classifier");
-        }
-      }
-      catch(...){
-      // Catch all exceptions
-        std::cout << "Error exception occurred when calling service locomanipulation_feasibility_classifier" << std::endl;
+    // Using CPP neural network
+    if (enable_cpp_nn){
+      // std::cout << "constructing input" << std::endl;
+      // Construct the input to the neural network
+      // Stance and Manipulation Type
+      cpp_nn_rawDatum[0] = nn_stance_origin;
+      cpp_nn_rawDatum[1] = nn_manipulation_type;
+      // Swing Foot Pos, Ori
+      cpp_nn_rawDatum[2] = nn_swing_foot_start_pos[0];
+      cpp_nn_rawDatum[3] = nn_swing_foot_start_pos[1];
+      cpp_nn_rawDatum[4] = nn_swing_foot_start_pos[2];
+      tmp_ori_vec3 = quatToVec(nn_swing_foot_start_ori);
+      cpp_nn_rawDatum[5] = tmp_ori_vec3[0];
+      cpp_nn_rawDatum[6] = tmp_ori_vec3[1];
+      cpp_nn_rawDatum[7] = tmp_ori_vec3[2];
+      // Pelvis Pos, Ori
+      cpp_nn_rawDatum[8] = nn_pelvis_pos[0];
+      cpp_nn_rawDatum[9] = nn_pelvis_pos[1];
+      cpp_nn_rawDatum[10] = nn_pelvis_pos[2];
+      tmp_ori_vec3 = quatToVec(nn_pelvis_ori);
+      cpp_nn_rawDatum[11] = tmp_ori_vec3[0];
+      cpp_nn_rawDatum[12] = tmp_ori_vec3[1];
+      cpp_nn_rawDatum[13] = tmp_ori_vec3[2];
+      // Landing Foot Pos, Ori
+      cpp_nn_rawDatum[14] = nn_landing_foot_pos[0];
+      cpp_nn_rawDatum[15] = nn_landing_foot_pos[1];
+      cpp_nn_rawDatum[16] = nn_landing_foot_pos[2];
+      tmp_ori_vec3 = quatToVec(nn_landing_foot_ori);
+      cpp_nn_rawDatum[17] = tmp_ori_vec3[0];
+      cpp_nn_rawDatum[18] = tmp_ori_vec3[1];
+      cpp_nn_rawDatum[19] = tmp_ori_vec3[2];
+      // Right Hand Pos Ori
+      cpp_nn_rawDatum[20] = nn_right_hand_start_pos[0];
+      cpp_nn_rawDatum[21] = nn_right_hand_start_pos[1];
+      cpp_nn_rawDatum[22] = nn_right_hand_start_pos[2];
+      tmp_ori_vec3 = quatToVec(nn_right_hand_start_ori);
+      cpp_nn_rawDatum[23] = tmp_ori_vec3[0];
+      cpp_nn_rawDatum[24] = tmp_ori_vec3[1];
+      cpp_nn_rawDatum[25] = tmp_ori_vec3[2];
+      // Left Hand Pos Ori
+      cpp_nn_rawDatum[26] = nn_left_hand_start_pos[0];
+      cpp_nn_rawDatum[27] = nn_left_hand_start_pos[1];
+      cpp_nn_rawDatum[28] = nn_left_hand_start_pos[2];
+      tmp_ori_vec3 = quatToVec(nn_left_hand_start_ori);
+      cpp_nn_rawDatum[29] = tmp_ori_vec3[0];
+      cpp_nn_rawDatum[30] = tmp_ori_vec3[1];
+      cpp_nn_rawDatum[31] = tmp_ori_vec3[2];
+  
+      // std::cout << "normalizing input input" << std::endl;
+      // Normalize the input  
+      normalizeInputCalculate(cpp_nn_rawDatum, nn_mean, nn_std, cpp_nn_normalized_datum);
+
+      // std::cout << "placing to a row" << std::endl;      
+      // Put normalized datum as part of the neural net input matrix
+      for (int i = 0; i < cpp_nn_input_size; i++){
+        cpp_nn_data_input.row(i) = cpp_nn_normalized_datum;
       }
 
+      cpp_nn_pred = nn_model->GetOutput(cpp_nn_data_input);
+      // Get the first result only
+      prediction_result = cpp_nn_pred(0,0);
+      // std::cout << "Prediction: " << prediction_result << std::endl;
+      return prediction_result;
+
+    }else{
+      // Otherwise we must be using the ROS client
+
+      // Prepare classifier input
+      classifier_srv.request.x.clear();
+      classifier_srv.request.x.reserve(classifier_input_dim);
+      populateXVector(classifier_srv.request.x, nn_stance_origin, nn_manipulation_type,
+                                                nn_swing_foot_start_pos, nn_swing_foot_start_ori,
+                                                nn_pelvis_pos, nn_pelvis_ori,
+                                                nn_landing_foot_pos, nn_landing_foot_ori,
+                                                nn_right_hand_start_pos, nn_right_hand_start_ori,
+                                                nn_left_hand_start_pos, nn_left_hand_start_ori);
+      // Reset prediction result to a negative value
+      prediction_result = -1.0;
+      
+      while (true){
+        // Try to call the classifier
+        try {  
+          // Call the classifier client
+          if (classifier_client.call(classifier_srv)){
+            prediction_result = classifier_srv.response.y;
+            break;
+            // ROS_INFO("Prediction: %0.4f", srv.response.y);
+          }else{
+              ROS_ERROR("Failed to call service locomanipulation_feasibility_classifier");
+          }
+        }
+        catch(...){
+        // Catch all exceptions
+          std::cout << "Error exception occurred when calling service locomanipulation_feasibility_classifier" << std::endl;
+        }
+
+      }
+
+
+      return prediction_result;
     }
 
+  }
 
-    return prediction_result;
-
-
+  void LocomanipulationPlanner::setSaveFileName(std::string save_filename_in){
+    std::string save_filename = save_filename_in;    
   }
 
   void LocomanipulationPlanner::storeTransitionDatawithTaskSpaceInfo(const shared_ptr<LMVertex> & start_node_traj, bool result){
@@ -1286,6 +1612,81 @@ namespace planner{
 
     return std::hash<std::string>{}(hash_string);
   }
+
+
+
+
+  void LocomanipulationPlanner::storeTrajectories(){
+    // Add transition data
+    std::cout << "Storing Trajectories..." << std::endl;
+    // Define the save path
+    std::string save_path = std::string(THIS_PACKAGE_PATH"../") + save_filename;
+
+    // Construct time vector
+    time_vec.clear();
+    int N_total = N_size_per_edge*forward_order_optimal_path.size();
+      
+    std::cout << "N_total = " << N_total;
+
+    dt_out = ctg->wpg.traj_pos_com.get_dt();  // seconds
+    for(int i = 0; i < N_total; i++){
+      time_vec.push_back(i*dt_out);
+    }
+
+    // Output com position
+    // std::vector<double> com_pos_x, com_pos_y, com_pos_z;
+    // com_pos_x.clear(); com_pos_y.clear(); com_pos_z.clear();
+    // for(int i = 0; i < N_total; i++){
+    //   std::cout << i << "i" << std::endl;
+    //   ctg->wpg.traj_pos_com.get_pos(i, tmp_pos);
+    //   com_pos_x.push_back(tmp_pos[0]);
+    //   com_pos_y.push_back(tmp_pos[1]);
+    //   com_pos_z.push_back(tmp_pos[2]);
+    // }
+    
+
+    // Define the yaml emitter
+    YAML::Emitter out;
+    // Begin map creation
+    out << YAML::BeginMap;
+    data_saver::emit_integer(out, "N", N_total);
+    data_saver::emit_value(out, "dt", dt_out);
+    data_saver::emit_std_vector_double(out, "t",  time_vec);
+    data_saver::emit_index_vector_eigen_vector(out, "com_x", 0, com_pos_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "com_y", 1, com_pos_traj);
+    data_saver::emit_index_vector_eigen_vector(out, "com_z", 2, com_pos_traj);
+
+    // data_saver::emit_std_vector_double(out, "com_pos_x",  com_pos_x);
+    // data_saver::emit_std_vector_double(out, "com_pos_y",  com_pos_y);
+    // data_saver::emit_std_vector_double(out, "com_pos_z",  com_pos_z);
+    out << YAML::EndMap;
+
+    // Store the data
+    std::ofstream file_output_stream(save_path);     
+    // std::cout << out.c_str() << std::endl;
+    file_output_stream << out.c_str(); 
+
+  }
+
+
+  void LocomanipulationPlanner::clearStoredTrajectories(){   
+    s_traj.clear();
+    time_vec.clear();
+    com_pos_traj.clear();
+    left_foot_pos_traj.clear();
+    right_foot_pos_traj.clear();
+    left_hand_pos_traj.clear();
+    right_hand_pos_traj.clear();
+    pelvis_ori_traj.clear();
+    left_foot_ori_traj.clear();
+    right_foot_ori_traj.clear();
+    left_hand_ori_traj.clear();
+    right_hand_ori_traj.clear();
+    q_vec_traj.clear();
+    footstep_list_trajectory.clear();
+  }
+
+
 
 
 }

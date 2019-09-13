@@ -5,6 +5,10 @@
 #include <ros/ros.h>
 #include <avatar_locomanipulation/BinaryClassifierQuery.h>
 
+// CPP version of the neural network
+#include <avatar_locomanipulation/helpers/NeuralNetModel.hpp>
+#include <avatar_locomanipulation/helpers/IOUtilities.hpp>
+
 // Lib for loading environment variables
 #include <stdlib.h>
 // Parameter Loader and Saver
@@ -24,6 +28,9 @@
 #define CONTACT_TRANSITION_DATA_LEFT_HAND 0
 #define CONTACT_TRANSITION_DATA_RIGHT_HAND 1
 #define CONTACT_TRANSITION_DATA_BOTH_HANDS 2
+
+#define EDGE_TYPE_LOCOMANIPULATION 0
+#define EDGE_TYPE_MANIPULATION 1
 
 namespace planner{
     class LMVertex: public Node{
@@ -74,6 +81,7 @@ namespace planner{
         virtual std::vector< shared_ptr<Node> > getNeighbors(shared_ptr<Node> & current);
 
         bool reconstructConfigurationTrajectory();
+        bool reconstructConfigurationTrajectoryv2();
         void printPath();
 
         std::shared_ptr<LMVertex> current_;        
@@ -95,9 +103,16 @@ namespace planner{
 
         bool trust_classifier = false;
 
+        void setNeuralNetwork(std::shared_ptr<NeuralNetModel> nn_model_in, const Eigen::VectorXd & nn_mean_in, const Eigen::VectorXd & nn_std_dev_in);
+
         std::shared_ptr<RobotModel> robot_model;
         std::shared_ptr<ManipulationFunction> f_s;
         std::shared_ptr<ConfigTrajectoryGenerator> ctg;
+        std::shared_ptr<NeuralNetModel> nn_model;
+        Eigen::VectorXd nn_mean;
+        Eigen::VectorXd nn_std;
+        bool enable_cpp_nn = false;
+
         std::vector<Footstep> input_footstep_list;
 
         // Body Path heuristic. Feet positions w.r.t hand pose
@@ -131,7 +146,7 @@ namespace planner{
         double dy = 0.05; // dy translation discretization
         double dtheta = 10.0*M_PI/180.0; //10.0*M_PI/180.0; // 10 degrees of discretization
 
-        double max_lattice_translation = 0.4;
+        double max_lattice_translation = 0.3;//0.4;
         double max_lattice_theta = M_PI*7.0/8.0;
         double min_lattice_theta = -M_PI*7.0/8.0;
 
@@ -167,10 +182,11 @@ namespace planner{
         double w_step = 10;
         double w_transition_distance = 0.0; //10.0;
 
-        double w_feasibility = 0.0;//1e2;
+        double w_feasibility = 1.0; //0.0;//1e2;
         double feasibility_threshold= 0.5;
 
         int N_s = 5; // number of discretizations to make for the s variable when checking with the neural network
+        int N_size_per_edge = 60;
 
         // robot_config temp 
         Eigen::VectorXd q_tmp;
@@ -184,7 +200,29 @@ namespace planner{
 
         // Full path configuration trajectory
         std::vector< shared_ptr<Node> > forward_order_optimal_path; 
+        std::vector<double> s_traj; // Trajectory of s(i)
         TrajEuclidean   path_traj_q_config;     // Trajectory of configurations q
+
+
+        // Data holder for the entire trajectory
+        double dt_out;
+        std::vector<double> time_vec;
+        std::vector<Eigen::VectorXd> com_pos_traj;
+
+        std::vector<Eigen::VectorXd> left_foot_pos_traj;
+        std::vector<Eigen::VectorXd> right_foot_pos_traj;
+        std::vector<Eigen::VectorXd> left_hand_pos_traj;
+        std::vector<Eigen::VectorXd> right_hand_pos_traj;
+
+        std::vector<Eigen::VectorXd> pelvis_ori_traj;
+        std::vector<Eigen::VectorXd> left_foot_ori_traj;
+        std::vector<Eigen::VectorXd> right_foot_ori_traj;
+        std::vector<Eigen::VectorXd> left_hand_ori_traj;
+        std::vector<Eigen::VectorXd> right_hand_ori_traj;
+
+        std::vector<Eigen::VectorXd> q_vec_traj;
+        std::vector<Footstep> footstep_list_trajectory;
+
 
     private:
         // Converts the input position and orientation 
@@ -278,6 +316,20 @@ namespace planner{
         int classifier_input_dim = 32;
         Eigen::Vector3d tmp_ori_vec3;
 
+        // CPP Neural network helper functions:
+        // Convert quat to vec
+        Eigen::Vector3d quatToVec(const Eigen::Quaterniond & ori);
+        void normalizeInputCalculate(const Eigen::VectorXd & x_in, const Eigen::VectorXd & data_mean, const Eigen::VectorXd & data_std_dev, Eigen::VectorXd & x_normalized);
+        // ----
+
+        // CPP Neural Network variables
+        Eigen::VectorXd cpp_nn_rawDatum;
+        Eigen::VectorXd cpp_nn_normalized_datum;
+        int cpp_nn_input_size;
+        Eigen::MatrixXd cpp_nn_data_input;
+        Eigen::MatrixXd cpp_nn_pred;
+
+
         void addToXVector(const Eigen::Vector3d & pos, const Eigen::Quaterniond & ori, std::vector<double> & x);
         void populateXVector(std::vector<double> & x, 
             const double & stance_origin_in, const double & manipulation_type_in,
@@ -296,6 +348,15 @@ namespace planner{
         void appendOriString(const Eigen::Quaterniond & ori, std::string & str_in_out);
         std::size_t getDataHash();
 
+
+        // Store trajectories
+        void setSaveFileName(std::string save_filename_in);
+        std::string save_filename = "sample_trajectory.yaml";
+
+        void storeTrajectories();
+
+        void clearStoredTrajectories();
+        void appendToStoredTrajectories();
     };
 
 

@@ -136,6 +136,9 @@ public:
 	std::shared_ptr<Task> rarm_posture_task;
 	std::shared_ptr<Task> larm_posture_task;
 
+	std::shared_ptr<Task> rwrist_posture_task;
+	std::shared_ptr<Task> lwrist_posture_task;
+
 	std::shared_ptr<Task> task_stack;
 	std::shared_ptr<Task> task_stack_manip_1;
 	std::shared_ptr<Task> task_stack_manip_2;
