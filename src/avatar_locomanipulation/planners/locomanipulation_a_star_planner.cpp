@@ -550,8 +550,8 @@ namespace planner{
     }
 
     // To do: update the dt properly for each segment of the trajectory. For now  set a desired dt for visualization
-    path_traj_q_config.set_dt(0.05);  // seconds   
-
+    // path_traj_q_config.set_dt(0.025);  // seconds   
+    path_traj_q_config.set_dt(ctg->wpg.traj_pos_com.get_dt() );  // seconds   
 
     std::cout << "Configuration Path Reconstruction success " << std::endl;
     return true;

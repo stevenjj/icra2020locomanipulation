@@ -271,8 +271,10 @@ void test_LM_planner(){
   // timer
   //PinocchioTicToc timer = PinocchioTicToc(PinocchioTicToc::MS);
 
-  // Have fast double support times
-  ctg->wpg.setDoubleSupportTime(0.4);
+  // Set Double support times
+  ctg->wpg.setDoubleSupportTime(0.2); // Sets the desired double support time
+  // ctg->wpg.setSettlingPercentage(0.01); // Percentage to settle. Default 0.999
+  ctg->wpg.setSettlingPercentage(0.99); // Percentage to settle. Default 0.999
   // Set Manipulation Only time to 3 seconds
   ctg->setManipulationOnlyTime(3.0);
   // Set Verbosity
@@ -286,7 +288,7 @@ void test_LM_planner(){
 
   // 
   double s_init = 0.0;
-  double s_goal = 0.5;//0.99; //0.20; //0.12;//0.08;
+  double s_goal = 0.99;//0.99; //0.20; //0.12;//0.08;
   shared_ptr<Node> starting_vertex (std::make_shared<LMVertex>(s_init, q_start_door));    
   shared_ptr<Node> goal_vertex (std::make_shared<LMVertex>(s_goal, q_final_door));
 

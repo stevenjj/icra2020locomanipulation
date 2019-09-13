@@ -46,6 +46,7 @@ public:
   double t_ds = 0.45; //0.9; // time in double support
   double t_ss = 1.0;//1.2; // time in single support
   double t_settle = -b*log(0.001); // settling time at the end of the full walking trajectory 
+  double t_transfer = -b*log(1.0 - 0.01); // settling time at the end of the full walking trajectory 
 
   double swing_height = 0.1; //0.05; // swing height in meters.
 
