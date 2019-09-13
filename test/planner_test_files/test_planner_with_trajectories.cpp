@@ -277,6 +277,8 @@ void test_LM_planner(){
   // Initialize Trajectory Generation Module
   ctg->setUseRightHand(true);
   ctg->setUseTorsoJointPosition(true);
+  ctg->setUseArmLowerPriorityTask(false);
+
   // ctg->setUseTorsoJointPosition(false);
   ctg->reinitializeTaskStack();
   // timer
@@ -284,8 +286,9 @@ void test_LM_planner(){
 
   // Set Double support times
   ctg->wpg.setDoubleSupportTime(0.2); // Sets the desired double support time
-  // ctg->wpg.setSettlingPercentage(0.01); // Percentage to settle. Default 0.999
-  ctg->wpg.setSettlingPercentage(0.99); // Percentage to settle. Default 0.999
+  // ctg->wpg.setSettlingPercentage(0.99); // Percentage to settle. Default 0.999
+  ctg->wpg.setSettlingPercentage(0.4); // Percentage to settle. Default 0.999
+
   // Set Manipulation Only time to 3 seconds
   ctg->setManipulationOnlyTime(3.0);
   // Set Verbosity
@@ -300,7 +303,6 @@ void test_LM_planner(){
   // 
   double s_init = 0.0;
   double s_goal = 0.99;//0.99; //0.20; //0.12;//0.08;
-  ctg->wpg.setSettlingPercentage(0.4); // Percentage to settle. Default 0.999
   shared_ptr<Node> starting_vertex (std::make_shared<LMVertex>(s_init, q_start_door));    
   shared_ptr<Node> goal_vertex (std::make_shared<LMVertex>(s_goal, q_final_door));
 
@@ -513,13 +515,14 @@ void test_LM_planner_with_cpp_NN(){
   ctg->setUseRightHand(true);
   // ctg->setUseTorsoJointPosition(false);
   ctg->setUseTorsoJointPosition(true);
+  ctg->setUseArmLowerPriorityTask(false);
   ctg->reinitializeTaskStack();
   // timer
   //PinocchioTicToc timer = PinocchioTicToc(PinocchioTicToc::MS);
 
   // Have fast double support times
   ctg->wpg.setDoubleSupportTime(0.2);
-  ctg->wpg.setSettlingPercentage(0.4); // Percentage to settle. Default 0.999
+  // ctg->wpg.setSettlingPercentage(0.4); // Percentage to settle. Default 0.999
   // Set Manipulation Only time to 3 seconds
   ctg->setManipulationOnlyTime(3.0);
   // Set Verbosity
