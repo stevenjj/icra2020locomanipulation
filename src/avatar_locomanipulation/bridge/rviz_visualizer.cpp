@@ -35,7 +35,7 @@ void RVizVisualizer::setNodeHandle(std::shared_ptr<ros::NodeHandle> & n_input){
 	robot_ik_joint_state_pub = n->advertise<sensor_msgs::JointState>(robot_ik_joint_pub_topic, 10);
 	robot_joint_state_pub = n->advertise<sensor_msgs::JointState>(robot_joint_pub_topic, 10);
 	interpolated_pose_pub = n->advertise<geometry_msgs::PoseArray>(interpolated_pose_pub_topic, 10);
-
+	s_value_pub = n->advertise<std_msgs::Float64>(s_value_pub_topic, 10);
 
 	// Create transform broadcaster objects after we have a node handle
 	br_ik = std::make_shared<tf::TransformBroadcaster>();
@@ -133,6 +133,51 @@ void RVizVisualizer::visualizeConfigurationTrajectory(const Eigen::VectorXd & q_
   	}  	
 
 
+}
+
+void RVizVisualizer::visualizeConfigurationTrajectory(const Eigen::VectorXd & q_start_in, TrajEuclidean & traj_q_in, std::vector<double> & s_traj,  bool visualize_once){
+	std::cout << "[RVizVisualizer] Visualizing configuration trajectory with s variable" << std::endl;
+
+	// Initialize Starting Configuration
+	setStartConfig(q_start_in);
+	populateStartConfigJointMsg();
+
+	// Set loop rate for the actual time of the trajectory
+	ros::Rate loop_rate(1.0/traj_q_in.get_dt());
+
+  	// Publish Forever until terminated
+  	while (ros::ok()){
+  		for(int i = 0; i < traj_q_in.get_trajectory_length(); i++){
+	  		// get the current position
+	  		traj_q_in.get_pos(i, q_current);
+
+	  		// get the current s value
+	  		s_value_msg.data = s_traj[i];	  		
+
+	  		// Set configuration
+  			setCurrentConfig(q_current);
+		    populateCurrentConfigJointMsg();
+
+		    // Do visualization
+			br_robot->sendTransform(tf::StampedTransform(tf_world_pelvis_init, ros::Time::now(), "world",  "val_robot/pelvis"));
+			robot_joint_state_pub.publish(joint_msg_init);
+
+			br_ik->sendTransform(tf::StampedTransform(tf_world_pelvis_current, ros::Time::now(), "world", "val_ik_robot/pelvis"));
+			robot_ik_joint_state_pub.publish(joint_msg_current);
+
+	  		s_value_pub.publish(s_value_msg);
+
+	  		// Spin and SLeep
+		    ros::spinOnce();
+		    loop_rate.sleep();  			
+  		}
+
+ 		if (visualize_once){
+  			break; // break if we want to visualize only once
+  		}
+		// Visualize the robot on a loop otherwise
+
+  	}  	
 }
 
 void RVizVisualizer::visualizeConfigurationTrajectory(std::shared_ptr<ManipulationFunction> f_s, int robot_manipulation_side, 
