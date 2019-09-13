@@ -39,6 +39,27 @@ namespace data_saver{
       out << YAML::EndMap;
   }
 
+  void emit_std_vector_double(YAML::Emitter & out, const std::string & key, const std::vector<double> & vec_in){
+    out << YAML::Key << key;
+    out << YAML::Value;
+      out << YAML::Flow;
+      out << YAML::BeginSeq;
+      for (size_t i = 0; i < vec_in.size(); i++){
+        out << vec_in[i] ;
+      }
+      out << YAML::EndSeq;
+  }
+
+  void emit_index_vector_eigen_vector(YAML::Emitter & out, const std::string & key, const int index, const std::vector<Eigen::VectorXd> & vec_eig_vec){
+    out << YAML::Key << key;
+    out << YAML::Value;
+      out << YAML::Flow;
+      out << YAML::BeginSeq;
+      for (size_t i = 0; i < vec_eig_vec[index].size(); i++){
+        out << vec_eig_vec[index][i] ;
+      }
+      out << YAML::EndSeq;
+  }  
 
   void emit_joint_configuration(YAML::Emitter & out, const std::string & key, const Eigen::VectorXd & q_in){
     out << YAML::Key << key;

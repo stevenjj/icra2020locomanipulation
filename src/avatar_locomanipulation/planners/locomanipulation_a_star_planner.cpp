@@ -274,8 +274,12 @@ namespace planner{
     optimal_path.push_back(current_node);
     std::cout << "Found potential path with size " << optimal_path.size() << ". Reconstructing the trajectory..." << std::endl;
 
-    return reconstructConfigurationTrajectory();
-    // return reconstructConfigurationTrajectoryv2();
+    if (reconstructConfigurationTrajectory()){
+    // if(reconstructConfigurationTrajectoryv2()){
+      storeTrajectories();
+      return true;
+    }
+
   }
 
   bool LocomanipulationPlanner::reconstructConfigurationTrajectoryv2(){
@@ -447,9 +451,6 @@ namespace planner{
     path_traj_q_config.set_dt(ctg->wpg.traj_pos_com.get_dt() );  // seconds   
    // path_traj_q_config.set_dt(0.05);  // seconds   
 
-    // Reset discretization
-    ctg->initializeDiscretization(N_size_per_edge);
-
     return true;
 
   }
@@ -483,6 +484,9 @@ namespace planner{
     // Reconstruct the configuration trajectory
     Eigen::VectorXd q_begin = Eigen::VectorXd::Zero(robot_model->getDimQ());
     Eigen::VectorXd q_end = Eigen::VectorXd::Zero(robot_model->getDimQ());
+
+    // Reset discretization
+    ctg->initializeDiscretization(N_size_per_edge);
     int N_size = ctg->getDiscretizationSize();
 
 
@@ -1031,13 +1035,14 @@ namespace planner{
 
         // TODO: Add feasibility check here and only add to neighbors if it's greater than our threshold
 
-        if (trust_classifier){
-          // Skip this neighbor if it is not within the threshold
-          double feas_score = getFeasibility(current_, neighbor_change);
-          if (feas_score < feasibility_threshold){
-            continue;
-          }
-        }
+        
+        // if (trust_classifier){
+        //   // Skip this neighbor if it is not within the threshold
+        //   double feas_score = getFeasibility(current_, neighbor_change);
+        //   if (feas_score < feasibility_threshold){
+        //     continue;
+        //   }
+        // }
 
         neighbors.push_back(neighbor);
       }
@@ -1136,13 +1141,13 @@ namespace planner{
 
               // TODO: Add feasibility check here and only add to neighbors if it's greater than our threshold
 
-              if (trust_classifier){
-                // Skip this neighbor if it is not within the threshold
-                double feas_score = getFeasibility(current_, neighbor_change);
-                if (feas_score < feasibility_threshold){
-                  continue;
-                }
-              }
+              // if (trust_classifier){
+              //   // Skip this neighbor if it is not within the threshold
+              //   double feas_score = getFeasibility(current_, neighbor_change);
+              //   if (feas_score < feasibility_threshold){
+              //     continue;
+              //   }
+              // }
 
               // Add landing foot 
               neighbors.push_back(neighbor);
@@ -1481,6 +1486,10 @@ namespace planner{
 
   }
 
+  void LocomanipulationPlanner::setSaveFileName(std::string save_filename_in){
+    std::string save_filename = save_filename_in;    
+  }
+
   void LocomanipulationPlanner::storeTransitionDatawithTaskSpaceInfo(const shared_ptr<LMVertex> & start_node_traj, bool result){
     // Add transition data
     std::cout << "storing transition data..." << std::endl;
@@ -1577,6 +1586,59 @@ namespace planner{
 
     return std::hash<std::string>{}(hash_string);
   }
+
+
+
+
+  void LocomanipulationPlanner::storeTrajectories(){
+    // Add transition data
+    std::cout << "Storing Trajectories..." << std::endl;
+    // Define the save path
+    std::string save_path = std::string(THIS_PACKAGE_PATH"../") + save_filename;
+
+    // Construct time vector
+    std::vector<double> time_vec;
+    time_vec.clear();
+    int N_total = N_size_per_edge*forward_order_optimal_path.size();
+    double dt = ctg->wpg.traj_pos_com.get_dt();  // seconds
+    for(int i = 0; i < N_total; i++){
+      time_vec.push_back(i*dt);
+    }
+
+    // Output com position
+    // std::vector<double> com_pos_x, com_pos_y, com_pos_z;
+    // com_pos_x.clear(); com_pos_y.clear(); com_pos_z.clear();
+    // for(int i = 0; i < N_total; i++){
+    //   std::cout << i << "i" << std::endl;
+    //   ctg->wpg.traj_pos_com.get_pos(i, tmp_pos);
+    //   com_pos_x.push_back(tmp_pos[0]);
+    //   com_pos_y.push_back(tmp_pos[1]);
+    //   com_pos_z.push_back(tmp_pos[2]);
+    // }
+    
+
+    // Define the yaml emitter
+    YAML::Emitter out;
+    // Begin map creation
+    out << YAML::BeginMap;
+    data_saver::emit_value(out, "dt", dt);
+    data_saver::emit_std_vector_double(out, "t",  time_vec);
+    // data_saver::emit_std_vector_double(out, "com_pos_x",  com_pos_x);
+    // data_saver::emit_std_vector_double(out, "com_pos_y",  com_pos_y);
+    // data_saver::emit_std_vector_double(out, "com_pos_z",  com_pos_z);
+    out << YAML::EndMap;
+
+    // Store the data
+    std::ofstream file_output_stream(save_path);     
+    // std::cout << out.c_str() << std::endl;
+    file_output_stream << out.c_str(); 
+
+  }
+
+
+
+
+
 
 
 }

@@ -12,6 +12,8 @@ namespace data_saver{
   void emit_string(YAML::Emitter & out, const std::string & key, const std::string & value);
   void emit_position(YAML::Emitter & out, const std::string & key, const Eigen::Vector3d & pos);
   void emit_orientation(YAML::Emitter & out, const std::string & key, const Eigen::Quaterniond & quat);
+  void emit_std_vector_double(YAML::Emitter & out, const std::string & key, const std::vector<double> & vec_in);
+  void emit_index_vector_eigen_vector(YAML::Emitter & out, const std::string & key, const int index, const std::vector<Eigen::VectorXd> & vec_eig_vec);
   void emit_joint_configuration(YAML::Emitter & out, const std::string & key, const Eigen::VectorXd & q_in);
   void emit_orientation_vector(YAML::Emitter & out, const std::string & key, const Eigen::Vector3d & ori);
   void emit_gmm_sigma(YAML::Emitter & out, const std::string & key, const Eigen::MatrixXd & sigma);

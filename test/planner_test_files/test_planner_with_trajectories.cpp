@@ -544,7 +544,7 @@ void test_LM_planner_with_cpp_NN(){
   lm_planner.setNeuralNetwork(nn_transition_model, mean, std_dev);
 
   double s_init = 0.0;
-  double s_goal = 0.99; //0.32; //0.16; //0.20; //0.12;//0.08;
+  double s_goal = 0.5; //0.99; //0.32; //0.16; //0.20; //0.12;//0.08;
   shared_ptr<Node> starting_vertex (std::make_shared<LMVertex>(s_init, q_start_door));    
   shared_ptr<Node> goal_vertex (std::make_shared<LMVertex>(s_goal, q_final_door));
 
@@ -615,9 +615,9 @@ int main(int argc, char ** argv){
   std::cout<<"num_threads: "<<num_threads<<std::endl;
 
   // test_final_configuration();
-  test_LM_planner();
+  // test_LM_planner();
   // test_LM_planner_with_NN();
-  // test_LM_planner_with_cpp_NN();
+  test_LM_planner_with_cpp_NN();
   // test_planner();
   // test_door_open_config_trajectory();
  
