@@ -5,6 +5,8 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
 
+#include <avatar_locomanipulation/bridge/val_rviz_translator.hpp>
+
 // YAML
 #include <avatar_locomanipulation/helpers/yaml_data_saver.hpp>
 #include <avatar_locomanipulation/helpers/param_handler.hpp>
@@ -235,46 +237,86 @@ void test_hand_in_place_config_trajectory_generator(){
   // NOW RERUN THIS ONCE TO GET IT INTO A GOOD POSITION
 
   // Reset the lfoot position 
-  		footstep_1.position = original_pos;
-  		// Add this current x_ to the foot pos
-  		footstep_1.position[0] -= 0.4;
-  		// Get y pos at this step
-  		// Add this current y_ to the foot pos
-  		footstep_1.position[1] += 0.1;
+	footstep_1.position = original_pos;
+	// Add this current x_ to the foot pos
+	footstep_1.position[0] -= 0.4;
+	// Get y pos at this step
+	// Add this current y_ to the foot pos
+	footstep_1.position[1] += 0.1;
 
-  		footstep_1.setPosOri(footstep_1.position, quat_angleaxis);
-		  footstep_2.setPosOri(footstep_2.position, quat_angleaxis);
+	footstep_1.setPosOri(footstep_1.position, quat_angleaxis);
+  footstep_2.setPosOri(footstep_2.position, quat_angleaxis);
 
-		  // std::vector<Footstep> input_footstep_list = {footstep_2, footstep_1};
-		  std::vector<Footstep> input_footstep_list = {footstep_1};
-
-
-		  // Get current hand pose
-		  Eigen::Vector3d rhand_pos;
-		  Eigen::Quaterniond rhand_ori;
-		  valkyrie_model->getFrameWorldPose("rightPalm", rhand_pos, rhand_ori);  
-		  // Set Constant Right Hand trajectory to current //To do. set task gain for hand to be small in orientation
-		  ctg.setConstantRightHandTrajectory(rhand_pos, rhand_ori);
-		  ctg.setUseRightHand(true);
-		  ctg.setUseTorsoJointPosition(false);
-		  ctg.reinitializeTaskStack();
-
-		    // timer
-		  PinocchioTicToc timer = PinocchioTicToc(PinocchioTicToc::MS);
+  // std::vector<Footstep> input_footstep_list = {footstep_2, footstep_1};
+  std::vector<Footstep> input_footstep_list = {footstep_1};
 
 
-		  // Have fast double support times
-		  ctg.wpg.setDoubleSupportTime(0.2);
-		  // Set Verbosity
-		  ctg.setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_2);
-		  // Solve for configurations
-		  timer.tic();
-		  temp.b = ctg.computeConfigurationTrajectory(q_start, input_footstep_list);
-		  temp.pos = footstep_1.position;
-		  pb.push_back(temp);
-		  std::cout << "IK Trajectory took: " << timer.toc() << timer.unitName(timer.DEFAULT_UNIT) << std::endl;
+  // Get current hand pose
+  Eigen::Vector3d rhand_pos;
+  Eigen::Quaterniond rhand_ori;
+  valkyrie_model->getFrameWorldPose("rightPalm", rhand_pos, rhand_ori);  
+  // Set Constant Right Hand trajectory to current //To do. set task gain for hand to be small in orientation
+  ctg.setConstantRightHandTrajectory(rhand_pos, rhand_ori);
+  ctg.setUseRightHand(true);
+  ctg.setUseTorsoJointPosition(false);
+  ctg.reinitializeTaskStack();
 
-		  visualizer.visualizeConfigurationTrajectory(q_start, ctg.traj_q_config, true);
+    // timer
+  PinocchioTicToc timer = PinocchioTicToc(PinocchioTicToc::MS);
+
+
+  // Have fast double support times
+  ctg.wpg.setDoubleSupportTime(0.2);
+  // Set Verbosity
+  ctg.setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_2);
+  // Solve for configurations
+  timer.tic();
+  temp.b = ctg.computeConfigurationTrajectory(q_start, input_footstep_list);
+  temp.pos = footstep_1.position;
+  pb.push_back(temp);
+  std::cout << "IK Trajectory took: " << timer.toc() << timer.unitName(timer.DEFAULT_UNIT) << std::endl;
+
+  visualizer.visualizeConfigurationTrajectory(q_start, ctg.traj_q_config, true);
+
+////////////////////////// AFTER THIS WAS ADDDED FOR ROSBAG
+
+	ros::Rate loop_rate(20);
+	Eigen::VectorXd q_finish;
+	ctg.traj_q_config.get_pos(ctg.getDiscretizationSize() - 1, q_finish);
+
+	// Joint State Publisher
+  ros::Publisher robot_ik_joint_state_pub = n.advertise<sensor_msgs::JointState>("robot1/joint_states", 10);
+  ros::Publisher robot_joint_state_pub = n.advertise<sensor_msgs::JointState>("robot2/joint_states", 10);
+  // Initialize Rviz translator
+  ValRvizTranslator rviz_translator;
+
+  // Transform broadcaster
+  tf::TransformBroadcaster      br_ik;
+  tf::TransformBroadcaster      br_robot;
+
+  // Initialize Transforms and Messages
+  tf::Transform tf_world_pelvis_init;
+  tf::Transform tf_world_pelvis_end;
+
+  sensor_msgs::JointState joint_msg_init;
+  sensor_msgs::JointState joint_msg_end;
+
+  // Visualize q_start and q_end in RVIZ
+  rviz_translator.populate_joint_state_msg(valkyrie_model->model, q_start, tf_world_pelvis_init, joint_msg_init);
+  rviz_translator.populate_joint_state_msg(valkyrie_model->model, q_finish, tf_world_pelvis_end, joint_msg_end);
+
+	while(ros::ok()){
+		foot_markers_pub.publish(msg);
+
+		br_robot.sendTransform(tf::StampedTransform(tf_world_pelvis_init, ros::Time::now(), "world",  "val_robot/pelvis"));
+		robot_joint_state_pub.publish(joint_msg_init);
+
+		br_ik.sendTransform(tf::StampedTransform(tf_world_pelvis_end, ros::Time::now(), "world", "val_ik_robot/pelvis"));
+		robot_ik_joint_state_pub.publish(joint_msg_end);
+		ros::spinOnce();
+		loop_rate.sleep();
+
+	}
   		
 
 }
