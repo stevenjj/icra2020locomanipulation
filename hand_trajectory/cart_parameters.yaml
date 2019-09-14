@@ -1,0 +1,24 @@
+radius: 0.8
+rotation_angle: 1.57
+linear_length: 0.5
+pose_spacing: 0.05
+hand_distance: 0.76646
+fixed_frame_position: #translastion of the fixed frame ( describes height of wps )
+  x: 0.
+  y: 0.
+  z: 0.8
+fixed_frame_orientation: # only to be rotated about the z axis
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 1.
+right_hand_initial_orientation:
+  x: 0.564024
+  y: -0.44628
+  z: -0.510642
+  w: -0.471122
+left_hand_initial_orientation:
+  x: 0.567953
+  y: 0.432897
+  z: -0.523483
+  w: 0.464753
