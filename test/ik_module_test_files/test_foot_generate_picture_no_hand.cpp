@@ -71,9 +71,9 @@ void visualizeResults(std::vector<PositionBool> & pb, visualization_msgs::Marker
 
 	std::cout << "pb.size(): " << pb.size() << std::endl;
 
+	double factor = 0.95;
 	for(int i=0; i<pb.size(); ++i){
 
-		 double factor = 0.95;
 		// Fill the Marker 
 		temp.pose.position.x = pb[i].pos[0];
 		temp.pose.position.y = pb[i].pos[1];
@@ -196,14 +196,7 @@ void test_hand_in_place_config_trajectory_generator(){
 		  // std::vector<Footstep> input_footstep_list = {footstep_2, footstep_1};
 		  std::vector<Footstep> input_footstep_list = {footstep_1};
 
-
-		  // Get current hand pose
-		  Eigen::Vector3d rhand_pos;
-		  Eigen::Quaterniond rhand_ori;
-		  valkyrie_model->getFrameWorldPose("rightPalm", rhand_pos, rhand_ori);  
-		  // Set Constant Right Hand trajectory to current //To do. set task gain for hand to be small in orientation
-		  ctg.setConstantRightHandTrajectory(rhand_pos, rhand_ori);
-		  ctg.setUseRightHand(true);
+		  ctg.setUseRightHand(false);
 		  ctg.setUseTorsoJointPosition(false);
 		  ctg.reinitializeTaskStack();
 
