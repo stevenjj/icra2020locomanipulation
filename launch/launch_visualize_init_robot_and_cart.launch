@@ -1,0 +1,15 @@
+<launch>
+	<!-- Visualize the robot -->  
+    <include file="$(find avatar_locomanipulation)/launch/robot_and_ik_viz.launch">
+      <arg name="use_static_transform" value="False"/>
+	  <arg name="rviz_config" default="val_and_cart_push.rviz" />
+    </include>    
+
+	<!-- Visualize the cart -->
+    <node name="node_visualize_cart" pkg="avatar_locomanipulation" type="node_visualize_cart" output="screen" /> 
+
+	<!-- Visualize the robot init configuration -->
+    <node name="generate_init_cart_configuration" pkg="avatar_locomanipulation" type="generate_init_cart_configuration" output="screen" />     
+
+
+</launch>
