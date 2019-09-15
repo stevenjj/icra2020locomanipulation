@@ -141,8 +141,8 @@ int main(int argc, char **argv){
     data_saver::emit_value(out_left, "num_waypoints", M+N+2);
   	// Generate waypoints fo the line 
   	for(int i=0; i<=M; ++i){
-  		right_waypoint_string = "right_waypoint_" + std::to_string(i+1);
-      left_waypoint_string = "left_waypoint_" + std::to_string(i+1);
+  		right_waypoint_string = "waypoint_" + std::to_string(i+1);
+      left_waypoint_string = "waypoint_" + std::to_string(i+1);
       // x position
       left_values[0] = i*dl;
       right_values[0] = i*dl;
@@ -161,8 +161,8 @@ int main(int argc, char **argv){
   	}
   	// Generate waypoints for the arc
   	for(int i=0; i<=N; ++i){
-      right_waypoint_string = "right_waypoint_" + std::to_string(i+M+2);
-      left_waypoint_string = "left_waypoint_" + std::to_string(i+M+2);
+      right_waypoint_string = "waypoint_" + std::to_string(i+M+2);
+      left_waypoint_string = "waypoint_" + std::to_string(i+M+2);
 
       // x position
       left_values[0] = linear_length + cos(-1.57 + static_cast<double>(i)*dtheta)*radius;

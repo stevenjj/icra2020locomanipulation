@@ -91,8 +91,8 @@ int main(int argc, char **argv){
 	waypoint_poses.header.frame_id = "fixed_frame";
 
 	for(int i=1; i<=num_wps; ++i){
-		left_waypoint_string = "left_waypoint_" + std::to_string(i);
-		right_waypoint_string = "right_waypoint_" + std::to_string(i);
+		left_waypoint_string = "waypoint_" + std::to_string(i);
+		right_waypoint_string = "waypoint_" + std::to_string(i);
 
 		param_handler_left.getNestedValue({left_waypoint_string, "x"}, x);
 		param_handler_left.getNestedValue({left_waypoint_string, "y"}, y);
