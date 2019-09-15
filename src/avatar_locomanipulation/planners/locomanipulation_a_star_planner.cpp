@@ -198,21 +198,21 @@ namespace planner{
     goal = goal_input;
     std::shared_ptr<LMVertex> goal_lmv = static_pointer_cast<LMVertex>(goal);
 
-    // Update the robot model with the final node configuration to get the midfeet frame
-    robot_model->updateFullKinematics(goal_lmv->q_init);
-    Eigen::Vector3d foot_pos;
-    Eigen::Quaterniond foot_ori;
+    // // Update the robot model with the final node configuration to get the midfeet frame
+    // robot_model->updateFullKinematics(goal_lmv->q_init);
+    // Eigen::Vector3d foot_pos;
+    // Eigen::Quaterniond foot_ori;
 
-    // Set the left and right foot of the node
-    robot_model->getFrameWorldPose("rightCOP_Frame", foot_pos, foot_ori);
-    goal_lmv->right_foot.setPosOriSide(foot_pos, foot_ori, RIGHT_FOOTSTEP);
-    robot_model->getFrameWorldPose("leftCOP_Frame", foot_pos, foot_ori);
-    goal_lmv->left_foot.setPosOriSide(foot_pos, foot_ori, LEFT_FOOTSTEP);
+    // // Set the left and right foot of the node
+    // robot_model->getFrameWorldPose("rightCOP_Frame", foot_pos, foot_ori);
+    // goal_lmv->right_foot.setPosOriSide(foot_pos, foot_ori, RIGHT_FOOTSTEP);
+    // robot_model->getFrameWorldPose("leftCOP_Frame", foot_pos, foot_ori);
+    // goal_lmv->left_foot.setPosOriSide(foot_pos, foot_ori, LEFT_FOOTSTEP);
 
-    // Compute the midfoot 
-    goal_lmv->mid_foot.computeMidfeet(goal_lmv->left_foot, goal_lmv->right_foot, goal_lmv->mid_foot);
-    goal_lmv->mid_foot.setMidFoot();
-    goal_lmv->mid_foot.printInfo();
+    // // Compute the midfoot 
+    // goal_lmv->mid_foot.computeMidfeet(goal_lmv->left_foot, goal_lmv->right_foot, goal_lmv->mid_foot);
+    // goal_lmv->mid_foot.setMidFoot();
+    // goal_lmv->mid_foot.printInfo();
 
     // Get a copy of the goal node s variable
     goal_s = goal_lmv->s;
