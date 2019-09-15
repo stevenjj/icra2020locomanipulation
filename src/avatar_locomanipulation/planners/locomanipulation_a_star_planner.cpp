@@ -378,6 +378,7 @@ namespace planner{
     int edge_number_offset = 0;
     int i_run = 0;
 
+    double s_traj_current = 0.0;
     for (int i = 0; i < edge_sequences.size(); i++){
       // std::cout << "edge_sequences[" << i << "].size() = " << edge_sequences[i].size() << std::endl;
 
@@ -391,10 +392,30 @@ namespace planner{
       // TO DO: Make this general for left, right or both.
       // std::cout << "setting hand poses" << std::endl;
       for (int j = 0; j < N_sub_total; j++){
-        // Get the desired pose
-        f_s->getPose(s_traj[j + edge_number_offset*N_size_per_edge], tmp_pos, tmp_ori);
-        // Set the desired trajectory
-        ctg->traj_SE3_right_hand.set_pos(j, tmp_pos, tmp_ori);
+        // Compute s traj
+        s_traj_current = s_traj[j + edge_number_offset*N_size_per_edge];
+
+        // Get desired poses depending on the manipulation function
+        if (f_s->getManipulationType() == MANIPULATE_TYPE_RIGHT_HAND){
+          // Get the desired pose right hand pose
+          f_s->getRightHandPose(s_traj_current, tmp_pos, tmp_ori);
+          ctg->traj_SE3_right_hand.set_pos(j, tmp_pos, tmp_ori);     
+        }else if (f_s->getManipulationType() == MANIPULATE_TYPE_RIGHT_HAND){
+          // Get the desired left hand pose
+          f_s->getLeftHandPose(s_traj_current, tmp_pos, tmp_ori);
+          ctg->traj_SE3_left_hand.set_pos(j, tmp_pos, tmp_ori);
+
+        }else if (f_s->getManipulationType() == MANIPULATE_TYPE_BOTH_HANDS){
+          // Get the desired pose right hand pose
+          f_s->getRightHandPose(s_traj_current, tmp_pos, tmp_ori);
+          ctg->traj_SE3_right_hand.set_pos(j, tmp_pos, tmp_ori);     
+          // Get the desired left hand pose
+          f_s->getLeftHandPose(s_traj_current, tmp_pos, tmp_ori);
+          ctg->traj_SE3_left_hand.set_pos(j, tmp_pos, tmp_ori);
+        }
+
+
+
       }
 
 
@@ -543,10 +564,15 @@ namespace planner{
       delta_s =  (current_->s - parent_->s);
 
       bool convergence = false;
-      convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
-                                                                  parent_->s, delta_s, 
-                                                                  parent_->q_init, 
-                                                                 input_footstep_list);
+      // convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
+      //                                                             parent_->s, delta_s, 
+      //                                                             parent_->q_init, 
+      //                                                            input_footstep_list);
+      convergence = ctg->computeConfigurationTrajectory(f_s,  
+                                                        parent_->s, delta_s, 
+                                                        parent_->q_init, 
+                                                        input_footstep_list);
+
       // Get the final configuration and set to current
       // std::cout << "getting the final configuration" << std::endl;
       ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_end);
@@ -1029,10 +1055,14 @@ namespace planner{
 
       // If we do not trust the classifier, run a configuration checl
       if (!trust_classifier){
-        convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
-                                                                    parent_->s, delta_s, 
-                                                                    parent_->q_init, 
-                                                                   input_footstep_list);
+        // convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
+        //                                                             parent_->s, delta_s, 
+        //                                                             parent_->q_init, 
+        //                                                            input_footstep_list);
+        convergence = ctg->computeConfigurationTrajectory(f_s,  
+                                                          parent_->s, delta_s, 
+                                                          parent_->q_init, 
+                                                          input_footstep_list);
 
         // if store mistakes
         if ((use_classifier) && (classifier_store_mistakes)){
@@ -1321,11 +1351,15 @@ namespace planner{
 
       // Start -- IF we don't trust the classifier, run a config trajectory check
       if (!trust_classifier){
+        // convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
+        //                                                             parent_->s, delta_s, 
+        //                                                             parent_->q_init, 
+        //                                                             input_footstep_list);
+       convergence = ctg->computeConfigurationTrajectory(f_s,  
+                                                          parent_->s, delta_s, 
+                                                          parent_->q_init, 
+                                                          input_footstep_list);
 
-        convergence = ctg->computeConfigurationTrajectory(f_s, CONFIG_TRAJECTORY_ROBOT_RIGHT_SIDE, 
-                                                                    parent_->s, delta_s, 
-                                                                    parent_->q_init, 
-                                                                    input_footstep_list);
 
         std::cout << "  Converged: " << (convergence ? "True" : "False") << std::endl;       
 
