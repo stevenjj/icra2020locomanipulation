@@ -8,9 +8,10 @@
 # add_executable(test_ik_multipleobject_idea1 test_ik_multipleobject_idea1.cpp ${PROJECT_SOURCES})
 # add_executable(test_ik_self_object test_ik_self_object.cpp ${PROJECT_SOURCES})
 # add_executable(test_hand_in_place_nn_check test_hand_in_place_nn_check.cpp ${PROJECT_SOURCES})
-add_executable(test_foot_generate_picture test_foot_generate_picture.cpp ${PROJECT_SOURCES})
+
+# add_executable(test_foot_generate_picture test_foot_generate_picture.cpp ${PROJECT_SOURCES})
 # add_executable(test_hand_generate_picture test_hand_generate_picture.cpp ${PROJECT_SOURCES})
-add_executable(test_foot_generate_picture_no_hand test_foot_generate_picture_no_hand.cpp ${PROJECT_SOURCES})
+# add_executable(test_foot_generate_picture_no_hand test_foot_generate_picture_no_hand.cpp ${PROJECT_SOURCES})
 # add_executable(test_hand_ik_convergence_picture test_hand_ik_convergence_picture.cpp ${PROJECT_SOURCES})
 
 # target_link_libraries(test_config_trajectory_generator ${PROJECT_LIBRARIES})
@@ -23,9 +24,10 @@ add_executable(test_foot_generate_picture_no_hand test_foot_generate_picture_no_
 # target_link_libraries(test_ik_multipleobject_idea1 ${PROJECT_LIBRARIES})
 # target_link_libraries(test_ik_self_object ${PROJECT_LIBRARIES})
 # target_link_libraries(test_hand_in_place_nn_check ${PROJECT_LIBRARIES})
-target_link_libraries(test_foot_generate_picture ${PROJECT_LIBRARIES})
+
+# target_link_libraries(test_foot_generate_picture ${PROJECT_LIBRARIES})
 # target_link_libraries(test_hand_generate_picture ${PROJECT_LIBRARIES})
-target_link_libraries(test_foot_generate_picture_no_hand ${PROJECT_LIBRARIES})
+# target_link_libraries(test_foot_generate_picture_no_hand ${PROJECT_LIBRARIES})
 # target_link_libraries(test_hand_ik_convergence_picture ${PROJECT_LIBRARIES})
 
 
@@ -36,8 +38,9 @@ target_link_libraries(test_foot_generate_picture_no_hand ${PROJECT_LIBRARIES})
 # add_dependencies(test_prioritized_ik ${${PROJECT_NAME}_EXPORTED_TARGETS})
 # add_dependencies(test_walking_pattern_generator ${${PROJECT_NAME}_EXPORTED_TARGETS})
 # add_dependencies(test_hand_in_place_nn_check ${${PROJECT_NAME}_EXPORTED_TARGETS})
-add_dependencies(test_foot_generate_picture ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+# add_dependencies(test_foot_generate_picture ${${PROJECT_NAME}_EXPORTED_TARGETS})
 # add_dependencies(test_hand_generate_picture ${${PROJECT_NAME}_EXPORTED_TARGETS})
-add_dependencies(test_foot_generate_picture_no_hand ${${PROJECT_NAME}_EXPORTED_TARGETS})
+# add_dependencies(test_foot_generate_picture_no_hand ${${PROJECT_NAME}_EXPORTED_TARGETS})
 # add_dependencies(test_hand_ik_convergence_picture ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
