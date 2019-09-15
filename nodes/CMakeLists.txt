@@ -10,6 +10,10 @@ add_executable(planner_door_open_node planner_door_open_node.cpp ${PROJECT_SOURC
 add_dependencies(planner_door_open_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
 target_link_libraries(planner_door_open_node ${PROJECT_LIBRARIES})
 
+add_executable(planner_door_open_neural_net_node planner_door_open_neural_net_node.cpp ${PROJECT_SOURCES})
+add_dependencies(planner_door_open_neural_net_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
+target_link_libraries(planner_door_open_neural_net_node ${PROJECT_LIBRARIES})
+
 # add_executable(node_visualize_bag node_visualize_bag.cpp ${PROJECT_SOURCES})
 # add_dependencies(node_visualize_bag ${${PROJECT_NAME}_EXPORTED_TARGETS})
 # target_link_libraries(node_visualize_bag ${PROJECT_LIBRARIES})
