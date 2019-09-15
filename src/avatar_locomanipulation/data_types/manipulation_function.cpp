@@ -18,12 +18,6 @@ void ManipulationFunction::setWaypointsFromYaml(std::string filename){
 	f_rh_s.reset(new CubicInterpolationSixDimVec(filename));
 	// Set default to right hand
 	right_hand_waypoints_set = true;
-	// Set Manipulation Type
-	if (left_hand_waypoints_set){
-		manipulation_type = MANIPULATE_TYPE_BOTH_HANDS;
-	}else{
-		manipulation_type = MANIPULATE_TYPE_RIGHT_HAND;
-	}
 }
 
 void ManipulationFunction::setRightWaypointsFromYaml(std::string filename){
@@ -34,12 +28,6 @@ void ManipulationFunction::setLeftWaypointsFromYaml(std::string filename){
 	// Create interpolator from waypoint list
 	f_lh_s.reset(new CubicInterpolationSixDimVec(filename));
 	left_hand_waypoints_set = true;
-	// Set Manipulation Type
-	if (left_hand_waypoints_set){
-		manipulation_type = MANIPULATE_TYPE_BOTH_HANDS;
-	}else{
-		manipulation_type = MANIPULATE_TYPE_LEFT_HAND;
-	}
 }
 
 int ManipulationFunction::getManipulationType(){
@@ -71,6 +59,9 @@ void ManipulationFunction::getLeftHandPose(double & s, Eigen::Vector3d & pos_out
 	quat_out = transform_orientation*rhand_local_ori;
 }
 
+void ManipulationFunction::setManipulationType(int type){
+	manipulation_type = type;
+}
 
 void ManipulationFunction::common_initialization(){
 	manipulation_type = MANIPULATE_TYPE_RIGHT_HAND;

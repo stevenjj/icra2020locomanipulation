@@ -18,7 +18,7 @@
       </material>
     </visual> -->
     <collision>
-      <origin rpy="0 0 0" xyz="-0.0503 0 0.05"/>
+      <origin rpy="0 0 0" xyz="-0.0503 0 0."/>
       <geometry>
         <!-- <box size="0.1311 0.12 0.0591"/> -->
         <box size="0.1311 0.12 0.15"/>
@@ -454,7 +454,7 @@
     <parent link="rightForearmLink"/>
     <child link="rightWristRollLink"/>
     <!-- <limit effort="14" lower="-0.625" upper="0.62" velocity="1"/> -->
-    <limit effort="14" lower="-3.14" upper="3.14" velocity="1"/>
+    <limit effort="14" lower="-4.14" upper="4.14" velocity="1"/>
     <controller_gains Kd="400" Ki="0.0" Kp="20000"/>
     <dynamics damping="0.1" friction="0.0"/>
   </joint>
@@ -468,7 +468,7 @@
     <parent link="rightWristRollLink"/>
     <child link="rightPalm"/>
     <!-- <limit effort="14" lower="-0.49" upper="0.36" velocity="1"/> -->
-    <limit effort="14" lower="-3.14" upper="3.14" velocity="1"/>
+    <limit effort="14" lower="-4.14" upper="4.14" velocity="1"/>
     <controller_gains Kd="400" Ki="0.0" Kp="20000"/>
     <dynamics damping="0.1" friction="0.0"/>
   </joint>

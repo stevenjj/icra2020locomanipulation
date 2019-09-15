@@ -30,6 +30,7 @@ public:
   void getRightHandPose(double & s, Eigen::Vector3d & pos_out, Eigen::Quaterniond & quat_out);
   void getLeftHandPose(double & s, Eigen::Vector3d & pos_out, Eigen::Quaterniond & quat_out);
  
+  void setManipulationType(int type);
   int getManipulationType();
 
 private:
