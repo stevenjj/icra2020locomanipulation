@@ -37,6 +37,8 @@ public:
 	void s_callback(const std_msgs::Float64ConstPtr & msg);
 
 	double s_current; // curent s for determining door angle
+	double s_offset; // curent s for determining door angle
+
 	double radius; // door radius
 	double door_open_angle; // angle when door is fully open
 	Eigen::Vector3d hinge_frame_pos; // height of handle (assumed 1/2 of door size)

@@ -128,11 +128,15 @@ void ConfigTrajectoryGenerator::initializeTasks(){
     std::vector<std::string> left_arm_joint_names = {"leftShoulderPitch", "leftShoulderRoll", "leftShoulderYaw", "leftElbowPitch", "leftForearmYaw", "leftWristRoll", "leftWristPitch"};
     std::vector<std::string> right_arm_joint_names = {"rightShoulderPitch", "rightShoulderRoll", "rightShoulderYaw", "rightElbowPitch", "rightForearmYaw", "rightWristRoll", "rightWristPitch"};
 
+    std::vector<std::string> right_wrist_joint_names = {"rightWristRoll", "rightWristPitch"};
+    std::vector<std::string> left_wrist_joint_names = {"leftWristRoll", "leftWristPitch"};
+
     torso_posture_task = std::shared_ptr<Task>(new TaskJointConfig(robot_model, torso_joint_names));
     neck_posture_task = std::shared_ptr<Task>(new TaskJointConfig(robot_model, neck_joint_names));
     rarm_posture_task = std::shared_ptr<Task>(new TaskJointConfig(robot_model, right_arm_joint_names));
     larm_posture_task = std::shared_ptr<Task>(new TaskJointConfig(robot_model, left_arm_joint_names));
-
+    rwrist_posture_task = std::shared_ptr<Task>(new TaskJointConfig(robot_model, right_wrist_joint_names));
+    lwrist_posture_task = std::shared_ptr<Task>(new TaskJointConfig(robot_model, left_wrist_joint_names));
 }
 
 // Sets the SE3 trajectories for the left and right hands
@@ -166,6 +170,10 @@ void ConfigTrajectoryGenerator::setUseLeftHand(bool use_left_hand_in){
 void ConfigTrajectoryGenerator::setUseTorsoJointPosition(bool use_torso_joint_position_in){	
 	use_torso_joint_position = use_torso_joint_position_in;
 }
+void ConfigTrajectoryGenerator::setUseArmLowerPriorityTask(bool use_arm_lower_priority_posture_task_in){
+	use_arm_lower_priority_posture_task = use_arm_lower_priority_posture_task_in;
+}
+
 
 void ConfigTrajectoryGenerator::reinitializeTaskStack(){
 	this->createTaskStack();
@@ -190,7 +198,10 @@ void ConfigTrajectoryGenerator::createTaskStack(){
 	if (use_right_hand){
 		vec_task_stack.push_back(rhand_task);
 		vec_manip_stack_1.push_back(rhand_task);
-		vec_posture_task_stack.push_back(rarm_posture_task);
+		if ((!use_left_hand) && (use_arm_lower_priority_posture_task)){
+			vec_posture_task_stack.push_back(rarm_posture_task);
+			rarm_posture_task->setTaskGain(1.5);
+		}
 	}else{
 		vec_posture_task_stack.push_back(rarm_posture_task);
 	}
@@ -202,6 +213,10 @@ void ConfigTrajectoryGenerator::createTaskStack(){
 	if (use_left_hand){
 		vec_task_stack.push_back(lhand_task);
 		vec_manip_stack_1.push_back(lhand_task);
+		if ((!use_right_hand) && (use_arm_lower_priority_posture_task)){
+			vec_posture_task_stack.push_back(larm_posture_task);
+			larm_posture_task->setTaskGain(1.5);			
+		}
 	}else{
 		vec_posture_task_stack.push_back(larm_posture_task);
 	}
@@ -315,6 +330,8 @@ bool ConfigTrajectoryGenerator::computeInitialConfigForFlatGround(const Eigen::V
 	setPostureTaskReference(neck_posture_task, q_start);
 	setPostureTaskReference(rarm_posture_task, q_start);
 	setPostureTaskReference(larm_posture_task, q_start);
+	setPostureTaskReference(rwrist_posture_task, q_start);
+	setPostureTaskReference(lwrist_posture_task, q_start);
 
 
 	// Prepare IK output
@@ -441,6 +458,8 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 	setPostureTaskReference(neck_posture_task, q_posture);
 	setPostureTaskReference(rarm_posture_task, q_posture);
 	setPostureTaskReference(larm_posture_task, q_posture);
+	setPostureTaskReference(rwrist_posture_task, q_start);
+	setPostureTaskReference(lwrist_posture_task, q_start);
 
 	// If there are footsteps in the list construct the task space trajectories.
 	if (input_footstep_list.size() > 0){

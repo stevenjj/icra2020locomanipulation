@@ -67,6 +67,7 @@ public:
 	void setUseRightHand(bool use_right_hand_in);
 	void setUseLeftHand(bool use_left_hand_in);
 	void setUseTorsoJointPosition(bool use_torso_joint_position_in);
+	void setUseArmLowerPriorityTask(bool use_arm_lower_priority_posture_task_in);
 
 	// Sets the verbosity level from 0 to 4.
 	void setVerbosityLevel(int verbosity_level_in);
@@ -136,6 +137,9 @@ public:
 	std::shared_ptr<Task> rarm_posture_task;
 	std::shared_ptr<Task> larm_posture_task;
 
+	std::shared_ptr<Task> rwrist_posture_task;
+	std::shared_ptr<Task> lwrist_posture_task;
+
 	std::shared_ptr<Task> task_stack;
 	std::shared_ptr<Task> task_stack_manip_1;
 	std::shared_ptr<Task> task_stack_manip_2;
@@ -183,6 +187,7 @@ private:
 	bool use_right_hand = false;
 	bool use_left_hand = false;
 	bool use_torso_joint_position = true;
+	bool use_arm_lower_priority_posture_task = false;
 
 	
 	Eigen::Quaterniond tmp_pelvis_ori;

@@ -509,6 +509,7 @@ namespace planner{
     //perform the A_star algorithm
 
     bool A_starPlanner::doAstar(){
+        start_time = Clock::now();
         NodePtr_Compare_key node_ptr_compare_key_obj;
         NodePtr_Compare_Fcost node_compare_fcost_obj;
 
@@ -566,11 +567,37 @@ namespace planner{
 
                 //current node = goal node
                 if (goalReached(current_node, goal) == true){
+                    goal_time = Clock::now();
+
+                    goal_time_span = std::chrono::duration_cast< std::chrono::duration<double> >(goal_time - start_time).count();
+                    std::cout << " --------------- " << std::endl;                    
+                    std::cout << "  Goal time = " << goal_time_span << " seconds" << std::endl;                    
+                    std::cout << " --------------- " << std::endl;                    
+
+                    start_path_reconstruction_time = Clock::now(); 
+
                     // cout << "goal reached" << endl;
                     //reproduce path
                     achieved_goal = current_node;
                     // Construct the path. return true if path reconstruction succeeds
                     if(constructPath()){
+                        end_path_reconstruction_time = Clock::now(); 
+                        path_reconstruction_time_span = std::chrono::duration_cast< std::chrono::duration<double> >(end_path_reconstruction_time - start_path_reconstruction_time).count();
+                        total_plan_time = Clock::now(); 
+                        total_plan_time_span = std::chrono::duration_cast< std::chrono::duration<double> >(total_plan_time - start_time).count();
+
+                        std::cout << " --------------- " << std::endl;                    
+                        std::cout << "  Goal time = " << goal_time_span << " seconds" << std::endl;                    
+                        std::cout << " --------------- " << std::endl;                    
+
+                        std::cout << " --------------- " << std::endl;                    
+                        std::cout << "  Path Reconstruction Time = " << path_reconstruction_time_span << " seconds" << std::endl;                    
+                        std::cout << " --------------- " << std::endl;                    
+
+                        std::cout << " --------------- " << std::endl;                    
+                        std::cout << "  Total Plan Time = " << total_plan_time_span << " seconds" << std::endl;                    
+                        std::cout << " --------------- " << std::endl;                    
+
                         return true;
                     }else{
                         // This node will have no neighbors, so perform the necessary set operations and continue
