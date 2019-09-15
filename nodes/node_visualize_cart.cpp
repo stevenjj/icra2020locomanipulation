@@ -90,7 +90,7 @@ int main(int argc, char **argv){
 
 	waypoint_poses.header.frame_id = "fixed_frame";
 
-	for(int i=1; i<=num_wps; ++i){
+	for(int i=1; i<= ((int) num_wps*0.6); ++i){
 		left_waypoint_string = "waypoint_" + std::to_string(i);
 		right_waypoint_string = "waypoint_" + std::to_string(i);
 
