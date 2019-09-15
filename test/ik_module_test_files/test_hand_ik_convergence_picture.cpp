@@ -124,7 +124,7 @@ void getSelectedPostureTaskReferences(std::shared_ptr<RobotModel> valkyrie, std:
 }
 
 
-void visualize_robot(Eigen::VectorXd & q_start, Eigen::VectorXd & q_end){
+void visualize_robot(Eigen::VectorXd & q_start, Eigen::VectorXd & q_end, visualization_msgs::MarkerArray & msg){
   // Initialize ROS node for publishing joint messages
   ros::NodeHandle n;
   ros::Rate loop_rate(20);
@@ -157,12 +157,16 @@ void visualize_robot(Eigen::VectorXd & q_start, Eigen::VectorXd & q_end){
   rviz_translator.populate_joint_state_msg(valkyrie.model, q_start, tf_world_pelvis_init, joint_msg_init);
   rviz_translator.populate_joint_state_msg(valkyrie.model, q_end, tf_world_pelvis_end, joint_msg_end);
 
+  ros::Publisher hand_pub = n.advertise<visualization_msgs::MarkerArray>("foot_positions", 100);
+
   while(ros::ok()){
       br_robot.sendTransform(tf::StampedTransform(tf_world_pelvis_init, ros::Time::now(), "world",  "val_robot/pelvis"));
       robot_joint_state_pub.publish(joint_msg_init);
 
       br_ik.sendTransform(tf::StampedTransform(tf_world_pelvis_end, ros::Time::now(), "world", "val_ik_robot/pelvis"));
       robot_ik_joint_state_pub.publish(joint_msg_end);
+
+      hand_pub.publish(msg);
     ros::spinOnce();
     loop_rate.sleep();
   }
@@ -349,7 +353,7 @@ void useIK_module(){
 	ros::spinOnce();
 
 	// Visualize Trajectory
-	visualize_robot(q_init, q_sol);
+	visualize_robot(q_init, q_sol, msg);
 
 }
 
