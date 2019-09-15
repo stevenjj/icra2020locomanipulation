@@ -23,42 +23,42 @@
 using namespace planner;
 
 
-void load_initial_robot_door_configuration(Eigen::VectorXd & q_out, Eigen::Vector3d & hinge_pos_out, Eigen::Quaterniond & hinge_ori_out){
+void load_initial_robot_door_configuration(Eigen::VectorXd & q_out, Eigen::Vector3d & cart_pos_out, Eigen::Quaterniond & cart_ori_out){
   ParamHandler param_handler;
-  param_handler.load_yaml_file(THIS_PACKAGE_PATH"stored_configurations/robot_door_initial_configuration_v3.yaml");  
+  param_handler.load_yaml_file(THIS_PACKAGE_PATH"stored_configurations/robot_cart_initial_configuration_v1.yaml");  
 
   // Get the robot configuration vector
   std::vector<double> robot_q;
   param_handler.getVector("robot_starting_configuration", robot_q);
   
-  // Get hinge location and orientation
-  double hinge_x, hinge_y, hinge_z, hinge_rx, hinge_ry, hinge_rz, hinge_rw;
-  param_handler.getNestedValue({"hinge_position", "x"}, hinge_x);
-  param_handler.getNestedValue({"hinge_position", "y"}, hinge_y);
-  param_handler.getNestedValue({"hinge_position", "z"}, hinge_z);
-  param_handler.getNestedValue({"hinge_orientation", "x"}, hinge_rx);
-  param_handler.getNestedValue({"hinge_orientation", "y"}, hinge_ry);
-  param_handler.getNestedValue({"hinge_orientation", "z"}, hinge_rz);
-  param_handler.getNestedValue({"hinge_orientation", "w"}, hinge_rw);
+  // Get cart location and orientation
+  double cart_x, cart_y, cart_z, cart_rx, cart_ry, cart_rz, cart_rw;
+  param_handler.getNestedValue({"cart_fixed_frame_position", "x"}, cart_x);
+  param_handler.getNestedValue({"cart_fixed_frame_position", "y"}, cart_y);
+  param_handler.getNestedValue({"cart_fixed_frame_position", "z"}, cart_z);
+  param_handler.getNestedValue({"cart_fixed_frame_orientation", "x"}, cart_rx);
+  param_handler.getNestedValue({"cart_fixed_frame_orientation", "y"}, cart_ry);
+  param_handler.getNestedValue({"cart_fixed_frame_orientation", "z"}, cart_rz);
+  param_handler.getNestedValue({"cart_fixed_frame_orientation", "w"}, cart_rw);
 
   // Convert to Eigen data types
   Eigen::VectorXd q = Eigen::VectorXd::Zero(robot_q.size());
   for(int i = 0; i < robot_q.size(); i++){
     q[i] = robot_q[i];
   }
-  Eigen::Vector3d hinge_position(hinge_x, hinge_y, hinge_z);
-  Eigen::Quaterniond hinge_orientation(hinge_rw, hinge_rx, hinge_ry, hinge_rz);
+  Eigen::Vector3d cart_position(cart_x, cart_y, cart_z);
+  Eigen::Quaterniond cart_orientation(cart_rw, cart_rx, cart_ry, cart_rz);
 
   // Set outputs
   q_out = q;
-  hinge_pos_out = hinge_position;
-  hinge_ori_out = hinge_orientation;
+  cart_pos_out = cart_position;
+  cart_ori_out = cart_orientation;
 }
 
 
-void load_final_robot_door_configuration(Eigen::VectorXd & q_out){
+void load_final_robot_object_configuration(Eigen::VectorXd & q_out){
   ParamHandler param_handler;
-  param_handler.load_yaml_file(THIS_PACKAGE_PATH"stored_configurations/robot_door_final_configuration.yaml");  
+  param_handler.load_yaml_file(THIS_PACKAGE_PATH"stored_configurations/robot_cart_initial_configuration_v1.yaml");  
 
   // Get the robot configuration vector
   std::vector<double> robot_q;
@@ -80,20 +80,20 @@ void test_LM_planner(){
   std::shared_ptr<RobotModel> valkyrie_model(new RobotModel(urdf_filename));
   // Get the Initial Robot and Door Configuration
   Eigen::VectorXd q_start_door;
-  Eigen::Vector3d hinge_position;
-  Eigen::Quaterniond hinge_orientation;
-  load_initial_robot_door_configuration(q_start_door, hinge_position, hinge_orientation);
+  Eigen::Vector3d cart_position;
+  Eigen::Quaterniond cart_orientation;
+  load_initial_robot_door_configuration(q_start_door, cart_position, cart_orientation);
 
   // Get the final guessed robot configuration
   // Eigen::VectorXd q_final_door;
-  // load_final_robot_door_configuration(q_final_door);
+  // load_final_robot_object_configuration(q_final_door);
 
   // Initialize the manipulation function for manipulating the door ----------------------------------
-  std::string door_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/door_open_trajectory_v3.yaml";
-  std::shared_ptr<ManipulationFunction> f_s_manipulate_door(new ManipulationFunction(door_yaml_file));
-  // Set hinge location as waypoints are with respect to the hinge
-  hinge_orientation.normalize();
-  f_s_manipulate_door->setWorldTransform(hinge_position, hinge_orientation);
+  std::string right_hand_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/cart_right_hand_trajectory.yaml";
+  std::shared_ptr<ManipulationFunction> f_s_manipulate_door(new ManipulationFunction(right_hand_yaml_file));
+  // Set cart location as waypoints are with respect to the cart
+  cart_orientation.normalize();
+  f_s_manipulate_door->setWorldTransform(cart_position, cart_orientation);
 
   // Initialize Config Trajectory Generator
   int N_resolution = 60; //single step = 30. two steps = 60// 30* number of footsteps
@@ -124,7 +124,7 @@ void test_LM_planner(){
 
   // 
   double s_init = 0.0;
-  double s_goal = 0.99; //0.20; //0.12;//0.08;
+  double s_goal = 0.1; //0.20; //0.12;//0.08;
   shared_ptr<Node> starting_vertex (std::make_shared<LMVertex>(s_init, q_start_door));    
   shared_ptr<Node> goal_vertex (std::make_shared<LMVertex>(s_goal));
 
