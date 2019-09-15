@@ -143,8 +143,8 @@ int main(int argc, char **argv){
       left_values[0] = i*dl;
       right_values[0] = i*dl;
       // y position
-      left_values[1] = radius;
-      right_values[1] = radius + hand_distance;
+      left_values[1] = -(radius);
+      right_values[1] = -(radius + hand_distance);
       // z position
       left_values[2] = 0.;
       right_values[2] = 0.; 

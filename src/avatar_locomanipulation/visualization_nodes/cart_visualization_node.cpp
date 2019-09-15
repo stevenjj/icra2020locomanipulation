@@ -71,65 +71,45 @@ void CartVisualizationNode::getParameters(){
 
 void CartVisualizationNode::getVizInformation(tf::Transform & tf_world_fixed, tf::Transform & tf_fixed_cart){
 
-	// Define the fixed frame transform
-	tf_world_fixed.setOrigin(tf::Vector3(center_frame_pos[0], center_frame_pos[1], center_frame_pos[2]));
-	tf_world_fixed.setRotation(tf::Quaternion(q_fixed.x(), q_fixed.y(), q_fixed.z(), q_fixed.w()));
+  // Define the fixed frame transform
+  tf_world_fixed.setOrigin(tf::Vector3(fixed_frame_pos[0], fixed_frame_pos[1], fixed_frame_pos[2]));
+  tf_world_fixed.setRotation(tf::Quaternion(q_fixed.x(), q_fixed.y(), q_fixed.z(), q_fixed.w()));
 
-	// First need to determine the bounds of s for when we are lifting vs when we are turning
-	double arc_length = rotation_angle * radius;
+  // First need to determine the bounds of s for when we are lifting vs when we are turning
+  double arc_length = rotation_angle * radius;
 
-	N = static_cast<int>(arc_length / pose_spacing);// Number of wps to describe the arc
-  M = static_cast<int>(lift_height / pose_spacing); // Number of wps to describe each of the up and down motions
+  N = static_cast<int>(arc_length / pose_spacing);// Number of wps to describe the arc
+  M = static_cast<int>(linear_length / pose_spacing); // Number of wps to describe each of the up and down motions
 
-  int total_wps = N + (2*M);
+  int total_wps = N + M + 1;
 
-	Eigen::Quaternion<double> q, q_i;	
+  Eigen::Quaternion<double> q, q_i; 
 
-  double percent_lifting = (static_cast<double>(M) / static_cast<double>(total_wps));
+  double percent_pushing = (static_cast<double>(M) / static_cast<double>(total_wps));
   double percent_turning = (static_cast<double>(N) / static_cast<double>(total_wps));
-  // Now we know the first and last bit of s inZ [0,1] that will constitute lifting/putting down vs turning
 
-  if(s_current < percent_lifting){ // then the motion of the frame is going to be up
-  	
-  	// x and y constant wrt the fixed frame
-  	// z is the start height + s/s_lift*lift_height
-  			// Thus when s = s_lift, we are 1*lift_height
-  	tf_center_bag.setOrigin(tf::Vector3(radius, 0.0,((s_current / percent_lifting) * lift_height) ));
-  	// In this portion of the movement, there is no change in angle of the bag
-  	tf_center_bag.setRotation(tf::Quaternion(0., 0., 0., 1.));
-
+  if(s_current < percent_pushing){
+    tf_fixed_cart.setOrigin(tf::Vector3((s_current / percent_pushing) * linear_length, -(radius + (hand_distance/2)), 0.0));
+    tf_fixed_cart.setRotation(tf::Quaternion(0., 0., 0., 1.));
   }
-  else if(s_current > (1. - percent_lifting)){ // the the motion of the frame is going to be down
-  	// x and y constant wrt the fixed frame
-  	// z is the final height -                       //s/s_lift*lift_height
-  			// Thus when s = s_lift, we are 1*lift_height
-  	tf_center_bag.setOrigin(tf::Vector3(radius * cos(rotation_angle), 0.0, lift_height - (((s_current - (1 - percent_lifting)) / percent_lifting) * lift_height) ));
-  	// In this portion of the movement, there is no change in angle of the bag
-  	tf_center_bag.setRotation(tf::Quaternion(0., 0., 0., 1.));
+  else{
+    double s_local;
+    s_local = (s_current - percent_pushing) / (1. - percent_pushing);
+    tf_fixed_cart.setOrigin(tf::Vector3((radius + linear_length + (hand_distance/2))*cos(-1.57 + (s_local*rotation_angle)), (radius + linear_length)*sin(-1.57 + (s_local*rotation_angle)), 0.0 ) );
+    
+    q.x() = 0.0; q.y() = 0.0; q.z() = sin((s_local * rotation_angle) / 2); q.w() = cos((s_local * rotation_angle) / 2);
+    q_i = q * q_fixed;
+
+    tf_fixed_cart.setRotation(tf::Quaternion(q_i.x(), q_i.y(), q_i.z(), q_i.w()));
   }
-  else{ // the motion is on the arc
-  	// Need to define an s_local s.t. s = percent_lifting -> s_local = 0
-  	// and s = 1 - percent_lifting -> s_local = 1
-  	double s_local = (s_current - percent_lifting)/((1. - percent_lifting) - percent_lifting);
-
-  	q.x() = 0.0; q.y() = 0.0; q.z() = sin((s_local * rotation_angle) / 2); q.w() = cos((s_local * rotation_angle) / 2);
-
-  	q_i = q * q_fixed;
-
-  	// x and y are changing while z is constant
-  	tf_center_bag.setOrigin(tf::Vector3((radius * cos( (s_local * rotation_angle) ) ), (radius * sin( (s_local * rotation_angle) ) ), lift_height));
-  	// rotation occurs with the waypoints
-  	tf_center_bag.setRotation(tf::Quaternion(q_i.x(), q_i.y(), q_i.z(), q_i.w()));
-  } 
-
 }	
 
 
-void CartVisualizationNode::fillBagMarkerArray(visualization_msgs::MarkerArray & cart_msg){
+void CartVisualizationNode::fillCartMarkerArray(visualization_msgs::MarkerArray & cart_msg){
 
 	visualization_msgs::Marker temp;
 
-  // First generate the top of handle of the bag
+  // First generate the handle of the cart
   temp.pose.position.x = 0.0;
   temp.pose.position.y = 0.0;
   temp.pose.position.z = 0.0;
@@ -137,13 +117,85 @@ void CartVisualizationNode::fillBagMarkerArray(visualization_msgs::MarkerArray &
   temp.pose.orientation.y = 0.0;
   temp.pose.orientation.z = 0.0;
   temp.pose.orientation.w = 1.0;
-  temp.scale.x = 0.01;
-  temp.scale.y = 0.08;
-  temp.scale.z = 0.01;
-  temp.header.frame_id = "bag_frame";
+  temp.scale.x = 0.03;
+  temp.scale.y = 0.9;
+  temp.scale.z = 0.03;
+  temp.header.frame_id = "cart_frame";
   temp.text = "handle_top";
   temp.ns = "ns";
   temp.id = 1;
+  temp.color.r = 0.5f;
+  temp.color.g = 0.5f;
+  temp.color.b = 0.5f;
+  temp.color.a = 1.0;
+  temp.action = visualization_msgs::Marker::ADD;
+  temp.type = visualization_msgs::Marker::CUBE;
+
+  cart_msg.markers.push_back(temp);
+
+  // First generate the handle of the cart
+  temp.pose.position.x = 0.0;
+  temp.pose.position.y = -0.42;
+  temp.pose.position.z = -0.1;
+  temp.pose.orientation.x = 0.0;
+  temp.pose.orientation.y = 0.0;
+  temp.pose.orientation.z = 0.0;
+  temp.pose.orientation.w = 1.0;
+  temp.scale.x = 0.03;
+  temp.scale.y = 0.02;
+  temp.scale.z = 0.2;
+  temp.header.frame_id = "cart_frame";
+  temp.text = "handle_top";
+  temp.ns = "ns";
+  temp.id = 2;
+  temp.color.r = 0.5f;
+  temp.color.g = 0.5f;
+  temp.color.b = 0.5f;
+  temp.color.a = 1.0;
+  temp.action = visualization_msgs::Marker::ADD;
+  temp.type = visualization_msgs::Marker::CUBE;
+
+  cart_msg.markers.push_back(temp);
+
+  // First generate the handle of the cart
+  temp.pose.position.x = 0.;
+  temp.pose.position.y = 0.42;
+  temp.pose.position.z = -0.1;
+  temp.pose.orientation.x = 0.0;
+  temp.pose.orientation.y = 0.0;
+  temp.pose.orientation.z = 0.0;
+  temp.pose.orientation.w = 1.0;
+  temp.scale.x = 0.03;
+  temp.scale.y = 0.02;
+  temp.scale.z = 0.2;
+  temp.header.frame_id = "cart_frame";
+  temp.text = "handle_top";
+  temp.ns = "ns";
+  temp.id = 3;
+  temp.color.r = 0.5f;
+  temp.color.g = 0.5f;
+  temp.color.b = 0.5f;
+  temp.color.a = 1.0;
+  temp.action = visualization_msgs::Marker::ADD;
+  temp.type = visualization_msgs::Marker::CUBE;
+
+  cart_msg.markers.push_back(temp);
+
+  // First generate the handle of the cart
+  temp.pose.position.x = 0.5;
+  temp.pose.position.y = 0.0;
+  temp.pose.position.z = -(fixed_frame_pos[2]/2.) -0.1;
+  temp.pose.orientation.x = 0.0;
+  temp.pose.orientation.y = 0.0;
+  temp.pose.orientation.z = 0.0;
+  temp.pose.orientation.w = 1.0;
+  temp.scale.x = 1.0;
+  temp.scale.y = 0.85;
+  temp.scale.z = (fixed_frame_pos[2] -0.2);
+  temp.header.frame_id = "cart_frame";
+  temp.text = "handle_top";
+  temp.ns = "ns";
+  temp.id = 4;
   temp.color.r = 0.5f;
   temp.color.g = 0.5f;
   temp.color.b = 0.5f;
