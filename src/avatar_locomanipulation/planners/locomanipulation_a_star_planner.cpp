@@ -171,7 +171,19 @@ namespace planner{
     // Set Feet position w.r.t hand 
     std::cout << "normal start node finished" << std::endl;
     double s_init = 0.0;
-    f_s->getPose(s_init, tmp_pos, tmp_ori);
+
+    if (  (f_s->getManipulationType() == MANIPULATE_TYPE_RIGHT_HAND) ||
+          (f_s->getManipulationType() == MANIPULATE_TYPE_BOTH_HANDS) ){
+      // Use transform from right hand
+      f_s->getRightHandPose(s_init, tmp_pos, tmp_ori);
+    }else if (f_s->getManipulationType() == MANIPULATE_TYPE_LEFT_HAND) {
+      f_s->getLeftHandPose(s_init, tmp_pos, tmp_ori);
+    }else{
+      std::cout << "Warning using default get pos from manipulation function" << std::endl;
+      // Use whatever default we have
+      f_s->getPose(s_init, tmp_pos, tmp_ori);      
+    }
+
     Eigen::Matrix3d R_hand_ori_T = tmp_ori.toRotationMatrix().transpose();
 
     lf_pos_wrt_hand = R_hand_ori_T*(begin_->left_foot.position - tmp_pos);
@@ -687,10 +699,18 @@ namespace planner{
     // TODO: manipulation function f_s should be setting the manipulation type
     nn_manipulation_type = CONTACT_TRANSITION_DATA_RIGHT_HAND; 
 
+    if (f_s->getManipulationType() == MANIPULATE_TYPE_RIGHT_HAND){
+      nn_manipulation_type = CONTACT_TRANSITION_DATA_RIGHT_HAND;
+    }else if (f_s->getManipulationType() == MANIPULATE_TYPE_LEFT_HAND)  {
+      nn_manipulation_type = CONTACT_TRANSITION_DATA_LEFT_HAND;
+    }else if (f_s->getManipulationType() == MANIPULATE_TYPE_BOTH_HANDS ) {
+      nn_manipulation_type = CONTACT_TRANSITION_DATA_BOTH_HANDS;
+    }   
+
 
     if (nn_manipulation_type == CONTACT_TRANSITION_DATA_RIGHT_HAND){
       // Get the hand pose from the manipulation function
-      f_s->getPose(s_value, nn_right_hand_start_pos, nn_right_hand_start_ori);
+      f_s->getRightHandPose(s_value, nn_right_hand_start_pos, nn_right_hand_start_ori);
 
       // Convert Right Hand to Stance Frame
       convertWorldToStanceOrigin(nn_right_hand_start_pos, nn_right_hand_start_ori, tmp_pos, tmp_ori);
@@ -701,7 +721,7 @@ namespace planner{
       nn_left_hand_start_ori.setIdentity();
     }else if (nn_manipulation_type == CONTACT_TRANSITION_DATA_LEFT_HAND){
       // Get the hand pose from the manipulation function
-      f_s->getPose(s_value, nn_left_hand_start_pos, nn_left_hand_start_ori);      
+      f_s->getLeftHandPose(s_value, nn_left_hand_start_pos, nn_left_hand_start_ori);      
 
       // Convert Left Hand to Stance Frame
       convertWorldToStanceOrigin(nn_left_hand_start_pos, nn_left_hand_start_ori, tmp_pos, tmp_ori);
@@ -710,9 +730,9 @@ namespace planner{
       nn_right_hand_start_pos.setZero();
       nn_right_hand_start_ori.setIdentity();
     }else if (nn_manipulation_type == CONTACT_TRANSITION_DATA_BOTH_HANDS){
-      // not implemented
-      // f_s->getPose(s_value, nn_left_hand_start_pos, nn_left_hand_start_ori,
-      //                            nn_right_hand_start_pos, nn_right_hand_start_ori);      
+      // get right and left hand poses
+      f_s->getRightHandPose(s_value, nn_right_hand_start_pos, nn_right_hand_start_ori);
+      f_s->getLeftHandPose(s_value, nn_left_hand_start_pos, nn_left_hand_start_ori);      
 
       // Convert Right Hand to Stance Frame
       convertWorldToStanceOrigin(nn_right_hand_start_pos, nn_right_hand_start_ori, tmp_pos, tmp_ori);
@@ -874,8 +894,18 @@ namespace planner{
     neighbor_ = std::static_pointer_cast<LMVertex>(neighbor);
 
     // Get Hand position and orientation at the neighbor's s.
-    f_s->getPose(neighbor_->s, tmp_pos, tmp_ori);    
-    
+    if (  (f_s->getManipulationType() == MANIPULATE_TYPE_RIGHT_HAND) ||
+          (f_s->getManipulationType() == MANIPULATE_TYPE_BOTH_HANDS) ){
+      // Use transform from right hand
+      f_s->getRightHandPose(neighbor_->s, tmp_pos, tmp_ori);
+    }else if (f_s->getManipulationType() == MANIPULATE_TYPE_LEFT_HAND) {
+      f_s->getLeftHandPose(neighbor_->s, tmp_pos, tmp_ori);
+    }else{
+      std::cout << "Warning using default get pos from manipulation function" << std::endl;
+      // Use whatever default we have
+      f_s->getPose(neighbor_->s, tmp_pos, tmp_ori);      
+    }   
+
     // Compute the estimated left and right foot landing locations
     lf_guess_pos = tmp_ori.toRotationMatrix()*lf_pos_wrt_hand + tmp_pos;
     lf_guess_ori = tmp_ori*lf_ori_wrt_hand;
@@ -1141,10 +1171,21 @@ namespace planner{
 
     int counter = 0;
 
-    // Get the hand pose from the manipulation function
+    // Get the hand pose from the manipulation function for checking kinematic bounds
     Eigen::Vector3d tmp_hand_pos; 
     Eigen::Quaterniond tmp_hand_ori;
-    f_s->getPose(current_->s, tmp_hand_pos, tmp_hand_ori);
+
+    if (  (f_s->getManipulationType() == MANIPULATE_TYPE_RIGHT_HAND) ||
+          (f_s->getManipulationType() == MANIPULATE_TYPE_BOTH_HANDS) ){
+      // Use transform from right hand
+      f_s->getRightHandPose(current_->s, tmp_pos, tmp_ori);
+    }else if (f_s->getManipulationType() == MANIPULATE_TYPE_LEFT_HAND) {
+      f_s->getLeftHandPose(current_->s, tmp_pos, tmp_ori);
+    }else{
+      std::cout << "Warning using default get pos from manipulation function" << std::endl;
+      // Use whatever default we have
+      f_s->getPose(current_->s, tmp_pos, tmp_ori);      
+    }
 
     double feas_score = 0.0;
     for(int i = 0; i < delta_s_vals.size(); i++){
@@ -1186,7 +1227,7 @@ namespace planner{
 
               // TODO: Check if hand position is within the kinematic bounds from the pelvis position.
               if ((landing_foot.position - tmp_hand_pos).norm() >= max_foot_to_hand_radius) {
-                std::cout << "  potential neighbor has foot-to-hand-distance greater than the kinematic limits" << std::endl;
+                // std::cout << "  potential neighbor has foot-to-hand-distance greater than the kinematic limits" << std::endl;
                 continue;
               } 
 
