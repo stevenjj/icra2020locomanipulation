@@ -4,14 +4,14 @@ linear_length: 0.5
 pose_spacing: 0.05
 hand_distance: 0.76646
 fixed_frame_position: #translastion of the fixed frame ( describes height of wps )
-  x: 0.
-  y: 0.
-  z: 0.8
+  x: 0.2650014060152076
+  y: 1.187410737466501
+  z: 1.007013018549302
 fixed_frame_orientation: # only to be rotated about the z axis
-  x: 0.0
-  y: 0.0
-  z: 0.0
-  w: 1.
+  x: -0.005206922816173798
+  y: 0.02141242710980334
+  z: 0.005539068274075076
+  w: 0.9997418239939295
 right_hand_initial_orientation:
   x: 0.5
   y: -0.5

@@ -61,7 +61,7 @@ void initialize_config(Eigen::VectorXd & q_init, std::shared_ptr<RobotModel> & v
 
 void generate_good_init_config(){
   // Initialize the manipulation function for manipulating the door
-  std::string door_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/door_open_trajectory_v3.yaml";
+  std::string door_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/cart_right_hand_trajectory.yaml";
   ManipulationFunction manipulate_door(door_yaml_file);
   // Set hinge location as waypoints are with respect to the hinge
   // Eigen::Vector3d fixed_frame_position(1.5, -0.5, 1.125);
