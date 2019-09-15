@@ -1102,7 +1102,7 @@ namespace planner{
     // else{
     //   delta_s_vals = {0.01, 0.04};
     // }
-    delta_s_vals = {0.01, 0.04, 0.08};//{0.01, 0.04, 0.08, 0.10};
+    delta_s_vals = {0.01, delta_s_max/2.0, delta_s_max};//{0.01, 0.04, 0.08, 0.10};
 
     //number of bins for the local lattice
     int num_x_lattice_pts = int(abs(2*max_lattice_translation)/dx) + 1;

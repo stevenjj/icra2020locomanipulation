@@ -456,7 +456,8 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(std::shared_ptr<M
 			f_s->getRightHandPose(s_g, s_des_pos, s_des_pos_ori);
 			traj_SE3_right_hand.set_pos(i, s_des_pos, s_des_pos_ori);			
 			// Get the desired left hand pose
-			f_s->getLeftHandPose(s_g, s_des_pos, s_des_pos_ori);
+			double s_left = s_g;//*1.30;
+			f_s->getLeftHandPose(s_left, s_des_pos, s_des_pos_ori);
 			traj_SE3_left_hand.set_pos(i, s_des_pos, s_des_pos_ori);
 		}
 

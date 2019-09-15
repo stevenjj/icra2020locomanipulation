@@ -135,6 +135,7 @@ namespace planner{
         Eigen::Matrix3d R_planner_origin_transpose;         
 
         // Discretized values
+        double delta_s_max = 0.08;
         std::vector<double> delta_s_vals;
         std::vector<double> dx_vals;
         std::vector<double> dy_vals;

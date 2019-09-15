@@ -95,8 +95,8 @@ void CartVisualizationNode::getVizInformation(tf::Transform & tf_world_fixed, tf
   else{
     double s_local;
     s_local = (s_current - percent_pushing) / (1. - percent_pushing);
-    tf_fixed_cart.setOrigin(tf::Vector3((radius + linear_length + (hand_distance/2))*cos(-1.57 + (s_local*rotation_angle)), (radius + linear_length)*sin(-1.57 + (s_local*rotation_angle)), 0.0 ) );
-    
+    // tf_fixed_cart.setOrigin(tf::Vector3((radius + linear_length + (hand_distance/2))*cos(-1.57 + (s_local*rotation_angle)), (radius + linear_length)*sin(-1.57 + (s_local*rotation_angle)), 0.0 ) );
+    tf_fixed_cart.setOrigin(tf::Vector3((linear_length + (radius + hand_distance/2))*cos(-1.57 + (s_local*rotation_angle)), (radius + hand_distance/2)*sin(-1.57 + (s_local*rotation_angle)), 0.0 ) );    
     q.x() = 0.0; q.y() = 0.0; q.z() = sin((s_local * rotation_angle) / 2); q.w() = cos((s_local * rotation_angle) / 2);
     q_i = q * q_fixed;
 

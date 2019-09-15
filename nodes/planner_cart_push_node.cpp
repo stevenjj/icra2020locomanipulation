@@ -97,6 +97,11 @@ void test_LM_planner(){
   f_s_manipulate_door->setRightWaypointsFromYaml(right_hand_yaml_file);
   f_s_manipulate_door->setLeftWaypointsFromYaml(left_hand_yaml_file);
 
+  // f_s_manipulate_door->setManipulationType(MANIPULATE_TYPE_RIGHT_HAND);
+  // f_s_manipulate_door->setManipulationType(MANIPULATE_TYPE_LEFT_HAND);
+  f_s_manipulate_door->setManipulationType(MANIPULATE_TYPE_BOTH_HANDS);
+
+
   // Set cart location as waypoints are with respect to the cart
   cart_orientation.normalize();
   f_s_manipulate_door->setWorldTransform(cart_position, cart_orientation);
@@ -129,9 +134,15 @@ void test_LM_planner(){
   // Initialize
   lm_planner.initializeLocomanipulationVariables(valkyrie_model, f_s_manipulate_door, ctg);
 
-  // 
+
+  // Set discretization of delta_s
+  lm_planner.delta_s_max = 0.04;
+  lm_planner.w_distance = 1000;
+  lm_planner.generateDiscretization();
+
+
   double s_init = 0.0;
-  double s_goal = 0.1; //0.20; //0.12;//0.08;
+  double s_goal = 0.36; //0.20; //0.12;//0.08;
   shared_ptr<Node> starting_vertex (std::make_shared<LMVertex>(s_init, q_start_door));    
   shared_ptr<Node> goal_vertex (std::make_shared<LMVertex>(s_goal));
 
