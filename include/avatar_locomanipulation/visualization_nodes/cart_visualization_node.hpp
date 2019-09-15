@@ -69,7 +69,7 @@ public:
 
 	void fillCartMarkerArray(visualization_msgs::MarkerArray & cart_msg);
 
-	void getVizInformation(tf::Transform & tf_world_fixed, tf::Transform & tf_fixed_cart)
+	void getVizInformation(tf::Transform & tf_world_fixed, tf::Transform & tf_fixed_cart);
 
 
 };
