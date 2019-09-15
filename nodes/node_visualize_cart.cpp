@@ -70,17 +70,19 @@ int main(int argc, char **argv){
 	ros::init(argc, argv, "cart_visualization");
 	
 	// Initialize Param Handler
-	ParamHandler param_handler;
+	ParamHandler param_handler_left;
+	ParamHandler param_handler_right;
 	// Initialize the waypoint posearray
 	geometry_msgs::PoseArray waypoint_poses;
 	// Initialize the temp poses for building ^
 	geometry_msgs::Pose temp;
 
 	// Load the yaml file
-	param_handler.load_yaml_file(THIS_PACKAGE_PATH"hand_trajectory/cart_hand_trajectory.yaml");
+	param_handler_left.load_yaml_file(THIS_PACKAGE_PATH"hand_trajectory/cart_left_hand_trajectory.yaml");
+	param_handler_right.load_yaml_file(THIS_PACKAGE_PATH"hand_trajectory/cart_right_hand_trajectory.yaml");
 
 	int num_wps;
-	param_handler.getInteger("num_waypoints", num_wps);
+	param_handler_left.getInteger("num_waypoints", num_wps);
 	std::string left_waypoint_string, right_waypoint_string;
 	double x, y, z, rx, ry, rz, rw;
 
@@ -92,13 +94,13 @@ int main(int argc, char **argv){
 		left_waypoint_string = "left_waypoint_" + std::to_string(i);
 		right_waypoint_string = "right_waypoint_" + std::to_string(i);
 
-		param_handler.getNestedValue({left_waypoint_string, "x"}, x);
-		param_handler.getNestedValue({left_waypoint_string, "y"}, y);
-		param_handler.getNestedValue({left_waypoint_string, "z"}, z);
-		param_handler.getNestedValue({left_waypoint_string, "rx"}, rx);
-		param_handler.getNestedValue({left_waypoint_string, "ry"}, ry);
-		param_handler.getNestedValue({left_waypoint_string, "rz"}, rz);
-		param_handler.getNestedValue({left_waypoint_string, "rw"}, rw);
+		param_handler_left.getNestedValue({left_waypoint_string, "x"}, x);
+		param_handler_left.getNestedValue({left_waypoint_string, "y"}, y);
+		param_handler_left.getNestedValue({left_waypoint_string, "z"}, z);
+		param_handler_left.getNestedValue({left_waypoint_string, "rx"}, rx);
+		param_handler_left.getNestedValue({left_waypoint_string, "ry"}, ry);
+		param_handler_left.getNestedValue({left_waypoint_string, "rz"}, rz);
+		param_handler_left.getNestedValue({left_waypoint_string, "rw"}, rw);
 
 		temp.position.x = x; temp.position.y = y; temp.position.z = z;
 		temp.orientation.x = rx; temp.orientation.y = ry;
@@ -106,13 +108,13 @@ int main(int argc, char **argv){
 
 		waypoint_poses.poses.push_back(temp);
 
-		param_handler.getNestedValue({right_waypoint_string, "x"}, x);
-		param_handler.getNestedValue({right_waypoint_string, "y"}, y);
-		param_handler.getNestedValue({right_waypoint_string, "z"}, z);
-		param_handler.getNestedValue({right_waypoint_string, "rx"}, rx);
-		param_handler.getNestedValue({right_waypoint_string, "ry"}, ry);
-		param_handler.getNestedValue({right_waypoint_string, "rz"}, rz);
-		param_handler.getNestedValue({right_waypoint_string, "rw"}, rw);
+		param_handler_right.getNestedValue({right_waypoint_string, "x"}, x);
+		param_handler_right.getNestedValue({right_waypoint_string, "y"}, y);
+		param_handler_right.getNestedValue({right_waypoint_string, "z"}, z);
+		param_handler_right.getNestedValue({right_waypoint_string, "rx"}, rx);
+		param_handler_right.getNestedValue({right_waypoint_string, "ry"}, ry);
+		param_handler_right.getNestedValue({right_waypoint_string, "rz"}, rz);
+		param_handler_right.getNestedValue({right_waypoint_string, "rw"}, rw);
 
 		temp.position.x = x; temp.position.y = y; temp.position.z = z;
 		temp.orientation.x = rx; temp.orientation.y = ry;

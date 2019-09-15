@@ -97,13 +97,16 @@ int main(int argc, char **argv){
   std::vector<double> left_values(7); // {x, y, z, rx, ry, rz, rw}
 
 	// Begin our emitter
-	YAML::Emitter out;
-  out << YAML::BeginMap;
+	YAML::Emitter out_left;
+  YAML::Emitter out_right;
+  out_left << YAML::BeginMap;
+  out_right << YAML::BeginMap;
 
 
   if(linear_length == 0.0){
 
-  	data_saver::emit_value(out, "num_waypoints", N+1);
+  	data_saver::emit_value(out_left, "num_waypoints", N+1);
+    data_saver::emit_value(out_right, "num_waypoints", N+1);
   	// Generate the waypoints around the arc
   	for(int i=0; i<=N; ++i){
   		right_waypoint_string = "right_waypoint_" + std::to_string(i+1);
@@ -127,14 +130,15 @@ int main(int argc, char **argv){
       left_values[3] = q_l_i.x(); left_values[4] = q_l_i.y(); left_values[5] = q_l_i.z(); left_values[6] = q_l_i.w();
   		right_values[3] = q_r_i.x(); right_values[4] = q_r_i.y(); right_values[5] = q_r_i.z(); right_values[6] = q_r_i.w();
 
-      emit_7dof(out, left_waypoint_string, left_values);
-  		emit_7dof(out, right_waypoint_string, right_values);
+      emit_7dof(out_left, left_waypoint_string, left_values);
+  		emit_7dof(out_right, right_waypoint_string, right_values);
   	}
 
   }
     else{
   	// When l!=0 we have 5 additional waypoints for the length
-  	data_saver::emit_value(out, "num_waypoints", M+N+2);
+  	data_saver::emit_value(out_right, "num_waypoints", M+N+2);
+    data_saver::emit_value(out_left, "num_waypoints", M+N+2);
   	// Generate waypoints fo the line 
   	for(int i=0; i<=M; ++i){
   		right_waypoint_string = "right_waypoint_" + std::to_string(i+1);
@@ -152,8 +156,8 @@ int main(int argc, char **argv){
       left_values[3] = q_l_init.x(); left_values[4] = q_l_init.y(); left_values[5] = q_l_init.z(); left_values[6] = q_l_init.w();
       right_values[3] = q_r_init.x(); right_values[4] = q_r_init.y(); right_values[5] = q_r_init.z(); right_values[6] = q_r_init.w();
 
-  		emit_7dof(out, left_waypoint_string, left_values);
-      emit_7dof(out, right_waypoint_string, right_values);
+  		emit_7dof(out_left, left_waypoint_string, left_values);
+      emit_7dof(out_right, right_waypoint_string, right_values);
   	}
   	// Generate waypoints for the arc
   	for(int i=0; i<=N; ++i){
@@ -178,14 +182,17 @@ int main(int argc, char **argv){
       left_values[3] = q_l_i.x(); left_values[4] = q_l_i.y(); left_values[5] = q_l_i.z(); left_values[6] = q_l_i.w();
       right_values[3] = q_r_i.x(); right_values[4] = q_r_i.y(); right_values[5] = q_r_i.z(); right_values[6] = q_r_i.w();
 
-      emit_7dof(out, left_waypoint_string, left_values);
-      emit_7dof(out, right_waypoint_string, right_values);
+      emit_7dof(out_left, left_waypoint_string, left_values);
+      emit_7dof(out_right, right_waypoint_string, right_values);
   	}
 
   }
 
 
-  out << YAML::EndMap;
-	std::ofstream file_output_stream("cart_hand_trajectory.yaml");
-  file_output_stream << out.c_str();
+  out_right << YAML::EndMap;
+  out_left << YAML::EndMap;
+	std::ofstream file_output_stream_left("cart_left_hand_trajectory.yaml");
+  std::ofstream file_output_stream_right("cart_right_hand_trajectory.yaml");
+  file_output_stream_left << out_left.c_str();
+  file_output_stream_right << out_right.c_str();
 }
