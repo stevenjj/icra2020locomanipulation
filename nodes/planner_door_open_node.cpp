@@ -108,10 +108,11 @@ void test_LM_planner(){
   // timer
   //PinocchioTicToc timer = PinocchioTicToc(PinocchioTicToc::MS);
 
-  // Have fast double support times
   ctg->wpg.setDoubleSupportTime(0.2);
+  ctg->wpg.setSettlingPercentage(0.4); // Percentage to settle. Default 0.999
   // Set Manipulation Only time to 3 seconds
   ctg->setManipulationOnlyTime(3.0);
+
   // Set Verbosity
   ctg->setVerbosityLevel(CONFIG_TRAJECTORY_VERBOSITY_LEVEL_0);
 
@@ -133,16 +134,21 @@ void test_LM_planner(){
   bool a_star_success = lm_planner.doAstar();
   if (a_star_success){
     // Construct the path
-    // std::cout << "Constructing the path" << std::endl;
-    // lm_planner.constructPath();
+    // std::cout << "Constructing the dynamic trajectory" << std::endl;
     // std::cout << "Path has size: " << lm_planner.optimal_path.size() << std::endl;
-    // std::cout << "reconstructing the total trajectory" << std::endl;
-    // lm_planner.reconstructConfigurationTrajectory();
+    // if (lm_planner.reconstructConfigurationTrajectoryv2()){
+    //   // Visualize the trajectory:
+    //   std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
+    //   RVizVisualizer visualizer(ros_node, valkyrie_model);  
+    // visualizer.visualizeConfigurationTrajectory(q_start_door, lm_planner.path_traj_q_config, lm_planner.s_traj);
+    // }else{
+    //   std::cout << "non convergence" << std::endl;
+    // }
 
     // Visualize the trajectory:
     std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
     RVizVisualizer visualizer(ros_node, valkyrie_model);  
-    visualizer.visualizeConfigurationTrajectory(q_start_door, lm_planner.path_traj_q_config);
+    visualizer.visualizeConfigurationTrajectory(q_start_door, lm_planner.path_traj_q_config, lm_planner.s_traj);
 
   }
 

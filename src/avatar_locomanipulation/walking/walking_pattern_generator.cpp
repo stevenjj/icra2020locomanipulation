@@ -329,7 +329,7 @@ void WalkingPatternGenerator::compute_trajectory_lists(){
 
   // Setting bin sizes for swing and double support trajectories
   int N_swing = int(t_ss/dt);
-  int N_DS = int(t_ds/dt);
+  int N_DS = int((t_ds+t_transfer)/dt);
 
   // std::cout << "t_trajectory = " << t_trajectory << std::endl;
   // std::cout << "dt = " << dt << std::endl;
