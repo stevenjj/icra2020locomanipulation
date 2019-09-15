@@ -75,6 +75,30 @@ void load_final_robot_object_configuration(Eigen::VectorXd & q_out){
 
 
 void test_LM_planner(){
+  // Initialize the neural network --------------------------------------------------------------
+  ParamHandler param_handler;
+  std::string model_path = THIS_PACKAGE_PATH"nn_models/layer3_20000pts/cpp_model/layer3_model.yaml";
+
+  std::cout << "Loading Model..." << std::endl;
+  myYAML::Node model = myYAML::LoadFile(model_path);
+  std::shared_ptr<NeuralNetModel> nn_transition_model(new NeuralNetModel(model, false));
+
+  std::cout << "Loaded" << std::endl;
+
+  // Load neural network normalization Params
+  param_handler.load_yaml_file(THIS_PACKAGE_PATH"nn_models/layer3_20000pts/cpp_model/normalization_params.yaml");
+  std::vector<double> vmean;
+  param_handler.getVector("x_train_mean", vmean);
+  std::vector<double> vstd_dev;
+  param_handler.getVector("x_train_std", vstd_dev);
+
+  Eigen::VectorXd mean(32);
+  Eigen::VectorXd std_dev(32);
+  for (int ii = 0; ii < 32; ii++){
+    mean[ii] = vmean[ii];
+    std_dev[ii] = vstd_dev[ii];
+  } 
+
   // Initialize the robot ---------------------------------------------------------------------------------------
   std::string urdf_filename = THIS_PACKAGE_PATH"models/valkyrie_no_fingers.urdf";
   std::shared_ptr<RobotModel> valkyrie_model(new RobotModel(urdf_filename));
@@ -83,6 +107,7 @@ void test_LM_planner(){
   Eigen::Vector3d cart_position;
   Eigen::Quaterniond cart_orientation;
   load_initial_robot_door_configuration(q_start_door, cart_position, cart_orientation);
+
 
   // Get the final guessed robot configuration
   // Eigen::VectorXd q_final_door;
@@ -132,8 +157,23 @@ void test_LM_planner(){
   // End of initialization ---------------------------------------------------------------------------------------
 
   LocomanipulationPlanner lm_planner;
+  // Set whether to learn from mistakes or not
+  // Regenerate the discretizations
+  bool learn_from_mistakes = false;
+  if (learn_from_mistakes){ 
+    lm_planner.classifier_store_mistakes = true;  
+    std::cout << "Storing classifier mistakes? " << lm_planner.classifier_store_mistakes << std::endl;
+    lm_planner.generateDiscretization();
+  }
+  // ----------
+
+  // Set to trust the classifier
+  lm_planner.trust_classifier = true; //false;
+
   // Initialize
   lm_planner.initializeLocomanipulationVariables(valkyrie_model, f_s_manipulate_door, ctg);
+  // Set the nn classifier
+  lm_planner.setNeuralNetwork(nn_transition_model, mean, std_dev);
 
 
   // Set discretization of delta_s
@@ -152,18 +192,6 @@ void test_LM_planner(){
   
   bool a_star_success = lm_planner.doAstar();
   if (a_star_success){
-    // Construct the path
-    // std::cout << "Constructing the dynamic trajectory" << std::endl;
-    // std::cout << "Path has size: " << lm_planner.optimal_path.size() << std::endl;
-    // if (lm_planner.reconstructConfigurationTrajectoryv2()){
-    //   // Visualize the trajectory:
-    //   std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
-    //   RVizVisualizer visualizer(ros_node, valkyrie_model);  
-    // visualizer.visualizeConfigurationTrajectory(q_start_door, lm_planner.path_traj_q_config, lm_planner.s_traj);
-    // }else{
-    //   std::cout << "non convergence" << std::endl;
-    // }
-
     // Visualize the trajectory:
     std::shared_ptr<ros::NodeHandle> ros_node(std::make_shared<ros::NodeHandle>());
     RVizVisualizer visualizer(ros_node, valkyrie_model);  
