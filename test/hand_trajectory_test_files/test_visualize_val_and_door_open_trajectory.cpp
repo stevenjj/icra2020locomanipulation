@@ -76,6 +76,7 @@ void visualize_robot_and_waypoints(Eigen::VectorXd & q_start, geometry_msgs::Pos
   // Initialize ROS node for publishing joint messages
   ros::NodeHandle n;
   ros::Rate loop_rate(20);
+
    DoorVisualizationNode door_obj(&n, "hand_trajectory/door_opening_parameters.yaml");
 
   // Initialize Rviz translator

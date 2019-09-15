@@ -46,7 +46,7 @@ int main(int argc, char **argv){
 	param_handler.getValue("radius", r);
 
 	double h;
-	param_handler.getValue("initial_height", h);
+	param_handler.getNestedValue({"center_fixed_frame_position", "z"}, h);
 
 	double theta;
 	param_handler.getValue("rotation_angle", theta);
@@ -96,7 +96,7 @@ int main(int argc, char **argv){
 		// x position = original_x + i*dl
 		values[0] = r;
 		values[1] = 0.0;
-		values[2] = h + i*dl;
+		values[2] = i*dl;
 		values[3] = q_init.x(); values[4] = q_init.y(); values[5] = q_init.z(); values[6] = q_init.w();
 
 		emit_7dof(out, waypoint_string, values);
@@ -110,7 +110,7 @@ int main(int argc, char **argv){
 		// y position = original_y + cos(i*dtheta)*radius
 		values[1] = sin(static_cast<double>(i)*dtheta)*r;
 		// z position = original_z
-		values[2] = h + l;
+		values[2] = l;
 		// Get the updated quaternion
 		q.x() = 0; q.y() = 0; q.z() = sin((static_cast<double>(i)*dtheta) / 2); q.w() = cos((static_cast<double>(i)*dtheta) / 2);
 		q_i = q * q_init;
@@ -126,7 +126,7 @@ int main(int argc, char **argv){
       // x position = original_x + i*dl
       values[0] = cos(theta)*r;
       values[1] = sin(theta)*r;
-      values[2] = h + l - i*dl;
+      values[2] = l - i*dl;
       values[3] = q_i.x(); values[4] = q_i.y(); values[5] = q_i.z(); values[6] = q_i.w();
 
       emit_7dof(out, waypoint_string, values);
