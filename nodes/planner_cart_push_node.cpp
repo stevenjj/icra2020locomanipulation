@@ -115,6 +115,7 @@ void test_LM_planner(){
   ctg->setUseRightHand(true);
   ctg->setUseLeftHand(true);
   ctg->setUseTorsoJointPosition(true);
+  ctg->setUseArmLowerPriorityTask(true);
   // ctg->setUseTorsoJointPosition(false);
   ctg->reinitializeTaskStack();
   // timer
@@ -137,12 +138,12 @@ void test_LM_planner(){
 
   // Set discretization of delta_s
   lm_planner.delta_s_max = 0.04;
-  lm_planner.w_distance = 1000;
+  lm_planner.w_distance = 2000;
   lm_planner.generateDiscretization();
 
 
   double s_init = 0.0;
-  double s_goal = 0.6; //0.20; //0.12;//0.08;
+  double s_goal = 0.60; //0.20; //0.12;//0.08;
   shared_ptr<Node> starting_vertex (std::make_shared<LMVertex>(s_init, q_start_door));    
   shared_ptr<Node> goal_vertex (std::make_shared<LMVertex>(s_goal));
 
