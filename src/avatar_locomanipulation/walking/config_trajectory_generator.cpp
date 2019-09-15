@@ -496,6 +496,13 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 	q_posture[robot_model->getJointIndex("rightWristRoll")] = 0.0;
 	q_posture[robot_model->getJointIndex("rightWristPitch")] = 0.0;
 
+	if (use_arm_lower_priority_posture_task){
+		q_posture[robot_model->getJointIndex("leftShoulderPitch")] = 0.07;
+		q_posture[robot_model->getJointIndex("leftShoulderRoll")] = -1.19;
+		q_posture[robot_model->getJointIndex("leftElbowPitch")] = -1.6 ; //0.4;
+		q_posture[robot_model->getJointIndex("leftForearmYaw")] = -0.37;
+	}
+
 	setPostureTaskReference(torso_posture_task, q_posture);
 	setPostureTaskReference(neck_posture_task, q_posture);
 	setPostureTaskReference(rarm_posture_task, q_posture);

@@ -1758,7 +1758,12 @@ namespace planner{
     data_saver::emit_value(out, "dt", dt_out);
     data_saver::emit_std_vector_double(out, "t",  time_vec);
 
-    data_saver::emit_std_vector_double(out, "s", s_traj);
+    std::vector<double> s_traj_scale;
+    for(int i = 0; i < s_traj.size(); i++){
+      s_traj_scale.push_back(s_traj[i]/goal_s);
+    }
+
+    data_saver::emit_std_vector_double(out, "s", s_traj_scale);
 
     data_saver::emit_index_vector_eigen_vector(out, "com_x", 0, com_pos_traj);
     data_saver::emit_index_vector_eigen_vector(out, "com_y", 1, com_pos_traj);
