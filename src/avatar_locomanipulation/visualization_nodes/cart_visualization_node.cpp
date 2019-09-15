@@ -109,7 +109,7 @@ void CartVisualizationNode::fillCartMarkerArray(visualization_msgs::MarkerArray 
 
 	visualization_msgs::Marker temp;
 
-  // First generate the handle of the cart
+  // First generate  handle of the cart
   temp.pose.position.x = 0.0;
   temp.pose.position.y = 0.0;
   temp.pose.position.z = 0.0;
@@ -133,7 +133,6 @@ void CartVisualizationNode::fillCartMarkerArray(visualization_msgs::MarkerArray 
 
   cart_msg.markers.push_back(temp);
 
-  // First generate the handle of the cart
   temp.pose.position.x = 0.0;
   temp.pose.position.y = -0.42;
   temp.pose.position.z = -0.1;
@@ -145,7 +144,7 @@ void CartVisualizationNode::fillCartMarkerArray(visualization_msgs::MarkerArray 
   temp.scale.y = 0.02;
   temp.scale.z = 0.2;
   temp.header.frame_id = "cart_frame";
-  temp.text = "handle_top";
+  temp.text = "handle_side_1";
   temp.ns = "ns";
   temp.id = 2;
   temp.color.r = 0.5f;
@@ -157,7 +156,6 @@ void CartVisualizationNode::fillCartMarkerArray(visualization_msgs::MarkerArray 
 
   cart_msg.markers.push_back(temp);
 
-  // First generate the handle of the cart
   temp.pose.position.x = 0.;
   temp.pose.position.y = 0.42;
   temp.pose.position.z = -0.1;
@@ -169,7 +167,7 @@ void CartVisualizationNode::fillCartMarkerArray(visualization_msgs::MarkerArray 
   temp.scale.y = 0.02;
   temp.scale.z = 0.2;
   temp.header.frame_id = "cart_frame";
-  temp.text = "handle_top";
+  temp.text = "handle_side_2";
   temp.ns = "ns";
   temp.id = 3;
   temp.color.r = 0.5f;
@@ -181,19 +179,18 @@ void CartVisualizationNode::fillCartMarkerArray(visualization_msgs::MarkerArray 
 
   cart_msg.markers.push_back(temp);
 
-  // First generate the handle of the cart
-  temp.pose.position.x = 0.5;
+  temp.pose.position.x = 0.48;
   temp.pose.position.y = 0.0;
-  temp.pose.position.z = -(fixed_frame_pos[2]/2.) -0.1;
+  temp.pose.position.z = -(fixed_frame_pos[2]/2.) -0.06;
   temp.pose.orientation.x = 0.0;
   temp.pose.orientation.y = 0.0;
   temp.pose.orientation.z = 0.0;
   temp.pose.orientation.w = 1.0;
   temp.scale.x = 1.0;
   temp.scale.y = 0.85;
-  temp.scale.z = (fixed_frame_pos[2] -0.2);
+  temp.scale.z = (fixed_frame_pos[2] -0.27);
   temp.header.frame_id = "cart_frame";
-  temp.text = "handle_top";
+  temp.text = "main_cart";
   temp.ns = "ns";
   temp.id = 4;
   temp.color.r = 0.5f;
@@ -205,5 +202,100 @@ void CartVisualizationNode::fillCartMarkerArray(visualization_msgs::MarkerArray 
 
   cart_msg.markers.push_back(temp);
 
+
+  temp.pose.position.x = 0.85;
+  temp.pose.position.y = 0.4;
+  temp.pose.position.z = -fixed_frame_pos[2] + 0.04;
+  temp.pose.orientation.x = 0.707;
+  temp.pose.orientation.y = 0.0;
+  temp.pose.orientation.z = 0.0;
+  temp.pose.orientation.w = 0.707;
+  temp.scale.x = 0.085;
+  temp.scale.y = 0.085;
+  temp.scale.z = 0.03;
+  temp.header.frame_id = "cart_frame";
+  temp.text = "wheel1";
+  temp.ns = "ns";
+  temp.id = 5;
+  temp.color.r = 0.5f;
+  temp.color.g = 0.5f;
+  temp.color.b = 0.5f;
+  temp.color.a = 1.0;
+  temp.action = visualization_msgs::Marker::ADD;
+  temp.type = visualization_msgs::Marker::CYLINDER;
+
+  cart_msg.markers.push_back(temp);
+
+
+  temp.pose.position.x = 0.15;
+  temp.pose.position.y = 0.4;
+  temp.pose.position.z = -fixed_frame_pos[2] + 0.04;
+  temp.pose.orientation.x = 0.707;
+  temp.pose.orientation.y = 0.0;
+  temp.pose.orientation.z = 0.0;
+  temp.pose.orientation.w = 0.707;
+  temp.scale.x = 0.085;
+  temp.scale.y = 0.085;
+  temp.scale.z = 0.03;
+  temp.header.frame_id = "cart_frame";
+  temp.text = "wheel2";
+  temp.ns = "ns";
+  temp.id = 6;
+  temp.color.r = 0.5f;
+  temp.color.g = 0.5f;
+  temp.color.b = 0.5f;
+  temp.color.a = 1.0;
+  temp.action = visualization_msgs::Marker::ADD;
+  temp.type = visualization_msgs::Marker::CYLINDER;
+
+  cart_msg.markers.push_back(temp);
+
+
+  temp.pose.position.x = 0.85;
+  temp.pose.position.y = -0.4;
+  temp.pose.position.z = -fixed_frame_pos[2] + 0.04;
+  temp.pose.orientation.x = 0.707;
+  temp.pose.orientation.y = 0.0;
+  temp.pose.orientation.z = 0.0;
+  temp.pose.orientation.w = 0.707;
+  temp.scale.x = 0.085;
+  temp.scale.y = 0.085;
+  temp.scale.z = 0.03;
+  temp.header.frame_id = "cart_frame";
+  temp.text = "wheel3";
+  temp.ns = "ns";
+  temp.id = 7;
+  temp.color.r = 0.5f;
+  temp.color.g = 0.5f;
+  temp.color.b = 0.5f;
+  temp.color.a = 1.0;
+  temp.action = visualization_msgs::Marker::ADD;
+  temp.type = visualization_msgs::Marker::CYLINDER;
+
+  cart_msg.markers.push_back(temp);
+
+
+  temp.pose.position.x = 0.15;
+  temp.pose.position.y = -0.4;
+  temp.pose.position.z = -fixed_frame_pos[2] + 0.04;
+  temp.pose.orientation.x = 0.707;
+  temp.pose.orientation.y = 0.0;
+  temp.pose.orientation.z = 0.0;
+  temp.pose.orientation.w = 0.707;
+  temp.scale.x = 0.085;
+  temp.scale.y = 0.085;
+  temp.scale.z = 0.03;
+  temp.header.frame_id = "cart_frame";
+  temp.text = "wheel4";
+  temp.ns = "ns";
+  temp.id = 8;
+  temp.color.r = 0.5f;
+  temp.color.g = 0.5f;
+  temp.color.b = 0.5f;
+  temp.color.a = 1.0;
+  temp.action = visualization_msgs::Marker::ADD;
+  temp.type = visualization_msgs::Marker::CYLINDER;
+
+  cart_msg.markers.push_back(temp);
 	
 }
