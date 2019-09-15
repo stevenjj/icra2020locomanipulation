@@ -90,7 +90,13 @@ void test_LM_planner(){
 
   // Initialize the manipulation function for manipulating the door ----------------------------------
   std::string right_hand_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/cart_right_hand_trajectory.yaml";
-  std::shared_ptr<ManipulationFunction> f_s_manipulate_door(new ManipulationFunction(right_hand_yaml_file));
+  std::string left_hand_yaml_file = THIS_PACKAGE_PATH"hand_trajectory/cart_left_hand_trajectory.yaml";
+
+  // std::shared_ptr<ManipulationFunction> f_s_manipulate_door(new ManipulationFunction(right_hand_yaml_file));
+  std::shared_ptr<ManipulationFunction> f_s_manipulate_door(new ManipulationFunction());
+  f_s_manipulate_door->setRightWaypointsFromYaml(right_hand_yaml_file);
+  f_s_manipulate_door->setLeftWaypointsFromYaml(left_hand_yaml_file);
+
   // Set cart location as waypoints are with respect to the cart
   cart_orientation.normalize();
   f_s_manipulate_door->setWorldTransform(cart_position, cart_orientation);
@@ -102,6 +108,7 @@ void test_LM_planner(){
 
   // Initialize Trajectory Generation Module
   ctg->setUseRightHand(true);
+  ctg->setUseLeftHand(true);
   ctg->setUseTorsoJointPosition(true);
   // ctg->setUseTorsoJointPosition(false);
   ctg->reinitializeTaskStack();
