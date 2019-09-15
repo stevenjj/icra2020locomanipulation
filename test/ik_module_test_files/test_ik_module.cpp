@@ -63,15 +63,21 @@ void initialize_config(Eigen::VectorXd & q_init){
   q_start[valkyrie.getJointIndex("leftAnklePitch")] = -0.3;
   q_start[valkyrie.getJointIndex("rightAnklePitch")] = 0.0;//-0.3;
 
-  q_start[valkyrie.getJointIndex("rightShoulderPitch")] = 0.2;
-  q_start[valkyrie.getJointIndex("rightShoulderRoll")] = 1.1;
-  q_start[valkyrie.getJointIndex("rightElbowPitch")] = 1.0 ; //0.4;
-  q_start[valkyrie.getJointIndex("rightForearmYaw")] = 1.5;
+  q_start[valkyrie.getJointIndex("rightShoulderPitch")] = -0.2;
+  q_start[valkyrie.getJointIndex("rightShoulderRoll")] = 1.18;
+  q_start[valkyrie.getJointIndex("rightShoulderYaw")] = 0.23;
+  q_start[valkyrie.getJointIndex("rightElbowPitch")] = 1.05; 
+  q_start[valkyrie.getJointIndex("rightForearmYaw")] = 2.78;
+  q_start[valkyrie.getJointIndex("rightWristRoll")] = -0.14;
+  q_start[valkyrie.getJointIndex("rightWristPitch")] = -0.45;
 
   q_start[valkyrie.getJointIndex("leftShoulderPitch")] = -0.2;
-  q_start[valkyrie.getJointIndex("leftShoulderRoll")] = -1.1;
-  q_start[valkyrie.getJointIndex("leftElbowPitch")] = -0.4;
-  q_start[valkyrie.getJointIndex("leftForearmYaw")] = 1.5;
+  q_start[valkyrie.getJointIndex("leftShoulderRoll")] = -1.18;
+  q_start[valkyrie.getJointIndex("leftShoulderYaw")] = 0.23;
+  q_start[valkyrie.getJointIndex("leftElbowPitch")] = -1.05;
+  q_start[valkyrie.getJointIndex("leftForearmYaw")] = 2.78;
+  q_start[valkyrie.getJointIndex("leftWristRoll")] = 0.18;
+  q_start[valkyrie.getJointIndex("leftWristPitch")] = 0.45;
 
   q_init = q_start;
 }
@@ -177,6 +183,17 @@ void testIK_module(){
   ik_module.setInitialConfig(q_init);  
   // Update Robot Kinematics
   ik_module.robot_model->updateFullKinematics(q_init);
+
+  Eigen::Vector3d cur_pos; Eigen::Quaternion<double> cur_ori;
+
+  ik_module.robot_model->getFrameWorldPose("rightPalm", cur_pos, cur_ori);
+  std::cout << "rightPalm Pos: \n" << cur_pos << std::endl;
+  std::cout << "rightPalm Ori: \n" << cur_ori.x() << '\n' << cur_ori.y() << '\n'
+                                   << cur_ori.z() << '\n' << cur_ori.w() << '\n';
+  ik_module.robot_model->getFrameWorldPose("leftPalm", cur_pos, cur_ori);
+  std::cout << "leftPalm Pos: \n" << cur_pos << std::endl;
+  std::cout << "leftPalm Ori: \n" << cur_ori.x() << '\n' << cur_ori.y() << '\n'
+                                   << cur_ori.z() << '\n' << cur_ori.w() << '\n';
 
   Eigen::Vector3d floor_normal(0,0,1);
   Eigen::Vector3d floor_center(0,0,0);  
