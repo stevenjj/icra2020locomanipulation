@@ -403,6 +403,7 @@ bool ConfigTrajectoryGenerator::didTrajectoryConverge(){
 	return false;
 }
 
+
 bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(std::shared_ptr<ManipulationFunction> f_s, int robot_manipulation_side, 
 															   double s_o, double delta_s, 
 															   const Eigen::VectorXd & q_init, const std::vector<Footstep> & input_footstep_list){
@@ -425,8 +426,48 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(std::shared_ptr<M
 	}
 
 	return computeConfigurationTrajectory(q_init, input_footstep_list);
+}
+
+
+bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(std::shared_ptr<ManipulationFunction> f_s, 
+									double s_o, double delta_s, 
+									const Eigen::VectorXd & q_init, const std::vector<Footstep> & input_footstep_list){
+
+	Eigen::Vector3d s_des_pos(0,0,0);
+	Eigen::Quaterniond s_des_pos_ori(1, 0, 0, 0);
+	double s_g = 0.0;
+
+	for (int i = 0; i < N_size; i++){
+		// Compute current s
+		s_g = s_o + (delta_s / static_cast<double>(N_size))*i;
+
+		// Get desired poses depending on the manipulation function
+		if (f_s->getManipulationType() == MANIPULATE_TYPE_RIGHT_HAND){
+			// Get the desired pose right hand pose
+			f_s->getRightHandPose(s_g, s_des_pos, s_des_pos_ori);
+			traj_SE3_right_hand.set_pos(i, s_des_pos, s_des_pos_ori);			
+		}else if (f_s->getManipulationType() == MANIPULATE_TYPE_RIGHT_HAND){
+			// Get the desired left hand pose
+			f_s->getLeftHandPose(s_g, s_des_pos, s_des_pos_ori);
+			traj_SE3_left_hand.set_pos(i, s_des_pos, s_des_pos_ori);
+
+		}else if (f_s->getManipulationType() == MANIPULATE_TYPE_BOTH_HANDS){
+			// Get the desired pose right hand pose
+			f_s->getRightHandPose(s_g, s_des_pos, s_des_pos_ori);
+			traj_SE3_right_hand.set_pos(i, s_des_pos, s_des_pos_ori);			
+			// Get the desired left hand pose
+			f_s->getLeftHandPose(s_g, s_des_pos, s_des_pos_ori);
+			traj_SE3_left_hand.set_pos(i, s_des_pos, s_des_pos_ori);
+		}
+
+	}
+
+	return computeConfigurationTrajectory(q_init, input_footstep_list);
+
 
 }
+
+
 
 // Given an initial configuration and footstep data list input, compute the task space walking trajectory.
 // Warning: If hand tasks are enabled, they need to have been set already.

@@ -621,9 +621,9 @@ int main(int argc, char ** argv){
   std::cout<<"num_threads: "<<num_threads<<std::endl;
 
   // test_final_configuration();
-  // test_LM_planner();
+  test_LM_planner();
   // test_LM_planner_with_NN();
-  test_LM_planner_with_cpp_NN();
+  // test_LM_planner_with_cpp_NN();
   // test_planner();
   // test_door_open_config_trajectory();
  

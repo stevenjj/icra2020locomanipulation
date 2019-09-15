@@ -86,6 +86,10 @@ public:
     									double s_o, double delta_s, 
     									const Eigen::VectorXd & q_init, const std::vector<Footstep> & input_footstep_list);
 
+    bool computeConfigurationTrajectory(std::shared_ptr<ManipulationFunction> f_s, 
+    									double s_o, double delta_s, 
+    									const Eigen::VectorXd & q_init, const std::vector<Footstep> & input_footstep_list);
+
 
 
     // returns N_size
