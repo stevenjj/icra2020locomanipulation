@@ -46,10 +46,15 @@ void initialize_config(Eigen::VectorXd & q_init, std::shared_ptr<RobotModel> & v
   q_start[valkyrie->getJointIndex("leftAnklePitch")] = -0.3;
   q_start[valkyrie->getJointIndex("rightAnklePitch")] = -0.3;
 
-  q_start[valkyrie->getJointIndex("rightShoulderPitch")] = 0.07;
-  q_start[valkyrie->getJointIndex("rightShoulderRoll")] = 1.19;
-  q_start[valkyrie->getJointIndex("rightElbowPitch")] = 1.6 ; //0.4;
-  q_start[valkyrie->getJointIndex("rightForearmYaw")] = -0.37;
+  q_start[valkyrie->getJointIndex("rightShoulderPitch")] = -0.2;
+  q_start[valkyrie->getJointIndex("rightShoulderRoll")] = 1.1;
+  q_start[valkyrie->getJointIndex("rightElbowPitch")] = 0.4 ; //0.4;
+  q_start[valkyrie->getJointIndex("rightForearmYaw")] = 1.5;
+
+  // q_start[valkyrie->getJointIndex("rightShoulderPitch")] = 0.07;
+  // q_start[valkyrie->getJointIndex("rightShoulderRoll")] = 1.19;
+  // q_start[valkyrie->getJointIndex("rightElbowPitch")] = 1.6 ; //0.4;
+  // q_start[valkyrie->getJointIndex("rightForearmYaw")] = -0.37;
 
   q_start[valkyrie->getJointIndex("leftShoulderPitch")] = -0.2;
   q_start[valkyrie->getJointIndex("leftShoulderRoll")] = -1.1;
