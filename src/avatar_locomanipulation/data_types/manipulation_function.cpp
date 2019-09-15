@@ -13,30 +13,72 @@ ManipulationFunction::ManipulationFunction(std::string filename){
 }
 
 void ManipulationFunction::setWaypointsFromYaml(std::string filename){
-	waypoint_list_yaml_filename = filename;
+	rh_waypoint_list_yaml_filename = filename;
 	// Create interpolator from waypoint list
-	f_s.reset(new CubicInterpolationSixDimVec(filename));
+	f_rh_s.reset(new CubicInterpolationSixDimVec(filename));
+	// Set default to right hand
+	right_hand_waypoints_set = true;
+	// Set Manipulation Type
+	if (left_hand_waypoints_set){
+		manipulation_type = MANIPULATE_TYPE_BOTH_HANDS;
+	}else{
+		manipulation_type = MANIPULATE_TYPE_RIGHT_HAND;
+	}
 }
 
+void ManipulationFunction::setRightWaypointsFromYaml(std::string filename){
+	setWaypointsFromYaml(filename);
+}
+void ManipulationFunction::setLeftWaypointsFromYaml(std::string filename){
+	lh_waypoint_list_yaml_filename = filename;
+	// Create interpolator from waypoint list
+	f_lh_s.reset(new CubicInterpolationSixDimVec(filename));
+	left_hand_waypoints_set = true;
+	// Set Manipulation Type
+	if (left_hand_waypoints_set){
+		manipulation_type = MANIPULATE_TYPE_BOTH_HANDS;
+	}else{
+		manipulation_type = MANIPULATE_TYPE_LEFT_HAND;
+	}
+}
+
+int ManipulationFunction::getManipulationType(){
+	return manipulation_type;
+}
 
 void ManipulationFunction::setWorldTransform(const Eigen::Vector3d & translation, const Eigen::Quaterniond & orientation){
 	transform_translation = translation;
 	transform_orientation = orientation;
 }
 
-
 void ManipulationFunction::getPose(double & s, Eigen::Vector3d & pos_out, Eigen::Quaterniond & quat_out){
-	f_s->getPose(s, local_pos, local_ori);
+	f_rh_s->getPose(s, rhand_local_pos, rhand_local_ori);
 
 	// Transform to world coordinates
-	pos_out = transform_orientation.toRotationMatrix()*local_pos + transform_translation;
-	quat_out = transform_orientation*local_ori;
+	pos_out = transform_orientation.toRotationMatrix()*rhand_local_pos + transform_translation;
+	quat_out = transform_orientation*rhand_local_ori;
+}
+
+void ManipulationFunction::getRightHandPose(double & s, Eigen::Vector3d & pos_out, Eigen::Quaterniond & quat_out){
+	getPose(s, pos_out, quat_out);
+}
+
+void ManipulationFunction::getLeftHandPose(double & s, Eigen::Vector3d & pos_out, Eigen::Quaterniond & quat_out){
+	f_lh_s->getPose(s, rhand_local_pos, rhand_local_ori);
+
+	// Transform to world coordinates
+	pos_out = transform_orientation.toRotationMatrix()*rhand_local_pos + transform_translation;
+	quat_out = transform_orientation*rhand_local_ori;
 }
 
 
 void ManipulationFunction::common_initialization(){
-	local_pos.setZero();
-	local_ori.setIdentity();
+	manipulation_type = MANIPULATE_TYPE_RIGHT_HAND;
+	right_hand_waypoints_set = false;
+	left_hand_waypoints_set = false;
+	
+	rhand_local_pos.setZero();
+	rhand_local_ori.setIdentity();
 
 	transform_translation.setZero();
 	transform_orientation.setIdentity();
