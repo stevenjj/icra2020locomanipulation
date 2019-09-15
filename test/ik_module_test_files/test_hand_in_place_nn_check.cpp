@@ -222,8 +222,8 @@ void test_hand_in_place_config_trajectory_generator(){
 
 int main(int argc, char ** argv){   
   ros::init(argc, argv, "test_config_trajectory_generator");
-  // test_hand_in_place_config_trajectory_generator();
-  generate_good_init_config();
+  test_hand_in_place_config_trajectory_generator();
+  // generate_good_init_config();
 
   return 0;
 }
