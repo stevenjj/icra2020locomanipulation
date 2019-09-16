@@ -125,6 +125,12 @@ namespace planner{
 
     tmp_ori_vec3.setZero();
 
+    num_edge_evaluations = 0;       
+    edge_eval_times.clear();
+    mean_feasibility_evaluation_time = 0.0;
+    std_feasibility_evaluation_time = 0.0;
+
+
   }
 
   // Destructor
@@ -619,6 +625,10 @@ namespace planner{
     path_traj_q_config.set_dt(ctg->wpg.traj_pos_com.get_dt() );  // seconds   
 
     std::cout << "Configuration Path Reconstruction success " << std::endl;
+    std::cout << " --------------- " << std::endl;                    
+    std::cout << "  Edge Transition Feasibility mean time: " << mean_feasibility_evaluation_time << ", std:" << std_feasibility_evaluation_time << std::endl;
+    std::cout << " --------------- " << std::endl;                    
+
     return true;
 
   }
@@ -1314,6 +1324,7 @@ namespace planner{
     // Check if this is the first time get Neighbors is being evaluated. 
     bool convergence = false;
     if (first_node_evaluated){
+      edgeFeasibilityTimeStart();
       // std::cout << "Testing trajectory feasiblity for the current node" << std::endl;     
 
       parent_ = static_pointer_cast<LMVertex>(current_->parent);
@@ -1333,6 +1344,7 @@ namespace planner{
         if (print_classifier_results){
           std::cout << "  Feasibility Score = " << feas_score << std::endl;
         }
+        edgeFeasibilityTimeStop();
         // If the score is less than the treshold, don't bother with the computation
         if (feas_score < feasibility_threshold){
           transition_possible = false;
@@ -1340,6 +1352,7 @@ namespace planner{
           // If we are not storing possible mistakes, proceed with ignoring the computation check
           // if the s variable has moved, we cannot learn from this example so ignore the computation check
           // if ((!classifier_store_mistakes) || edgeHasSVarMoved(parent_, current_)){
+
 
           if (!classifier_store_mistakes){
             return neighbors;
@@ -1355,12 +1368,12 @@ namespace planner{
         //                                                             parent_->s, delta_s, 
         //                                                             parent_->q_init, 
         //                                                             input_footstep_list);
-       convergence = ctg->computeConfigurationTrajectory(f_s,  
+        convergence = ctg->computeConfigurationTrajectory(f_s,  
                                                           parent_->s, delta_s, 
                                                           parent_->q_init, 
                                                           input_footstep_list);
 
-
+        edgeFeasibilityTimeStop();
         std::cout << "  Converged: " << (convergence ? "True" : "False") << std::endl;       
 
         // Store the transition if we are using the classifier, storing the mistakes and
@@ -1865,6 +1878,38 @@ namespace planner{
 
   }
 
+    void LocomanipulationPlanner::edgeFeasibilityTimeStart(){
+      start_edge_transition_evaluation = Clock::now(); 
+    }
+    void LocomanipulationPlanner::edgeFeasibilityTimeStop(){
+      end_edge_transition_evaluation = Clock::now(); 
+      path_reconstruction_time_span = std::chrono::duration_cast< std::chrono::duration<double> >(end_edge_transition_evaluation - start_edge_transition_evaluation).count();
+
+      // Store and compute current mean and std
+      edge_eval_times.push_back(path_reconstruction_time_span);
+      num_edge_evaluations = edge_eval_times.size();
+
+      // Compute Mean.
+      mean_feasibility_evaluation_time = 0.0;
+      for(int i = 0; i < edge_eval_times.size(); i++){
+        mean_feasibility_evaluation_time += edge_eval_times[i];
+      }
+      mean_feasibility_evaluation_time /= num_edge_evaluations;
+
+      // Compute STD
+      std_feasibility_evaluation_time = 0.0;
+      if (num_edge_evaluations > 1){
+        for(int i = 0; i < edge_eval_times.size(); i++){
+          std_feasibility_evaluation_time += std::pow((edge_eval_times[i] - mean_feasibility_evaluation_time),2);
+        }
+        std_feasibility_evaluation_time = sqrt(std_feasibility_evaluation_time/(num_edge_evaluations - 1));        
+      }
+
+      std::cout << "  Edge Transition Feasibility Eval Time: " << edge_eval_times[num_edge_evaluations-1] 
+                << ", mean: " << mean_feasibility_evaluation_time << ", std:" 
+                << std_feasibility_evaluation_time << std::endl;
+
+    }
 
 
 
