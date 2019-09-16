@@ -227,7 +227,14 @@ namespace planner{
         std::vector<Eigen::VectorXd> foot_landing_pos_traj;
         std::vector<Eigen::VectorXd> foot_landing_ori_traj;
 
+        Clock::time_point start_edge_transition_evaluation; 
+        Clock::time_point end_edge_transition_evaluation; 
+        double edge_feasibility_evaluation_time = 0;
 
+        int num_edge_evaluations = 0;       
+        double mean_feasibility_evaluation_time;
+        double std_feasibility_evaluation_time;
+        std::vector<double> edge_eval_times;
 
     private:
         // Converts the input position and orientation 
@@ -362,6 +369,11 @@ namespace planner{
 
         void clearStoredTrajectories();
         void appendToStoredTrajectories();
+
+
+
+        void edgeFeasibilityTimeStart();
+        void edgeFeasibilityTimeStop();
     };
 
 
