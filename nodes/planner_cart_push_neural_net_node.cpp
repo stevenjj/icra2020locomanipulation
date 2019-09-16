@@ -185,6 +185,7 @@ void test_LM_planner(){
 
   double s_init = 0.0;
   double s_goal = 0.6; //0.20; //0.12;//0.08;
+
   shared_ptr<Node> starting_vertex (std::make_shared<LMVertex>(s_init, q_start_door));    
   shared_ptr<Node> goal_vertex (std::make_shared<LMVertex>(s_goal));
 
