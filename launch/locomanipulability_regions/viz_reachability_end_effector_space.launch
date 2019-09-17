@@ -1,5 +1,5 @@
 <launch>
-    <node name="node_viz_lm_contact_transition_space" pkg="avatar_locomanipulation" type="node_viz_lm_contact_transition_space" output="screen" /> 
+    <node name="node_viz_hand_reachability" pkg="avatar_locomanipulation" type="node_viz_hand_reachability" output="screen" /> 
     
 	<!-- Visualize the robot -->  
     <include file="$(find avatar_locomanipulation)/launch/robot_and_ik_viz.launch">

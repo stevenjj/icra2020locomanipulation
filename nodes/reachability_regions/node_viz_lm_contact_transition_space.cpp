@@ -282,7 +282,7 @@ void test_hand_in_place_config_trajectory_generator(){
 ////////////////////////// AFTER THIS WAS ADDDED FOR ROSBAG
 
 	ros::Rate loop_rate(20);
-	Eigen::VectorXd q_finish;
+  Eigen::VectorXd q_finish = Eigen::VectorXd::Zero(valkyrie_model->getDimQ());
 	ctg.traj_q_config.get_pos(ctg.getDiscretizationSize() - 1, q_finish);
 
 	// Joint State Publisher
@@ -323,9 +323,8 @@ void test_hand_in_place_config_trajectory_generator(){
 }
 
 
-
 int main(int argc, char ** argv){   
-  ros::init(argc, argv, "test_footstep_probability");
+  ros::init(argc, argv, "node_viz_lm_contact_transition_space");
   test_hand_in_place_config_trajectory_generator();
 
   return 0;
