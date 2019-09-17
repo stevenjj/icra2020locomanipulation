@@ -24,7 +24,7 @@ public:
     void setCurrentConfig(const Eigen::VectorXd & q_current_in);
     void setPubFreq(const double & pub_freq_in);
 
-    void visualizeConfiguration(const Eigen::VectorXd & q_start_in, const Eigen::VectorXd & q_current_in);
+    void visualizeConfiguration(const Eigen::VectorXd & q_start_in, const Eigen::VectorXd & q_current_in, bool visualize_once=false);
     void visualizeConfigurationTrajectory(const Eigen::VectorXd & q_start_in, TrajEuclidean & traj_q_in, bool visualize_once=false);
     void visualizeConfigurationTrajectory(const Eigen::VectorXd & q_start_in, TrajEuclidean & traj_q_in, std::vector<double> & s_traj,  bool visualize_once=false);
     void visualizeConfigurationTrajectory(std::shared_ptr<ManipulationFunction> f_s, int robot_manipulation_side, const Eigen::VectorXd & q_start_in, TrajEuclidean & traj_q_in, bool visualize_once=false);

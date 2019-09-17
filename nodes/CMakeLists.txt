@@ -33,3 +33,9 @@ target_link_libraries(node_visualize_cart ${PROJECT_LIBRARIES})
 # add_executable(node_visualize_bag node_visualize_bag.cpp ${PROJECT_SOURCES})
 # add_dependencies(node_visualize_bag ${${PROJECT_NAME}_EXPORTED_TARGETS})
 # target_link_libraries(node_visualize_bag ${PROJECT_LIBRARIES})
+
+# Locomanipulability Visualization
+# Contact Transition Space
+add_executable(node_transition_space_visualization node_transition_space_visualization.cpp ${PROJECT_SOURCES})
+add_dependencies(node_transition_space_visualization ${${PROJECT_NAME}_EXPORTED_TARGETS})
+target_link_libraries(node_transition_space_visualization ${PROJECT_LIBRARIES})

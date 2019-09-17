@@ -62,7 +62,7 @@ void RVizVisualizer::setPubFreq(const double & pub_freq_in){
 	pub_freq = pub_freq_in;
 }
 
-void RVizVisualizer::visualizeConfiguration(const Eigen::VectorXd & q_start_in, const Eigen::VectorXd & q_current_in){
+void RVizVisualizer::visualizeConfiguration(const Eigen::VectorXd & q_start_in, const Eigen::VectorXd & q_current_in, bool visualize_once){
 	std::cout << "[RVizVisualizer] Visualizing starting and ending configurations" << std::endl;
 	// Set the configurations
 	setStartConfig(q_start_in);
@@ -85,6 +85,9 @@ void RVizVisualizer::visualizeConfiguration(const Eigen::VectorXd & q_start_in, 
 
 	    ros::spinOnce();
 	    loop_rate.sleep();
+ 		if (visualize_once){
+  			break; // break if we want to visualize only once
+  		}
   	}
 
 

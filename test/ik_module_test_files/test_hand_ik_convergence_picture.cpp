@@ -316,8 +316,8 @@ void useIK_module(){
 			rate.sleep();
 			ros::spinOnce();
 
-			// Visualize Trajectory
-  		// visualize_robot(q_init, q_sol);
+			// Visualize Robot
+  		visualize_robot(q_init, q_sol, true);
   	}
   }
 
