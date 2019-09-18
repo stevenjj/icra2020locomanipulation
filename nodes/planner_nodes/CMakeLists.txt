@@ -6,6 +6,12 @@ target_link_libraries(planner_door_open_node ${PROJECT_LIBRARIES})
 add_executable(planner_door_open_neural_net_node planner_door_open_neural_net_node.cpp ${PROJECT_SOURCES})
 add_dependencies(planner_door_open_neural_net_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
 target_link_libraries(planner_door_open_neural_net_node ${PROJECT_LIBRARIES})
+
+# Door Open different cost weights
+add_executable(planner_door_open_node_different_cost planner_door_open_node_different_cost.cpp ${PROJECT_SOURCES})
+add_dependencies(planner_door_open_node_different_cost ${${PROJECT_NAME}_EXPORTED_TARGETS})
+target_link_libraries(planner_door_open_node_different_cost ${PROJECT_LIBRARIES})
+
 # Cart Push
 add_executable(planner_cart_push_node planner_cart_push_node.cpp ${PROJECT_SOURCES})
 add_dependencies(planner_cart_push_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
@@ -14,3 +20,7 @@ target_link_libraries(planner_cart_push_node ${PROJECT_LIBRARIES})
 add_executable(planner_cart_push_neural_net_node planner_cart_push_neural_net_node.cpp ${PROJECT_SOURCES})
 add_dependencies(planner_cart_push_neural_net_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
 target_link_libraries(planner_cart_push_neural_net_node ${PROJECT_LIBRARIES})
+# Cart Push different cost weights
+add_executable(planner_cart_push_node_different_cost planner_cart_push_node_different_cost.cpp ${PROJECT_SOURCES})
+add_dependencies(planner_cart_push_node_different_cost ${${PROJECT_NAME}_EXPORTED_TARGETS})
+target_link_libraries(planner_cart_push_node_different_cost ${PROJECT_LIBRARIES})
