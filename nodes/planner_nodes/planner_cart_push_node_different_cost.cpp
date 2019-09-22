@@ -177,8 +177,6 @@ void test_LM_planner(){
 
 int main(int argc, char ** argv){   
   ros::init(argc, argv, "test_planner_with_trajectories");
-
-  test_LM_planner();
- 
+  test_LM_planner(); 
   return 0;
 }

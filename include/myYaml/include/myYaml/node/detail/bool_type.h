@@ -17,7 +17,7 @@ typedef void (*unspecified_bool_type)(unspecified_bool::NOT_ALLOWED*);
 }
 }
 
-#define YAML_CPP_OPERATOR_BOOL()                                            \
+#define MY_YAML_CPP_OPERATOR_BOOL()                                            \
   operator myYAML::detail::unspecified_bool_type() const {                    \
     return this->operator!() ? 0                                            \
                              : &myYAML::detail::unspecified_bool::true_value; \
