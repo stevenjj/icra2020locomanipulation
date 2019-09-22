@@ -523,6 +523,14 @@ bool ConfigTrajectoryGenerator::computeConfigurationTrajectory(const Eigen::Vect
 		traj_SE3_left_hand.set_dt( (manipulation_only_time/N_size) );
 		traj_SE3_right_hand.set_dt( (manipulation_only_time/N_size) );
 
+		// Hold constant if there are no footsteps
+		for(int i = 0; i < N_size; i++){
+			wpg.traj_ori_pelvis.set_quat(i, tmp_pelvis_ori);
+			wpg.traj_pos_com.set_pos(i, tmp_com_pos);
+			wpg.traj_SE3_right_foot.set_pos(i, tmp_right_foot.position, tmp_right_foot.orientation);
+			wpg.traj_SE3_left_foot.set_pos(i, tmp_left_foot.position, tmp_left_foot.orientation);			
+		}
+
 		// Set ik to use to be the manipulation only IKModule:
 		ik_to_use_module = ik_manipulation_only_module;
 	}
