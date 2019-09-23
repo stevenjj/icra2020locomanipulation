@@ -101,6 +101,10 @@ namespace planner{
 
         bool trust_classifier = false;
 
+        // if true, the reconstruction step will be performed regardless of the approach in order to save the yaml file output.
+        bool store_output = false;
+
+
         void setNeuralNetwork(std::shared_ptr<NeuralNetModel> nn_model_in, const Eigen::VectorXd & nn_mean_in, const Eigen::VectorXd & nn_std_dev_in);
 
         std::shared_ptr<RobotModel> robot_model;
@@ -368,10 +372,13 @@ namespace planner{
         void clearStoredTrajectories();
         void appendToStoredTrajectories();
 
-
-
         void edgeFeasibilityTimeStart();
         void edgeFeasibilityTimeStop();
+
+        // Get Edge Key
+        std::string getEdgeKey(shared_ptr<LMVertex> from_node, shared_ptr<LMVertex> to_node);
+        std::map<std::string, TrajEuclidean> edge_to_trajectory;
+
     };
 
 

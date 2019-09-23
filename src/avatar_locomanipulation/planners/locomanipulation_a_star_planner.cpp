@@ -297,7 +297,9 @@ namespace planner{
 
     if (reconstructConfigurationTrajectory()){
     // if(reconstructConfigurationTrajectoryv2()){
-      storeTrajectories();
+      if(store_output){
+        storeTrajectories();
+      }
       return true;
     }else{
       return false;
@@ -549,6 +551,24 @@ namespace planner{
       // Cast Pointers
       current_ = static_pointer_cast<LMVertex>(forward_order_optimal_path[i]);
       parent_ = static_pointer_cast<LMVertex>(current_->parent);
+
+      // Check if edge has already been computed before
+      if (!store_output){
+        std::string edge_key = getEdgeKey(parent_, current_);
+        if (edge_to_trajectory.count(edge_key) > 0){
+          // If so, get the trajectory
+          ctg->traj_q_config = edge_to_trajectory[edge_key];
+          for(int j = 0; j < N_size; j++){
+            // Get the configuration at this local trajectory
+            ctg->traj_q_config.get_pos(j, q_tmp);
+            // Store the trajectory to the global path
+            path_traj_q_config.set_pos(i_run + j, q_tmp);    
+          }
+          // Update i_run
+          i_run += N_size;   
+          continue;
+        }
+      }
 
       // Check classifier result for this transition
       bool transition_possible = true;
@@ -1415,6 +1435,8 @@ namespace planner{
           ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_tmp);
           // std::cout << "q_tmp = " << q_tmp.transpose() << std::endl;
           current_->setRobotConfig(q_tmp);
+          // Store config for this edge 
+          edge_to_trajectory[getEdgeKey(parent_, current_)] = ctg->traj_q_config;
         }else{
           // If it does not converge, return an empty neighbor list       
           return neighbors;       
@@ -1724,6 +1746,10 @@ namespace planner{
     std::ofstream file_output_stream(save_path);     
     // std::cout << out.c_str() << std::endl;
     file_output_stream << out.c_str(); 
+  }
+
+  std::string LocomanipulationPlanner::getEdgeKey(shared_ptr<LMVertex> from_node, shared_ptr<LMVertex> to_node){
+    return from_node->key + "_" + to_node->key;
   }
 
 
