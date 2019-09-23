@@ -99,6 +99,8 @@ namespace planner{
         std::set< std::shared_ptr<Node> > invalidNodes; 
 		std::map<std::shared_ptr<Node>, set_type> vertexAssignment; // open or closed set 
 
+	    std::vector< std::shared_ptr<Node> > invalidSequence;
+
 
 		shared_ptr<Node> begin; 
 		shared_ptr<Node> goal;		

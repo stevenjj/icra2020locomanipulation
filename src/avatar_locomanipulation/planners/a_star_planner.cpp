@@ -715,6 +715,11 @@ namespace planner{
                         ExploredSet.erase(current_node);
                         //insert current node onto closed set
                         ClosedSet.insert(current_node); 
+
+                        // Remove invalid sequence and filter for valid nodes.
+                        addToDeleteSet(invalidSequence);
+                        filterValidNodes();
+
                         continue; 
                     }
                 }

@@ -299,6 +299,8 @@ namespace planner{
     // if(reconstructConfigurationTrajectoryv2()){
       storeTrajectories();
       return true;
+    }else{
+      return false;
     }
 
   }
@@ -507,6 +509,9 @@ namespace planner{
 
     clearStoredTrajectories();
 
+    // Clear Invalid Sequence Vector
+    invalidSequence.clear();
+
     // Create s vector as function of i.
     s_traj.clear();
     double s_start = 0.0;
@@ -617,7 +622,12 @@ namespace planner{
         appendToStoredTrajectories();   
         // Update i_run
         i_run += N_size;        
-      }else{
+      }else{ 
+        // add current and remaining vertices to invalid sequence
+        for(int k = i; k < forward_order_optimal_path.size(); k++){
+          invalidSequence.push_back(forward_order_optimal_path[k]);          
+        }
+        // Return false convergence
         return false;
       }
 
