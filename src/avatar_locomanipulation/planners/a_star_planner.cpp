@@ -462,6 +462,7 @@ namespace planner{
 
     void A_starPlanner::setStartNode(const shared_ptr<Node> begin_input){
         begin = begin_input;
+        begin->isStartNode = true;
     }
 
     void A_starPlanner::setGoalNode(const shared_ptr<Node> goal_input){

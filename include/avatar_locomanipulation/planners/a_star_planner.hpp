@@ -45,6 +45,8 @@ namespace planner{
 		int step_num;
 		string key;
 
+        bool isStartNode = false;
+
 	};
 
 	

@@ -44,8 +44,6 @@ namespace planner{
         LMVertex(double s_in, Footstep & left_foot_in, Footstep & right_foot_in); // Constructor
         LMVertex(double s_in); // Constructor
 
-        bool isStartNode = false;
-
         double s = 0.0;
         Eigen::VectorXd q_init;
         bool take_a_step = false;
