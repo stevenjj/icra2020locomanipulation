@@ -506,6 +506,112 @@ namespace planner{
         return true;
     }
 
+    void A_starPlanner::addToDeleteSet(const std::vector< std::shared_ptr<Node> > & node_list){       
+        // Add vector of nodes to the deleted set
+        DeletedSet.clear();
+        for(int i = 0; i < node_list.size(); i++){
+            DeletedSet.insert(node_list[i]);
+        }
+    }
+
+    bool A_starPlanner::checkPathToStartExists(const std::shared_ptr<Node> node, std::vector< std::shared_ptr<Node> > & candidates){        
+        candidates.clear();
+        shared_ptr<Node> this_node = node;
+
+        bool result = false;
+        while(true){
+            if (this_node->isStartNode){
+                std::cout << "key = " << this_node->key << " is the start node" << std::endl;
+                result = true;
+                break;
+            }else{
+                candidates.push_back(this_node);
+                if (validNodes.count(this_node) > 0){
+                    // This node has ancestors which leads back to the start node
+                    std::cout << "key = " << this_node->key << " is has valid ancestors" << std::endl;
+                    result = true;
+                    break;
+                }else if (invalidNodes.count(this_node) > 0){
+                    std::cout << "key = " << this_node->key << " is has invalid ancestors" << std::endl;
+                    // This node has an ancestor which is part of the deletedSet
+                    result = false;
+                    break;                    
+                }else if (DeletedSet.count(this_node) > 0){
+                    std::cout << "key = " << this_node->key << " is part of the DeletedSet" << std::endl;
+                    // This node has an ancestor which is part of the deletedSet
+                    result = false;
+                    break;                    
+                }else{                    
+                    std::cout << "key = " << this_node->key << " is potentially valid" << std::endl;
+                    // This is node is not in the deleted set. Potentially valid, 
+                    this_node = this_node->parent;
+                    // Continue looking at ancestors
+                    continue;
+                }        
+            }
+        }
+
+        return result;
+    }
+    
+    void A_starPlanner::checkSetValidity(const std::set< std::shared_ptr<Node>, NodePtr_Compare_key> & current_set,
+                                        const set_type type){
+
+        // Initialize candidates list
+        std::vector< std::shared_ptr<Node> > candidates;
+
+        // For each node in the current set, check if there is a path to the start node
+        for (std::set< std::shared_ptr<Node> >::iterator it = current_set.begin(); it!=current_set.end(); ++it){
+           // Assign whether the vertex is in the open set or closed set
+            vertexAssignment[*it] = type;
+            if (checkPathToStartExists(*it, candidates)){
+                for (int i = 0; i < candidates.size(); i++){
+                    validNodes.insert(candidates[i]);
+                }
+            }else{
+                for (int i = 0; i < candidates.size(); i++){
+                    invalidNodes.insert(candidates[i]);
+                }
+            }
+        }
+
+
+
+    }
+
+    void A_starPlanner::filterValidNodes(){
+        // Clear valid sets and maps
+        validNodes.clear();
+        invalidNodes.clear();
+        vertexAssignment.clear();
+    
+        // Initially assign the start node to be a valid node
+        validNodes.insert(begin);
+
+        // Check the validity of the nodes in each set
+        checkSetValidity(ExploredSet, A_STAR_SET_TYPE_OPEN);
+        checkSetValidity(ClosedSet, A_STAR_SET_TYPE_CLOSED);
+
+        // Clear the contents of the open and closed sets
+        OpenSet.clear();
+        ExploredSet.clear();
+        ClosedSet.clear();
+
+        // For each valid node, add it back to the Open, Explored, and ClosedSets
+        for (std::set< std::shared_ptr<Node> >::iterator it = validNodes.begin(); it!=validNodes.end(); ++it){
+            if (vertexAssignment[*it] == A_STAR_SET_TYPE_OPEN){
+                OpenSet.push_back(*it);
+                ExploredSet.insert(*it);
+            }else if (vertexAssignment[*it] == A_STAR_SET_TYPE_CLOSED){
+                ClosedSet.insert(*it);
+            }
+        }
+
+
+
+
+    }
+
 
     //perform the A_star algorithm
 
@@ -521,12 +627,11 @@ namespace planner{
         //define all vectors, maps and iterators 
         shared_ptr<Node> current_node;
 
-        std::vector< std::shared_ptr<Node> > OpenSet; 
+        // Clear the sets   
+        OpenSet.clear();
+        ClosedSet.clear();
+        ExploredSet.clear();
 
-        std::set<shared_ptr<Node>, NodePtr_Compare_key> ClosedSet;
-
-        std::set< std::shared_ptr<Node>, NodePtr_Compare_key> ExploredSet;
-    
         std::vector< shared_ptr<Node> >::iterator node_it;
         std::set< std::shared_ptr<Node> >::iterator es_it;
         std::set< shared_ptr<Node> >::iterator node_set_it;

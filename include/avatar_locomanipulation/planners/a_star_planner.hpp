@@ -26,8 +26,12 @@
 #include <chrono>
 
 using namespace std;
+#define A_STAR_SET_TYPE_OPEN 0
+#define A_STAR_SET_TYPE_CLOSED 1
 
 namespace planner{
+	typedef int set_type; 
+
 	typedef std::chrono::high_resolution_clock Clock;
 
 
@@ -77,6 +81,24 @@ namespace planner{
 		virtual double heuristicCost(const shared_ptr<Node> neighbor,const shared_ptr<Node> goal);
 		virtual bool goalReached(shared_ptr<Node> current_node, shared_ptr<Node> goal);
 		virtual std::vector< shared_ptr<Node> > getNeighbors(shared_ptr<Node> & current);
+
+		void addToDeleteSet(const std::vector< std::shared_ptr<Node> > & node_list);
+		bool checkPathToStartExists(const std::shared_ptr<Node> node, std::vector< std::shared_ptr<Node> > & candidates);
+		void checkSetValidity(const std::set< std::shared_ptr<Node>, NodePtr_Compare_key> & current_set,
+							  const set_type type);
+		void filterValidNodes();
+
+		// Set member variables
+        std::vector< std::shared_ptr<Node> > OpenSet; 
+        std::set< std::shared_ptr<Node>, NodePtr_Compare_key> ClosedSet;
+        std::set< std::shared_ptr<Node>, NodePtr_Compare_key> ExploredSet;
+
+        // Extra Sets for handling deleted nodes and checking for set validity
+        std::set< std::shared_ptr<Node> > DeletedSet; 
+        std::set< std::shared_ptr<Node> > validNodes; 
+        std::set< std::shared_ptr<Node> > invalidNodes; 
+		std::map<std::shared_ptr<Node>, set_type> vertexAssignment; // open or closed set 
+
 
 		shared_ptr<Node> begin; 
 		shared_ptr<Node> goal;		
