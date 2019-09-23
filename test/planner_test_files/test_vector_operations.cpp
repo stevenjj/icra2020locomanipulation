@@ -187,6 +187,18 @@ int main(int argc, char **argv){
         std::cout << (*it)->key << std::endl;
     }
 
+    
+    std::vector< std::shared_ptr<Node> > nodes_to_delete;
+    nodes_to_delete.push_back(v3);
+    nodes_to_delete.push_back(v6);
+    nodes_to_delete.push_back(v_goal);
+
+    std::cout << "Nodes to delete" << std::endl;
+    for(int i = 0; i < nodes_to_delete.size(); i++){
+        std::cout << nodes_to_delete[i]->key << std::endl;
+    }
+
+    xy_planner.addToDeleteSet(nodes_to_delete);
     xy_planner.filterValidNodes();
 
     std::cout << "Post Filter" << std::endl;
