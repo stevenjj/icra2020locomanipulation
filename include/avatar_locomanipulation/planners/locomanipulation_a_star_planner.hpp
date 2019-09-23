@@ -104,6 +104,8 @@ namespace planner{
         // if true, the reconstruction step will be performed regardless of the approach in order to save the yaml file output.
         bool store_output = false;
 
+        // Lazy evaluation speeds up solutions as we only prune out bad neighbors according to the classifier
+        bool classifier_lazy_evaluate = true; 
 
         void setNeuralNetwork(std::shared_ptr<NeuralNetModel> nn_model_in, const Eigen::VectorXd & nn_mean_in, const Eigen::VectorXd & nn_std_dev_in);
 

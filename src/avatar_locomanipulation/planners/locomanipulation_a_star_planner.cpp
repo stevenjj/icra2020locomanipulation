@@ -632,6 +632,11 @@ namespace planner{
       // Check for convergence. This should work however.
       if (convergence){
         std::cout << "constructing the full path" << std::endl;
+        if (!store_output){
+          // Store config for this edge 
+          edge_to_trajectory[getEdgeKey(parent_, current_)] = ctg->traj_q_config;
+        }
+
         for(int j = 0; j < N_size; j++){
           // Get the configuration at this local trajectory
           ctg->traj_q_config.get_pos(j, q_tmp);
@@ -1013,9 +1018,10 @@ namespace planner{
     }
 
     double feasibility_cost = 0.0; 
-    // if (use_classifier){
-    //   feasibility_cost =  w_feasibility*(1.0 - getFeasibility(current_, neighbor_));      
-    // }
+    
+    if ((use_classifier) && (!classifier_lazy_evaluate)){
+      feasibility_cost =  w_feasibility*(1.0 - getFeasibility(current_, neighbor_));      
+    }
 
     double delta_g = s_cost + distance_cost + step_cost + transition_distance_cost + feasibility_cost;
 
@@ -1207,13 +1213,13 @@ namespace planner{
         // TODO: Add feasibility check here and only add to neighbors if it's greater than our threshold
 
 
-        // if (trust_classifier){
-        //   // Skip this neighbor if it is not within the threshold
-        //   double feas_score = getFeasibility(current_, neighbor_change);
-        //   if (feas_score < feasibility_threshold){
-        //     continue;
-        //   }
-        // }
+        if ((trust_classifier) && (!classifier_lazy_evaluate)){
+          // Skip this neighbor if it is not within the threshold
+          double feas_score = getFeasibility(current_, neighbor_change);
+          if (feas_score < feasibility_threshold){
+            continue;
+          }
+        }
 
         neighbors.push_back(neighbor);
       }
@@ -1323,13 +1329,13 @@ namespace planner{
 
               // TODO: Add feasibility check here and only add to neighbors if it's greater than our threshold
 
-              // if (trust_classifier){
-              //   // Skip this neighbor if it is not within the threshold
-              //   double feas_score = getFeasibility(current_, neighbor_change);
-              //   if (feas_score < feasibility_threshold){
-              //     continue;
-              //   }
-              // }
+              if ((trust_classifier) && (!classifier_lazy_evaluate)){
+                // Skip this neighbor if it is not within the threshold
+                double feas_score = getFeasibility(current_, neighbor_change);
+                if (feas_score < feasibility_threshold){
+                  continue;
+                }
+              }
 
               // Add landing foot 
               neighbors.push_back(neighbor);
