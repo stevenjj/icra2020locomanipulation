@@ -182,6 +182,11 @@ int main(int argc, char **argv){
         std::cout << xy_planner.OpenSet[i]->key << std::endl;
     }
 
+    std::cout << "Explored Set" << std::endl;
+    for (std::set< std::shared_ptr<Node> >::iterator it = xy_planner.ExploredSet.begin(); it!=xy_planner.ExploredSet.end(); ++it){
+        std::cout << (*it)->key << std::endl;
+    }
+
     std::cout << "Closed Set" << std::endl;
     for (std::set< std::shared_ptr<Node> >::iterator it = xy_planner.ClosedSet.begin(); it!=xy_planner.ClosedSet.end(); ++it){
         std::cout << (*it)->key << std::endl;
@@ -205,6 +210,11 @@ int main(int argc, char **argv){
     std::cout << "Open Set" << std::endl;
     for(int i = 0; i < xy_planner.OpenSet.size(); i++){
         std::cout << xy_planner.OpenSet[i]->key << std::endl;
+    }
+
+    std::cout << "Explored Set" << std::endl;
+    for (std::set< std::shared_ptr<Node> >::iterator it = xy_planner.ExploredSet.begin(); it!=xy_planner.ExploredSet.end(); ++it){
+        std::cout << (*it)->key << std::endl;
     }
 
     std::cout << "Closed Set" << std::endl;

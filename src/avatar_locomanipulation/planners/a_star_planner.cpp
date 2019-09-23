@@ -528,11 +528,11 @@ namespace planner{
                 candidates.push_back(this_node);
                 if (validNodes.count(this_node) > 0){
                     // This node has ancestors which leads back to the start node
-                    std::cout << "key = " << this_node->key << " is has valid ancestors" << std::endl;
+                    std::cout << "key = " << this_node->key << " has valid ancestors" << std::endl;
                     result = true;
                     break;
                 }else if (invalidNodes.count(this_node) > 0){
-                    std::cout << "key = " << this_node->key << " is has invalid ancestors" << std::endl;
+                    std::cout << "key = " << this_node->key << " has invalid ancestors" << std::endl;
                     // This node has an ancestor which is part of the deletedSet
                     result = false;
                     break;                    
