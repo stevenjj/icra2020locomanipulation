@@ -177,7 +177,7 @@ SET(PROJECT_LIBRARIES
 	myYaml)
 
 # Create Project Library
-add_library(locomanipulation_library SHARED ${PROJECT_SOURCES})
+add_library(locomanipulation_library STATIC ${PROJECT_SOURCES})
 target_link_libraries(locomanipulation_library ${PROJECT_LIBRARIES})
 
 add_subdirectory(test)

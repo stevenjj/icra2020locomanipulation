@@ -71,6 +71,9 @@ namespace planner{
 
   // Constructor
   LocomanipulationPlanner::LocomanipulationPlanner(){
+    int num_threads = Eigen::nbThreads();
+    std::cout<<"CPU Parallelization, num_threads: "<<num_threads<<std::endl;
+
     generateDiscretization();    
   }
   void LocomanipulationPlanner::initializeLocomanipulationVariables(std::shared_ptr<RobotModel> robot_model_in, std::shared_ptr<ManipulationFunction> f_s_in, std::shared_ptr<ConfigTrajectoryGenerator> ctg_in){

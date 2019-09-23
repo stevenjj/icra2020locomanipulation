@@ -12,3 +12,7 @@
 # add_dependencies(test_data_saver ${${PROJECT_NAME}_EXPORTED_TARGETS})
 # add_dependencies(test_yaml_emitter ${${PROJECT_NAME}_EXPORTED_TARGETS})
 # add_dependencies(test_cpp_NN ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+add_executable(test_cpp_NN test_cpp_NN.cpp ${PROJECT_SOURCES})
+target_link_libraries(test_cpp_NN locomanipulation_library)
+add_dependencies(test_cpp_NN ${${PROJECT_NAME}_EXPORTED_TARGETS})

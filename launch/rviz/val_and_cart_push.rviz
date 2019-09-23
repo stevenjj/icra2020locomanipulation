@@ -9,7 +9,7 @@ Panels:
         - /IK Solution1
         - /IK Solution1/Links1
       Splitter Ratio: 0.733830869
-    Tree Height: 721
+    Tree Height: 359
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -1234,5 +1234,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1855
-  X: 65
-  Y: 24
+  X: 358
+  Y: 461
