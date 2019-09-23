@@ -37,6 +37,16 @@ void normalizeInputCalculate(const Eigen::VectorXd & x_in, const Eigen::VectorXd
 }
 
 int main(int argc, char ** argv){
+  // Eigen::initParallel();
+  // int num_cores = 4;
+  // omp_set_num_threads(num_cores);
+  // Eigen::setNbThreads(num_cores);
+  int num_threads = Eigen::nbThreads();
+  std::cout<<"CPU Parallelization, num_threads: "<<num_threads<<std::endl;
+  
+  int input_size = 10;
+
+
   ParamHandler param_handler;
   std::string model_path = THIS_PACKAGE_PATH"nn_models/layer3_20000pts/cpp_model/layer3_model.yaml";
 
@@ -66,7 +76,7 @@ int main(int argc, char ** argv){
   Eigen::VectorXd rawDatum(32);
   Eigen::VectorXd datum(32);
 
-  int input_size = 10;
+
 
 
 	Eigen::MatrixXd data(input_size, 32);
