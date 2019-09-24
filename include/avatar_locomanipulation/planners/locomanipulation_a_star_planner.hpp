@@ -240,6 +240,9 @@ namespace planner{
         double std_feasibility_evaluation_time;
         std::vector<double> edge_eval_times;
 
+        TrajEuclidean   tmp_traj_q_config;     // Trajectory of configurations q
+        std::map<std::string, TrajEuclidean> edge_to_trajectory;
+
     private:
         // Converts the input position and orientation 
         // from the world frame to the planner frame
@@ -379,7 +382,7 @@ namespace planner{
 
         // Get Edge Key
         std::string getEdgeKey(shared_ptr<LMVertex> from_node, shared_ptr<LMVertex> to_node);
-        std::map<std::string, TrajEuclidean> edge_to_trajectory;
+
 
     };
 

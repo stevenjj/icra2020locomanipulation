@@ -132,7 +132,10 @@ namespace planner{
     edge_eval_times.clear();
     mean_feasibility_evaluation_time = 0.0;
     std_feasibility_evaluation_time = 0.0;
+    edge_to_trajectory.clear();
 
+    double dt_dummy = 1e-3;
+    tmp_traj_q_config.set_dim_N_dt(robot_model->getDimQ(), N_size_per_edge, dt_dummy);
 
   }
 
@@ -557,10 +560,10 @@ namespace planner{
         std::string edge_key = getEdgeKey(parent_, current_);
         if (edge_to_trajectory.count(edge_key) > 0){
           // If so, get the trajectory
-          ctg->traj_q_config = edge_to_trajectory[edge_key];
+          tmp_traj_q_config = edge_to_trajectory.at(edge_key);
           for(int j = 0; j < N_size; j++){
             // Get the configuration at this local trajectory
-            ctg->traj_q_config.get_pos(j, q_tmp);
+            tmp_traj_q_config.get_pos(j, q_tmp);
             // Store the trajectory to the global path
             path_traj_q_config.set_pos(i_run + j, q_tmp);    
           }
@@ -633,8 +636,17 @@ namespace planner{
       if (convergence){
         std::cout << "constructing the full path" << std::endl;
         if (!store_output){
-          // Store config for this edge 
-          edge_to_trajectory[getEdgeKey(parent_, current_)] = ctg->traj_q_config;
+            // Store config for this edge 
+            // --- Copy Trajectory
+            int N_size = ctg->getDiscretizationSize();
+            for(int j = 0; j < N_size; j++){
+              // Get the configuration at this local trajectory
+              ctg->traj_q_config.get_pos(j, q_tmp);
+              // Store the trajectory to the global path
+              tmp_traj_q_config.set_pos(j, q_tmp);    
+            }
+            edge_to_trajectory.insert( std::pair<std::string, TrajEuclidean>(getEdgeKey(parent_, current_), tmp_traj_q_config) );
+            // ---- Copy Trajectory
         }
 
         for(int j = 0; j < N_size; j++){
@@ -1289,7 +1301,6 @@ namespace planner{
             }
             landing_quat = stance_foot.orientation*delta_quat;
 
-
             // Check if the landing foot is within the kinematic bounds w.r.t. the stance foot
             if (withinKinematicBounds(stance_foot, landing_pos, landing_quat)){
               // std::cout << "accepted" << std::endl;
@@ -1327,7 +1338,6 @@ namespace planner{
               neighbor_change->parent = static_pointer_cast<Node>(current_);
 
               // TODO: Add feasibility check here and only add to neighbors if it's greater than our threshold
-
               if ((use_classifier) && (!classifier_lazy_evaluate)) {
                 // Skip this neighbor if it is not within the threshold
                 double feas_score = getFeasibility(current_, neighbor_change);
@@ -1431,13 +1441,22 @@ namespace planner{
 
         // If it converges, update the configuration of the current node
         if (convergence){
+          // Store config for this edge 
+          // --- Copy Trajectory
+          int N_size = ctg->getDiscretizationSize();
+          for(int j = 0; j < N_size; j++){
+            // Get the configuration at this local trajectory
+            ctg->traj_q_config.get_pos(j, q_tmp);
+            // Store the trajectory to the global path
+            tmp_traj_q_config.set_pos(j, q_tmp);    
+          }
+          edge_to_trajectory.insert( std::pair<std::string, TrajEuclidean>(getEdgeKey(parent_, current_), tmp_traj_q_config) );
+          // ---- Copy Trajectory
+
           // Get the final configuration.
-          // std::cout << "Current node is feasible. Updating q_tmp" << std::endl;     
           ctg->traj_q_config.get_pos(ctg->getDiscretizationSize() - 1, q_tmp);
           // std::cout << "q_tmp = " << q_tmp.transpose() << std::endl;
           current_->setRobotConfig(q_tmp);
-          // Store config for this edge 
-          edge_to_trajectory[getEdgeKey(parent_, current_)] = ctg->traj_q_config;
         }else{
           // If it does not converge, return an empty neighbor list       
           return neighbors;       
