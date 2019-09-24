@@ -46,4 +46,6 @@ roslaunch avatar_locomanipulation viz_locomanipulability_ee_space.launch
 ## Get Neural Network Weights
 Download the neural network weights from [here](https://drive.google.com/open?id=1N88vQLRJawx_CIurzRgQNeN3DB39xbGp) and extract the contents to the `nn_models` folder.
 
+## Known Issue
+Sometimes when running one of the example launch files, the planner immediately returns not finding a path. Relaunching the file again should work. I'm not sure of the issue as this bug appears to be intermittent on my system.
 
