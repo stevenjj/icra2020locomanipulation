@@ -6,7 +6,6 @@ target_link_libraries(planner_door_open_node locomanipulation_library)
 add_executable(planner_door_open_neural_net_node planner_door_open_neural_net_node.cpp)
 add_dependencies(planner_door_open_neural_net_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
 target_link_libraries(planner_door_open_neural_net_node locomanipulation_library)
-
 # Door Open different cost weights
 add_executable(planner_door_open_node_different_cost planner_door_open_node_different_cost.cpp)
 add_dependencies(planner_door_open_node_different_cost ${${PROJECT_NAME}_EXPORTED_TARGETS})
@@ -17,10 +16,11 @@ add_executable(planner_cart_push_node planner_cart_push_node.cpp)
 add_dependencies(planner_cart_push_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
 target_link_libraries(planner_cart_push_node locomanipulation_library)
 # Cart Push Neural Net
-add_executable(planner_cart_push_neural_net_node planner_cart_push_neural_net_node.cpp)
+add_executable(planner_cart_push_neural_net_node planner_cart_push_neural_net_node.cpp )
 add_dependencies(planner_cart_push_neural_net_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
 target_link_libraries(planner_cart_push_neural_net_node locomanipulation_library)
 # Cart Push different cost weights
 add_executable(planner_cart_push_node_different_cost planner_cart_push_node_different_cost.cpp)
 add_dependencies(planner_cart_push_node_different_cost ${${PROJECT_NAME}_EXPORTED_TARGETS})
 target_link_libraries(planner_cart_push_node_different_cost locomanipulation_library)
+

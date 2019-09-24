@@ -158,7 +158,13 @@ void test_LM_planner_with_cpp_NN(){
   // ----------
 
   // Set to trust the classifier
-  lm_planner.trust_classifier = true; //false;
+  lm_planner.trust_classifier = true; 
+
+  // By default Neural network is used for only checking if the current node being expanded is feasible.
+  // Uncomment the following lines to also evaluate edge feasibility and vertex prunning.
+  // lm_planner.classifier_lazy_evaluate = false;
+  // lm_planner.trust_classifier = false;
+  // lm_planner.feasibility_threshold= 0.4; // We want to accept more neighbors
 
   // Initialize
   lm_planner.initializeLocomanipulationVariables(valkyrie_model, f_s_manipulate_door, ctg);

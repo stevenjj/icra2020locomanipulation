@@ -168,7 +168,7 @@ void test_LM_planner(){
   // ----------
 
   // Set to trust the classifier
-  lm_planner.trust_classifier = true; //false;
+  lm_planner.trust_classifier = true;
 
   // Initialize
   lm_planner.initializeLocomanipulationVariables(valkyrie_model, f_s_manipulate_door, ctg);
@@ -176,6 +176,12 @@ void test_LM_planner(){
   lm_planner.setNeuralNetwork(nn_transition_model, mean, std_dev);
   // Require high feasibility scores
   lm_planner.feasibility_threshold= 0.6;
+
+  // By default Neural network is used for only checking if the current node being expanded is feasible.
+  // Uncomment the following lines to also evaluate edge feasibility and vertex prunning.
+  // lm_planner.classifier_lazy_evaluate = false;
+  // lm_planner.trust_classifier = false;
+  // lm_planner.feasibility_threshold= 0.4; // We want to accept more neighbors
 
   // Set discretization of delta_s
   lm_planner.delta_s_max = 0.04;

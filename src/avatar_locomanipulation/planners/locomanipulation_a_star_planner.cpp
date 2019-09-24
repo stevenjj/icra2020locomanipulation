@@ -1095,8 +1095,7 @@ namespace planner{
         // If the score is less than the treshold
         if (feas_score < feasibility_threshold){
           transition_possible = false;
-          // proceed with returning false if we are not storing classifier mistakes
-          if (!classifier_store_mistakes) {
+          if (trust_classifier) {
             return false;
           }
         }
@@ -1213,7 +1212,7 @@ namespace planner{
         // TODO: Add feasibility check here and only add to neighbors if it's greater than our threshold
 
 
-        if ((trust_classifier) && (!classifier_lazy_evaluate)){
+        if ((use_classifier) && (!classifier_lazy_evaluate)) {
           // Skip this neighbor if it is not within the threshold
           double feas_score = getFeasibility(current_, neighbor_change);
           if (feas_score < feasibility_threshold){
@@ -1329,7 +1328,7 @@ namespace planner{
 
               // TODO: Add feasibility check here and only add to neighbors if it's greater than our threshold
 
-              if ((trust_classifier) && (!classifier_lazy_evaluate)){
+              if ((use_classifier) && (!classifier_lazy_evaluate)) {
                 // Skip this neighbor if it is not within the threshold
                 double feas_score = getFeasibility(current_, neighbor_change);
                 if (feas_score < feasibility_threshold){
@@ -1388,12 +1387,8 @@ namespace planner{
         if (feas_score < feasibility_threshold){
           transition_possible = false;
           std::cout << "  Transition Possible: " << (transition_possible ? "True" : "False") << std::endl; 
-          // If we are not storing possible mistakes, proceed with ignoring the computation check
-          // if the s variable has moved, we cannot learn from this example so ignore the computation check
-          // if ((!classifier_store_mistakes) || edgeHasSVarMoved(parent_, current_)){
 
-
-          if (!classifier_store_mistakes){
+          if (trust_classifier){
             return neighbors;
           }
         }else{
