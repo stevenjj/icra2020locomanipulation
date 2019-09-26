@@ -24,7 +24,7 @@ catkin build
 To install this package
 ````
 cd catkin_ws/src
-git clone https://github.com/stevenjj/avatar_locomanipulation
+git clone https://github.com/stevenjj/icra2020locomanipulation
 catkin build
 ````
 
