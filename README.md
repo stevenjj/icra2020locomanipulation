@@ -2,7 +2,7 @@
 This package contains code for performing kinematics and dynamics computations to enable locomanipulation with the NASA Valkyrie robot.
 
 ## Video Result
-[![Click to view on youtube](http://img.youtube.com/vi/m1YBPKkvX04/0.jpg)](http://www.youtube.com/watch?v=m1YBPKkvX04 "Finding Locomanipulation Plans Quickly in the Locomotion Constrained Manifold")
+[![Click to view on youtube](http://img.youtube.com/vi/C4pfgatgYFE/0.jpg)](http://www.youtube.com/watch?v=C4pfgatgYFE "Finding Locomanipulation Plans Quickly in the Locomotion Constrained Manifold")
 
 ## System
 Ubuntu 16.04 ROS Kinetic
